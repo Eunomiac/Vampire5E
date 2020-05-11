@@ -4,11 +4,11 @@ const Tester = (() => {
     const SCRIPTNAME = "Tester";
 
     // #region COMMON INITIALIZATION
-    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray); // eslint-disable-line no-unused-vars
-    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME); // eslint-disable-line no-unused-vars
-    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME); // eslint-disable-line no-unused-vars
-    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj); // eslint-disable-line no-unused-vars
+    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
+    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
+    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
+    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
 
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
@@ -17,7 +17,7 @@ const Tester = (() => {
     // #endregion
 
     // #region LOCAL INITIALIZATION
-    const initialize = () => { // eslint-disable-line no-empty-function
+    const initialize = () => {
         const advNames = [
             "Haven (Harbord Appt.)",
             "Haven (Warding)",
@@ -48,7 +48,7 @@ const Tester = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-    const onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
+    const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
             case "statelength": {

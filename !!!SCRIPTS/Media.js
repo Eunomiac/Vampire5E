@@ -5,13 +5,13 @@ const Media = (() => {
     const SCRIPTNAME = "Media",
 
         // #region COMMON INITIALIZATION
-        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
-        VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
-        DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
-        TRACEON = (funcName, funcParams = [], msg = "") => D.TraceStart(funcName, funcParams, SCRIPTNAME, msg), // eslint-disable-line no-unused-vars  
-        TRACEOFF = (funcID, returnVal) => D.TraceStop(funcID, returnVal), // eslint-disable-line no-unused-vars
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},
+        VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray),
+        DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME),
+        LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME),
+        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj),
+        TRACEON = (funcName, funcParams = [], msg = "") => D.TraceStart(funcName, funcParams, SCRIPTNAME, msg),  
+        TRACEOFF = (funcID, returnVal) => D.TraceStop(funcID, returnVal),
 
         checkInstall = () => {
             // const traceID = TRACEON("checkInstall", [])
@@ -94,7 +94,7 @@ const Media = (() => {
 
         // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => {
-            const traceID = TRACEON("onChatCall", [call, args, objects, msg]); // eslint-disable-line no-unused-vars
+            const traceID = TRACEON("onChatCall", [call, args, objects, msg]);
             switch (call) {
                 case "!media": {
                     const mediaObjs = [...Listener.GetObjects(objects, "graphic"), ...Listener.GetObjects(objects, "text")];
@@ -1960,7 +1960,6 @@ const Media = (() => {
         getImgSrc = imgRef => (getImgData(imgRef) || {curSrc: false}).curSrc,
         /* getImgSrcs = imgRef => getImgData(imgRef) ? getImgData(imgRef).srcs : false, */
         isObjActive = mediaRef => (getMediaData(mediaRef) || {isActive: null}).isActive,
-        /* eslint-disable-next-line no-unused-vars */
         getContainedImgObjs = (containerRef, options = {}, filter = {}) => {
             const traceID = TRACEON("getContainedImgObjs", [containerRef, options, filter]),
                 containerObj = getImgObj(containerRef),
@@ -2716,8 +2715,7 @@ const Media = (() => {
             }
             imgObj.set(imgParams);
             return TRACEOFF(traceID, true);
-        },        
-        // eslint-disable-next-line no-unused-vars
+        },
         spreadImgs = (leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap = 20, maxOverlap = 40) => {
             const traceID = TRACEON("spreadImgs", [leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap, maxOverlap]);
             DB({leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap, maxOverlap}, "spreadImgs");

@@ -4,13 +4,13 @@ const Roller = (() => {
     const SCRIPTNAME = "Roller";
     
     // #region COMMON INITIALIZATION
-    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray); // eslint-disable-line no-unused-vars
-    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME); // eslint-disable-line no-unused-vars
-    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME); // eslint-disable-line no-unused-vars
-    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj); // eslint-disable-line no-unused-vars
-    const TRACEON = (funcName, funcParams = [], msg = "") => D.TraceStart(funcName, funcParams, SCRIPTNAME, msg); // eslint-disable-line no-unused-vars  
-    const TRACEOFF = (funcID, returnVal) => D.TraceStop(funcID, returnVal); // eslint-disable-line no-unused-vars
+    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
+    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
+    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
+    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
+    const TRACEON = (funcName, funcParams = [], msg = "") => D.TraceStart(funcName, funcParams, SCRIPTNAME, msg);  
+    const TRACEOFF = (funcID, returnVal) => D.TraceStop(funcID, returnVal);
             
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
@@ -888,10 +888,10 @@ const Roller = (() => {
 
     // #region GRAPHICS: Creation, Removal, Registration, Setting Sources
     const makeDie = (diceCat, dieNum) => {
-        const traceID = TRACEON("makeDie", [diceCat, dieNum]); // eslint-disable-next-line one-var
-        const rootData = Media.GetImgData(`RollerDie_${diceCat}_1`),
-            dieKey = `RollerDie_${diceCat}_${dieNum}`,
-            padShift = -0.5 * rootData.width;
+        const traceID = TRACEON("makeDie", [diceCat, dieNum]);
+        const rootData = Media.GetImgData(`RollerDie_${diceCat}_1`);
+        const dieKey = `RollerDie_${diceCat}_${dieNum}`;
+        const padShift = -0.5 * rootData.width;
         Media.MakeImg(dieKey, {
             left: rootData.left + SETTINGS.dice[diceCat].spread * (dieNum - 1),
             top: rootData.top,
@@ -911,7 +911,7 @@ const Roller = (() => {
         return TRACEOFF(traceID, true);
     };
     const clearDice = diceCat => {
-        const traceID = TRACEON("clearDice", [diceCat]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("clearDice", [diceCat]);
         const returnLines = [];
         DragPads.DelPad(`RollerDie_${diceCat}_1`);
         for (let i = 2; i <= SETTINGS.dice[diceCat].qty; i++) {
@@ -924,7 +924,7 @@ const Roller = (() => {
         return TRACEOFF(traceID, returnLines);
     };
     const makeAllDice = (diceCat) => {
-        const traceID = TRACEON("makeAllDice", [diceCat]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("makeAllDice", [diceCat]);
         const returnLines = [];
         if (Media.IsRegistered(`RollerDie_${diceCat}_2`))
             clearDice(diceCat);
@@ -936,13 +936,13 @@ const Roller = (() => {
         return TRACEOFF(traceID, returnLines);
     };
     const getColor = (rollType, rollLine, colorRef) => {
-        const traceID = TRACEON("getColor", [rollType, rollLine, colorRef]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("getColor", [rollType, rollLine, colorRef]);
         if (colorRef)
             return TRACEOFF(traceID, VAL({string: COLORSCHEMES[rollType][rollLine][colorRef]}) && COLORSCHEMES[rollType][rollLine][colorRef] || COLORSCHEMES.base[rollLine]);
         return TRACEOFF(traceID, VAL({string: COLORSCHEMES[rollType][rollLine]}) && COLORSCHEMES[rollType][rollLine] || COLORSCHEMES.base[rollLine]);
     };
     const clearRoller = () => {
-        const traceID = TRACEON("clearRoller", []); // eslint-disable-next-line one-var
+        const traceID = TRACEON("clearRoller", []);
         const topMidRefs = [];
         for (const textKey of SETTINGS.textKeys)
             Media.ToggleText(textKey, false, true);
@@ -967,7 +967,7 @@ const Roller = (() => {
         // Media.Fix()
     }; // "<h3><span style='color: green;'>Time, Weather & Horizon Data Updated!</span></h3>"
     const killRoller = () => {
-        const traceID = TRACEON("killRoller", []); // eslint-disable-next-line one-var
+        const traceID = TRACEON("killRoller", []);
         const returnLines = [ 
             {header: "<h3>Clearing Dice Roller Frame...</h3>", entries: []},
             {header: "<h3>Clearing Drag Pads...</h3>", entries: []},
@@ -990,57 +990,57 @@ const Roller = (() => {
         TRACEOFF(traceID);
     };
     const initFrame = (isQueuing = true) => {
-        const traceID = TRACEON("initFrame", [isQueuing]); // eslint-disable-next-line one-var
-        const imgDataTop = Media.GetImgData("RollerFrame_TopMid_1"),
-            imgDataBottom = Media.GetImgData("RollerFrame_BottomMid_1"),
-            initFunc = () => {
-                const innerTraceID = TRACEON("initFunc"); // eslint-disable-next-line one-var
-                const returnLines = [ 
-                    {header: "<h3>Creating Dice Roller Frame...</h3>", entries: []},
-                    {header: "<h3>Creating Drag Pads...</h3>", entries: []},
-                    {header: "<h3>Creating Dice...</h3>", entries: []}
-                ];
-                for (let i = 2; i <= SETTINGS.frame.mids.qty; i++) {
-                    const imgKeyTop = `RollerFrame_TopMid_${i}`;
-                    const imgKeyBottom = `RollerFrame_BottomMid_${i}`;
-                    Media.MakeImg(imgKeyTop, {
-                        imgsrc: imgDataTop.srcs.base,
-                        top: imgDataTop.top,
-                        left: imgDataTop.top + SETTINGS.frame.mids.minSpread * (i - 1),
-                        height: imgDataTop.height,
-                        width: imgDataTop.width,
-                        activeLayer: "map",
-                        modes: imgDataTop.modes,
-                        isActive: false,
-                        isDrawing: true
-                    }, false, true );
-                    Media.MakeImg(imgKeyBottom, {
-                        imgsrc: imgDataBottom.srcs.base,
-                        top: imgDataBottom.top,
-                        left: imgDataBottom.top + SETTINGS.frame.mids.minSpread * (i - 1),
-                        height: imgDataBottom.height,
-                        width: imgDataBottom.width,
-                        activeLayer: "map",
-                        modes: imgDataBottom.modes,
-                        isActive: false,
-                        isDrawing: true
-                    }, false, true );
-                    returnLines[0].entries.push(
-                        `... Creating <b>${imgKeyTop}</b>: <span style='color: green;'><b>OK!</b></span>`,
-                        `... Creating <b>${imgKeyBottom}</b>: <span style='color: green;'><b>OK!</b></span>`
-                    );
-                }
-                returnLines[1].entries.push("... Creating <b>Main Dice</b> Drag Pads (x30): <span style='color:green;'><b>OK!</b></span> (x30)", "... Creating <b>Big Dice</b> Drag Pads (x2): <span style='color:green;'><b>OK!</b></span> (x2)");
-                returnLines[1].entries.push("... Creating <b>Willpower Reroll</b> Drag Pad: <span style='color:green;'><b>OK!</b></span>");
-                for (const diceCat of Object.keys(SETTINGS.dice))
-                    returnLines[2].entries.push(makeAllDice(diceCat).join(", "));
-                DragPads.MakePad("Roller_WPReroller_Base_1", "wpReroll");
-                return TRACEOFF(innerTraceID, [
-                    `${returnLines[0].header}${returnLines[0].entries.join("<br>")}`,
-                    `${returnLines[1].header}${returnLines[1].entries.join("<br>")}`,
-                    `${returnLines[2].header}${returnLines[2].entries.join("<br>")}`
-                ]);
-            };
+        const traceID = TRACEON("initFrame", [isQueuing]);
+        const imgDataTop = Media.GetImgData("RollerFrame_TopMid_1");
+        const imgDataBottom = Media.GetImgData("RollerFrame_BottomMid_1");
+        const initFunc = () => {
+            const innerTraceID = TRACEON("initFunc");
+            const returnLines = [ 
+                {header: "<h3>Creating Dice Roller Frame...</h3>", entries: []},
+                {header: "<h3>Creating Drag Pads...</h3>", entries: []},
+                {header: "<h3>Creating Dice...</h3>", entries: []}
+            ];
+            for (let i = 2; i <= SETTINGS.frame.mids.qty; i++) {
+                const imgKeyTop = `RollerFrame_TopMid_${i}`;
+                const imgKeyBottom = `RollerFrame_BottomMid_${i}`;
+                Media.MakeImg(imgKeyTop, {
+                    imgsrc: imgDataTop.srcs.base,
+                    top: imgDataTop.top,
+                    left: imgDataTop.top + SETTINGS.frame.mids.minSpread * (i - 1),
+                    height: imgDataTop.height,
+                    width: imgDataTop.width,
+                    activeLayer: "map",
+                    modes: imgDataTop.modes,
+                    isActive: false,
+                    isDrawing: true
+                }, false, true );
+                Media.MakeImg(imgKeyBottom, {
+                    imgsrc: imgDataBottom.srcs.base,
+                    top: imgDataBottom.top,
+                    left: imgDataBottom.top + SETTINGS.frame.mids.minSpread * (i - 1),
+                    height: imgDataBottom.height,
+                    width: imgDataBottom.width,
+                    activeLayer: "map",
+                    modes: imgDataBottom.modes,
+                    isActive: false,
+                    isDrawing: true
+                }, false, true );
+                returnLines[0].entries.push(
+                    `... Creating <b>${imgKeyTop}</b>: <span style='color: green;'><b>OK!</b></span>`,
+                    `... Creating <b>${imgKeyBottom}</b>: <span style='color: green;'><b>OK!</b></span>`
+                );
+            }
+            returnLines[1].entries.push("... Creating <b>Main Dice</b> Drag Pads (x30): <span style='color:green;'><b>OK!</b></span> (x30)", "... Creating <b>Big Dice</b> Drag Pads (x2): <span style='color:green;'><b>OK!</b></span> (x2)");
+            returnLines[1].entries.push("... Creating <b>Willpower Reroll</b> Drag Pad: <span style='color:green;'><b>OK!</b></span>");
+            for (const diceCat of Object.keys(SETTINGS.dice))
+                returnLines[2].entries.push(makeAllDice(diceCat).join(", "));
+            DragPads.MakePad("Roller_WPReroller_Base_1", "wpReroll");
+            return TRACEOFF(innerTraceID, [
+                `${returnLines[0].header}${returnLines[0].entries.join("<br>")}`,
+                `${returnLines[1].header}${returnLines[1].entries.join("<br>")}`,
+                `${returnLines[2].header}${returnLines[2].entries.join("<br>")}`
+            ]);
+        };
         if (isQueuing)
             if (D.IsFuncQueueClear("Roller")) {
                 D.Queue(clearRoller, [], "Roller");
@@ -1119,9 +1119,9 @@ const Roller = (() => {
         TRACEOFF(traceID);
     };
     const selectDie = (dieCat, dieNum) => {
-        const traceID = TRACEON("selectDie", [dieCat, dieNum]); // eslint-disable-next-line one-var
-        const rollRecord = getCurrentRoll(false),
-            selectType = rollRecord.rollResults.wpCost === 0 && "selectedFree" ||
+        const traceID = TRACEON("selectDie", [dieCat, dieNum]);
+        const rollRecord = getCurrentRoll(false);
+        const selectType = rollRecord.rollResults.wpCost === 0 && "selectedFree" ||
                              rollRecord.rollResults.wpCost === 1 && "selected" ||
                              "selectedDouble";
         setDie(dieCat, dieNum, selectType);
@@ -1145,7 +1145,7 @@ const Roller = (() => {
         TRACEOFF(traceID);
     };
     const setDieCat = (dieCat, dieVals = [], rollType) => {
-        const traceID = TRACEON("setDieCat", [dieCat, dieVals, rollType]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("setDieCat", [dieCat, dieVals, rollType]);
         const deltaDice = STATE.REF.diceVals[dieCat].map((x,i) => {
             if (i === 0)
                 return null;
@@ -1170,7 +1170,7 @@ const Roller = (() => {
 
     // #region ROLL EFFECTS: Applying, Creating, Removing
     const applyRollEffects = rollInput => {
-        const traceID = TRACEON("applyRollEffects", [rollInput]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("applyRollEffects", [rollInput]);
         const rollEffectString = D.GetStatVal(rollInput.charID, "rolleffects") || "";
         let isReapplying = false;
         if (VAL({string: rollEffectString, list: rollInput}, "applyRollEffects")) {
@@ -1178,12 +1178,12 @@ const Roller = (() => {
             const rollEffects = _.compact(_.without(_.uniq([...rollEffectString.split("|"), ...Object.keys(STATE.REF.rollEffects), ...rollInput.rollEffectsToReapply || []]), ...rollInput.appliedRollEffects));
             const [rollData, rollResults] = rollInput.rolls ? [null, rollInput] : [rollInput, null];
             const checkInput = (input, rollMod, restriction) => {
-                const innerTraceID = TRACEON("checkInput", [input, rollMod, restriction]); // eslint-disable-next-line one-var
+                const innerTraceID = TRACEON("checkInput", [input, rollMod, restriction]);
                 DB({rollMod, restriction, "Boolean(input.rolls)": Boolean(input.rolls), "D.IsIn(restriction/rollMod, RREFFECTS.restriction/rollMod)": Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true))}, "checkInput");
                 return TRACEOFF(innerTraceID, Boolean(input.rolls) === Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true)));
             };
             const checkRestriction = (input, traits, flags, rollMod, restriction) => {
-                const innerTraceID = TRACEON("checkRestriction", [input, traits, flags, rollMod, restriction]); // eslint-disable-next-line one-var
+                const innerTraceID = TRACEON("checkRestriction", [input, traits, flags, rollMod, restriction]);
                 DB({"Checking Restriction": restriction, traits, flags, rollMod}, "checkRestriction");
                 // FIRST, check whether this restriction applies to the given input (either rollData or rollResults):
                 if (!checkInput(input, rollMod, restriction)) {
@@ -1732,7 +1732,7 @@ const Roller = (() => {
         return TRACEOFF(traceID, THROW(`Bad Roll Input!${D.JSL(rollInput)}`, "applyRollEffects"));
     };
     const addCharRollEffect = (charRef, effectString) => {
-        const traceID = TRACEON("addCharRollEffect", [charRef, effectString]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("addCharRollEffect", [charRef, effectString]);
         const charObj = D.GetChar(charRef);
         if (VAL({charObj, string: effectString}, "addCharRollEffects")) {
 
@@ -1782,7 +1782,7 @@ const Roller = (() => {
         TRACEOFF(traceID);
     };
     const delCharRollEffect = (charRef, effectString) => {
-        const traceID = TRACEON("delCharRollEffect", [charRef, effectString]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("delCharRollEffect", [charRef, effectString]);
         const charObj = D.GetChar(charRef);
         let rollEffects = _.compact((D.GetStatVal(charObj.id, "rolleffects") || "").split("|"));    
         DB({charRef, effectString, rollEffects}, "delCharRollEffects");                                        
@@ -1800,7 +1800,7 @@ const Roller = (() => {
         return TRACEOFF(traceID, false);
     };
     const addGlobalRollEffect = effectString => {
-        const traceID = TRACEON("addGlobalRollEffect", [effectString]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("addGlobalRollEffect", [effectString]);
         if (VAL({string: effectString}, "addGlobalRollEffects")) {
             STATE.REF.rollEffects[effectString] = [];
             const rollStrings = [];
@@ -1811,7 +1811,7 @@ const Roller = (() => {
         TRACEOFF(traceID);
     };
     const delGlobalRollEffect = effectString => {
-        const traceID = TRACEON("delGlobalRollEffect", [effectString]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("delGlobalRollEffect", [effectString]);
         if (VAL({number: effectString}))
             delete STATE.REF.rollEffects[Object.keys(STATE.REF.rollEffects)[Math.max(0, D.Int(effectString) - 1)]];
         else if (effectString in STATE.REF.rollEffects)
@@ -1822,7 +1822,7 @@ const Roller = (() => {
         return TRACEOFF(traceID, true);
     };
     const addGlobalExclusion = (charRef, effectString) => {
-        const traceID = TRACEON("addGlobalExclusion", [charRef, effectString]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("addGlobalExclusion", [charRef, effectString]);
         const charObj = D.GetChar(charRef);
         if (VAL({charObj}, "addGlobalExclusion")) {
             if (VAL({number: effectString}))
@@ -1837,7 +1837,7 @@ const Roller = (() => {
         TRACEOFF(traceID);
     };
     const delGlobalExclusion = (charRef, effectString) => {
-        const traceID = TRACEON("delGlobalExclusion", [charRef, effectString]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("delGlobalExclusion", [charRef, effectString]);
         const charObj = D.GetChar(charRef);
         if (VAL({charObj}, "delGlobalExclusion")) {
             if (VAL({number: effectString}))
@@ -1856,7 +1856,7 @@ const Roller = (() => {
 
     // #region ROLL DATA: Getting, Parsing, Managing State Roll Record
     const getRollChars = (charObjs) => {
-        const traceID = TRACEON("getRollChars", [charObjs]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("getRollChars", [charObjs]);
         charObjs = _.flatten([charObjs]);
         const playerCharObjs = charObjs.filter(x => VAL({pc: x}));
         const npcCharObjs = charObjs.filter(x => VAL({npc: x}));
@@ -1877,7 +1877,7 @@ const Roller = (() => {
         return TRACEOFF(traceID, rollCharObjs);
     };
     const parseFlags = (charObj, playerCharID, rollType, params = {}, rollFlags) => {
-        const traceID = TRACEON("parseFlags", [charObj, playerCharID, rollType, params, rollFlags]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("parseFlags", [charObj, playerCharID, rollType, params, rollFlags]);
         DB({charObj, playerCharID, rollType, params, rollFlags}, "parseFlags");
         params.args = params.args || [];
         const flagData = {
@@ -1937,7 +1937,7 @@ const Roller = (() => {
         return TRACEOFF(traceID, flagData);
     };
     const parseTraits = (charObj, playerCharID, rollType, params = {}) => {
-        const traceID = TRACEON("parseTraits", [charObj, playerCharID, rollType, params]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("parseTraits", [charObj, playerCharID, rollType, params]);
         playerCharID = playerCharID || charObj.id;
         let traits = _.compact((params && params.args && params.args[1] || _.isArray(params) && params[0] || _.isString(params) && params || "").split(","));
         DB(`Traits: ${D.JSL(traits)}`, "parseTraits");
@@ -2002,7 +2002,7 @@ const Roller = (() => {
         return TRACEOFF(traceID, tFull);
     };
     const getRollData = (charObj, rollType, params, rollFlags) => {
-        const traceID = TRACEON("getRollData", [charObj, rollType, params, rollFlags]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("getRollData", [charObj, rollType, params, rollFlags]);
         /* EXAMPLE RESULTS:
               {
                 charID: "-LN4P73XRfqCcI8U6c-t",
@@ -2097,11 +2097,11 @@ const Roller = (() => {
         return TRACEOFF(traceID, rollData);
     };
     const getCurrentRoll = (isNPCRoll = false) => {
-        const traceID = TRACEON("getCurrentRoll", [isNPCRoll]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("getCurrentRoll", [isNPCRoll]);
         return TRACEOFF(traceID, (isNPCRoll ? STATE.REF.NPC : STATE.REF).rollRecord[(isNPCRoll ? STATE.REF.NPC : STATE.REF).rollIndex]);
     };
     const setCurrentRoll = (rollIndex, isNPCRoll, isDisplayOnly = false) => {
-        const traceID = TRACEON("setCurrentRoll", [rollIndex, isNPCRoll, isDisplayOnly]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("setCurrentRoll", [rollIndex, isNPCRoll, isDisplayOnly]);
         const rollRef = isNPCRoll ? STATE.REF.NPC : STATE.REF;
         if (rollRef && rollRef.rollRecord && rollRef.rollRecord.length) {
             rollRef.rollIndex = rollIndex;
@@ -2111,7 +2111,7 @@ const Roller = (() => {
         TRACEOFF(traceID);
     };
     const replaceRoll = (rollData, rollResults, rollIndex) => {
-        const traceID = TRACEON("replaceRoll", [rollData, rollResults, rollIndex]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("replaceRoll", [rollData, rollResults, rollIndex]);
         const recordRef = rollResults.isNPCRoll ? STATE.REF.NPC : STATE.REF;
         recordRef.rollIndex = rollIndex || recordRef.rollIndex;
         recordRef.rollRecord[recordRef.rollIndex] = {
@@ -2121,7 +2121,7 @@ const Roller = (() => {
         TRACEOFF(traceID);
     };
     const recordRoll = (rollData, rollResults) => {
-        const traceID = TRACEON("recordRoll", [rollData, rollResults]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("recordRoll", [rollData, rollResults]);
         const recordRef = rollResults.isNPCRoll ? STATE.REF.NPC : STATE.REF;
         // Make sure appliedRollEffects in both rollData and rollResults contains all of the applied effects:
         rollData.appliedRollEffects = _.uniq([...rollData.appliedRollEffects, ...rollResults.appliedRollEffects]);
@@ -2140,7 +2140,7 @@ const Roller = (() => {
 
     // #region ROLL CONTROL: Rolling Dice & Formatting Result
     const buildDicePool = rollData => {
-        const traceID = TRACEON("buildDicePool", [rollData]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("buildDicePool", [rollData]);
         /* MUST SUPPLY:
 				  For Rouse & Checks:    rollData = { type }
 				  For All Others:        rollData = { type, mod, << traits: [],
@@ -2221,7 +2221,7 @@ const Roller = (() => {
         return TRACEOFF(traceID, rollDataEffects);
     };
     const rollDice = (rollData, addVals) => {
-        const traceID = TRACEON("rollDice", [rollData, addVals]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("rollDice", [rollData, addVals]);
         /* MUST SUPPLY:
                 rollData = { type, diff, basePool, hungerPool, << diffmod >> }
                   OR
@@ -2495,14 +2495,14 @@ const Roller = (() => {
               <span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none;
                   height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left;
                   margin-left: 10px; font-size: 12px;\">", */
-        const traceID = TRACEON("formatDiceLine", [rollData, rollResults, split, rollFlags, isSmall]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("formatDiceLine", [rollData, rollResults, split, rollFlags, isSmall]);
         const dims = {
-                widthSide: 0,
-                widthMid: 0,
-                marginSide: 0
-            },
-            critCount = _.reduce(_.values(rollResults.critPairs), (tot, num) => tot + num, 0),
-            splitAt = Math.ceil((rollResults.diceVals.length + critCount) /
+            widthSide: 0,
+            widthMid: 0,
+            marginSide: 0
+        };
+        const critCount = _.reduce(_.values(rollResults.critPairs), (tot, num) => tot + num, 0);
+        const splitAt = Math.ceil((rollResults.diceVals.length + critCount) /
                     Math.ceil((rollResults.diceVals.length + critCount) / split));
         let logLine = `${CHATSTYLES.resultBlock}${CHATSTYLES.resultCount}${rollFlags.isHidingResult ? "" : `${rollResults.total}:`}</span></div>${
                 CHATSTYLES.resultDice.colStart}${CHATSTYLES.resultDice.lineStart}`,
@@ -2564,59 +2564,59 @@ const Roller = (() => {
                 rollResults = { H: { botches }, critPairs: {hh, hb, bb}, << margin >> }
               [TRAIT ONLY]
                 rollData = { posFlagLines, negFlagLines } */
-        const traceID = TRACEON("displayRoll", [isLogging, isNPCRoll]); // eslint-disable-next-line one-var
-        const {rollData, rollResults} = getCurrentRoll(isNPCRoll),
-            rollFlags = rollData.rollFlags || {},
-            deltaAttrs = {},
-            [mainRollParts, mainRollLog, stRollParts, stRollLog] = [[], [], [], []],
-            [posFlagLines, negFlagLines, redFlagLines, goldFlagLines] = [
-                _.union(rollData.posFlagLines || [], rollResults.posFlagLines || []),
-                _.union(rollData.negFlagLines || [], rollResults.negFlagLines || []),
-                _.union(rollData.redFlagLines || [], rollResults.redFlagLines || []),
-                _.union(rollData.goldFlagLines || [], rollResults.goldFlagLines || [])
-            ],
-            rollLines = {
-                rollerName: {
-                    text: ""
-                },
-                mainRoll: {
-                    text: ""
-                }
+        const traceID = TRACEON("displayRoll", [isLogging, isNPCRoll]);
+        const {rollData, rollResults} = getCurrentRoll(isNPCRoll);
+        const rollFlags = rollData.rollFlags || {};
+        const deltaAttrs = {};
+        const [mainRollParts, mainRollLog, stRollParts, stRollLog] = [[], [], [], []];
+        const [posFlagLines, negFlagLines, redFlagLines, goldFlagLines] = [
+            _.union(rollData.posFlagLines || [], rollResults.posFlagLines || []),
+            _.union(rollData.negFlagLines || [], rollResults.negFlagLines || []),
+            _.union(rollData.redFlagLines || [], rollResults.redFlagLines || []),
+            _.union(rollData.goldFlagLines || [], rollResults.goldFlagLines || [])
+        ];
+        const rollLines = {
+            rollerName: {
+                text: ""
             },
-            logLines = {
-                fullBox: CHATSTYLES.fullBox,
-                rollerName: "",
-                mainRoll: "",
-                mainRollSub: "",
-                difficulty: "",
-                resultDice: "",
-                margin: "",
-                outcome: "",
-                subOutcome: ""
-            },
-            stLines = {
-                fullBox: CHATSTYLES.fullBox,
-                rollerName: "",
-                mainRoll: "",
-                mainRollSub: "",
-                difficulty: "",
-                resultDice: "",
-                margin: "",
-                outcome: "",
-                subOutcome: ""
-            },
-            playerNPCLines = {
-                fullBox: CHATSTYLES.fullBox,
-                rollerName: "",
-                mainRoll: "",
-                mainRollSub: "",
-                difficulty: "",
-                resultDice: "",
-                margin: "",
-                outcome: "",
-                subOutcome: ""                    
-            },
-            p = v => rollData.prefix + v;
+            mainRoll: {
+                text: ""
+            }
+        };
+        const logLines = {
+            fullBox: CHATSTYLES.fullBox,
+            rollerName: "",
+            mainRoll: "",
+            mainRollSub: "",
+            difficulty: "",
+            resultDice: "",
+            margin: "",
+            outcome: "",
+            subOutcome: ""
+        };
+        const stLines = {
+            fullBox: CHATSTYLES.fullBox,
+            rollerName: "",
+            mainRoll: "",
+            mainRollSub: "",
+            difficulty: "",
+            resultDice: "",
+            margin: "",
+            outcome: "",
+            subOutcome: ""
+        };
+        const playerNPCLines = {
+            fullBox: CHATSTYLES.fullBox,
+            rollerName: "",
+            mainRoll: "",
+            mainRollSub: "",
+            difficulty: "",
+            resultDice: "",
+            margin: "",
+            outcome: "",
+            subOutcome: ""                    
+        };
+        const p = v => rollData.prefix + v;
         DB({rollData, rollResults}, "displayRoll");
         switch (rollData.type) {
             case "project": {
@@ -3265,7 +3265,7 @@ const Roller = (() => {
         return TRACEOFF(traceID, deltaAttrs);
     };
     const makeNewRoll = (charObj, rollType, params = [], rollFlags = {}) => {
-        const traceID = TRACEON("makeNewRoll", [charObj, rollType, params, rollFlags]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("makeNewRoll", [charObj, rollType, params, rollFlags]);
         DB(`BEGINNING ROLL:
                 CHAR: ${D.JS(charObj.get("name"))} 
 				ROLL TYPE: ${D.JS(rollType)}
@@ -3281,11 +3281,11 @@ const Roller = (() => {
         TRACEOFF(traceID);
     };
     const wpReroll = (dieCat, isNPCRoll) => {
-        const traceID = TRACEON("wpReroll", [dieCat, isNPCRoll]); // eslint-disable-next-line one-var
-        const rollRecord = getCurrentRoll(isNPCRoll),
-            rollData = _.clone(rollRecord.rollData),
-            rolledDice = D.KeyMapObj(STATE.REF.diceVals[dieCat], null, (v, k) => { return !STATE.REF.selected[dieCat].includes(D.Int(k)) && v || false }),
-            charObj = getObj("character", rollData.charID);
+        const traceID = TRACEON("wpReroll", [dieCat, isNPCRoll]);
+        const rollRecord = getCurrentRoll(isNPCRoll);
+        const rollData = _.clone(rollRecord.rollData);
+        const rolledDice = D.KeyMapObj(STATE.REF.diceVals[dieCat], null, (v, k) => { return !STATE.REF.selected[dieCat].includes(D.Int(k)) && v || false });
+        const charObj = getObj("character", rollData.charID);
         DB(`Rolled Dice: ${D.JS(rolledDice)}<br><br>RETRIEVED ROLL RECORD: ${D.JSL(rollRecord)}`, "wpReroll");
         rollData.rerollAmt = STATE.REF.selected[dieCat].length;
         const rollResults = rollDice(rollData, _.compact(_.values(rolledDice)));
@@ -3314,7 +3314,7 @@ const Roller = (() => {
         TRACEOFF(traceID);
     };
     const rollCommandMenu = () => {
-        const traceID = TRACEON("rollCommandMenu", []); // eslint-disable-next-line one-var
+        const traceID = TRACEON("rollCommandMenu", []);
         D.CommandMenu(
             {
                 title: "Dice Roller Control",
@@ -3378,7 +3378,7 @@ const Roller = (() => {
         TRACEOFF(traceID);
     };
     const secrecyMenu = (reportMessage) => {
-        const traceID = TRACEON("secrecyMenu", [reportMessage]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("secrecyMenu", [reportMessage]);
         const buttonLines = Object.values(_.groupBy(
             Object.values(
                 D.KeyMapObj(STATE.REF.nextRollFlags, null,
@@ -3438,9 +3438,9 @@ const Roller = (() => {
         TRACEOFF(traceID);
     };
     const changeRoll = (deltaDice, isNPCRoll) => {
-        const traceID = TRACEON("changeRoll", [deltaDice, isNPCRoll]); // eslint-disable-next-line one-var
-        const rollRecord = getCurrentRoll(isNPCRoll),
-            rollData = _.clone(rollRecord.rollData);
+        const traceID = TRACEON("changeRoll", [deltaDice, isNPCRoll]);
+        const rollRecord = getCurrentRoll(isNPCRoll);
+        const rollData = _.clone(rollRecord.rollData);
         let rollResults = _.clone(rollRecord.rollResults);
         if (D.Int(deltaDice) < 0) {
             _.shuffle(rollResults.diceVals);
@@ -3463,34 +3463,34 @@ const Roller = (() => {
         return TRACEOFF(traceID, true);
     };
     const lockRoller = lockToggle => {             
-        const traceID = TRACEON("lockRoller", [lockToggle]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("lockRoller", [lockToggle]);
         isLocked = lockToggle === true;
         TRACEOFF(traceID);
     };
     const loadRoll = (rollIndex, isNPCRoll) => {
-        const traceID = TRACEON("loadRoll", [rollIndex, isNPCRoll]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("loadRoll", [rollIndex, isNPCRoll]);
         setCurrentRoll(rollIndex, isNPCRoll, true);
         displayRoll(false, isNPCRoll);
         TRACEOFF(traceID);
     };
     const loadPrevRoll = (isNPCRoll) => {
-        const traceID = TRACEON("loadPrevRoll", [isNPCRoll]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("loadPrevRoll", [isNPCRoll]);
         const recordRef = isNPCRoll ? STATE.REF.NPC : STATE.REF;            
         if (recordRef && recordRef.rollRecord && recordRef.rollRecord.length)
             loadRoll(Math.min(recordRef.rollIndex + 1, Math.max(recordRef.rollRecord.length - 1, 0)), isNPCRoll);
         TRACEOFF(traceID);
     };
     const loadNextRoll = (isNPCRoll) => {
-        const traceID = TRACEON("loadNextRoll", [isNPCRoll]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("loadNextRoll", [isNPCRoll]);
         const recordRef = isNPCRoll ? STATE.REF.NPC : STATE.REF;
         if (recordRef && recordRef.rollRecord && recordRef.rollRecord.length)
             loadRoll(Math.max(recordRef.rollIndex - 1, 0), isNPCRoll);
         TRACEOFF(traceID);
     };
     const quickRouseCheck = (charRef, isDoubleRouse = false, isOblivionRouse = false, isPublic = false) => {
-        const traceID = TRACEON("quickRouseCheck", [charRef, isDoubleRouse, isOblivionRouse, isPublic]); // eslint-disable-next-line one-var
-        const results = isDoubleRouse ? _.sortBy([randomInteger(10), randomInteger(10)]).reverse() : [randomInteger(10)],
-            deltaAttrs = {stain: undefined, hunger: false};
+        const traceID = TRACEON("quickRouseCheck", [charRef, isDoubleRouse, isOblivionRouse, isPublic]);
+        const results = isDoubleRouse ? _.sortBy([randomInteger(10), randomInteger(10)]).reverse() : [randomInteger(10)];
+        const deltaAttrs = {stain: undefined, hunger: false};
         let [header, body] = [
             `${isPublic ? `${D.GetName(charRef)}'s `: ""}${isDoubleRouse ? "Double " : ""}Rouse Check: ${results[0]}${isDoubleRouse ? `, ${results[1]}` : ""}`,
             ""
@@ -3530,7 +3530,7 @@ const Roller = (() => {
 
     // #region SECRET ROLLS
     const makeSecretRoll = (chars, params, isSilent, isHidingTraits) => {
-        const traceID = TRACEON("makeSecretRoll", [chars, params, isSilent, isHidingTraits]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("makeSecretRoll", [chars, params, isSilent, isHidingTraits]);
         // D.Alert(`Received Parameters: ${params}`)
         chars = _.flatten([chars]);
         let rollData = buildDicePool(getRollData(chars[0], "secret", params)),
@@ -3612,7 +3612,7 @@ const Roller = (() => {
 
     // #region RESONANCE: Getting Random Resonance Based On District/Site Parameters
     const getResonance = (charRef, posRes = "", negRes = "", /* marginBonus = 0, */ isDoubleAcute, testCycles = 0) => {
-        const traceID = TRACEON("getResonance", [charRef, posRes, negRes, /* marginBonus, */isDoubleAcute, testCycles]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("getResonance", [charRef, posRes, negRes, /* marginBonus, */isDoubleAcute, testCycles]);
         DB(`Resonance Args: ${D.JSL(charRef)}, ${D.JSL(posRes)}, ${D.JSL(negRes)}`, "getResonance");
         const charObj = D.GetChar(charRef);
         const resonances = {
@@ -3743,7 +3743,7 @@ const Roller = (() => {
         // Return ["Acute", "Choleric"];
     };
     const displayResonance = (charRef, posRes, negRes, isDoubleAcute, testCycles = 0) => {
-        const traceID = TRACEON("displayResonance", [charRef, posRes, negRes, isDoubleAcute, testCycles]); // eslint-disable-next-line one-var
+        const traceID = TRACEON("displayResonance", [charRef, posRes, negRes, isDoubleAcute, testCycles]);
         const marginBonus = Number(STATE.REF.resMarginBonus);            
         STATE.REF.resMarginBonus = 0;
         if (["l", "r", "c", "", undefined, null].includes(posRes)) {

@@ -3,37 +3,37 @@
     2) Replace "XX_SCRIPTCOMMAND_XX" with api chat command trigger (e.g. "!char")
     3) Delete these instructions, so "void MarkStart()" is the very first line.
 */
-void MarkStart("XX_SCRIPTNAME_XX")
+void MarkStart("XX_SCRIPTNAME_XX");
 const XX_SCRIPTNAME_XX = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-    const SCRIPTNAME = "XX_SCRIPTNAME_XX",
+    const SCRIPTNAME = "XX_SCRIPTNAME_XX";
 
     // #region COMMON INITIALIZATION
-        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
-        VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
-        DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
+    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
+    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
+    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
+    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
 
-        checkInstall = () => {
-            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
-            initialize()
-        },
+    const checkInstall = () => {
+        C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
+        initialize();
+    };
     // #endregion
 
     // #region LOCAL INITIALIZATION
-        initialize = () => { // eslint-disable-line no-empty-function
-        },
+    const initialize = () => {
+    };
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
-            switch (call) {
-                case "":
-                    break
+    const onChatCall = (call, args, objects, msg) => {
+        switch (call) {
+            case "":
+                break;
             // no default
-            }
         }
+    };
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
@@ -61,11 +61,11 @@ const XX_SCRIPTNAME_XX = (() => {
     return {
         CheckInstall: checkInstall,
         OnChatCall: onChatCall
-    }
-} )()
+    };
+} )();
 
 on("ready", () => {
-    XX_SCRIPTNAME_XX.CheckInstall()
-    D.Log("XX_SCRIPTNAME_XX Ready!")
-} )
-void MarkStop("XX_SCRIPTNAME_XX")
+    XX_SCRIPTNAME_XX.CheckInstall();
+    D.Log("XX_SCRIPTNAME_XX Ready!");
+} );
+void MarkStop("XX_SCRIPTNAME_XX");

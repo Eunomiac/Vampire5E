@@ -6,13 +6,13 @@ const Listener = (() => {
     const OBJECTS = {graphic: [], text: [], character: []};
 
     // #region COMMON INITIALIZATION
-    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray); // eslint-disable-line no-unused-vars
-    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME); // eslint-disable-line no-unused-vars
-    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME); // eslint-disable-line no-unused-vars
-    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj); // eslint-disable-line no-unused-vars
-    const TRACEON = (funcName, funcParams = [], msg = "") => D.TraceStart(funcName, funcParams, SCRIPTNAME, msg); // eslint-disable-line no-unused-vars  
-    const TRACEOFF = (funcID, returnVal) => D.TraceStop(funcID, returnVal); // eslint-disable-line no-unused-vars
+    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
+    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
+    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
+    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
+    const TRACEON = (funcName, funcParams = [], msg = "") => D.TraceStart(funcName, funcParams, SCRIPTNAME, msg);  
+    const TRACEOFF = (funcID, returnVal) => D.TraceStop(funcID, returnVal);
 
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
@@ -27,7 +27,7 @@ const Listener = (() => {
             if (call in SCRIPTCALLS.MESSAGE) {
                 const scriptData = SCRIPTCALLS.MESSAGE[call];
                 if (scriptData && scriptData.script && VAL({function: scriptData.script.OnChatCall}) && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API") ) {
-                    const traceID = TRACEON("onChat:message", [msg]); /* eslint-disable-next-line one-var */
+                    const traceID = TRACEON("onChat:message", [msg]);
                     if (scriptData.isAlertingOnCall && VAL({function: scriptData.script.OnChatCallAlert}))
                         scriptData.script.OnChatCallAlert([call, ...args], msg.playerid);                    
                     const [objects, returnArgs] = parseMessage(args, msg, SCRIPTCALLS.MESSAGE[call].needsObjects !== false);
@@ -116,7 +116,7 @@ const Listener = (() => {
     // #endregion
 
     // #region LOCAL INITIALIZATION
-    const initialize = () => { // eslint-disable-line no-empty-function
+    const initialize = () => {
         STATE.REF.isLocked = STATE.REF.isLocked || false;
         STATE.REF.objectLog = STATE.REF.objectLog || [];
         SCRIPTCALLS.MESSAGE = _.omit({

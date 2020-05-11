@@ -4,11 +4,11 @@ const TimeTracker = (() => {
     const SCRIPTNAME = "TimeTracker";
 
     // #region COMMON INITIALIZATION
-    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray); // eslint-disable-line no-unused-vars
-    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME); // eslint-disable-line no-unused-vars
-    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME); // eslint-disable-line no-unused-vars
-    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj); // eslint-disable-line no-unused-vars
+    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
+    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
+    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
+    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
     const ONSTACK = (isThrottlingStackLog = false) => D.ONSTACK(ONSTACK, isThrottlingStackLog);
     const OFFSTACK = (funcID) => D.OFFSTACK(funcID);
     /* {
@@ -79,7 +79,7 @@ const TimeTracker = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-    const onChatCall = (call, args) => { // eslint-disable-line no-unused-vars
+    const onChatCall = (call, args) => {
         const funcID = ONSTACK(); 
         let isForcing = false;
         switch (call) {
@@ -397,7 +397,7 @@ const TimeTracker = (() => {
                 Char.RefreshWillpower(charObj);
             }
         },
-        delrolleffect: (charRef, effectString) => { // eslint-disable-line no-unused-vars
+        delrolleffect: (charRef, effectString) => {
             const charObj = D.GetChar(charRef);
             if (VAL({charObj, string: effectString}))
                 if (!Roller.DelCharEffect(charObj.id, effectString))
