@@ -1,14 +1,14 @@
 void MarkStart("Assets");
 const Assets = (() => {
     // #region ~ ************* COMMON INITIALIZATION *************
-    /* eslint-disable no-unused-vars */
+    
     const SCRIPTNAME = "Assets";
     const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};
     const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
-    /* eslint-enable no-unused-vars */
+    
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
         initialize();
@@ -176,8 +176,12 @@ const Assets = (() => {
     const onGraphicAdd = imgObj => {
         if (imgObj.get("represents")) {
             const tokenAsset = Token.Initialize(imgObj);    
-            if (tokenAsset.isGenericToken) { }
-            else if (tokenAsset.isRandomToken) { }
+            if (tokenAsset.isGenericToken) {
+                // code
+            }
+            else if (tokenAsset.isRandomToken) {
+                // code
+            }
         }
         /*
         const traceID = TRACEON("onGraphicAdd", [imgObj]);

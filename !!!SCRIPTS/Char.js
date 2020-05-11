@@ -20,7 +20,7 @@ const Char = (() => {
     } */
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~** START BOILERPLATE INITIALIZATION & CONFIGURATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~**
     // let PENDINGCHARCOMMAND
-    /* eslint-disable no-unused-vars */
+    
     const SCRIPTNAME = "Char";
 
     // #region COMMON INITIALIZATION
@@ -29,7 +29,7 @@ const Char = (() => {
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME); 
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME); 
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj); 
-    /* eslint-enable no-unused-vars */
+    
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
         initialize();

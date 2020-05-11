@@ -1,7 +1,7 @@
 void MarkStart("Tester");
 const Tester = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-    /* eslint-disable no-unused-vars */
+    
     const SCRIPTNAME = "Tester";
 
     // #region COMMON INITIALIZATION
@@ -10,7 +10,7 @@ const Tester = (() => {
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
-    /* eslint-enable no-unused-vars */
+    
 
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};

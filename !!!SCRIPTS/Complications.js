@@ -275,7 +275,7 @@ const Complications = (() => {
 
     // #region CONFIGURATION: Card Definitions
 
-    /* eslint-disable no-unused-vars */    
+        
     const ONNEXT = {
         confirm: [],
         activate: [],
@@ -844,7 +844,7 @@ const Complications = (() => {
              STATE.REF.endMessageQueue.push(`-2 to Physical rolls ${isEnhanced ? "until Project completes" : "for one night"}.`);
          }},
     ];
-        /* eslint-enable no-unused-vars */
+        
     const CARDQTYS = {V: 12, C: 6, U: 3, R: 1, overrides: []};
     const CARDNAMES = _.values(CARDS).map(x => x.name);
     let DELAYQUEUE = [];

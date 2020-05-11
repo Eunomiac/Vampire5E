@@ -3323,12 +3323,12 @@ const Media = (() => {
                         wordsInLine[i-1] = `${wordsInLine[i-1] }-`;
                         wordsInLine = [...[...wordsInLine].splice(0,i), ...[...wordsInLine].splice(i+1)];
                     }
-                for (let i = 0; true; i++) {
-                    if (getTextWidth(textObj, wordsInLine[i] || "", false) > maxWidth) {
+                for (let count = 0; count < Infinity; count++) {
+                    if (getTextWidth(textObj, wordsInLine[count] || "", false) > maxWidth) {
                         let [prevLine, curLine, nextLine] = [
-                            i > 0 ? wordsInLine[i-1] : false,
-                            wordsInLine[i],
-                            i < wordsInLine.length - 1 ? wordsInLine[i+1] : false
+                            count > 0 ? wordsInLine[count-1] : false,
+                            wordsInLine[count],
+                            count < wordsInLine.length - 1 ? wordsInLine[count+1] : false
                         ];
                         if (prevLine !== false && prevLine.charAt(prevLine.length - 1) === " ")
                             prevLine = prevLine.slice(0, -1);
@@ -3366,20 +3366,20 @@ const Media = (() => {
                             curLine = `${curLine}-`;                   
                             nextLine = `${shiftString}${(nextLine && ` ${nextLine}` || "").replace(/^-/gu, "")}`;
                         }
-                        if (i === 0 && prevLine) {
+                        if (count === 0 && prevLine) {
                             if (nextLine)
                                 wordsInLine = [prevLine, curLine, nextLine, ...wordsInLine.slice(2)];
                             else
                                 wordsInLine = [prevLine, curLine];
-                            i++;
+                            count++;
                         } else {
-                            wordsInLine[i-1] = prevLine || wordsInLine[i-1];
-                            wordsInLine[i] = curLine;
+                            wordsInLine[count-1] = prevLine || wordsInLine[count-1];
+                            wordsInLine[count] = curLine;
                             if (nextLine)
-                                wordsInLine[i+1] = nextLine;
+                                wordsInLine[count+1] = nextLine;
                         }
                     }
-                    if (i >= wordsInLine.length - 1)
+                    if (count >= wordsInLine.length - 1)
                         break;
                 }
                 // let [stringCount, lineCount] = [0, 0]

@@ -10,14 +10,12 @@ void MarkStart("Chat");
 const Chat = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     // #region COMMON INITIALIZATION
-    /* eslint-disable no-unused-vars */
     const SCRIPTNAME = "Chat";
     const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};
     const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
-    /* eslint-enable no-unused-vars */
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
         initialize();

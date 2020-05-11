@@ -3,12 +3,12 @@ const D = (() => {
     // #region ~ ************* COMMON INITIALIZATION *************
     const SCRIPTNAME = "D";
     const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }}; 
-    /* eslint-disable no-unused-vars */
+    
     const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray); 
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME); 
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME); 
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
-    /* eslint-enable no-unused-vars */
+    
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
         initialize();            

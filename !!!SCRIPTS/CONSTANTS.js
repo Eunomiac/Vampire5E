@@ -9,7 +9,7 @@ for (const scriptName of SCRIPTS)
 
 const C = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-    /* eslint-disable no-unused-vars */
+    
     const RO = {get OT() { return state[GAMENAME] }};
     // #region COMMON INITIALIZATION
     const STATE = {get REF() { return RO.OT[SCRIPTNAME] }};
@@ -17,7 +17,7 @@ const C = (() => {
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
-    /* eslint-enable no-unused-vars */
+    
 
     const checkInstall = () => {
         RO.OT[SCRIPTNAME] = RO.OT[SCRIPTNAME] || {};

@@ -1,7 +1,7 @@
 ﻿void MarkStart("Roller");
 const Roller = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-    /* eslint-disable no-unused-vars */
+    
     const SCRIPTNAME = "Roller";
     
     // #region COMMON INITIALIZATION
@@ -12,7 +12,7 @@ const Roller = (() => {
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
     const TRACEON = (funcName, funcParams = [], msg = "") => D.TraceStart(funcName, funcParams, SCRIPTNAME, msg);  
     const TRACEOFF = (funcID, returnVal) => D.TraceStop(funcID, returnVal);
-    /* eslint-enable no-unused-vars */
+    
             
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
