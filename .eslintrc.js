@@ -103,7 +103,7 @@ module.exports = {
         "no-template-curly-in-string": "warn",
         "no-underscore-dangle": 0,
         "no-unreachable": 0,
-        "no-unused-vars": "warn",
+        "no-unused-vars": 0, // "warn",
         "no-use-before-define": 0,
         "no-useless-computed-key": 0,
         "no-useless-constructor": "warn",
