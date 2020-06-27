@@ -1380,6 +1380,16 @@ const Media = (() => {
             }
             return TRACEOFF(traceID, false);
         },
+        sendToFront = (mediaRef) => {
+            const mediaObj = getMediaObj(mediaRef);
+            if (mediaObj)
+                toFront(mediaObj);            
+        },
+        sendToBack = (mediaRef) => {
+            const mediaObj = getMediaObj(mediaRef);
+            if (mediaObj)
+                toBack(mediaObj);
+        },
         setMediaTemp = (mediaRef, params = {}) => {
             const traceID = TRACEON("setMediaTemp", [mediaRef, params]),
                 mediaObj = getMediaObj(mediaRef);
@@ -2532,6 +2542,8 @@ const Media = (() => {
                 Media.SetImg("LoadingScreen", imgSrc);
                 Media.ToggleAnim("LoadingMoon", true, true);
                 Media.ToggleText("LoadingMessage", true, true);
+                Media.ToggleText("LoadingProgressBar", true, true);
+                Media.ToggleImg("LoadingProgressMatte", true, true);
                 setLoadingText(customText);
                 toFront(progressMatteObj);
                 toFront(animObj);
@@ -3897,6 +3909,7 @@ const Media = (() => {
         Spread: spreadImgs,        
         ToggleLoadingScreen: toggleLoadingScreen, SetLoadingMessage: setLoadingText, StartProgressBar: startProgressBar, StopProgressBar: stopProgressBar,
         Notify: addPanelText,
+        ToFront: sendToFront, ToBack: sendToBack,
 
         // AREA FUNCTIONS
         GetBounds: getBounds, GetContents: getContainedImgObjs,
@@ -3904,7 +3917,7 @@ const Media = (() => {
         GetContainedChars: getContainedChars,
         SetArea: setImgArea,
         
-        // ANIMATION FUNCTIONS
+        // ANIMATION FUNCTIONS 
         GetAnim: getImgObj, GetAnimData: getImgData, GetAnimKey: getImgKey,
         ToggleAnim: toggleAnimation,
         Flash: flashAnimation,

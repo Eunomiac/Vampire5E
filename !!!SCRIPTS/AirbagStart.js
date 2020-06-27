@@ -335,7 +335,7 @@ let codebase = (errorMsg) => {
     if (errorMsg)
         handleCrash(errorMsg)
 
-    airLog(rezMsg);
+    // airLog(rezMsg);
 
     // ===========================================================================
     // Function shadows

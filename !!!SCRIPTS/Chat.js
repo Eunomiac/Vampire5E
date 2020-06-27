@@ -419,6 +419,7 @@ const Chat = (() => {
                 D.Alert("Syntax:<br><br><b>!get state {SCRIPTNAME} {key} {key}...<br><b>!get statekeys {SCRIPTNAME} {key} {key}...<br><b>!get statevals {val},{val}|{SCRIPTNAME} {key} {key}...</b>", "!get state");
             
         const title = `state.${namespace.join(".")}`;
+        const commandPrefix = `!get state ${namespace.join(" ")} `;
         while (namespace && namespace.length)
             stateInfo = stateInfo[namespace.shift()];
         if (returnVals) {
@@ -434,7 +435,10 @@ const Chat = (() => {
                     returnInfo[key] = _.clone(returnData);
                 }
             });
-            D.Alert(D.JS(returnInfo, isVerbose), title);
+            if (returnVals === true)
+                D.Alert(D.JS(Object.keys(stateInfo).map(x => `<a style="display: block; color: black; padding: 0px; line-height: 16px; border: none; background-color: transparent;" href="${commandPrefix} ${x}">${x}</a>`).join("")), title);
+            else
+                D.Alert(D.JS(returnInfo, isVerbose), title);
         } else {
             stateInfo = D.KeyMapObj(stateInfo, undefined, (v, k) => ALERTBLACKLIST.includes(k) && "<b><u>(HIDDEN)</u></b>" || v);
             D.Alert(D.JS(stateInfo, isVerbose), title); 

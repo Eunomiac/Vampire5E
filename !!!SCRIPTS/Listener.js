@@ -142,6 +142,7 @@ const Listener = (() => {
             "!mvc": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
             "!token": {script: Player, gmOnly: false, singleCall: false},
             "!links": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
+            "!spotprompt": {script: Player, gmOnly: false, singleCall: false},
             "!roll": {script: Roller, isAlertingOnCall: true, gmOnly: false, singleCall: true},
             "!sess": {script: Session, gmOnly: true, singleCall: true},
             "!test": {script: Tester, gmOnly: true, singleCall: true},

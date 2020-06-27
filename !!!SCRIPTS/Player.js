@@ -38,6 +38,11 @@ const Player = (() => {
                 }
                 break;
             }
+            case "!spotprompt": case "!spotlightprompt": { // !spotprompt <toInitial> <fromInitial> <promptText>
+                const [toChar, fromChar, ...promptText] = args;
+                Session.SubmitPrompt(toChar, fromChar, promptText.join(" "));
+                break;
+            }
             case "!mvc": {
                 MVC({name: msg.who});
                 break;

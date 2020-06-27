@@ -24,6 +24,29 @@ const Session = (() => {
         // delete STATE.REF.tokenRecord
         // delete STATE.REF.SceneAlarms
         // STATE.REF.SceneAlarms = []
+        STATE.REF.SpotlightPrompts = {
+            L: [
+                {prompt: "Locke's first task: respected and admired figure among the city's poor.  His humble efforts have not fully translated into commensurate Glory as a samurai, he holds more recognition and even some small measure of fame amongst those he helps: After his ascension to the ranks of the Magistrate, he has become one of the most well-known Emerald Magisters to the lower classes, who frequently seek him out by name.  (I'd like to translate this into a custom Advantage that increases the potency of Hero of the People, making Shinjo Rei even more recognizable to the lower classes --- perhaps we can ask 'what level of Glory would be required", author: "B"},
+                {prompt: "Locke's second task: respected and admired figure among the city's poor.  His humble efforts have not fully translated into commensurate Glory as a samurai, he holds more recognition and even some small measure of fame amongst those he helps: After his ascension to the ranks of the Magistrate, he has become one of the most well-known Emerald Magisters to the lower classes, who frequently seek him out by name.  (I'd like to translate this into a custom Advantage that increases the potency of Hero of the People, making Shinjo Rei even more recognizable to the lower classes --- perhaps we can ask 'what level of Glory would be required", author: "A"},
+                {prompt: "Locke's third task: respected and admired figure among the city's poor.  His humble efforts have not fully translated into commensurate Glory as a samurai, he holds more recognition and even some small measure of fame amongst those he helps: After his ascension to the ranks of the Magistrate, he has become one of the most well-known Emerald Magisters to the lower classes, who frequently seek him out by name.  (I'd like to translate this into a custom Advantage that increases the potency of Hero of the People, making Shinjo Rei even more recognizable to the lower classes --- perhaps we can ask 'what level of Glory would be required", author: "N"},
+            ],
+            R: [
+                {prompt: "Roy's first task.", author: "B"},
+                {prompt: "Roy's second task.", author: "A"},
+                {prompt: "Roy's third task.", author: "N"},
+            ],
+            A: [
+                {prompt: "Ava's first task.", author: "L"},
+                {prompt: "Ava's second task.", author: "R"},
+                {prompt: "Ava's third task.", author: "N"},
+            ],
+            N: [ ],
+            B: [
+                {prompt: "Bacchus' first task.", author: "R"},
+                {prompt: "Bacchus' second task.", author: "A"},
+                {prompt: "Bacchus' third task.", author: "N"},
+            ]
+        };
 
         // STATE.REF.SessionScribes = ["TeatimeRationale", "Thaumaterge", "PixelPuzzler", "banzai", "Hastur"]
         // STATE.REF.customLocs["Queen's Landing Hallway"].district = "Cabbagetown"
@@ -110,6 +133,7 @@ const Session = (() => {
         STATE.REF.locationPointer = STATE.REF.locationPointer || {};
         STATE.REF.FavoriteSites = STATE.REF.FavoriteSites || [];
         STATE.REF.FavoriteDistricts = STATE.REF.FavoriteDistricts || [];
+        STATE.REF.SpotlightPrompts = STATE.REF.SpotlightPrompts || D.KeyMapObj(D.Clone(Char.REGISTRY), (k, v) => v.initial, () => []);
             
         STATE.REF.SceneAlarms = STATE.REF.SceneAlarms || [];
             
@@ -141,7 +165,13 @@ const Session = (() => {
                         break;
                     }
                     case "tokens": logTokens("Active"); break;
-                        // no default
+                    case "all": {
+                        STATE.REF.dateRecord = null;
+                        STATE.REF.locationRecord.Active = D.Clone(STATE.REF.curLocation);
+                        logTokens("Active");
+                        break;
+                    } 
+                    // no default
                 }
                 break;
             }
@@ -335,6 +365,7 @@ const Session = (() => {
                 switch (D.LCase(call = args.shift())) {
                     case "location": case "loc": {
                         switch (D.LCase(call = args.shift())) {
+                            case "active": D.Alert(D.JS(getActiveLocations())); break;
                             case "activelocs": D.Alert(D.JS(getActivePositions(args[0])), `Testing getActiveLocations(${args[0] || ""})`); break;
                             case "activescenelocs": D.Alert(D.JS(getActivePositions()), "Testing getActiveSceneLocations()"); break;
                             case "activedistrict": D.Alert(D.JS(getActiveDistrict()), "Testing getActiveDistrict()"); break;
@@ -377,7 +408,10 @@ const Session = (() => {
     const MODEFUNCTIONS = {            
         outroMode: {
             Active: () => {},
-            Inactive: () => {},
+            Inactive: () => {
+                if (!STATE.REF.isTestingActive || STATE.REF.isFullTest)
+                    setPlayerPage("GAME");    
+            },
             Downtime: () => {
                 D.Chat("all", C.HTML.Block([
                     C.HTML.Title("Leaving Session Downtime"),
@@ -398,9 +432,7 @@ const Session = (() => {
         },            
         leaveMode: {
             Active: () => {},
-            Inactive: () => {
-                if (!STATE.REF.isTestingActive || STATE.REF.isFullTest)
-                    setPlayerPage("GAME");         
+            Inactive: () => {     
                 TimeTracker.ToggleClock(true);
             },
             Downtime: () => {},
@@ -565,9 +597,10 @@ const Session = (() => {
         ]);
     };
     const endSession = (isDoingMonologues = true) => {
+        DB({mode: Session.Mode, spotlightChar: STATE.REF.spotlightChar, monologues: D.JS(STATE.REF.SessionMonologues)}, "endSession");
         if (STATE.REF.isTestingActive && !STATE.REF.isFullTest ||
-                isDoingMonologues && sessionMonologue() && remorseCheck() ||
-                remorseCheck()) {
+                isDoingMonologues && sessionMonologue() ||
+                !isDoingMonologues && remorseCheck()) {
             changeMode("Inactive", true, [
                 [D.Chat, ["all", C.HTML.Block([
                     C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
@@ -582,29 +615,13 @@ const Session = (() => {
                     if (STATE.REF.isTestingActive)
                         D.Alert(`Would award 2 XP to ${D.JS(char)} if session active.`, "Full Test: Session.endSession()");
                     else
-                        Char.AwardXP(char, 2, "Session XP award.");
+                        Char.AwardXP(char, 1, "Session XP award.");
                 STATE.REF.SessionNum++;
             } else if (STATE.REF.dateRecord) {
                 TimeTracker.CurrentDate = STATE.REF.dateRecord;
             }
             Media.SetText("NextSession", D.Romanize(STATE.REF.SessionNum, false).split("").join("   "));       
         }
-    };
-    const sessionMonologue = () => {
-        if (STATE.REF.Mode === "Spotlight" && STATE.REF.spotlightChar && D.GetStatVal(STATE.REF.spotlightChar, "stains")) {
-            D.Call(`!roll quick remorse ${STATE.REF.spotlightChar}`);
-            return false;
-        } else if (STATE.REF.SessionMonologues.length) {
-            const thisCharName = STATE.REF.SessionMonologues.pop();
-            setSpotlightChar(thisCharName, C.HTML.Block([
-                C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
-                C.HTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
-                C.HTML.Header(thisCharName),
-                C.HTML.Body("The spotlight is yours!")
-            ]));
-            return false;
-        }
-        return true;
     };
     const logTokens = (mode) => {
         const tokenObjs = findObjs({
@@ -643,10 +660,10 @@ const Session = (() => {
                 D.Capitalize(mode.toLowerCase())
             ];
             if (lastMode === "Inactive" && curMode === "Active") {
-                D.Queue(MODEFUNCTIONS.outroMode[lastMode], args, "ModeSwitch", 0.1);
                 D.Queue(Media.ToggleLoadingScreen, ["initializing",
-                                                    `Initializing Session ${D.NumToText(STATE.REF.SessionNum)}`,
-                                                    {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](args)}}], "ModeSwitch", 3);
+                                                    `Initializing Session ${D.NumToText(STATE.REF.SessionNum, true)}`,
+                                                    {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](...args)}}], "ModeSwitch", 1);
+                D.Queue(MODEFUNCTIONS.outroMode[lastMode], args, "ModeSwitch", 3);
                 D.Queue(Media.SetLoadingMessage, ["Preparing Sandbox..."], "ModeSwitch", 0.1);
                 D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1);
                 D.Queue(MODEFUNCTIONS.leaveMode[lastMode], args, "ModeSwitch", 1);
@@ -664,7 +681,7 @@ const Session = (() => {
                 D.Queue(Media.SetLoadingMessage, ["Synchronizing Display Data..."], "ModeSwitch", 1);
             } else {
                 D.Queue(MODEFUNCTIONS.outroMode[lastMode], args, "ModeSwitch", 0.1);
-                D.Queue(Media.ToggleLoadingScreen, [curMode === "Inactive" && "concluding" || "loading", `Changing Modes: ${D.UCase(lastMode)} ► ${D.UCase(curMode)}`, {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](args)}}], "ModeSwitch", 3);
+                D.Queue(Media.ToggleLoadingScreen, [curMode === "Inactive" && "concluding" || "loading", `Changing Modes: ${D.UCase(lastMode)} ► ${D.UCase(curMode)}`, {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](...args)}}], "ModeSwitch", 3);
                 D.Queue(Media.SetLoadingMessage, ["Logging Game State..."], "ModeSwitch", 0.1);
                 D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1);
                 D.Queue(MODEFUNCTIONS.leaveMode[lastMode], args, "ModeSwitch", 1);
@@ -731,7 +748,7 @@ const Session = (() => {
             changeMode("Spotlight", [charRef, messageText]);            
     };
     const setSpotlightChar = (charRef, messageText) => {
-        DB({charRef, messageText}, "setSpotlightChar");
+        // DB({charRef, messageText}, "setSpotlightChar");
         if (STATE.REF.Mode !== "Spotlight") {
             changeMode("Spotlight", [charRef, messageText]);
         } else {
@@ -909,8 +926,9 @@ const Session = (() => {
         if (VAL({string: focusOverride}))
             switch({c: "Center", l: "Left", r: "Right", a: "All"}[focusOverride.toLowerCase().charAt(0)]) {
                 case "Center": {
-                    if (Object.keys(activeLocs).some(x => x.endsWith("Center")))
-                        return _.omit(activeLocs, (v, k) => !k.endsWith("Center"));
+                    return _.pick(activeLocs, (v, k) => k.endsWith("Center"));
+                    // if (Object.keys(activeLocs).some(x => x.endsWith("Center")))
+                    // return _.omit(activeLocs, (v, k) => !k.endsWith("Center"));
                 }
                 // falls through
                 case "Left":
@@ -1448,6 +1466,72 @@ const Session = (() => {
     };
     // #endregion
 
+    // #region Session Monologue Suggestion Logging & Assigning
+    const submitSpotlightPrompt = (toCharRef, fromCharRef, promptText) => {
+        const toCharInit = D.GetCharData(toCharRef).initial;
+        STATE.REF.SpotlightPrompts[toCharInit] = _.shuffle([
+            ...STATE.REF.SpotlightPrompts[toCharInit] || [],
+            {
+                prompt: D.JS(promptText),
+                author: D.GetCharData(fromCharRef).initial
+            }
+        ]);
+        D.Chat(fromCharRef, C.HTML.Block([      
+            C.HTML.Header(`Prompt Submitted for ${D.GetName(toCharInit)}:`, C.STYLES.whiteMarble.header),           
+            C.HTML.Body(`&quot;${D.JS(promptText)}&quot;`, C.STYLES.whiteMarble.paragraph),
+            C.HTML.Header("Thank You for Your Contribution!", C.STYLES.whiteMarble.header),
+        ], C.STYLES.whiteMarble.block));
+    };
+    const assignSpotlightPrompt = (charRef) => {
+        // Also want to record the assigned prompt in the character registry, so that if it's lost it isn't lost forever
+        const charInit = D.GetCharData(charRef).initial;
+        const charQuad = D.GetCharData(charRef).quadrant;
+        DB({charRef, charInit, charQuad}, "assignSpotlightPrompt");
+        if (STATE.REF.SpotlightPrompts[charInit].length) {
+            const {prompt, author} = (STATE.REF.SpotlightPrompts[charInit] || []).pop();
+            Char.REGISTRY[charQuad].spotlightPrompt = {prompt: `&quot;${D.JS(prompt)}&quot;`, author};
+        } else {
+            Char.REGISTRY[charQuad].spotlightPrompt = {prompt: _.sample(C.SPOTLIGHTPROMPTS)};
+        }
+    };
+    const sessionMonologue = () => {
+        if (STATE.REF.spotlightChar) {
+            const lastPrompt = D.GetCharData(STATE.REF.spotlightChar).spotlightPrompt;
+            DB({spotlightChar: STATE.REF.spotlightChar, lastPrompt, monologues: D.JS(STATE.REF.SessionMonologues)}, "sessionMonologue");
+            if (lastPrompt && "author" in lastPrompt) {
+                if (STATE.REF.isTestingActive)
+                    D.Alert(`Would award 1 XP to ${D.GetName(lastPrompt.author)} if session active.`, "Full Test: Session.assignSpotlightPrompt()");
+                else
+                    Char.AwardXP(lastPrompt.author, 1, `Spotlight Prompt for ${D.GetName(STATE.REF.spotlightChar, true)}`);
+                Char.REGISTRY[D.GetCharData(STATE.REF.spotlightChar).quadrant].spotlightPrompt = false;
+                return sessionMonologue();
+            } else if (D.GetStatVal(STATE.REF.spotlightChar, "stains")) {
+                D.Call(`!roll quick remorse ${STATE.REF.spotlightChar}`);
+                return false;
+            }
+        } else if (STATE.REF.SessionMonologues.length) {
+            const thisCharName = STATE.REF.SessionMonologues.pop();
+            DB({spotlightChar: STATE.REF.spotlightChar, thisCharName, monologues: D.JS(STATE.REF.SessionMonologues)}, "sessionMonologue");
+            assignSpotlightPrompt(thisCharName);
+            setSpotlightChar(thisCharName, C.HTML.Block([
+                C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
+                C.HTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
+                C.HTML.Header(thisCharName),
+                C.HTML.Body(D.GetCharData(thisCharName).spotlightPrompt.prompt, {
+                    fontFamily: "Voltaire",
+                    textAlign: "left",
+                    lineHeight: "16px",
+                    padding: "3px",
+                    fontSize: "14px"
+                }),
+                C.HTML.Header("The Spotlight Is Yours!")
+            ]));
+            return false;
+        }
+        return true;
+    };
+    // #endregion
+
     // #region Starting & Ending Scenes, Logging Characters to Scene
     const setSceneFocus = (locPos) => {
         locPos = isLocCentered() === true && "c" ||
@@ -1553,7 +1637,8 @@ const Session = (() => {
         get Mode() { return STATE.REF.Mode },
         get LastMode() { return STATE.REF.LastMode },
         
-        SetMacro: setMacro
+        SetMacro: setMacro,
+        SubmitPrompt: submitSpotlightPrompt
     };
 })();
 

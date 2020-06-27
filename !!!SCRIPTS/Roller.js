@@ -3742,23 +3742,20 @@ const Roller = (() => {
         ]);
         // Return ["Acute", "Choleric"];
     };
-    const displayResonance = (charRef, posRes, negRes, isDoubleAcute, testCycles = 0) => {
+    const displayResonance = (charRef, posRes = "", negRes = "", isDoubleAcute, testCycles = 0) => {
         const traceID = TRACEON("displayResonance", [charRef, posRes, negRes, isDoubleAcute, testCycles]);
         const marginBonus = Number(STATE.REF.resMarginBonus);            
         STATE.REF.resMarginBonus = 0;
-        if (["l", "r", "c", "", undefined, null].includes(posRes)) {
-            const locations = Session.ActiveLocations(posRes);
-            [posRes, negRes] = ["", ""];
-            for (const location of Object.keys(locations))
-                if (location.includes("District")) {
-                    posRes += C.DISTRICTS[locations[location]].resonance[0] || "";
-                    negRes += C.DISTRICTS[locations[location]].resonance[1] || "";
-                } else {                        
-                    posRes += C.SITES[locations[location]].resonance[0] || "";
-                    negRes += C.SITES[locations[location]].resonance[1] || "";
-                }
-            DB({locations, posRes, negRes}, "displayResonance");
-        }
+        const locations = Session.ActiveLocations;
+        for (const location of Object.keys(locations))
+            if (location.includes("District")) {
+                posRes += C.DISTRICTS[locations[location]].resonance[0] || "";
+                negRes += C.DISTRICTS[locations[location]].resonance[1] || "";
+            } else {                        
+                posRes += C.SITES[locations[location]].resonance[0] || "";
+                negRes += C.SITES[locations[location]].resonance[1] || "";
+            }
+        DB({locations, posRes, negRes}, "displayResonance");        
         posRes = posRes === "x" ? "" : posRes;
         negRes = negRes === "x" ? "" : negRes;
         const resonance = getResonance(charRef, posRes, negRes, marginBonus, isDoubleAcute, testCycles);
