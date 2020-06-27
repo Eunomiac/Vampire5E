@@ -257,8 +257,7 @@ const Assets = (() => {
     const onGraphicChange = (imgObj) => {
         if (imgObj.id in Image.DragPads)
             Image.DragPads[imgObj.id].fireDragPad();
-    };
-    
+    };    
     // #endregion
     
     // #region ~ VARIABLE DECLARATIONS
@@ -271,10 +270,9 @@ const Assets = (() => {
         },
         wpReroll: () => {
             const stateVar = C.RO.OT.Roller.selected;
-            const diceCats = [...Roller.DiceCats];
             let dieCat = "";
             do {
-                dieCat = diceCats.pop();
+                dieCat = [...Roller.DiceCats].pop();
                 dieCat = stateVar[dieCat] && stateVar[dieCat].length ? dieCat : 0;
             } while (dieCat === 0);
             Roller.Reroll(dieCat);
@@ -346,15 +344,14 @@ const Assets = (() => {
             else
                 PENDINGCHANGES.length = 0;
         }
-        static Get(assetRef, type = null) { // Get an Asset instance by passing an asset, object, an id, or a name.
-            let classRef;
-            switch (D.LCase(type)) {
-                case "image": case "graphic": classRef = Image; break;
-                case "text": classRef = Text; break;
-                case "anim": classRef = Anim; break;
-                case "token": classRef = Token; break;
-                default: classRef = Asset; break;
-            }
+        static Get(assetRef, type = null) { // Get an Asset instance by passing an asset, an object, an id, or a name.
+            const classRef = {
+                image: Image,
+                graphic: Image,
+                text: Text,
+                anim: Anim,
+                token: Token
+            }[D.LCase(type)] || Asset;
             if (assetRef instanceof classRef)
                 return assetRef;
             if (typeof assetRef === "object" && "id" in assetRef && assetRef.id in classRef.LIB)
@@ -1231,6 +1228,10 @@ const Assets = (() => {
 
     // #region ~ INSTANTIATION   
     const initAssets = (isTesting = false) => {
+        Image.BuildAssets();
+        Anim.BuildAssets();
+        Token.BuildAssets();
+        Text.BuildAssets();
         initIMGAssets();
         initTEXTAssets();
         initANIMAssets();
