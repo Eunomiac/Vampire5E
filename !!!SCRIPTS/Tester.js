@@ -51,6 +51,22 @@ const Tester = (() => {
     const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
+            case "pullout": {
+                const testArray = [
+                    {author: "L", num: 1},
+                    {author: "L", num: 2},
+                    {author: "L", num: 3},
+                    {author: "B", num: 1},
+                    {author: "B", num: 2},
+                    {author: "N", num: 1},
+                    {author: "N", num: 2},
+                    {author: "L", num: 4},
+                    {author: "A", num: 1}
+                ];
+                const randomL = D.PullOut(testArray, v => v.author === "Q");
+                D.Alert(D.JS({randomL, testArray}), "Test Pullout");
+                break;
+            }
             case "statelength": {
                 const lengthVals = {};
                 for (const [key, value] of Object.entries(state.VAMPIRE)) {

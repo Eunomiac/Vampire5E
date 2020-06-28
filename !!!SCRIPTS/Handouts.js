@@ -125,6 +125,7 @@ const Handouts = (() => {
             noteObj.set("notes", C.HANDOUTHTML.main(isRawCode && contents || D.JS(contents)));
         return noteObj;
     };
+    const makeSimpleHandoutObj = (title, contents) => makeHandoutObj(title, false, contents, true);
     const updateHandout = (title, category, contents, isRawCode = false) => {
         const handoutObj = getHandoutObj(title);
         if (VAL({object: handoutObj}))
@@ -306,6 +307,7 @@ const Handouts = (() => {
         OnChatCall: onChatCall,
 
         Make: makeHandoutObj,
+        Report: makeSimpleHandoutObj,
         Set: updateHandout,
         Remove: delHandoutObj,
         RemoveAll: delHandoutObjs,

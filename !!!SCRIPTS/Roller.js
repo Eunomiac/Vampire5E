@@ -702,7 +702,8 @@ const Roller = (() => {
                 best: C.COLORS.white,
                 good: C.COLORS.white,
                 bad: C.COLORS.midgold,
-                worst: C.COLORS.brightred
+                worst: C.COLORS.brightred,
+                grey: C.COLORS.grey
             }
         },
         willpower: {
@@ -721,7 +722,8 @@ const Roller = (() => {
                 best: C.COLORS.white,
                 good: C.COLORS.white,
                 bad: C.COLORS.midgold,
-                worst: C.COLORS.brightred
+                worst: C.COLORS.brightred,
+                grey: C.COLORS.grey
             }
         },
         humanity: {
@@ -740,7 +742,8 @@ const Roller = (() => {
                 best: C.COLORS.white,
                 good: C.COLORS.white,
                 bad: C.COLORS.midgold,
-                worst: C.COLORS.brightred
+                worst: C.COLORS.brightred,
+                grey: C.COLORS.grey
             }
         },
         frenzy: {
@@ -779,7 +782,7 @@ const Roller = (() => {
                 good: C.COLORS.white,
                 bad: C.COLORS.brightred,
                 worst: C.COLORS.brightred,
-                grey: C.COLORS.darkgrey
+                grey: C.COLORS.grey
             },
             subOutcome: {
                 bad: C.COLORS.midgold,
@@ -794,7 +797,7 @@ const Roller = (() => {
                 good: C.COLORS.white,
                 bad: C.COLORS.brightred,
                 worst: C.COLORS.brightred,
-                grey: C.COLORS.darkgrey
+                grey: C.COLORS.grey
             },
             subOutcome: {
                 bad: C.COLORS.midgold,
@@ -829,6 +832,8 @@ const Roller = (() => {
         outcomeRedSmall: `<div style="display: block; width: 100%; margin-top: 5px; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.brightred}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
         outcomePurple: `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.black}; display: block; width: 100%;  font-size: 22px; font-family: Voltaire; text-shadow: 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 4px rgb(255,255,255), 0px 0px 4px rgb(255,255,255), 0px 0px 6px rgb(255,255,255), 0px 0px 6px rgb(200,100,200), 0px 0px 8px rgb(200,100,200), 0px 0px 10px rgb(200,100,200), 0px 0px 15px rgb(200,100,200);">`,
         outcomeOrange: "<div style=\"display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;\"><span style=\"color: midgold; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
+        outcomeGrey: `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.grey}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
+        outcomeGreySmall: `<div style="display: block; margin-top: 5px; width: 100%; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.grey}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
         outcomeWhite: `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
         outcomeWhiteSmall: `<div style="display: block; margin-top: 5px; width: 100%; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
         subOutcomeRed: `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.brightred}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
@@ -941,6 +946,10 @@ const Roller = (() => {
             return TRACEOFF(traceID, VAL({string: COLORSCHEMES[rollType][rollLine][colorRef]}) && COLORSCHEMES[rollType][rollLine][colorRef] || COLORSCHEMES.base[rollLine]);
         return TRACEOFF(traceID, VAL({string: COLORSCHEMES[rollType][rollLine]}) && COLORSCHEMES[rollType][rollLine] || COLORSCHEMES.base[rollLine]);
     };
+    const resetDiceVals = () => {
+        STATE.REF.selected = {Main: [], Big: []};
+        STATE.REF.diceVals = {Main: [null, ...(new Array(30)).fill(false)], Big: [null, ...(new Array(2)).fill(false)]};
+    };
     const clearRoller = () => {
         const traceID = TRACEON("clearRoller", []);
         const topMidRefs = [];
@@ -1041,6 +1050,7 @@ const Roller = (() => {
                 `${returnLines[2].header}${returnLines[2].entries.join("<br>")}`
             ]);
         };
+        resetDiceVals();
         if (isQueuing)
             if (D.IsFuncQueueClear("Roller")) {
                 D.Queue(clearRoller, [], "Roller");
@@ -3011,6 +3021,10 @@ const Roller = (() => {
                                 stLines.outcome = `${CHATSTYLES.outcomeRed}TOTAL FAILURE!</span></div>`;
                                 rollLines.outcome.text = "TOTAL FAILURE!";
                                 rollLines.outcome.color = getColor(rollData.type, "outcome", "worst");
+                            } else if (rollResults.margin < -2) {
+                                stLines.outcome = `${CHATSTYLES.outcomeGrey}FAILURE</span></div>`;
+                                rollLines.outcome.text = "FAILURE";
+                                rollLines.outcome.color = getColor(rollData.type, "outcome", "grey");
                             } else if (rollResults.margin < 0) {
                                 stLines.outcome = `${CHATSTYLES.outcomeOrange}COSTLY SUCCESS?</span></div>`;
                                 rollLines.outcome.text = "COSTLY SUCCESS?";

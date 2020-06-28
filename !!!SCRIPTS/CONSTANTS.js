@@ -64,6 +64,7 @@ const C = (() => {
         brightbrightgrey: "rgba(200, 200, 200, 1)",
         brightgrey: "rgba(175, 175, 175, 1)",
         grey: "rgba(130, 130, 130, 1)",
+        midgrey: "rgba(100, 100, 100, 1)",
         darkgrey: "rgba(80, 80, 80, 1)",
         darkdarkgrey: "rgba(40, 40, 40, 1)",
         black: "rgba(0, 0, 0, 1)",
@@ -89,7 +90,19 @@ const C = (() => {
             yellow: "rgba(200, 200, 0, 1)",
             gold: "#ffd700",
             tan: "rgba(228, 192, 144, 1)",
+
+
+        purered:        rgb(255, 0, 0) 
+        palered:        rgb(255, 175, 175) 
+        brightred:      rgb(255, 31, 34) 
+        lightred:       rgb(255, 60, 60) 
+        red:            rgb(209, 0, 3, 1) 
+        darkred:        rgb(132, 0, 2) 
+        darkdarkred:    rgb(55, 0, 1) 
+        brightcrimson:  rgb(234, 9, 67) 
+        crimson:        rgb(160, 6, 46) 
             */
+           
         // palered: "rgba
 
         purered: "rgba(255, 0, 0, 1)",

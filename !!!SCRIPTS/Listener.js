@@ -19,7 +19,15 @@ const Listener = (() => {
         initialize();
     };
     const regHandlers = () => {
-        on("chat:message", msg => {
+        const handleMessage = msg => {
+            if (!msg.content.includes("DB LISTENER: ListenFull"))
+                DB({msg}, "ListenFull");
+            if (msg.content.startsWith("!pcommand")) {
+                const [, charRef, ...command] = msg.content.split(" ");
+                msg.content = command.join(" ");
+                msg.playerid = D.GetPlayerID(charRef.replace(/^@/gu, ""));
+                msg.who = D.GetName(msg.playerid);
+            }
             if (STATE.REF.isLocked || msg.type !== "api")
                 return false;
             msg.who = msg.who || "API";
@@ -48,7 +56,8 @@ const Listener = (() => {
                 return true;
             }
             return false;
-        });
+        };
+        on("chat:message", handleMessage);
         on("change:attribute:current", (attrObj, prevData) => {
             /* DB({
                     ["CHANGE:ATTR:CURRENT"]: Object.assign({}, attrObj),

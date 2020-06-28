@@ -24,30 +24,14 @@ const Session = (() => {
         // delete STATE.REF.tokenRecord
         // delete STATE.REF.SceneAlarms
         // STATE.REF.SceneAlarms = []
-        STATE.REF.SpotlightPrompts = {
-            L: [
-                {prompt: "Locke's first task: respected and admired figure among the city's poor.  His humble efforts have not fully translated into commensurate Glory as a samurai, he holds more recognition and even some small measure of fame amongst those he helps: After his ascension to the ranks of the Magistrate, he has become one of the most well-known Emerald Magisters to the lower classes, who frequently seek him out by name.  (I'd like to translate this into a custom Advantage that increases the potency of Hero of the People, making Shinjo Rei even more recognizable to the lower classes --- perhaps we can ask 'what level of Glory would be required", author: "B"},
-                {prompt: "Locke's second task: respected and admired figure among the city's poor.  His humble efforts have not fully translated into commensurate Glory as a samurai, he holds more recognition and even some small measure of fame amongst those he helps: After his ascension to the ranks of the Magistrate, he has become one of the most well-known Emerald Magisters to the lower classes, who frequently seek him out by name.  (I'd like to translate this into a custom Advantage that increases the potency of Hero of the People, making Shinjo Rei even more recognizable to the lower classes --- perhaps we can ask 'what level of Glory would be required", author: "A"},
-                {prompt: "Locke's third task: respected and admired figure among the city's poor.  His humble efforts have not fully translated into commensurate Glory as a samurai, he holds more recognition and even some small measure of fame amongst those he helps: After his ascension to the ranks of the Magistrate, he has become one of the most well-known Emerald Magisters to the lower classes, who frequently seek him out by name.  (I'd like to translate this into a custom Advantage that increases the potency of Hero of the People, making Shinjo Rei even more recognizable to the lower classes --- perhaps we can ask 'what level of Glory would be required", author: "N"},
-            ],
-            R: [
-                {prompt: "Roy's first task.", author: "B"},
-                {prompt: "Roy's second task.", author: "A"},
-                {prompt: "Roy's third task.", author: "N"},
-            ],
-            A: [
-                {prompt: "Ava's first task.", author: "L"},
-                {prompt: "Ava's second task.", author: "R"},
-                {prompt: "Ava's third task.", author: "N"},
-            ],
-            N: [ ],
-            B: [
-                {prompt: "Bacchus' first task.", author: "R"},
-                {prompt: "Bacchus' second task.", author: "A"},
-                {prompt: "Bacchus' third task.", author: "N"},
-            ]
-        };
+        // delete STATE.REF.SpotlightPrompts;
 
+        // setMacro(D.GetChar("A"), "Submit-Prompt", "!spotprompt ?{Who is this prompt for?|Bacchus,B|Napier,N|Dr. Roy,R|Locke,L|Myself!,A} A ?{What do you want to see during this player's spotlight? (Write the prompt as if you're speaking to the player directly.)}");
+        // setMacro(D.GetChar("N"), "Submit-Prompt", "!spotprompt ?{Who is this prompt for?|Bacchus,B|Dr. Roy,R|Locke,L|Ava,A|Myself!,N} N ?{What do you want to see during this player's spotlight? (Write the prompt as if you're speaking to the player directly.)}");
+        // setMacro(D.GetChar("R"), "Submit-Prompt", "!spotprompt ?{Who is this prompt for?|Bacchus,B|Napier,N|Locke,L|Ava,A|Myself!,R} R ?{What do you want to see during this player's spotlight? (Write the prompt as if you're speaking to the player directly.)}");
+        // setMacro(D.GetChar("L"), "Submit-Prompt", "!spotprompt ?{Who is this prompt for?|Bacchus,B|Napier,N|Dr. Roy,R|Ava,A|Myself!,L} L ?{What do you want to see during this player's spotlight? (Write the prompt as if you're speaking to the player directly.)}");
+        // setMacro(D.GetChar("B"), "Submit-Prompt", "!spotprompt ?{Who is this prompt for?|Napier,N|Dr. Roy,R|Locke,L|Ava,A|Myself!,B} B ?{What do you want to see during this player's spotlight? (Write the prompt as if you're speaking to the player directly.)}");
+                       
         // STATE.REF.SessionScribes = ["TeatimeRationale", "Thaumaterge", "PixelPuzzler", "banzai", "Hastur"]
         // STATE.REF.customLocs["Queen's Landing Hallway"].district = "Cabbagetown"
         // STATE.REF.customLocs["Queen's Landing Lobby"].district = "Cabbagetown"
@@ -134,6 +118,8 @@ const Session = (() => {
         STATE.REF.FavoriteSites = STATE.REF.FavoriteSites || [];
         STATE.REF.FavoriteDistricts = STATE.REF.FavoriteDistricts || [];
         STATE.REF.SpotlightPrompts = STATE.REF.SpotlightPrompts || D.KeyMapObj(D.Clone(Char.REGISTRY), (k, v) => v.initial, () => []);
+        STATE.REF.PromptAuthors = [];
+        STATE.REF.isPromptingGeneric = false;
             
         STATE.REF.SceneAlarms = STATE.REF.SceneAlarms || [];
             
@@ -202,7 +188,8 @@ const Session = (() => {
                     case "favdist": STATE.REF.FavoriteDistricts.push(args.join(" ")); break;
                     case "macro": {
                         const [charObj] = charObjs;
-                        const [macroName, macroAction] = args.join(" ").split("!").map(x => x.trim());
+                        const [macroName, macroAction] = args.join(" ").split(/\|?!/gu).map(x => x.trim());
+                        D.Alert(D.JS({macroName: `'${macroName}'`, macroAction: `'${macroAction}'`}));
                         setMacro(charObj, macroName, `!${macroAction}`);
                         break;
                     }
@@ -212,6 +199,21 @@ const Session = (() => {
             }
             case "get": {
                 switch (D.LCase(call = args.shift())) {
+                    case "macros": {
+                        const macroObjs = findObjs({_type: "macro"});
+                        const macroData = macroObjs.map(x => {
+                            const visibleTo = x.get("visibleto").split(",").map(xx => D.LCase(xx) === "all" ? "ALL" : D.GetName(xx));
+                            return {
+                                createdBy: D.GetName(x.get("_playerid")),
+                                name: x.get("name"),
+                                action: x.get("action"),
+                                visibleTo: visibleTo.includes("ALL") ? ["ALL"] : visibleTo
+                            };
+                        });
+                        Handouts.Report("Macros", D.JS(macroData));
+                        // macroObjs.filter(x => !x.get("visibleto").includes("Storyteller")).forEach(x => x.set({name: x.get("name").replace(/\|$/gu, "")}));
+                        break;
+                    }
                     case "scenechars": D.Alert(`Scene Focus: ${Session.SceneFocus}<br>Scene Chars: ${D.JS(Session.SceneChars)}`, "Scene Chars"); break;
                     case "locations": case "location": case "loc": D.Alert(D.JS(getAllLocations()), "Current Location Data"); break;
                     case "activelocs": D.Alert(D.JS(getActivePositions()), "All Active Locations"); break;
@@ -584,6 +586,10 @@ const Session = (() => {
             STATE.REF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]));
         }
         STATE.REF.SessionMonologues = _.shuffle(D.GetChars("registered").map(x => D.GetCharData(x).name));
+        STATE.REF.spotlightChar = false;
+        STATE.REF.PromptAuthors = [];
+        for (const quad of Object.keys(Char.REGISTRY))
+            Char.REGISTRY[quad].spotlightPrompt = false;
         changeMode("Active", true, [
             [D.Chat, ["all", C.HTML.Block([
                 C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
@@ -613,7 +619,7 @@ const Session = (() => {
                 STATE.REF.dateRecord = null;
                 for (const char of D.GetChars("registered"))
                     if (STATE.REF.isTestingActive)
-                        D.Alert(`Would award 2 XP to ${D.JS(char)} if session active.`, "Full Test: Session.endSession()");
+                        D.Alert(`Would award 1 XP to ${D.JS(char)} if session active.`, "Full Test: Session.endSession()");
                     else
                         Char.AwardXP(char, 1, "Session XP award.");
                 STATE.REF.SessionNum++;
@@ -1488,11 +1494,29 @@ const Session = (() => {
         const charQuad = D.GetCharData(charRef).quadrant;
         DB({charRef, charInit, charQuad}, "assignSpotlightPrompt");
         if (STATE.REF.SpotlightPrompts[charInit].length) {
-            const {prompt, author} = (STATE.REF.SpotlightPrompts[charInit] || []).pop();
-            Char.REGISTRY[charQuad].spotlightPrompt = {prompt: `&quot;${D.JS(prompt)}&quot;`, author};
-        } else {
-            Char.REGISTRY[charQuad].spotlightPrompt = {prompt: _.sample(C.SPOTLIGHTPROMPTS)};
+            let promptData;
+            if (_.any(STATE.REF.SpotlightPrompts[charInit], v => v.author === charInit )) {
+                promptData = D.PullOut(STATE.REF.SpotlightPrompts[charInit], v => v.author === charInit);
+                delete promptData.author;
+            } else {
+                promptData = D.PullOut(STATE.REF.SpotlightPrompts[charInit], v => !STATE.REF.PromptAuthors.includes(v.author)) || {prompt: false, author: false};
+            }
+            const {prompt, author} = promptData;
+            if (prompt) {
+                Char.REGISTRY[charQuad].spotlightPrompt = {prompt: `&quot;${D.JS(prompt)}&quot;`};
+                if (author) {
+                    Char.REGISTRY[charQuad].spotlightPrompt.author = author;
+                    STATE.REF.PromptAuthors.push(author);
+                }
+                return true;
+            }
         }
+        if (STATE.REF.isPromptingGeneric) {
+            Char.REGISTRY[charQuad].spotlightPrompt = {prompt: _.sample(C.SPOTLIGHTPROMPTS)};
+            return true;
+        }
+        Char.REGISTRY[charQuad].spotlightPrompt = false;
+        return false;
     };
     const sessionMonologue = () => {
         if (STATE.REF.spotlightChar) {
@@ -1507,25 +1531,33 @@ const Session = (() => {
                 return sessionMonologue();
             } else if (D.GetStatVal(STATE.REF.spotlightChar, "stains")) {
                 D.Call(`!roll quick remorse ${STATE.REF.spotlightChar}`);
-                return false;
             }
+            STATE.REF.spotlightChar = false;
+            return sessionMonologue();
         } else if (STATE.REF.SessionMonologues.length) {
             const thisCharName = STATE.REF.SessionMonologues.pop();
             DB({spotlightChar: STATE.REF.spotlightChar, thisCharName, monologues: D.JS(STATE.REF.SessionMonologues)}, "sessionMonologue");
-            assignSpotlightPrompt(thisCharName);
-            setSpotlightChar(thisCharName, C.HTML.Block([
-                C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
-                C.HTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
-                C.HTML.Header(thisCharName),
-                C.HTML.Body(D.GetCharData(thisCharName).spotlightPrompt.prompt, {
-                    fontFamily: "Voltaire",
-                    textAlign: "left",
-                    lineHeight: "16px",
-                    padding: "3px",
-                    fontSize: "14px"
-                }),
-                C.HTML.Header("The Spotlight Is Yours!")
-            ]));
+            if (assignSpotlightPrompt(thisCharName)) 
+                setSpotlightChar(thisCharName, C.HTML.Block([
+                    C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
+                    C.HTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
+                    C.HTML.Header(thisCharName),
+                    C.HTML.Body(D.GetCharData(thisCharName).spotlightPrompt.prompt, {
+                        fontFamily: "Voltaire",
+                        textAlign: "left",
+                        lineHeight: "16px",
+                        padding: "3px",
+                        fontSize: "14px"
+                    }),
+                    C.HTML.Header("The Spotlight Is Yours!")
+                ]));
+            else 
+                setSpotlightChar(thisCharName, C.HTML.Block([
+                    C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
+                    C.HTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
+                    C.HTML.Header(thisCharName),
+                    C.HTML.Body("The Spotlight Is Yours!")
+                ]));            
             return false;
         }
         return true;
@@ -1647,3 +1679,5 @@ on("ready", () => {
     D.Log("Session Ready!");
 });
 void MarkStop("Session");
+
+

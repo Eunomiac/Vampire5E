@@ -1337,21 +1337,25 @@ const Char = (() => {
     };
     const resolveDesire = charRef => {
         let desireObj;
-        try {
-            desireObj = (D.GetRepStat(charRef, "desire", "top", "desire") || {obj: null}).obj;
-            if (desireObj) {
-                desireObj.remove();
-                adjustDamage(charRef, "willpower", "superficial+", -1, false);
-                displayDesires();
-                D.Chat(D.GetChar(charRef), C.HTML.Block([
-                    C.HTML.Header("You have resolved your Desire!<br>One superficial Willpower restored.<br>What do you Desire next?", Object.assign({height: "auto"}, C.STYLES.whiteMarble.header))
-                ], C.STYLES.whiteMarble.block));
-            } else {
+        if (D.Int(D.GetStat(charRef, "willpower_bashing")[0]) === 0) 
+            D.Alert("Character has no damaged willpower to restore.", "Pop Desire");
+        else 
+            try {
+                desireObj = (D.GetRepStat(charRef, "desire", "top", "desire") || {obj: null}).obj;
+                if (desireObj) {
+                    desireObj.remove();
+                    adjustDamage(charRef, "willpower", "superficial+", -1, false);
+                    displayDesires();
+                    D.Chat(D.GetChar(charRef), C.HTML.Block([
+                        C.HTML.Header("You have resolved your Desire!<br>One superficial Willpower restored.<br>What do you Desire next?", Object.assign({height: "auto"}, C.STYLES.whiteMarble.header))
+                    ], C.STYLES.whiteMarble.block));
+                } else {
+                    D.Alert(`No Desire found for ${D.GetName(charRef)}`, "resolveDesire");
+                }
+            } catch (errObj) {
                 D.Alert(`No Desire found for ${D.GetName(charRef)}`, "resolveDesire");
             }
-        } catch (errObj) {
-            D.Alert(`No Desire found for ${D.GetName(charRef)}`, "resolveDesire");
-        }            
+                    
     };
     const regResource = (charRef, name, amount) => {
         const initial = D.UCase((D.GetCharData(charRef) || {initial: false}).initial);
