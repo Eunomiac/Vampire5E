@@ -4,7 +4,11 @@ const InitCommands = (() => {
     const SCRIPTNAME = "InitCommands";
 
     // #region COMMON INITIALIZATION
-    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};
+    const STATE = {
+        get REF() {
+            return C.RO.OT[SCRIPTNAME];
+        }
+    };
     const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
@@ -20,27 +24,36 @@ const InitCommands = (() => {
     const initialize = () => {
         D.Flag("Initializing API...");
         Listener.Lock();
-        setTimeout(() => {
-            D.Flag("... Fixing TimeTracker ...");
-            if (TimeTracker && TimeTracker.Fix)
-                TimeTracker.Fix();
-            setTimeout(() => {
-                D.Flag("... Fixing Soundscape ...");
-                if (Soundscape && Soundscape.Sync)
-                    Soundscape.Sync(true);
-                setTimeout(() => {
-                    D.Flag("... Fixing Character Displays ...");
-                    if (Char && Char.RefreshDisplays)
-                        Char.RefreshDisplays();
-                    setTimeout(() => {
-                        D.Flag("Initialization Complete!");
-                        Listener.Unlock();
-                    }, Session.IsTesting ? 500 : 2000);
-                }, Session.IsTesting ? 500 : 2000);
-            }, Session.IsTesting ? 500 : 2000);
-        }, Session.IsTesting ? 500 : 2000);
+        setTimeout(
+            () => {
+                D.Flag("... Fixing TimeTracker ...");
+                if (TimeTracker && TimeTracker.Fix) TimeTracker.Fix();
+                setTimeout(
+                    () => {
+                        D.Flag("... Fixing Soundscape ...");
+                        if (Soundscape && Soundscape.Sync) Soundscape.Sync(true);
+                        setTimeout(
+                            () => {
+                                D.Flag("... Fixing Character Displays ...");
+                                if (Char && Char.RefreshDisplays) Char.RefreshDisplays();
+                                setTimeout(
+                                    () => {
+                                        D.Flag("Initialization Complete!");
+                                        Listener.Unlock();
+                                    },
+                                    Session.IsTesting ? 500 : 2000
+                                );
+                            },
+                            Session.IsTesting ? 500 : 2000
+                        );
+                    },
+                    Session.IsTesting ? 500 : 2000
+                );
+            },
+            Session.IsTesting ? 500 : 2000
+        );
     };
-    // #endregion	
+    // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const onChatCall = (call, args, objects, msg) => {
@@ -67,5 +80,5 @@ const InitCommands = (() => {
 on("ready", () => {
     InitCommands.CheckInstall();
     D.Log("InitCommands Ready!");
-} );
+});
 void MarkStop("InitCommands");
