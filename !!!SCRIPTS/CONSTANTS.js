@@ -179,7 +179,7 @@ const C = (() => {
                 bgColor: options.bgColor || null,
                 bgImage: options.bgImage || BGIMAGES.blackMarble,
                 border: options.border || `4px outset ${options.color || COLORS.crimson}`,
-                margin: options.margin || "-26px 0px -7px -42px",
+                margin: options.margin || "-35px 0px -7px -42px",
                 width: options.width || `${CHATWIDTH}px`,
                 padding: options.padding || "0px",
                 textAlign: options.textAlign || "center"

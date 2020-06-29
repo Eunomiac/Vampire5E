@@ -113,6 +113,7 @@ module.exports = {
         // "one-var": ["error", "consecutive"],
         "one-var": ["error", { var: "always", let: "consecutive", const: "never" }],
         "prefer-const": ["error", {"destructuring": "all"}],
+        "prefer-destructuring": 0,
         "prefer-object-spread": 0,
         "quotes": [
             "error",
