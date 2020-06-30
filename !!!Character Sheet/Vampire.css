@@ -1155,23 +1155,23 @@
 		margin-top: -4px;
 		margin-left: -5px;
 
-		background: url("https://i.imgur.com/7IcxmJf.png");
+		background: url("https://i.imgur.com/yN6Ru7a.png");
 		/* background: url("https://i.imgur.com/XGi10c2.png"); */
 		background-size: 100%;
 	}
 
 	.charsheet input.sheet-hoverpopup:not(:checked):hover+span::before {
-		background: url("https://i.imgur.com/rzwwQ2Q.png");
+		background: url("https://i.imgur.com/gzX2qi0.png");
 		background-size: 100%;
 	}
 
 	.charsheet input.sheet-hoverpopup:checked+span::before {
-		background: url("https://i.imgur.com/qZgs8G0.png");
+		background: url("https://i.imgur.com/tW7RTFP.png");
 		background-size: 100%;
 	}
 
 	.charsheet input.sheet-hoverpopup:checked:hover+span::before {
-		background: url("https://i.imgur.com/I6EGpCq.png");
+		background: url("https://i.imgur.com/ugtSft7.png");
 		background-size: 100%;
 	}
 
@@ -2700,9 +2700,10 @@
 		text-align-last: center;
 	}
 
-	.charsheet div.sheet-mask input {
+	.charsheet div.sheet-mask input,
+	.charsheet div.sheet-mask span.sheet-header2 {
 		margin-bottom: 5px;
-
+		height: 24px;
 		font-size: 24px !important;
 	}
 
@@ -3435,8 +3436,8 @@
 
 	/* #region SECTION: XP*/
 	.charsheet div.sheet-xp {
-		text-align: center;
-		text-align-last: center;
+		/* text-align: center;
+		text-align-last: center; */
 	}
 
 	.charsheet div.sheet-section-6>div.sheet-header1 textarea {
@@ -3523,7 +3524,7 @@
 		line-height: 16px;
 		text-indent: 0px;
 		width: 100%;
-		height: 16px;
+		height: 17px;
 	}
 
 	.charsheet div.sheet-earnedxp textarea.sheet-session {
@@ -3584,7 +3585,7 @@
 	.charsheet div.repcontrol>button,
 	.charsheet .repcontrol_move {
 		padding: 0px 3px;
-		margin-top: 5px;
+		margin-top: -5px;
 
 		position: relative;
 		z-index: 201;
