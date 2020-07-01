@@ -324,6 +324,9 @@ const TimeTracker = (() => {
             }
             case "test": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "timer":
+                        checkTimer();
+                        break;
                     case "datestring": {
                         const [dateStart, dateStrings] = args.join(" ").split("|");
                         const dateObj =
@@ -1160,6 +1163,7 @@ const TimeTracker = (() => {
         } else {
             isTickingClock = false;
             isFastTweeningClock = false;
+            clearInterval(timeTimer);
         }
         updateClockNotice();
         OFFSTACK(funcID);
@@ -1314,6 +1318,12 @@ const TimeTracker = (() => {
             setHorizon();
         }
         OFFSTACK(funcID);
+    };
+    const checkTimer = () => {
+        if (timeTimer && timeTimer._idleTimeout >= 0 && !timeTimer._destroyed)
+            D.Flag(`Timer Running at ${D.Int(timeTimer._idleTimeout / 1000)} secs / min`);
+        else if (timeTimer) D.Flag(`Timer Stopped`);
+        else D.Flag("No Timer Defined!");
     };
     // #endregion
 

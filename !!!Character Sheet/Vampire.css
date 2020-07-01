@@ -3433,12 +3433,7 @@
 
 	/* #endregion*/
 
-	/* #region SECTION: XP*/
-	.charsheet div.sheet-xp {
-		/* text-align: center;
-		text-align-last: center; */
-	}
-
+	/* #region SECTION: XP */
 	.charsheet div.sheet-section-6>div.sheet-header1 textarea {
 		height: 50px;
 		width: 160px;
