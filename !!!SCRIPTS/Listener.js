@@ -162,7 +162,7 @@ const Listener = (() => {
                 "!mvc": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!token": {script: Player, gmOnly: false, singleCall: false},
                 "!links": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
-                "!spotprompt": {script: Player, gmOnly: false, singleCall: false},
+                "!prompt": {script: Player, gmOnly: false, singleCall: false},
                 "!roll": {script: Roller, isAlertingOnCall: true, gmOnly: false, singleCall: true},
                 "!sess": {script: Session, gmOnly: true, singleCall: true},
                 "!test": {script: Tester, gmOnly: true, singleCall: true},
@@ -301,9 +301,7 @@ const Listener = (() => {
     };
     const getAllObjs = (objects, type) => {
         type = D.IsIn(type, ["character", "graphic", "text"]);
-        const returnObjs = _.uniq(
-            _.flatten(_.compact([...(objects[type] || []), ...((objects.selected && objects.selected[type]) || [])]))
-        );
+        const returnObjs = _.uniq(_.flatten(_.compact([...(objects[type] || []), ...((objects.selected && objects.selected[type]) || [])])));
         DB({objects, type, returnObjs}, "getAllObjs");
         if (returnObjs.length) {
             STATE.REF.objectLog[type] = returnObjs.map(x => x.id).join(",");

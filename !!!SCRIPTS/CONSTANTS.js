@@ -1,4 +1,6 @@
 void MarkStart("C");
+// #region ESSENTIAL STARTUP CONSTANTS
+// #region ... nesting
 const GAMENAME = "VAMPIRE";
 const SCRIPTNAME = "C";
 const SCRIPTS = [
@@ -23,12 +25,8 @@ const SCRIPTS = [
 state = state || {};
 state[GAMENAME] = state[GAMENAME] || {};
 for (const scriptName of SCRIPTS) state[GAMENAME][scriptName] = state[GAMENAME][scriptName] || {};
-
-_.templateSettings = {
-    interpolate: /\{\{(.+?)\}\}/g,
-    escape: /\{x\{(.+?)>\}\}/g,
-    evaluate: /\{j\{(.+?)\}\} /g
-};
+// #endregion
+// #endregion
 
 const C = (() => {
     const RO = {
@@ -158,37 +156,6 @@ const C = (() => {
         fadedgrey: "rgba(0, 0, 0, 0.1)",
         transparent: "rgba(0,0,0,0)",
 
-        /*
-            palered: "rgba(255, 175, 175, 1)",
-            brightred: "rgba(255, 0, 0, 1)",
-            brightred: "rgba(225, 0, 0, 1)",
-            red: "rgba(200, 0, 0, 1)",
-            darkred: "rgba(175, 0, 0, 1)",
-            darkred: "rgba(150, 0, 0, 1)",
-            darkdarkred: "rgba(50, 0, 0, 1)",
-            crimson: "rgba(220, 20, 60, 1)",
-            
-            
-            midgold: "rgba(200, 100, 0, 1)",
-            
-            yellow: "rgba(200, 200, 0, 1)",
-            gold: "#ffd700",
-            tan: "rgba(228, 192, 144, 1)",
-
-
-        purered:        rgb(255, 0, 0) 
-        palered:        rgb(255, 175, 175) 
-        brightred:      rgb(255, 31, 34) 
-        lightred:       rgb(255, 60, 60) 
-        red:            rgb(209, 0, 3, 1) 
-        darkred:        rgb(132, 0, 2) 
-        darkdarkred:    rgb(55, 0, 1) 
-        brightcrimson:  rgb(234, 9, 67) 
-        crimson:        rgb(160, 6, 46) 
-            */
-
-        // palered: "rgba
-
         purered: "rgba(255, 0, 0, 1)",
         palered: "rgba(255, 175, 175, 1)",
         brightred: "rgba(255, 31, 34, 1)",
@@ -199,6 +166,8 @@ const C = (() => {
         brightcrimson: "rgba(234, 9, 67, 1)",
         crimson: "rgba(160, 6, 46, 1)",
         darkcrimson: "rgba(86, 3, 25, 1)",
+
+        fadedred: "rgba(255, 0, 0, 0.2)",
 
         palegold: "rgba( 255 , 220 , 180 , 1 )",
         brightgold: "rgba(255,223,0,1)",
@@ -216,6 +185,7 @@ const C = (() => {
 
         puregreen: "rgba(0, 255, 0, 1)",
         palegreen: "rgba(175, 255, 175, 1)",
+        brightgreen: "rgba(35, 255, 35, 1)",
         green: "rgba(0, 200, 0, 1)",
         darkgreen: "rgba(0, 125, 0, 1)",
 
@@ -289,7 +259,8 @@ const C = (() => {
         },
         SubBlock: (content, options = {}) => {
             const params = {
-                width: options.width || "100%"
+                width: options.width || "100%",
+                border: options.border || "none"
             };
             if (D.WatchList.includes("HTML-SubBlock") && !options.isSilent)
                 sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "SubBlock", content: {options, params, content}})}`);
@@ -297,6 +268,7 @@ const C = (() => {
                     display: inline-block;
                     width: ${params.width};
                     font-size: 0px;
+                    border: ${params.border};
                 ">${_.flatten([content]).join("")}</div>`);
         },
         Title: (content, options = {}) => {
@@ -347,6 +319,49 @@ const C = (() => {
             };
             if (D.WatchList.includes("HTML-Header") && !options.isSilent)
                 sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "Header", content: {options, params, content}})}`);
+            return D.JSH(`<span style="
+                    display: block;
+                    height: ${params.height};
+                    line-height: ${params.lineHeight}; 
+                    width: ${params.width};
+                    margin: ${params.margin};
+                    padding: ${params.padding};
+                    box-sizing: border-box;
+                    text-align: ${params.textAlign};
+                    text-align-last: ${params.textAlign};
+                    color: ${params.color};
+                    font-family: ${params.fontFamily};
+                    font-weight: ${params.fontWeight};
+                    font-variant: ${params.fontVariant};
+                    font-size: ${params.fontSize};
+                    background-color: ${params.bgColor};
+                    border: ${params.border};
+                    text-shadow: ${params.textShadow};
+                    box-shadow: ${params.boxShadow};
+            ">${_.flatten([content]).join("<br>")}</span>`);
+        },
+        SubHeader: (content, options = {}) => {
+            const params = {
+                height: options.height || "20px",
+                width: options.width || "auto",
+                color: options.color || COLORS.brightred,
+                bgColor: options.bgColor || COLORS.fadedred,
+                margin: options.margin || "0px 0px 2px 0px",
+                padding: options.padding || "0px",
+                fontSize: options.fontSize || "14px",
+                fontFamily: options.fontFamily || "Voltaire",
+                fontVariant: options.fontVariant || "none",
+                fontWeight: options.fontWeight || "bold",
+                border: options.border || "none; border-top: 1px solid red; border-bottom: 1px solid red;",
+                textShadow:
+                    options.textShadow ||
+                    "-1px -1px 2px #000, -1px -1px 2px #000, -1px -1px 2px #000, 1px 1px 2px #000, 1px 1px 2px #000, 1px 1px 2px #000",
+                boxShadow: options.boxShadow || "none",
+                textAlign: options.textAlign || "center",
+                lineHeight: options.lineHeight || options.height || "20px"
+            };
+            if (D.WatchList.includes("HTML-SubHeader") && !options.isSilent)
+                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "SubHeader", content: {options, params, content}})}`);
             return D.JSH(`<span style="
                     display: block;
                     height: ${params.height};
@@ -424,25 +439,26 @@ const C = (() => {
         },
         Column: (content, options = {}) => {
             const params = {
+                height: options.height || "100%",
                 width: options.width || `${Math.floor(CHATWIDTH / 2)}px`,
-                margin: options.margin || "0px"
+                margin: options.margin || "0px",
+                vertAlign: options.vertAlign || "top"
             };
             if (D.WatchList.includes("HTML-Column") && !options.isSilent)
                 sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "Column", content: {options, params, content}})}`);
             return D.JSH(`<div style="
                     display: inline-block;
+                    height: ${params.height};
                     width: ${params.width};
                     margin: ${params.margin};
                     font-size: 0px;
+                    vertical-align: ${params.vertAlign};
                 ">${_.flatten([content]).join("")}</div>`);
         },
         ButtonLine: (content, options = {}) => {
             const params = Object.assign({height: "14px", width: "100%", margin: "5px 0px 5px 0px", textAlign: "center"}, options);
             if (D.WatchList.includes("HTML-ButtonLine") && !options.isSilent)
-                sendChat(
-                    "HTML",
-                    `/w Storyteller ${C.HTML.CodeBlock({header: "ButtonLine", content: {options, params, content: D.JSC(content)}})}`
-                );
+                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "ButtonLine", content: {options, params, content: D.JSC(content)}})}`);
             content = _.flatten([content]).map(x => x.replace(/a\s*style.*?height[^;]*;/gu, `a style="height: ${params.height};`));
             if (D.WatchList.includes("HTML-ButtonLine") && !options.isSilent)
                 sendChat(
@@ -512,15 +528,13 @@ const C = (() => {
                     fontWeight: "normal",
                     textShadow: "none",
                     buttonPadding: "3px",
-                    buttonTransform: "uppercase"
+                    buttonTransform: "uppercase",
+                    boxShadow: "none"
                 },
                 options
             );
             if (D.WatchList.includes("HTML-Button") && !options.isSilent)
-                sendChat(
-                    "HTML",
-                    `/w Storyteller ${C.HTML.CodeBlock({header: "Button", content: {options, params, content: {name, command}}})}`
-                );
+                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "Button", content: {options, params, content: {name, command}}})}`);
             return D.JSH(`<span style="   
                     height: ${params.height};
                     width: ${params.width};                 
@@ -545,6 +559,7 @@ const C = (() => {
                     padding: 0px;
                     font-weight: ${params.fontWeight};
                     text-shadow: ${params.textShadow};
+                    box-shadow: ${params.boxShadow};
                 " href="${command}">${name}</a></span>`);
         },
         ButtonSpacer: (width, isSilent = false) => {
@@ -1106,22 +1121,19 @@ const C = (() => {
             D.JSH(
                 `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[
                     color
-                ] ||
-                    COLORS.white}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
+                ] || COLORS.white}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
             ),
         smallOutcome: (content, color) =>
             D.JSH(
                 `<div style="display: block; width: 100%; margin-top: 5px; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[
                     color
-                ] ||
-                    COLORS.white}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
+                ] || COLORS.white}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
             ),
         subOutcome: (content, color) =>
             D.JSH(
                 `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[
                     color
-                ] ||
-                    COLORS.white}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
+                ] || COLORS.white}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
             )
     };
     const STYLES = {
@@ -1133,15 +1145,13 @@ const C = (() => {
             header: {
                 color: COLORS.halfwhite,
                 bgColor: COLORS.transparent,
-                textShadow:
-                    "-1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 0px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc",
+                textShadow: "-1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 0px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc",
                 border: "none"
             },
             body: {
                 color: COLORS.halfwhite,
                 bgColor: COLORS.transparent,
-                textShadow:
-                    "-1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 0px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc",
+                textShadow: "-1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 0px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc",
                 border: "none",
                 fontSize: "16px",
                 fontFamily: "Voltaire",
@@ -1150,8 +1160,7 @@ const C = (() => {
             paragraph: {
                 color: COLORS.halfwhite,
                 bgColor: COLORS.transparent,
-                textShadow:
-                    "-1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 0px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc",
+                textShadow: "-1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 0px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc",
                 border: "none",
                 fontSize: "12px",
                 fontFamily: "Voltaire",
@@ -1474,17 +1483,7 @@ const C = (() => {
     };
     const SKILLS = {
         physical: ["Athletics", "Brawl", "Craft", "Drive", "Firearms", "Melee", "Larceny", "Stealth", "Survival"],
-        social: [
-            "Animal Ken",
-            "Etiquette",
-            "Insight",
-            "Intimidation",
-            "Leadership",
-            "Performance",
-            "Persuasion",
-            "Streetwise",
-            "Subterfuge"
-        ],
+        social: ["Animal Ken", "Etiquette", "Insight", "Intimidation", "Leadership", "Performance", "Persuasion", "Streetwise", "Subterfuge"],
         mental: ["Academics", "Awareness", "Finance", "Investigation", "Medicine", "Occult", "Politics", "Science", "Technology"]
     };
     const ATTRABBVS = {
@@ -2451,11 +2450,7 @@ const C = (() => {
             '"Thou shall not reveal thy true nature to those not of the Blood.',
             'Doing so forfeits your claim to the Blood."'
         ],
-        Domain: [
-            "~ THE SECOND TRADITION ~",
-            '"All others owe thee respect while in thy domain.',
-            'None may challenge thy word while in it."'
-        ],
+        Domain: ["~ THE SECOND TRADITION ~", '"All others owe thee respect while in thy domain.', 'None may challenge thy word while in it."'],
         Progeny: ["~ THE THIRD TRADITION ~", '"Thou shall only Sire another with the permission of thine Eldest."'],
         Accounting: [
             "~ THE FOURTH TRADITION ~",

@@ -2,8 +2,8 @@
 	'Percolator' = title
 	'Bodoni SvtyTwo ITC TT' = headers
 	'Cormorant Garamond' = text
-	HEADER URL IS https://imgur.com/DJ3KxdD.png
-	FOOTER URL IS https://imgur.com/FNL9mcz.png
+	HEADER URL IS https://i.imgur.com/DJ3KxdD.png
+	FOOTER URL IS https://i.imgur.com/FNL9mcz.png
 */
 
 	/* CSS - Cascading Style Sheet */
@@ -34,7 +34,7 @@
 		padding: 0px 0px !important;
 
 		display: block;
-		background: url('https://imgur.com/cEhqqBG.png');
+		background: url("https://i.imgur.com/cEhqqBG.png");
 		background-size: 100%;
 
 		font-family: 'Cormorant Garamond';
@@ -89,7 +89,7 @@
 
 	.charsheet select {
 		-webkit-appearance: none;
-		background: url('https://i.imgur.com/XGlqfRG.png') no-repeat right;
+		background: url("https://i.imgur.com/XGlqfRG.png") no-repeat right;
 		background-size: 15px 10px;
 		padding-right: 5px;
 	}
@@ -573,7 +573,7 @@
 	}
 
 	.charsheet input.sheet-grouptab:checked+span {
-		background: url("https://imgur.com/tgcewDw.png") no-repeat center;
+		background: url("https://i.imgur.com/tgcewDw.png") no-repeat center;
 		background-size: 110% !important;
 	}
 
@@ -640,12 +640,12 @@
 
 	.charsheet input.sheet-grouptab1+span {
 		margin-left: -107px;
-		background: url('https://i.imgur.com/nyijq1d.png') no-repeat top;
+		background: url("https://i.imgur.com/nyijq1d.png") no-repeat top;
 		background-size: 100% !important;
 	}
 
 	.charsheet input.sheet-grouptab1:checked+span {
-		background: url('https://i.imgur.com/OeYmczC.png') no-repeat top;
+		background: url("https://i.imgur.com/OeYmczC.png") no-repeat top;
 		background-size: 100% !important;
 	}
 
@@ -692,67 +692,67 @@
 
 	.charsheet input.sheet-tab0+span {
 		margin-left: 0px;
-		background: url('https://i.imgur.com/zW9MeTb.png') no-repeat top;
+		background: url("https://i.imgur.com/zW9MeTb.png") no-repeat top;
 	}
 
 	.charsheet input.sheet-tab0:checked+span {
-		background: url('https://i.imgur.com/gPLHQMW.png') no-repeat top;
+		background: url("https://i.imgur.com/gPLHQMW.png") no-repeat top;
 	}
 
 	.charsheet input.sheet-tab1+span {
-		background: url('https://imgur.com/n9ZUm0N.png') no-repeat center;
+		background: url("https://i.imgur.com/n9ZUm0N.png") no-repeat center;
 	}
 
 	.charsheet input.sheet-tab1:checked+span {
-		background: url('https://imgur.com/UKf9Utd.png') no-repeat center;
+		background: url("https://i.imgur.com/UKf9Utd.png") no-repeat center;
 	}
 
 	.charsheet input.sheet-tab2+span {
-		background: url('https://imgur.com/Huyeyla.png') no-repeat center;
+		background: url("https://i.imgur.com/Huyeyla.png") no-repeat center;
 	}
 
 	.charsheet input.sheet-tab2:checked+span {
-		background: url('https://imgur.com/7X0Yd7L.png') no-repeat center;
+		background: url("https://i.imgur.com/7X0Yd7L.png") no-repeat center;
 	}
 
 	.charsheet input.sheet-tab3+span {
-		background: url('https://imgur.com/Jd3cDeh.png') no-repeat center;
+		background: url("https://i.imgur.com/Jd3cDeh.png") no-repeat center;
 	}
 
 	.charsheet input.sheet-tab3:checked+span {
-		background: url('https://imgur.com/ohn2ui6.png') no-repeat center;
+		background: url("https://i.imgur.com/ohn2ui6.png") no-repeat center;
 	}
 
 	.charsheet input.sheet-tab4+span {
-		background: url('https://i.imgur.com/G35HEdC.png') no-repeat center;
+		background: url("https://i.imgur.com/G35HEdC.png") no-repeat center;
 	}
 
 	.charsheet input.sheet-tab4:checked+span {
-		background: url('https://i.imgur.com/sgt3kyQ.png') no-repeat center;
+		background: url("https://i.imgur.com/sgt3kyQ.png") no-repeat center;
 	}
 
 	/* .charsheet input.sheet-tab5+span {
-		background: url('https://imgur.com/0tZn5fi.png') no-repeat center;
+		background: url("https://i.imgur.com/0tZn5fi.png") no-repeat center;
 	}
 
 	.charsheet input.sheet-tab5:checked+span {
-		background: url('https://imgur.com/hzE9fjl.png') no-repeat center;
+		background: url("https://i.imgur.com/hzE9fjl.png") no-repeat center;
 	} */
 
 	.charsheet input.sheet-tab5+span {
-		background: url('https://imgur.com/Fe8tW8v.png') no-repeat center;
+		background: url("https://i.imgur.com/Fe8tW8v.png") no-repeat center;
 	}
 
 	.charsheet input.sheet-tab5:checked+span {
-		background: url('https://imgur.com/c29Guhd.png') no-repeat center;
+		background: url("https://i.imgur.com/c29Guhd.png") no-repeat center;
 	}
 
 	.charsheet input.sheet-tab9+span {
-		background: url('https://imgur.com/59zUk2e.png') no-repeat center;
+		background: url("https://i.imgur.com/59zUk2e.png") no-repeat center;
 	}
 
 	.charsheet input.sheet-tab9:checked+span {
-		background: url('https://imgur.com/lI1fhK7.png') no-repeat center;
+		background: url("https://i.imgur.com/lI1fhK7.png") no-repeat center;
 	}
 
 	/*#endregion*/
@@ -793,7 +793,7 @@
 	.charsheet input.sheet-attr:checked+textarea {
 		color: white !important;
 
-		background: url("https://imgur.com/tgcewDw.png") center no-repeat;
+		background: url("https://i.imgur.com/tgcewDw.png") center no-repeat;
 		text-shadow: 0px 0px 2px red, 0px 0px 2px red, 0px 0px 2px red;
 	}
 
@@ -927,7 +927,7 @@
 		height: 16px;
 		width: 16px;
 		margin: -2px 0px 2px -1px;
-		background: url('http://imgsrv.roll20.net:5100/?src=imgur.com/U5ZW214.png') no-repeat center;
+		background: url("https://i.imgur.com/U5ZW214.png") no-repeat center;
 
 		content: "";
 
@@ -1038,14 +1038,14 @@
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-superficialdot+span::before {
 		content: "";
 
-		background: url(https://imgur.com/e7l3Cx8.png);
+		background: url("https://i.imgur.com/e7l3Cx8.png");
 		background-size: 100%;
 	}
 
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-aggravateddot+span::before {
 		content: "";
 
-		background: url(https://imgur.com/3gqGRAd.png);
+		background: url("https://i.imgur.com/3gqGRAd.png");
 		background-size: 100%;
 	}
 
@@ -1055,7 +1055,7 @@
 		margin-bottom: 1px;
 		content: "";
 
-		background: url('https://i.imgur.com/9ZoSd0Z.jpg') no-repeat center;
+		background: url("https://i.imgur.com/9ZoSd0Z.jpg") no-repeat center;
 		background-size: 120%;
 
 		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;
@@ -1068,7 +1068,7 @@
 		margin-top: 0px;
 		content: "";
 
-		background: url('https://i.imgur.com/IVia33U.jpg') no-repeat center;
+		background: url("https://i.imgur.com/IVia33U.jpg") no-repeat center;
 		background-size: 110%;
 		/*background-color: black;*/
 
@@ -1083,7 +1083,7 @@
 		margin-top: 0px;
 		content: "";
 
-		background: url('https://i.imgur.com/MmbObrq.jpg') no-repeat center;
+		background: url("https://i.imgur.com/MmbObrq.jpg") no-repeat center;
 		background-size: 110%;
 		/*background-color: black;*/
 
@@ -1156,7 +1156,6 @@
 		margin-left: -5px;
 
 		background: url("https://i.imgur.com/yN6Ru7a.png");
-		/* background: url("https://i.imgur.com/XGi10c2.png"); */
 		background-size: 100%;
 	}
 
@@ -1184,7 +1183,7 @@
 		display: none;
 		position: absolute;
 
-		background: url("https://imgur.com/kBl8aTO.jpg");
+		background: url("https://i.imgur.com/kBl8aTO.jpg");
 		background-size: 100%;
 
 		border: 3px white outset;
@@ -1662,7 +1661,7 @@
 		width: 14px;
 		margin-bottom: 2px;
 
-		background: url('https://imgur.com/U5ZW214.png');
+		background: url("https://i.imgur.com/U5ZW214.png");
 		background-size: 100%;
 
 		/*background: #74121e;
@@ -1710,12 +1709,12 @@
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-obvrouse1block:hover {
-		background: url('https://i.imgur.com/qSPNwfl.png');
+		background: url("https://i.imgur.com/qSPNwfl.png");
 
 	}
 	
 	.charsheet div.sheet-rouserollblock div.sheet-obvrouse2block:hover {
-		background: url('https://i.imgur.com/euEWBix.png');		
+		background: url("https://i.imgur.com/euEWBix.png");		
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rouse1block {
@@ -1724,7 +1723,7 @@
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rouse1block:hover {
-		background: url('https://i.imgur.com/IM1PoBQ.png');
+		background: url("https://i.imgur.com/IM1PoBQ.png");
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rouse2block {
@@ -1733,7 +1732,7 @@
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rouse2block:hover {
-		background: url('https://i.imgur.com/PwHQhJs.png');
+		background: url("https://i.imgur.com/PwHQhJs.png");
 	}
 	
 	.charsheet div.sheet-rouserollblock div.sheet-discblock {
@@ -1742,7 +1741,7 @@
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-discblock:hover {
-		background: url('https://i.imgur.com/90qOGFe.png');
+		background: url("https://i.imgur.com/90qOGFe.png");
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rollblock {
@@ -1752,7 +1751,7 @@
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rollblock:hover {
-		background: url('https://i.imgur.com/2lV8SRi.png') center no-repeat;
+		background: url("https://i.imgur.com/2lV8SRi.png") center no-repeat;
 	}
 
 	.charsheet div.sheet-longbuttonblock {
@@ -1774,7 +1773,7 @@
 	}
 
 	.charsheet div.sheet-longbuttonblock div.sheet-checkblock:hover {
-		background: url('https://imgur.com/MftmtUs.png');
+		background: url("https://i.imgur.com/MftmtUs.png");
 	}
 
 	.charsheet div.sheet-longbuttonblock div.sheet-willpowerblock {
@@ -1783,7 +1782,7 @@
 	}
 
 	.charsheet div.sheet-longbuttonblock div.sheet-willpowerblock:hover {
-		background: url('https://imgur.com/9zfAjdn.png');
+		background: url("https://i.imgur.com/9zfAjdn.png");
 	}
 
 	.charsheet div.sheet-longbuttonblock div.sheet-humanityblock {
@@ -1792,7 +1791,7 @@
 	}
 
 	.charsheet div.sheet-longbuttonblock div.sheet-humanityblock:hover {
-		background: url('https://imgur.com/niwPzG0.png');
+		background: url("https://i.imgur.com/niwPzG0.png");
 	}
 
 	.charsheet div.sheet-longbuttonblock div.sheet-frenzyblock {
@@ -1801,7 +1800,7 @@
 	}
 
 	.charsheet div.sheet-longbuttonblock div.sheet-frenzyblock:hover {
-		background: url('https://imgur.com/ZKxUMKR.png');
+		background: url("https://i.imgur.com/ZKxUMKR.png");
 	}
 
 	.charsheet div.sheet-longbuttonblock div.sheet-remorseblock {
@@ -1810,7 +1809,7 @@
 	}
 
 	.charsheet div.sheet-longbuttonblock div.sheet-remorseblock:hover {
-		background: url('https://imgur.com/Jv9M176.png');
+		background: url("https://i.imgur.com/Jv9M176.png");
 	}
 
 	.charsheet div.sheet-longbuttonblock div.sheet-rollpooldisplayblock {
@@ -2118,7 +2117,7 @@
 		width: 18px !important;
 		line-height: 18px;
 
-		background: url('https://imgur.com/U5ZW214.png') no-repeat center;
+		background: url("https://i.imgur.com/U5ZW214.png") no-repeat center;
 		background-size: 100%;
 
 		border: none;
@@ -2817,7 +2816,7 @@
 		content: "";
 		height: 22px;
 		width: 22px;
-		background: url('https://imgur.com/A4v3nCL.jpg') no-repeat center;
+		background: url("https://i.imgur.com/A4v3nCL.jpg") no-repeat center;
 		background-size: 100%;
 
 		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;
@@ -2827,7 +2826,7 @@
 		height: 22px;
 		width: 22px;
 
-		background: url('https://imgur.com/vEVEDO6.jpg') no-repeat center;
+		background: url("https://i.imgur.com/vEVEDO6.jpg") no-repeat center;
 		background-size: 100%;	
 
 		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;	
@@ -2837,7 +2836,7 @@
 		height: 22px;
 		width: 22px;
 
-		background: url('https://imgur.com/HqpPEKg.jpg') no-repeat center;
+		background: url("https://i.imgur.com/HqpPEKg.jpg") no-repeat center;
 		background-size: 100%;
 
 		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;
@@ -2847,7 +2846,7 @@
 		height: 22px;
 		width: 22px;
 
-		background: url('https://imgur.com/Ll9GkCx.jpg') no-repeat center;
+		background: url("https://i.imgur.com/Ll9GkCx.jpg") no-repeat center;
 		background-size: 100%;
 
 		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;
@@ -2946,57 +2945,57 @@
 	}
 	
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter10 {
-		background: url('https://i.imgur.com/hWH5mmb.png') no-repeat center;
+		background: url("https://i.imgur.com/hWH5mmb.png") no-repeat center;
 		background-size: 100%;
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter9 {
-		background: url('https://i.imgur.com/4P7W0SV.png') no-repeat center;
+		background: url("https://i.imgur.com/4P7W0SV.png") no-repeat center;
 		background-size: 100%;
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter8 {
-		background: url('https://i.imgur.com/AWKR1YN.png') no-repeat center;
+		background: url("https://i.imgur.com/AWKR1YN.png") no-repeat center;
 		background-size: 100%;
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter7 {
-		background: url('https://i.imgur.com/ADnqDaJ.png') no-repeat center;
+		background: url("https://i.imgur.com/ADnqDaJ.png") no-repeat center;
 		background-size: 100%;
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter6 {
-		background: url('https://i.imgur.com/u2rpb1w.png') no-repeat center;
+		background: url("https://i.imgur.com/u2rpb1w.png") no-repeat center;
 		background-size: 100%;
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter5 {
-		background: url('https://i.imgur.com/Kt1rHep.png') no-repeat center;
+		background: url("https://i.imgur.com/Kt1rHep.png") no-repeat center;
 		background-size: 100%;
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter4 {
-		background: url('https://i.imgur.com/dzHHTvd.png') no-repeat center;
+		background: url("https://i.imgur.com/dzHHTvd.png") no-repeat center;
 		background-size: 100%;
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter3 {
-		background: url('https://i.imgur.com/66KZSZs.png') no-repeat center;
+		background: url("https://i.imgur.com/66KZSZs.png") no-repeat center;
 		background-size: 100%;
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter2 {
-		background: url('https://i.imgur.com/d0pbZns.png') no-repeat center;
+		background: url("https://i.imgur.com/d0pbZns.png") no-repeat center;
 		background-size: 100%;
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter1 {
-		background: url('https://i.imgur.com/qFqGoez.png') no-repeat center;
+		background: url("https://i.imgur.com/qFqGoez.png") no-repeat center;
 		background-size: 100%;
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter0 {
-		background: url('https://i.imgur.com/OObRfKr.png') no-repeat center;
+		background: url("https://i.imgur.com/OObRfKr.png") no-repeat center;
 		background-size: 100%;
 	}		
 
@@ -3070,7 +3069,7 @@
 		width: 295px;
 		margin-bottom: -1px;
 
-		background: url('https://i.imgur.com/Jrqx770.png') no-repeat center;
+		background: url("https://i.imgur.com/Jrqx770.png") no-repeat center;
 		background-size: 100%;
 	}
 
@@ -3079,7 +3078,7 @@
 		height: 40px;
 		width: 55px;
 
-		background: url('https://i.imgur.com/Qf7QSO8.png') no-repeat center;
+		background: url("https://i.imgur.com/Qf7QSO8.png") no-repeat center;
 		background-size: 100%;
 	}
 
@@ -3090,12 +3089,12 @@
 		margin: 0px -1px;
 		pointer-events: auto;
 
-		background: url('https://i.imgur.com/PHb8inM.png') no-repeat center;
+		background: url("https://i.imgur.com/PHb8inM.png") no-repeat center;
 		background-size: 100%;
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-launchrollmid:hover {
-		background: url('https://i.imgur.com/6HPg7h0.png') no-repeat center;
+		background: url("https://i.imgur.com/6HPg7h0.png") no-repeat center;
 		background-size: 100%;
 	}
 
@@ -3103,7 +3102,7 @@
 		height: 40px;
 		width: 140px;
 
-		background: url('https://i.imgur.com/WAltncc.png') no-repeat center;
+		background: url("https://i.imgur.com/WAltncc.png") no-repeat center;
 		background-size: 100%;
 	}
 
@@ -3112,7 +3111,7 @@
 		height: 100px;
 		width: 295px;
 
-		background: url('https://i.imgur.com/cU3uPjZ.png') no-repeat center;
+		background: url("https://i.imgur.com/cU3uPjZ.png") no-repeat center;
 		background-size: 100%;
 	}
 

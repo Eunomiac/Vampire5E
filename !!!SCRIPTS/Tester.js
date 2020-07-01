@@ -54,6 +54,29 @@ const Tester = (() => {
     const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
+            case "errormessage": {
+                D.Chat(
+                    D.GMID(),
+                    C.HTML.Block([
+                        C.HTML.Title("Session Monologues"),
+                        C.HTML.SubHeader("Something's Fucky...", {
+                            lineHeight: "22px"
+                        }),
+                        C.HTML.Body(
+                            "No such prompt found to delete!  Now, since I'm the one who programmed that button you just clicked, this is entirely my fault.  Please let me know, so I can unfuck things.",
+                            {
+                                fontSize: "12px",
+                                fontFamily: "Voltaire",
+                                lineHeight: "14px",
+                                textAlign: "left",
+                                padding: "3px",
+                                margin: "0px"
+                            }
+                        )
+                    ])
+                );
+                break;
+            }
             case "pullout": {
                 const testArray = [
                     {author: "L", num: 1},
@@ -297,11 +320,9 @@ const Tester = (() => {
                 );
                 const soundReport = soundObjsData.map(
                     x =>
-                        `<tr><td><b>${x.title}</b></td><td style="background-color: ${
-                            x.status.isPlaying ? "rgba(0, 255, 0, 0.5)" : "white"
-                        };">${x.status.isLoop ? "<b><u>LOOP</u></b>" : ""} ${
-                            x.status.isSStop ? "(S)" : ""
-                        }</td><td style="font-family: Voltaire; font-size: 12px;">${x.id}</td></tr>`
+                        `<tr><td><b>${x.title}</b></td><td style="background-color: ${x.status.isPlaying ? "rgba(0, 255, 0, 0.5)" : "white"};">${
+                            x.status.isLoop ? "<b><u>LOOP</u></b>" : ""
+                        } ${x.status.isSStop ? "(S)" : ""}</td><td style="font-family: Voltaire; font-size: 12px;">${x.id}</td></tr>`
                 );
                 const playingSounds = soundReport.filter(x => x.includes("255, 0"));
                 const reportLines = [];
@@ -457,9 +478,7 @@ const Tester = (() => {
                     );
                 else
                     D.Alert(
-                        `Couldn't find macro '${D.JS(macroName)}'<br>Available macros:<br><br>${D.JS(
-                            macroObjs.map(x => x.get("name")).join(", ")
-                        )}`
+                        `Couldn't find macro '${D.JS(macroName)}'<br>Available macros:<br><br>${D.JS(macroObjs.map(x => x.get("name")).join(", "))}`
                     );
                 break;
             }
@@ -469,9 +488,7 @@ const Tester = (() => {
                     charObj.get("_defaulttoken", defToken => {
                         const imgMatch = D.JS(defToken).match(/imgsrc:(.*?),/u);
                         if (imgMatch && imgMatch.length) {
-                            returnStrings.push(
-                                `<b>${D.JS(D.GetName(charObj, true))}</b>: ${D.JS(imgMatch[1].replace(/med\.png/gu, "thumb.png"))}`
-                            );
+                            returnStrings.push(`<b>${D.JS(D.GetName(charObj, true))}</b>: ${D.JS(imgMatch[1].replace(/med\.png/gu, "thumb.png"))}`);
                             D.Alert(`${returnStrings.length} Strings Found`);
                         }
                     });
@@ -513,8 +530,7 @@ const Tester = (() => {
             case "exist": {
                 if (args[1])
                     D.Alert(
-                        `${args[0].toUpperCase()} Object with ID ${args[1]}: ${(Boolean(getObj(args[0], args[1])) && "Exists") ||
-                            "Does NOT Exist"}`
+                        `${args[0].toUpperCase()} Object with ID ${args[1]}: ${(Boolean(getObj(args[0], args[1])) && "Exists") || "Does NOT Exist"}`
                     );
                 break;
             }
@@ -560,8 +576,7 @@ const Tester = (() => {
                 ];
                 const tableFunc = arr => {
                     let tableRow = "<tr>";
-                    for (let i = 0; i < arr.length; i++)
-                        tableRow += `<td style="width:100px;">${_.isUndefined(arr[i]) ? "UN" : arr[i]}</td>`;
+                    for (let i = 0; i < arr.length; i++) tableRow += `<td style="width:100px;">${_.isUndefined(arr[i]) ? "UN" : arr[i]}</td>`;
                     tableRow += "<tr>";
                     return tableRow;
                 };
@@ -576,25 +591,17 @@ const Tester = (() => {
                         ).slice(1);
                         if (!month || !day || !year) return str;
                         if (
-                            !["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(
-                                month.toLowerCase()
-                            ) &&
+                            !["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(month.toLowerCase()) &&
                             month > 12
                         )
                             [day, month] = [month, day];
-                        if (
-                            !["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(
-                                month.toLowerCase()
-                            )
-                        )
+                        if (!["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(month.toLowerCase()))
                             month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"][month - 1];
                         if (`${year}`.length < 3) year = D.Int(year) + 2000;
                         day = D.Int(day);
                         return new Date([
                             year,
-                            ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(
-                                month.toLowerCase()
-                            ) + 1,
+                            ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase()) + 1,
                             day
                         ]);
                     }
@@ -674,9 +681,9 @@ const Tester = (() => {
                             x =>
                                 ` ...     ${x.get("layer").toUpperCase()}: *${x.get("text")}* (${
                                     x.get("text").length
-                                } chars)<br> ...      ...     (${x.get("left")}, ${x.get("top")}) Size: ${x.get(
-                                    "font_size"
-                                )}, Color: ${x.get("color")}<br> ...      ...     ${x.id}<br>`
+                                } chars)<br> ...      ...     (${x.get("left")}, ${x.get("top")}) Size: ${x.get("font_size")}, Color: ${x.get(
+                                    "color"
+                                )}<br> ...      ...     ${x.id}<br>`
                         ),
                         ""
                     );

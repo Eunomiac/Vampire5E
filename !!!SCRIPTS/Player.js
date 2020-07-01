@@ -41,15 +41,30 @@ const Player = (() => {
                 }
                 break;
             }
-            case "!spotprompt":
-            case "!spotlightprompt": {
+            case "!prompt": {
+                switch (D.LCase((call = args.shift()))) {
+                    case "submit": {
+                        const [toChar, fromChar, ...promptText] = args;
+                        Session.SubmitPrompt(toChar, fromChar, promptText.join(" "));
+                        break;
+                    }
+                    case "review": {
+                        Session.ReviewPrompts(D.GetCharData(msg.who).initial);
+                        break;
+                    }
+                    case "delete": {
+                        const [toChar, fromChar, promptID] = args;
+                        Session.DeletePrompt(toChar, fromChar, promptID);
+                        break;
+                    }
+                    // no default
+                }
                 // !spotprompt <toInitial> <fromInitial> <promptText>
-                const [toChar, fromChar, ...promptText] = args;
-                Session.SubmitPrompt(toChar, fromChar, promptText.join(" "));
+
                 break;
             }
             case "!mvc": {
-                MVC({name: msg.who});
+                MVC(msg.playerid);
                 break;
             }
             case "!token": {
@@ -84,11 +99,10 @@ const Player = (() => {
                             ),
                             C.HTML.ButtonLine(
                                 [
-                                    C.HTML.Button(
-                                        "Rules & Reference",
-                                        "https://drive.google.com/open?id=1QMAPnl7wYMpXVyp-BYbi_c-gl1V20UTe",
-                                        {width: "33%", color: "white"}
-                                    ),
+                                    C.HTML.Button("Rules & Reference", "https://drive.google.com/open?id=1QMAPnl7wYMpXVyp-BYbi_c-gl1V20UTe", {
+                                        width: "33%",
+                                        color: "white"
+                                    }),
                                     C.HTML.Button("House Rules", "https://drive.google.com/open?id=18v4b45LEQwfx5Kw-qLVd-sFnQ2tnj4CR", {
                                         width: "33%",
                                         color: "white"
@@ -109,7 +123,7 @@ const Player = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region MVC: Minimally-Viable Character Design
-    const MVC = params => {
+    const MVC = playerID => {
         const results = [];
         for (const mvc of C.MVCVALS) {
             results.push(C.HTML.MVC.title(mvc[0]));
@@ -120,7 +134,7 @@ const Player = (() => {
                     return THROW(`ERRORED returning '${D.JSL(fType)}' for '${D.JSL(mvcItems)}' of '${D.JSL(mvc)}'`, "MVC", errObj);
                 }
         }
-        D.Chat(params.name, C.HTML.MVC.fullBox(results.join("")), " ");
+        D.Chat(playerID, C.HTML.MVC.fullBox(results.join("")), " ");
         return true;
     };
     // #endregion

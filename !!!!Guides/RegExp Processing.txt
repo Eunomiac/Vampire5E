@@ -1,0 +1,113 @@
+ LEGEND     🟡: Custom String        
+═════════   🔳: Multiline OFF / ⬜: Multiline ON
+            🔶: Replace With Blank (if alone)
+            
+
+TEMPLATES   🔳 💠🟡💠   ➡️   🔶🔶
+═════════   ⬜ 💠🟡💠   ➡️   🔶🔶
+
+
+LOCATING IMAGES IN CSS & HTML FILES FOR LOADING BAY:
+════════════════════════════════════════════════════
+
+
+SEPARATING FIELDSETS (i.e. before finding non-fieldset attributes)
+══════════════════════════════════════════════════════════════════
+⬜ 💠<fieldset.*?<\/fieldset>💠   ➡️   🔶                                  (REMOVES all fieldsets)
+⬜ 💠<\/fieldset>.*?<fieldset💠   ➡️   🔶</fieldset>\r\n<fieldset🔶        (removes all NON fieldsets)
+
+FILTERING FOR ONLY LINES WITH <STRING>
+══════════════════════════════════════
+🔳 💠^((?!🟡).)*$\r?\n?💠   ➡️   🔶
+🔳 💠(^((?!🟡).)*$\r?\n?)|((^[ \t]+$\n?)|((?:[ \t])[ \t]))💠   ➡️   🔶     (left-justifies all lines)
+
+    🟡type="hidden"🟡   - finds all "hidden" inputs
+    🟡name="attr_🟡     - finds all attributes
+    🟡img src="🟡       - finds all images in HTML file
+    🟡imgur🟡           - finds all images in CSS file
+
+
+WORK TO DO:
+
+Must add value="" to each of these attributes in HTML sheet:
+
+attr_advantage_details
+attr_advantage_name
+attr_negadvantage_details
+attr_negadvantage_name
+attr_boonowed_to
+attr_boonowed_details
+attr_boonowing_from
+attr_boonowing_details
+attr_details
+attr_domain_personal
+attr_domain_haven
+attr_domain_coterie
+attr_domain_hunt
+attr_assets_carried
+attr_assets_stashed
+attr_assets_vehicles
+attr_assets_other
+attr_tenet
+attr_tenetid
+attr_conviction
+attr_touchstone_name
+attr_convictionid
+attr_touchstoneid
+attr_maskname
+attr_mask
+attr_deathmarks
+attr_char_dob
+attr_char_doe
+attr_mortal_ambition
+attr_mortal_history
+attr_projectdetails
+attr_projectscope_name
+attr_projectgoal
+attr_objectivedate
+attr_projectdetails
+attr_projectscope_name
+attr_projectgoal
+attr_projectstartdate
+attr_projectincnum
+attr_projectincunit
+attr_projectenddate
+attr_projectlaunchtrait1_name
+attr_projectlaunchtrait2_name
+attr_projectstake1_name
+attr_projectstake2_name
+attr_projectstake3_name
+attr_projectdetails
+attr_projectscope_name
+attr_projectgoal
+attr_memoriamdate
+attr_memoriamrewards
+attr_memoriamresult
+attr_projectdetails
+attr_projectscope_name
+attr_projectgoal
+attr_eventdate
+attr_tlcategory
+attr_tldotdisplay
+attr_tlstartdate
+attr_tlenddate
+attr_tldetails
+attr_tltitle
+attr_tlsummary
+attr_tlthirdline
+attr_ambition
+attr_desire
+attr_desireid
+attr_xp_summary
+attr_xp_spent_toggle
+attr_xp_trait
+attr_xp_cost
+attr_xp_session
+attr_xp_award
+attr_xp_reason
+attr_xp_session
+attr_xp_award
+attr_xp_reason
+
+
+    

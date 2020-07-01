@@ -53,9 +53,7 @@ const TimeTracker = (() => {
             STATE.REF.nextSessionDate || new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"})).getTime();
         STATE.REF.lastDate = STATE.REF.lastDate || 0;
         STATE.REF.weatherOverride = STATE.REF.weatherOverride || {};
-        STATE.REF.timeZoneOffset = D.Int(
-            new Date().toLocaleString("en-US", {hour: "2-digit", hour12: false, timeZone: "America/New_York"})
-        );
+        STATE.REF.timeZoneOffset = D.Int(new Date().toLocaleString("en-US", {hour: "2-digit", hour12: false, timeZone: "America/New_York"}));
         STATE.REF.weatherData = STATE.REF.weatherData || RAWWEATHERDATA;
         // STATE.REF.weatherData = RAWWEATHERDATA
 
@@ -211,12 +209,7 @@ const TimeTracker = (() => {
                     case "weath":
                     case "weather": {
                         D.Alert("Weather Running!");
-                        setManualWeather(
-                            args[0] && args[0] + (args[0].length === 1 ? "x" : ""),
-                            args[1] && D.Int(args[1]),
-                            args[2],
-                            args[3]
-                        );
+                        setManualWeather(args[0] && args[0] + (args[0].length === 1 ? "x" : ""), args[1] && D.Int(args[1]), args[2], args[3]);
                         break;
                     }
                     case "session": {
@@ -507,9 +500,7 @@ const TimeTracker = (() => {
                     [
                         C.HTML.Header("You Awaken at Dusk:"),
                         C.HTML.Body(
-                            ["You rouse your Hunger to wake,", "and to heal aggravated Health damage.", "You refresh your Willpower."].join(
-                                "<br>"
-                            )
+                            ["You rouse your Hunger to wake,", "and to heal aggravated Health damage.", "You refresh your Willpower."].join("<br>")
                         )
                     ].join("")
                 )
@@ -521,8 +512,7 @@ const TimeTracker = (() => {
         },
         delrolleffect: (charRef, effectString) => {
             const charObj = D.GetChar(charRef);
-            if (VAL({charObj, string: effectString}))
-                if (!Roller.DelCharEffect(charObj.id, effectString)) Roller.DelGlobalEffect(effectString);
+            if (VAL({charObj, string: effectString})) if (!Roller.DelCharEffect(charObj.id, effectString)) Roller.DelGlobalEffect(effectString);
         },
         delcharflag: (charRef, flagName, flagDisplayName, chatStyle) => {
             const charObj = D.GetChar(charRef);
@@ -542,8 +532,7 @@ const TimeTracker = (() => {
         reminjury: (charRef, effectString, chatMsg) => {
             const charObj = D.GetChar(charRef);
             if (VAL({charObj})) {
-                if (chatMsg)
-                    D.Chat(charObj.id, C.HTML.Block(C.HTML.Header(chatMsg, C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block));
+                if (chatMsg) D.Chat(charObj.id, C.HTML.Block(C.HTML.Header(chatMsg, C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block));
                 D.Call(`!roll effect del char ${charObj.id} ${effectString}`);
             } else {
                 THROW(`No Character Found for ${D.JS(charRef)}`, "reminjury");
@@ -601,20 +590,7 @@ const TimeTracker = (() => {
     const TWEENDURS = [15, 40, 60, 600, 1440, 3000, 5000, 7000, 8000, 9000, 10000, Infinity];
     const RUNNINGFASTAT = 1500000;
     const DAYSOFWEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const MONTHS = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
-    ];
+    const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const TWILIGHT = [
         ["7:44", "17:12"],
         ["7:11", "17:51"],
@@ -779,10 +755,7 @@ const TimeTracker = (() => {
                             year = year || D.PullOut(parsedDateString, v => v > 31);
                             month =
                                 month ||
-                                D.PullOut(
-                                    parsedDateString,
-                                    v => VAL({string: v}) || (v <= 12 && parsedDateString.filter(x => x <= 12).length === 1)
-                                );
+                                D.PullOut(parsedDateString, v => VAL({string: v}) || (v <= 12 && parsedDateString.filter(x => x <= 12).length === 1));
                             if (VAL({number: year})) day = day || D.PullOut(parsedDateString, v => v > 12);
                             if (parsedDateString.length === 2) {
                                 month = month || parsedDateString.shift();
@@ -835,10 +808,7 @@ const TimeTracker = (() => {
                         "parseToDateObj"
                     );
                 } else {
-                    DB(
-                        {["OTHER STRING!"]: dateRef, dateString, timeString, parsedDateString, day, month, year, returnDate},
-                        "parseToDateObj"
-                    );
+                    DB({["OTHER STRING!"]: dateRef, dateString, timeString, parsedDateString, day, month, year, returnDate}, "parseToDateObj");
                 }
                 return OFFSTACK(funcID) && returnDate;
             }
@@ -873,9 +843,7 @@ const TimeTracker = (() => {
         if (isParsingString)
             return (
                 OFFSTACK(funcID) &&
-                `${totHours % 12 || 12}:${totMins - 60 * totHours < 10 ? "0" : ""}${totMins - 60 * totHours} ${
-                    totHours % 24 >= 12 ? "P.M." : "A.M."
-                }`
+                `${totHours % 12 || 12}:${totMins - 60 * totHours < 10 ? "0" : ""}${totMins - 60 * totHours} ${totHours % 24 >= 12 ? "P.M." : "A.M."}`
             );
         return OFFSTACK(funcID) && [totHours % 24, totMins - 60 * totHours];
     };
@@ -945,9 +913,7 @@ const TimeTracker = (() => {
             OFFSTACK(funcID) &&
             `${
                 ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]
-            } ${date.getUTCDate()}, ${date.getUTCFullYear()}${
-                isIncludingTime ? `, ${formatTimeString(date).replace(/:(\d\s)/gu, ":0$1")}` : ""
-            }`
+            } ${date.getUTCDate()}, ${date.getUTCFullYear()}${isIncludingTime ? `, ${formatTimeString(date).replace(/:(\d\s)/gu, ":0$1")}` : ""}`
         );
     };
     const addTime = (dateRef, delta, unit, isChangingOriginal = false) => {
@@ -1195,6 +1161,7 @@ const TimeTracker = (() => {
             isTickingClock = false;
             isFastTweeningClock = false;
         }
+        updateClockNotice();
         OFFSTACK(funcID);
     };
     const updateClockObj = () => {
@@ -1222,6 +1189,19 @@ const TimeTracker = (() => {
         STATE.REF.currentDate = STATE.REF.dateObj.getTime();
         return OFFSTACK(funcID) && true;
     };
+    const updateClockNotice = () => {
+        if (Media.HasForcedState("TimeTracker")) {
+            Media.SetTextData("clockStatusNotice", {color: C.COLORS.brightred});
+            Media.SetText("clockStatusNotice", "Forced State");
+        }
+        if (TimeTracker.IsClockRunning) {
+            Media.SetTextData("clockStatusNotice", {color: C.COLORS.brightgreen});
+            Media.SetText("clockStatusNotice", `${STATE.REF.secsPerMin}`);
+        } else {
+            Media.SetTextData("clockStatusNotice", {color: C.COLORS.brightred});
+            Media.SetText("clockStatusNotice", "OFF");
+        }
+    };
     const isUpdatingChars = () => {
         const lastDate = new Date(STATE.REF.lastDate);
         return (
@@ -1245,8 +1225,7 @@ const TimeTracker = (() => {
             const fID = ONSTACK();
             if (!isTweeningClock) return OFFSTACK(fID) && pauseClockTween() && false;
             if (Math.abs(STATE.REF.TweenCurTime) >= Math.abs(STATE.REF.TweenDuration)) return OFFSTACK(fID) && stopClockTween() && true;
-            const newDelta =
-                ((-1 * STATE.REF.TweenDelta) / 2) * (Math.cos((Math.PI * STATE.REF.TweenCurTime) / STATE.REF.TweenDuration) - 1);
+            const newDelta = ((-1 * STATE.REF.TweenDelta) / 2) * (Math.cos((Math.PI * STATE.REF.TweenCurTime) / STATE.REF.TweenDuration) - 1);
             isFastTweeningClock = Math.abs(newDelta - STATE.REF.TweenLastTime) > RUNNINGFASTAT;
             STATE.REF.TweenLastTime = newDelta;
             STATE.REF.dateObj.setTime(STATE.REF.TweenStart + newDelta);
@@ -1701,9 +1680,7 @@ const TimeTracker = (() => {
                 Media.ToggleImg("WeatherFog", false);
             }
         forecastLines.push(
-            (weatherData.event === "x" || weatherData.event === "c") && weatherData.isFoggy
-                ? WEATHERCODES[0].f
-                : WEATHERCODES[0][weatherData.event]
+            (weatherData.event === "x" || weatherData.event === "c") && weatherData.isFoggy ? WEATHERCODES[0].f : WEATHERCODES[0][weatherData.event]
         );
         if (weatherData.humidity !== "x") forecastLines.push(WEATHERCODES[1][weatherData.humidity]);
         forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherData.wind][1] : WEATHERCODES[2][weatherData.wind][0]);
@@ -1772,10 +1749,7 @@ const TimeTracker = (() => {
         return (
             OFFSTACK(funcID) &&
             _.values(weatherStrings)
-                .map(
-                    x =>
-                        `<div style="display: inline-block; width: 45%; margin: 2px 3% 0px 0px; height: auto;">${x.command} ${x.date}</div>`
-                )
+                .map(x => `<div style="display: inline-block; width: 45%; margin: 2px 3% 0px 0px; height: auto;">${x.command} ${x.date}</div>`)
                 .join("")
         );
     };
@@ -1980,22 +1954,14 @@ const TimeTracker = (() => {
                     color: ${
                         x === " "
                             ? C.COLORS.black
-                            : (isTimeInDay(
-                                  monthNum,
-                                  D.Int(x.replace(/ \w\w$/gu, "").replace(/12/gu, 0)) + ((x.includes("PM") && 12) || 0),
-                                  30
-                              ) &&
+                            : (isTimeInDay(monthNum, D.Int(x.replace(/ \w\w$/gu, "").replace(/12/gu, 0)) + ((x.includes("PM") && 12) || 0), 30) &&
                                   C.COLORS.darkpurple) ||
                               C.COLORS.gold
                     };
                     background-color: ${
                         x === " "
                             ? "transparent"
-                            : (isTimeInDay(
-                                  monthNum,
-                                  D.Int(x.replace(/ \w\w$/gu, "").replace(/12/gu, 0)) + ((x.includes("PM") && 12) || 0),
-                                  30
-                              ) &&
+                            : (isTimeInDay(monthNum, D.Int(x.replace(/ \w\w$/gu, "").replace(/12/gu, 0)) + ((x.includes("PM") && 12) || 0), 30) &&
                                   C.COLORS.palegold) ||
                               C.COLORS.darkblue
                     };
@@ -2009,9 +1975,7 @@ const TimeTracker = (() => {
                     width: 900px;
                     margin-bottom: 7px;
                 ">${hourSpans.join("")}</div>`;
-        const dayRows = new Array(STATE.REF.weatherData[monthNum].length)
-            .fill("")
-            .map((x, i) => singleDayRow(monthNum, i, isUpgrading, isRaw));
+        const dayRows = new Array(STATE.REF.weatherData[monthNum].length).fill("").map((x, i) => singleDayRow(monthNum, i, isUpgrading, isRaw));
         // dayRows = D.Clone(STATE.REF.weatherData[monthNum]).slice(1).map((x, i) => singleDayRow(monthNum, i))
         return (
             OFFSTACK(funcID) &&
@@ -2071,12 +2035,7 @@ const TimeTracker = (() => {
     const updateWeatherHandout = monthNum => {
         const funcID = ONSTACK();
         // Handouts.RemoveAll(MONTHS[monthNum])
-        Handouts.Set(
-            `${D.UCase(MONTHS[monthNum])} (Raw)`,
-            undefined,
-            `<h2>${MONTHS[monthNum]}</h2>${singleMonthBlock(monthNum, false, true)}`,
-            true
-        );
+        Handouts.Set(`${D.UCase(MONTHS[monthNum])} (Raw)`, undefined, `<h2>${MONTHS[monthNum]}</h2>${singleMonthBlock(monthNum, false, true)}`, true);
         Handouts.Set(
             `${D.UCase(MONTHS[monthNum])} (Current)`,
             undefined,
@@ -2089,10 +2048,7 @@ const TimeTracker = (() => {
         const funcID = ONSTACK();
         const defaultUpRates = {x: 0, c: 0, w: -0.3, p: -0.7, t: -1, s: 0.3, b: 1.2};
         upRates = Object.assign({}, defaultUpRates, upRates);
-        D.Alert(
-            `Processing Ground Cover for:<br>... meltRate: ${meltRate}<br>... upRates: ${D.JS(upRates)}`,
-            "Parse Codes for Ground Cover"
-        );
+        D.Alert(`Processing Ground Cover for:<br>... meltRate: ${meltRate}<br>... upRates: ${D.JS(upRates)}`, "Parse Codes for Ground Cover");
         let runningGroundCover = 0;
         for (const monthRange of [
             [6, 11],
@@ -2269,9 +2225,7 @@ const TimeTracker = (() => {
                             rawTally.event,
                             null,
                             (v, k) =>
-                                `<tr><td style="border-right: 1px solid black;">${
-                                    WEATHERCODES[0][k]
-                                }</td><td style="text-align: right;">${D.Int(
+                                `<tr><td style="border-right: 1px solid black;">${WEATHERCODES[0][k]}</td><td style="text-align: right;">${D.Int(
                                     (100 * (v[0] + v[1])) / totCodes,
                                     true
                                 )}%</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${D.Int(
@@ -2296,9 +2250,7 @@ const TimeTracker = (() => {
                             rawTally.wind,
                             null,
                             (v, k) =>
-                                `<tr><td style="border-right: 1px solid black;">${
-                                    WEATHERCODES[2][k][1]
-                                }</td><td style="text-align: right;">${D.Int(
+                                `<tr><td style="border-right: 1px solid black;">${WEATHERCODES[2][k][1]}</td><td style="text-align: right;">${D.Int(
                                     (100 * (v[0] + v[1])) / totCodes,
                                     true
                                 )}%</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${D.Int(

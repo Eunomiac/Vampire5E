@@ -30,11 +30,11 @@ const Session = (() => {
         // delete STATE.REF.SceneAlarms
         // STATE.REF.SceneAlarms = []
         // delete STATE.REF.SpotlightPrompts;
-        // setMacro(D.GetChar("A"), "Submit-Prompt", "!spotprompt ?{Who is this prompt for?|Bacchus,B|Napier,N|Dr. Roy,R|Locke,L|Myself!,A} A ?{What do you want to see during this player's spotlight? (Write the prompt as if you're speaking to the player directly.)}");
-        // setMacro(D.GetChar("N"), "Submit-Prompt", "!spotprompt ?{Who is this prompt for?|Bacchus,B|Dr. Roy,R|Locke,L|Ava,A|Myself!,N} N ?{What do you want to see during this player's spotlight? (Write the prompt as if you're speaking to the player directly.)}");
-        // setMacro(D.GetChar("R"), "Submit-Prompt", "!spotprompt ?{Who is this prompt for?|Bacchus,B|Napier,N|Locke,L|Ava,A|Myself!,R} R ?{What do you want to see during this player's spotlight? (Write the prompt as if you're speaking to the player directly.)}");
-        // setMacro(D.GetChar("L"), "Submit-Prompt", "!spotprompt ?{Who is this prompt for?|Bacchus,B|Napier,N|Dr. Roy,R|Ava,A|Myself!,L} L ?{What do you want to see during this player's spotlight? (Write the prompt as if you're speaking to the player directly.)}");
-        // setMacro(D.GetChar("B"), "Submit-Prompt", "!spotprompt ?{Who is this prompt for?|Napier,N|Dr. Roy,R|Locke,L|Ava,A|Myself!,B} B ?{What do you want to see during this player's spotlight? (Write the prompt as if you're speaking to the player directly.)}");
+        // setMacro(D.GetChar("A"), "Review-Prompts", "!prompt review");
+        // setMacro(D.GetChar("N"), "Review-Prompts", "!prompt review");
+        // setMacro(D.GetChar("R"), "Review-Prompts", "!prompt review");
+        // setMacro(D.GetChar("L"), "Review-Prompts", "!prompt review");
+        // setMacro(D.GetChar("B"), "Review-Prompts", "!prompt review");
 
         // STATE.REF.SessionScribes = ["TeatimeRationale", "Thaumaterge", "PixelPuzzler", "banzai", "Hastur"]
         // STATE.REF.customLocs["Queen's Landing Hallway"].district = "Cabbagetown"
@@ -623,11 +623,7 @@ const Session = (() => {
                 if (STATE.REF.LastMode !== "Complications")
                     D.Chat(
                         "all",
-                        C.HTML.Block([
-                            C.HTML.Title("Session Downtime"),
-                            C.HTML.Header("Session Status: Downtime"),
-                            C.HTML.Body("Clock Stopped.")
-                        ]),
+                        C.HTML.Block([C.HTML.Title("Session Downtime"), C.HTML.Header("Session Status: Downtime"), C.HTML.Body("Clock Stopped.")]),
                         null,
                         D.RandomString(3)
                     );
@@ -703,8 +699,7 @@ const Session = (() => {
 
     // #region Starting/Ending Sessions
     const startSession = () => {
-        const sessionScribe =
-            STATE.REF.isTestingActive && !STATE.REF.isFullTest ? STATE.REF.SessionScribes[0] : STATE.REF.SessionScribes.shift();
+        const sessionScribe = STATE.REF.isTestingActive && !STATE.REF.isFullTest ? STATE.REF.SessionScribes[0] : STATE.REF.SessionScribes.shift();
         if (STATE.REF.isTestingActive && !STATE.REF.isFullTest) STATE.REF.dateRecord = TimeTracker.CurrentDate.getTime();
         else STATE.REF.dateRecord = null;
         if (STATE.REF.SessionScribes.length === 0) {
@@ -790,8 +785,7 @@ const Session = (() => {
             if (!STATE.REF.isTestingActive || STATE.REF.isFullTest) {
                 STATE.REF.dateRecord = null;
                 for (const char of D.GetChars("registered"))
-                    if (STATE.REF.isTestingActive)
-                        D.Alert(`Would award 1 XP to ${D.JS(char)} if session active.`, "Full Test: Session.endSession()");
+                    if (STATE.REF.isTestingActive) D.Alert(`Would award 1 XP to ${D.JS(char)} if session active.`, "Full Test: Session.endSession()");
                     else Char.AwardXP(char, 1, "Session XP award.");
                 STATE.REF.SessionNum++;
             } else if (STATE.REF.dateRecord) {
@@ -871,8 +865,7 @@ const Session = (() => {
                 D.Queue(Roller.Clean, [], "ModeSwitch", 1);
                 D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2);
                 D.Queue(setModeLocations, [curMode], "ModeSwitch", 1);
-                if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
-                    D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1);
+                if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds)) D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1);
                 D.Queue(Media.SetLoadingMessage, ["Setting Time, Location & Weather..."], "ModeSwitch", 0.1);
                 D.Queue(MODEFUNCTIONS.enterMode[curMode], args, "ModeSwitch", 1);
                 D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1);
@@ -912,8 +905,7 @@ const Session = (() => {
                 D.Queue(Roller.Clean, [], "ModeSwitch", 1);
                 D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2);
                 D.Queue(setModeLocations, [curMode], "ModeSwitch", 1);
-                if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
-                    D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1);
+                if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds)) D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1);
                 D.Queue(Media.SetLoadingMessage, [`Deploying ${D.UCase(curMode)} Assets ...`], "ModeSwitch", 0.1);
                 D.Queue(MODEFUNCTIONS.enterMode[curMode], args, "ModeSwitch", 1);
                 D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1);
@@ -1197,18 +1189,12 @@ const Session = (() => {
             rows: [
                 ...siteMenuFirstRows,
                 ..._.chain({
-                    ["<<< Left"]: [
-                        "!reply focus@left",
-                        {width: "30%", bgColor: (STATE.REF.sceneFocus === "l" && C.COLORS.gold) || C.COLORS.grey}
-                    ],
+                    ["<<< Left"]: ["!reply focus@left", {width: "30%", bgColor: (STATE.REF.sceneFocus === "l" && C.COLORS.gold) || C.COLORS.grey}],
                     [">> Both <<"]: [
                         "!reply focus@center",
                         {width: "30%", bgColor: (STATE.REF.sceneFocus === "c" && C.COLORS.gold) || C.COLORS.grey}
                     ],
-                    ["Right >>>"]: [
-                        "!reply focus@right",
-                        {width: "30%", bgColor: (STATE.REF.sceneFocus === "r" && C.COLORS.gold) || C.COLORS.grey}
-                    ]
+                    ["Right >>>"]: ["!reply focus@right", {width: "30%", bgColor: (STATE.REF.sceneFocus === "r" && C.COLORS.gold) || C.COLORS.grey}]
                 })
                     .mapObject((v, k) => (v ? {name: k, command: v[0], styles: v[1]} : 0))
                     .values()
@@ -1233,9 +1219,7 @@ const Session = (() => {
         districtName = VAL({array: districtName}) ? districtName[0] : districtName;
         DB({districtName}, "getSiteMenuCode");
         const favSites = STATE.REF.FavoriteSites.filter(
-            x =>
-                (C.SITES[x] || STATE.REF.customLocs[x]).district === null ||
-                (C.SITES[x] || STATE.REF.customLocs[x]).district.includes(districtName)
+            x => (C.SITES[x] || STATE.REF.customLocs[x]).district === null || (C.SITES[x] || STATE.REF.customLocs[x]).district.includes(districtName)
         );
         const distSites = Object.keys(C.SITES).filter(x => C.SITES[x].district && C.SITES[x].district.includes(districtName));
         const namedSites = Object.keys(STATE.REF.customLocs).filter(
@@ -1504,9 +1488,7 @@ const Session = (() => {
 
         // FOURTH: Check site settings against custom locations to fill in any blanks, then set any necessary data in custom locations.
         reportStrings.push(
-            `Filtered Site List: ${D.JS(
-                _.omit(newLocData, (v, k) => k === "subLocs" || k.includes("District") || (v && v[0] === "blank"))
-            )}`
+            `Filtered Site List: ${D.JS(_.omit(newLocData, (v, k) => k === "subLocs" || k.includes("District") || (v && v[0] === "blank")))}`
         );
         for (const [sitePos, siteData] of Object.entries(
             _.omit(newLocData, (v, k) => k === "subLocs" || k.includes("District") || (v && v[0] === "blank"))
@@ -1564,8 +1546,7 @@ const Session = (() => {
             Object.keys(newLocData).filter(x => x !== "subLocs" && (isForcing || !_.isEqual(newLocData[x], curLocData[x])))
         );
         for (const [subLocPos, subLocName] of Object.entries(newLocData.subLocs || {}))
-            if (isForcing || !curLocData.subLocs || curLocData.subLocs[subLocPos] !== subLocName)
-                locDataDelta[`SubLoc${subLocPos}`] = subLocName;
+            if (isForcing || !curLocData.subLocs || curLocData.subLocs[subLocPos] !== subLocName) locDataDelta[`SubLoc${subLocPos}`] = subLocName;
         reportStrings.push(`Loc Data Delta: ${D.JS(locDataDelta)}`);
         reportStrings.push(`New STATE.REF Record: ${D.JS(STATE.REF.locationRecord[Session.Mode])}`);
         DB(`<h3>Set Location Processing:</h3>${D.JS(reportStrings.join("<br>"))}`, "setLocation");
@@ -1581,75 +1562,60 @@ const Session = (() => {
     const distCommandMenu = () => {
         DB({["Into District PENDINGLOCCOMMAND:"]: PENDINGLOCCOMMAND}, "distCommandMenu");
         PENDINGLOCCOMMAND.workingIndex = PENDINGLOCCOMMAND.Districts.length;
-        D.CommandMenu(
-            (PENDINGLOCCOMMAND.workingIndex === 1 && MENUHTML.DistrictMenuSecond) || MENUHTML.DistrictMenuFirst,
-            commandString => {
-                if (commandString === "reset") {
-                    PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND);
-                    Media.Notify("panel", "● Resetting pending location data.");
-                    distCommandMenu();
+        D.CommandMenu((PENDINGLOCCOMMAND.workingIndex === 1 && MENUHTML.DistrictMenuSecond) || MENUHTML.DistrictMenuFirst, commandString => {
+            if (commandString === "reset") {
+                PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND);
+                Media.Notify("panel", "● Resetting pending location data.");
+                distCommandMenu();
+            } else {
+                const cmdIndex = PENDINGLOCCOMMAND.workingIndex;
+                const curLocations = getAllLocations();
+                switch (commandString) {
+                    case "match": {
+                        if (cmdIndex === 1) {
+                            commandString = PENDINGLOCCOMMAND.Districts[0][0];
+                            Media.Notify("panel", `● Setting District RIGHT to MATCH: "${commandString}"`);
+                            break;
+                        }
+                        Media.Notify("panel", "● No District to Match (Assuming 'CENTER')...");
+                    }
+                    // falls through
+                    case "center": {
+                        commandString = curLocations.DistrictCenter || curLocations.DistrictLeft || curLocations.DistrictRight;
+                        Media.Notify("panel", `● Setting District${cmdIndex === 1 ? " RIGHT" : " (First)"} to "SAME CENTER": "${commandString}"`);
+                        break;
+                    }
+                    case "left": {
+                        commandString = curLocations.DistrictLeft || curLocations.DistrictCenter || curLocations.DistrictRight;
+                        Media.Notify("panel", `● Setting District${cmdIndex === 1 ? " RIGHT" : " (First)"} to "SAME LEFT": "${commandString}"`);
+                        break;
+                    }
+                    case "right": {
+                        commandString = curLocations.DistrictRight || curLocations.DistrictCenter || curLocations.DistrictLeft;
+                        Media.Notify("panel", `● Setting District${cmdIndex === 1 ? " RIGHT" : " (First)"} to "SAME RIGHT": "${commandString}"`);
+                        break;
+                    }
+                    // no default
+                }
+                PENDINGLOCCOMMAND.Districts[cmdIndex] = [commandString];
+                Media.Notify("panel", `● District${cmdIndex === 1 ? " RIGHT" : " (First)"} set: "${D.UCase(commandString)}"`);
+                if (commandString === "blank") {
+                    PENDINGLOCCOMMAND.Sites[cmdIndex] = ["blank"];
+                    if (cmdIndex === 0) {
+                        PENDINGLOCCOMMAND.Districts[1] = ["blank"];
+                        PENDINGLOCCOMMAND.Sites[1] = ["blank"];
+                    }
+                    processPendingLocCommand();
+                    Media.Notify("panel", "● FINISHED! Setting Location Cards...");
                 } else {
-                    const cmdIndex = PENDINGLOCCOMMAND.workingIndex;
-                    const curLocations = getAllLocations();
-                    switch (commandString) {
-                        case "match": {
-                            if (cmdIndex === 1) {
-                                commandString = PENDINGLOCCOMMAND.Districts[0][0];
-                                Media.Notify("panel", `● Setting District RIGHT to MATCH: "${commandString}"`);
-                                break;
-                            }
-                            Media.Notify("panel", "● No District to Match (Assuming 'CENTER')...");
-                        }
-                        // falls through
-                        case "center": {
-                            commandString = curLocations.DistrictCenter || curLocations.DistrictLeft || curLocations.DistrictRight;
-                            Media.Notify(
-                                "panel",
-                                `● Setting District${cmdIndex === 1 ? " RIGHT" : " (First)"} to "SAME CENTER": "${commandString}"`
-                            );
-                            break;
-                        }
-                        case "left": {
-                            commandString = curLocations.DistrictLeft || curLocations.DistrictCenter || curLocations.DistrictRight;
-                            Media.Notify(
-                                "panel",
-                                `● Setting District${cmdIndex === 1 ? " RIGHT" : " (First)"} to "SAME LEFT": "${commandString}"`
-                            );
-                            break;
-                        }
-                        case "right": {
-                            commandString = curLocations.DistrictRight || curLocations.DistrictCenter || curLocations.DistrictLeft;
-                            Media.Notify(
-                                "panel",
-                                `● Setting District${cmdIndex === 1 ? " RIGHT" : " (First)"} to "SAME RIGHT": "${commandString}"`
-                            );
-                            break;
-                        }
-                        // no default
-                    }
-                    PENDINGLOCCOMMAND.Districts[cmdIndex] = [commandString];
-                    Media.Notify("panel", `● District${cmdIndex === 1 ? " RIGHT" : " (First)"} set: "${D.UCase(commandString)}"`);
-                    if (commandString === "blank") {
-                        PENDINGLOCCOMMAND.Sites[cmdIndex] = ["blank"];
-                        if (cmdIndex === 0) {
-                            PENDINGLOCCOMMAND.Districts[1] = ["blank"];
-                            PENDINGLOCCOMMAND.Sites[1] = ["blank"];
-                        }
-                        processPendingLocCommand();
-                        Media.Notify("panel", "● FINISHED! Setting Location Cards...");
-                    } else {
-                        siteCommandMenu();
-                    }
+                    siteCommandMenu();
                 }
             }
-        );
+        });
     };
     const siteCommandMenu = () => {
         DB({["Into Site PENDINGLOCCOMMAND"]: PENDINGLOCCOMMAND}, "siteCommandMenu");
-        const siteMenuCode = getSiteMenuCode(
-            PENDINGLOCCOMMAND.Districts[PENDINGLOCCOMMAND.workingIndex],
-            PENDINGLOCCOMMAND.workingIndex === 1
-        );
+        const siteMenuCode = getSiteMenuCode(PENDINGLOCCOMMAND.Districts[PENDINGLOCCOMMAND.workingIndex], PENDINGLOCCOMMAND.workingIndex === 1);
         DB({siteMenuCode: JSON.stringify(siteMenuCode)}, "siteCommandMenu");
         D.CommandMenu(siteMenuCode, commandString => {
             const params = D.ParseToObj(commandString, "|", "@");
@@ -1690,35 +1656,26 @@ const Session = (() => {
                                 break;
                             }
                             case "center": {
-                                PENDINGLOCCOMMAND.Sites[cmdIndex] =
-                                    curLocations.SiteCenter || curLocations.SiteLeft || curLocations.SiteRight;
+                                PENDINGLOCCOMMAND.Sites[cmdIndex] = curLocations.SiteCenter || curLocations.SiteLeft || curLocations.SiteRight;
                                 Media.Notify(
                                     "panel",
-                                    `● Setting Site${cmdIndex === 1 ? " RIGHT" : " (First)"} to "SAME CENTER": "${
-                                        PENDINGLOCCOMMAND.Sites[cmdIndex]
-                                    }"`
+                                    `● Setting Site${cmdIndex === 1 ? " RIGHT" : " (First)"} to "SAME CENTER": "${PENDINGLOCCOMMAND.Sites[cmdIndex]}"`
                                 );
                                 break;
                             }
                             case "left": {
-                                PENDINGLOCCOMMAND.Sites[cmdIndex] =
-                                    curLocations.SiteLeft || curLocations.SiteCenter || curLocations.SiteRight;
+                                PENDINGLOCCOMMAND.Sites[cmdIndex] = curLocations.SiteLeft || curLocations.SiteCenter || curLocations.SiteRight;
                                 Media.Notify(
                                     "panel",
-                                    `● Setting Site${cmdIndex === 1 ? " RIGHT" : " (First)"} to "SAME LEFT": "${
-                                        PENDINGLOCCOMMAND.Sites[cmdIndex]
-                                    }"`
+                                    `● Setting Site${cmdIndex === 1 ? " RIGHT" : " (First)"} to "SAME LEFT": "${PENDINGLOCCOMMAND.Sites[cmdIndex]}"`
                                 );
                                 break;
                             }
                             case "right": {
-                                PENDINGLOCCOMMAND.Sites[cmdIndex] =
-                                    curLocations.SiteRight || curLocations.SiteCenter || curLocations.SiteLeft;
+                                PENDINGLOCCOMMAND.Sites[cmdIndex] = curLocations.SiteRight || curLocations.SiteCenter || curLocations.SiteLeft;
                                 Media.Notify(
                                     "panel",
-                                    `● Setting Site${cmdIndex === 1 ? " RIGHT" : " (First)"} to "SAME RIGHT": "${
-                                        PENDINGLOCCOMMAND.Sites[cmdIndex]
-                                    }"`
+                                    `● Setting Site${cmdIndex === 1 ? " RIGHT" : " (First)"} to "SAME RIGHT": "${PENDINGLOCCOMMAND.Sites[cmdIndex]}"`
                                 );
                                 break;
                             }
@@ -1879,9 +1836,7 @@ const Session = (() => {
                             PENDINGLOCCOMMAND.subLocs[locRef] = subLocRef;
                             Media.Notify(
                                 "panel",
-                                `● Sub-Location ${locRef} at ${
-                                    PENDINGLOCCOMMAND.Sites[PENDINGLOCCOMMAND.workingIndex][0]
-                                } set: "${subLocRef}"`
+                                `● Sub-Location ${locRef} at ${PENDINGLOCCOMMAND.Sites[PENDINGLOCCOMMAND.workingIndex][0]} set: "${subLocRef}"`
                             );
                         }
                     return C.REPLY.KEEPOPEN;
@@ -1915,10 +1870,7 @@ const Session = (() => {
                     {type: "Header", contents: `Current Focus: ${{c: "Center", l: "Left", r: "Right"}[STATE.REF.sceneFocus]}`},
                     ..._.chain({
                         ["<<< Left"]: ["!reply focus@left", {bgColor: (STATE.REF.sceneFocus === "l" && C.COLORS.gold) || C.COLORS.grey}],
-                        [">> Both <<"]: [
-                            "!reply focus@center",
-                            {bgColor: (STATE.REF.sceneFocus === "c" && C.COLORS.gold) || C.COLORS.grey}
-                        ],
+                        [">> Both <<"]: ["!reply focus@center", {bgColor: (STATE.REF.sceneFocus === "c" && C.COLORS.gold) || C.COLORS.grey}],
                         ["Right >>>"]: ["!reply focus@right", {bgColor: (STATE.REF.sceneFocus === "r" && C.COLORS.gold) || C.COLORS.grey}]
                     })
                         .mapObject((v, k) => (v ? {name: k, command: v[0], styles: v[1]} : 0))
@@ -1986,9 +1938,7 @@ const Session = (() => {
         const playerID = D.GetPlayerID(playerRef);
         if (playerID) {
             getObj("player", playerID).set({showmacrobar: true});
-            let [macroObj] = (findObjs({_type: "macro", _playerid: playerID}) || []).filter(
-                x => D.LCase(x.get("name")) === D.LCase(macroName)
-            );
+            let [macroObj] = (findObjs({_type: "macro", _playerid: playerID}) || []).filter(x => D.LCase(x.get("name")) === D.LCase(macroName));
             if (macroObj) macroObj.set("action", macroAction);
             // D.Alert(`Macro Set: ${JSON.stringify(macroObj)}`)
             else macroObj = createObj("macro", {name: macroName, action: macroAction, visibleto: playerID, playerid: D.GMID()});
@@ -2025,7 +1975,8 @@ const Session = (() => {
             ...(STATE.REF.SpotlightPrompts[toCharInit] || []),
             {
                 prompt: D.JS(promptText),
-                author: D.GetCharData(fromCharRef).initial
+                author: D.GetCharData(fromCharRef).initial,
+                id: D.RandomString(10)
             }
         ]);
         D.Chat(
@@ -2039,6 +1990,106 @@ const Session = (() => {
                 C.STYLES.whiteMarble.block
             )
         );
+    };
+    const reviewSpotlightPrompts = (charRef, subheaderTextOverride) => {
+        const authorInit = D.GetCharData(charRef).initial;
+        const promptData = STATE.REF.SpotlightPrompts;
+        const chatCode = [];
+        for (const [init, prompts] of Object.entries(promptData)) {
+            const thesePrompts = prompts.filter(x => x.author === authorInit);
+            if (thesePrompts.length) {
+                chatCode.push(C.HTML.Header(`... ${D.GetName(init)}`, {textAlign: "left", padding: "0px 0px 0px 10px"}));
+                for (const thisPrompt of thesePrompts)
+                    chatCode.push(
+                        C.HTML.SubBlock(
+                            [
+                                C.HTML.Column(
+                                    C.HTML.Body(thisPrompt.prompt, {
+                                        fontSize: "12px",
+                                        fontFamily: "Voltaire",
+                                        lineHeight: "14px",
+                                        textAlign: "left",
+                                        padding: "3px",
+                                        margin: "0px"
+                                    }),
+                                    {width: "80%"}
+                                ),
+                                C.HTML.Column(
+                                    C.HTML.Button("Delete", `!prompt delete ${init} ${authorInit} ${thisPrompt.id}`, {
+                                        width: "100%",
+                                        height: "20px",
+                                        margin: "2px 2px 0px -5px",
+                                        border: "1px outset rgba(100, 0, 0, 1)",
+                                        fontSize: "14px",
+                                        lineHeight: "20px",
+                                        textShadow: "0px 0px 2px #000 , 0px 0px 2px #000, 0px 0px 2px #000 , 0px 0px 2px #000",
+                                        boxShadow: "inset -1px -1px 2px #000 , -1px -1px 2px #000 , 1px 1px 2px #000 , 1px 1px 2px #000"
+                                    }),
+                                    {width: "20%", vertAlign: "initial"}
+                                )
+                            ],
+                            {border: "none; border-bottom: 1px solid red;"}
+                        )
+                    );
+            }
+        }
+        if (chatCode.length)
+            D.Chat(
+                D.GetPlayerID(charRef),
+                C.HTML.Block([
+                    C.HTML.Title("Session Monologues"),
+                    C.HTML.SubHeader(subheaderTextOverride || "You Have Submitted Prompts for ...", {
+                        textAlign: "left",
+                        padding: "0px 0px 0px 2px",
+                        lineHeight: "22px"
+                    }),
+                    ...chatCode
+                ])
+            );
+        else
+            D.Chat(
+                D.GetPlayerID(charRef),
+                C.HTML.Block([
+                    C.HTML.Title("Session Monologues"),
+                    C.HTML.SubHeader(subheaderTextOverride || "You Have Yet to Submit A Spotlight Prompt!", {
+                        lineHeight: "22px"
+                    }),
+                    C.HTML.Body("(What are you waiting for?)", {
+                        fontSize: "12px",
+                        fontFamily: "Voltaire",
+                        lineHeight: "14px",
+                        textAlign: "center",
+                        padding: "3px",
+                        margin: "0px"
+                    })
+                ])
+            );
+    };
+    const deleteSpotlightPrompt = (toCharRef, fromCharRef, promptID) => {
+        const toCharInit = D.GetCharData(toCharRef).initial;
+        const removedPrompt = D.PullOut(Session.SpotlightPrompts[toCharInit], v => v.id === promptID);
+        if (removedPrompt) reviewSpotlightPrompts(fromCharRef, "You Now Have Active Prompts for...");
+        else
+            D.Chat(
+                D.GetPlayerID(fromCharRef),
+                C.HTML.Block([
+                    C.HTML.Title("Session Monologues"),
+                    C.HTML.SubHeader("Something's Fucky...", {
+                        lineHeight: "22px"
+                    }),
+                    C.HTML.Body(
+                        "No such prompt found to delete!  Now, since I'm the one who programmed that button you just clicked, this is entirely my fault.  Please let me know, so I can unfuck things.",
+                        {
+                            fontSize: "12px",
+                            fontFamily: "Voltaire",
+                            lineHeight: "14px",
+                            textAlign: "left",
+                            padding: "3px",
+                            margin: "0px"
+                        }
+                    )
+                ])
+            );
     };
     const assignSpotlightPrompt = charRef => {
         // Also want to record the assigned prompt in the character registry, so that if it's lost it isn't lost forever
@@ -2079,10 +2130,7 @@ const Session = (() => {
             DB({spotlightChar: STATE.REF.spotlightChar, lastPrompt, monologues: D.JS(STATE.REF.SessionMonologues)}, "sessionMonologue");
             if (lastPrompt && "author" in lastPrompt) {
                 if (STATE.REF.isTestingActive)
-                    D.Alert(
-                        `Would award 1 XP to ${D.GetName(lastPrompt.author)} if session active.`,
-                        "Full Test: Session.assignSpotlightPrompt()"
-                    );
+                    D.Alert(`Would award 1 XP to ${D.GetName(lastPrompt.author)} if session active.`, "Full Test: Session.assignSpotlightPrompt()");
                 else Char.AwardXP(lastPrompt.author, 1, `Spotlight Prompt for ${D.GetName(STATE.REF.spotlightChar, true)}`);
                 Char.REGISTRY[D.GetCharData(STATE.REF.spotlightChar).quadrant].spotlightPrompt = false;
                 return sessionMonologue();
@@ -2266,8 +2314,14 @@ const Session = (() => {
             return STATE.REF.LastMode;
         },
 
+        get SpotlightPrompts() {
+            return STATE.REF.SpotlightPrompts;
+        },
+
         SetMacro: setMacro,
-        SubmitPrompt: submitSpotlightPrompt
+        SubmitPrompt: submitSpotlightPrompt,
+        ReviewPrompts: reviewSpotlightPrompts,
+        DeletePrompt: deleteSpotlightPrompt
     };
 })();
 
