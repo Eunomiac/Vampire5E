@@ -54,6 +54,171 @@ const Tester = (() => {
     const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
+            case "promptdata": {
+                const reportLines = {
+                    PromptAuthors: state.VAMPIRE.Session.PromptAuthors,
+                    isPromptingGeneric: state.VAMPIRE.Session.isPromptingGeneric,
+                    arePromptsAssignable: state.VAMPIRE.Session.arePromptsAssignable
+                };
+                if ("character" in objects) {
+                    const [charObj] = Listener.GetObjects(objects, "character");
+                    const charData = D.GetCharData(charObj);
+                    reportLines.SpotlightPrompts = state.VAMPIRE.Session.SpotlightPrompts[charData.initial];
+                    reportLines.CharRegistry = charData;
+                } else {
+                    reportLines.CharRegistry = state.VAMPIRE.Char.registry;
+                    reportLines.SpotlightPrompts = state.VAMPIRE.Session.SpotlightPrompts;
+                }
+                D.Alert(D.JS(reportLines), "Prompt Data");
+                break;
+            }
+            case "resetpromptdata": {
+                state.VAMPIRE.Session.PromptAuthors = [];
+                state.VAMPIRE.Session.isPromptingGeneric = true;
+                state.VAMPIRE.Session.SpotlightPrompts = {
+                    L: [
+                        {
+                            prompt:
+                                "I want to see Locke preparing for the night. What are your dusk rituals? Do you prefer american or european suits?",
+                            author: "N",
+                            id: "JaTUMer3L4"
+                        }
+                    ],
+                    R: [
+                        {
+                            prompt: "I want to see you actually performing a ritual; chanting, drawing pentagrams, whatever it is you do.",
+                            author: "N",
+                            id: "QpYqB4iIkf"
+                        }
+                    ],
+                    A: [],
+                    N: [
+                        {
+                            prompt:
+                                "Napier has embroiled himself in the cutthroat underworld of gangsters and Kindred with very little compunction. Does he have any reservations about this? Does he ever think about the disconnect between what he wanted fror himself as a mortal and what he's doing now?",
+                            author: "A",
+                            id: "VAqpjBgs9c"
+                        }
+                    ],
+                    B: [
+                        {
+                            prompt: "I want to see you checking on/setting up another contingency that Bacchus has set up for a masquerade break.",
+                            author: "N",
+                            id: "4QrJ5H3cY0"
+                        }
+                    ]
+                };
+                state.VAMPIRE.Char.registry = {
+                    TopLeft: {
+                        id: "-Lt3NYCcsMUqdijYCWEc",
+                        name: "Locke Ulrich",
+                        playerID: "-Ltvp919sIbaWTe0FbaF",
+                        playerName: "PixelPuzzler",
+                        tokenName: "Locke Ulrich",
+                        shortName: "Locke",
+                        initial: "L",
+                        quadrant: "TopLeft",
+                        docName: "L. Ulrich",
+                        isActive: true,
+                        spotlightPrompt: false
+                    },
+                    BotLeft: {
+                        id: "-Lt3NX_VzMz2GjiVS61h",
+                        name: "Dr. Arthur Roy",
+                        playerID: "-Ltu_6_IXWL9uhgmJpvQ",
+                        playerName: "banzai",
+                        tokenName: "Dr. Arthur Roy",
+                        shortName: "Roy",
+                        initial: "R",
+                        quadrant: "BotLeft",
+                        docName: "Dr. Roy",
+                        isActive: true,
+                        spotlightPrompt: false
+                    },
+                    BotRight: {
+                        id: "-Lt3NWi8bDHdWmo06gnm",
+                        name: "Ava Wong",
+                        playerID: "-Ltu_Bv374-umIX8wNhm",
+                        playerName: "TeatimeRationale",
+                        tokenName: "Ava Wong",
+                        shortName: "Ava",
+                        initial: "A",
+                        quadrant: "BotRight",
+                        docName: "A. Wong",
+                        isActive: true,
+                        spotlightPrompt: false
+                    },
+                    MidRight: {
+                        id: "-Lt3NXv8ES_NsYiwvYW8",
+                        name: "Johannes Napier",
+                        playerID: "-Ltu_ABMK_SNmtU1TE4o",
+                        playerName: "Thaumaterge",
+                        tokenName: "Johannes Napier",
+                        shortName: "Napier",
+                        initial: "N",
+                        quadrant: "MidRight",
+                        docName: "Dr. Napier",
+                        isActive: true,
+                        spotlightPrompt: false
+                    },
+                    TopRight: {
+                        id: "-LzZWGWH-yvOZB97qWq_",
+                        name: "Bacchus Giovanni",
+                        playerID: "-LzZU4s5ylON7iWLO-jK",
+                        playerName: "Hastur",
+                        tokenName: "Bacchus Giovanni",
+                        shortName: "Bacchus",
+                        initial: "B",
+                        quadrant: "TopRight",
+                        docName: "B. Giovanni",
+                        isActive: true,
+                        spotlightPrompt: false
+                    }
+                };
+                break;
+            }
+            case "setfakeprompts": {
+                state.VAMPIRE.Session.SpotlightPrompts = {
+                    L: [
+                        {
+                            prompt:
+                                "I want to see Locke preparing for the night. What are your dusk rituals? Do you prefer american or european suits?",
+                            author: "N",
+                            id: "JaTUMer3L4"
+                        }
+                    ],
+                    R: [
+                        {
+                            prompt: "I want to see you actually performing a ritual; chanting, drawing pentagrams, whatever it is you do.",
+                            author: "N",
+                            id: "QpYqB4iIkf"
+                        },
+                        {
+                            prompt:
+                                "I want to see ROY preparing for the night. What are your dusk rituals? Do you prefer american or european suits?",
+                            author: "A",
+                            id: "JaTasdr3L4"
+                        }
+                    ],
+                    A: [],
+                    N: [
+                        {
+                            prompt:
+                                "Napier has embroiled himself in the cutthroat underworld of gangsters and Kindred with very little compunction. Does he have any reservations about this? Does he ever think about the disconnect between what he wanted fror himself as a mortal and what he's doing now?",
+                            author: "A",
+                            id: "VAqpjBgs9c"
+                        }
+                    ],
+                    B: [
+                        {
+                            prompt: "I want to see you checking on/setting up another contingency that Bacchus has set up for a masquerade break.",
+                            author: "N",
+                            id: "4QrJ5H3cY0"
+                        }
+                    ]
+                };
+                break;
+            }
             case "errormessage": {
                 D.Chat(
                     D.GMID(),
@@ -78,19 +243,35 @@ const Tester = (() => {
                 break;
             }
             case "pullout": {
-                const testArray = [
-                    {author: "L", num: 1},
-                    {author: "L", num: 2},
-                    {author: "L", num: 3},
-                    {author: "B", num: 1},
-                    {author: "B", num: 2},
-                    {author: "N", num: 1},
-                    {author: "N", num: 2},
-                    {author: "L", num: 4},
-                    {author: "A", num: 1}
-                ];
-                const randomL = D.PullOut(testArray, v => v.author === "Q");
-                D.Alert(D.JS({randomL, testArray}), "Test Pullout");
+                D.Chat(
+                    "all",
+                    C.HTML.Block([
+                        C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
+                        C.HTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
+                        C.HTML.Header("Dr. Arthur Roy"),
+                        C.HTML.Body(
+                            `"Choose a coterie mate.  Narrate a scene wherein you perform a favor for that character sufficient to earn you a Minor Boon."`,
+                            {
+                                fontFamily: "Voltaire",
+                                textAlign: "left",
+                                lineHeight: "16px",
+                                padding: "3px",
+                                fontSize: "14px"
+                            }
+                        ),
+                        C.HTML.Header("The Spotlight Is Yours!"),
+                        C.HTML.Button("End Spotlight Scene", `!endmonologue`, {
+                            width: "50%",
+                            height: "20px",
+                            margin: "2px 2px 0px -5px",
+                            border: "1px outset rgba(100, 0, 0, 1)",
+                            fontSize: "14px",
+                            lineHeight: "20px",
+                            textShadow: "0px 0px 2px #000 , 0px 0px 2px #000, 0px 0px 2px #000 , 0px 0px 2px #000",
+                            boxShadow: "inset -1px -1px 2px #000 , -1px -1px 2px #000 , 1px 1px 2px #000 , 1px 1px 2px #000"
+                        })
+                    ])
+                );
                 break;
             }
             case "statelength": {

@@ -133,6 +133,10 @@ const TimeTracker = (() => {
                         displayPastAlarms();
                         break;
                     }
+                    case "promptdate": {
+                        D.Alert(D.JS({timeData: timeTillPromptsOpen(), isOpen: arePromptsAssignable()}), "Prompts Open Data");
+                        break;
+                    }
                     case "code": {
                         switch (D.LCase((call = args.shift()))) {
                             case "day": {
@@ -204,6 +208,12 @@ const TimeTracker = (() => {
                                 )}`,
                                 "!time set alarm"
                             );
+                        break;
+                    }
+                    case "promptsopen": {
+                        const [daysOut] = args;
+                        if (daysOut) STATE.REF.daysToOpenPrompts = D.Float(daysOut, 2);
+                        D.Alert(D.JS(timeTillPromptsOpen()));
                         break;
                     }
                     case "weath":
@@ -1328,6 +1338,26 @@ const TimeTracker = (() => {
     // #endregion
 
     // #region COUNTDOWN: Toggling, Ticking, Setting Coundown Text
+    const timeTillPromptsOpen = () => {
+        const realDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"}));
+        const nextSessDateObj = new Date(STATE.REF.nextSessionDate || realDateObj);
+        const promptsOpenDate = addTime(nextSessDateObj, -STATE.REF.daysToOpenPrompts * 24 * 60, "m");
+        const secsLeft = D.Int((promptsOpenDate - realDateObj) / 1000);
+        const daysLeft = Math.floor(secsLeft / (60 * 60 * 24));
+        const hoursLeft = Math.floor((secsLeft - daysLeft * (60 * 60 * 24)) / (60 * 60));
+        const minsLeft = Math.floor((secsLeft - daysLeft * (60 * 60 * 24) - hoursLeft * (60 * 60)) / 60);
+        return {
+            date: formatDateString(promptsOpenDate),
+            time: formatTimeString(promptsOpenDate),
+            delta: {
+                days: daysLeft,
+                hours: hoursLeft,
+                mins: minsLeft,
+                isOpen: _.any([daysLeft, hoursLeft, minsLeft], v => v < 0)
+            }
+        };
+    };
+    const arePromptsAssignable = () => timeTillPromptsOpen().delta.isOpen;
     const syncCountdown = (isTesting = false) => {
         const funcID = ONSTACK();
         // if (isCountdownFrozen)
@@ -1412,11 +1442,14 @@ const TimeTracker = (() => {
         };
         if (isInBlackout({days: 0, hours: 0, minutes: 2}, {days: 0, hours: 2, minutes: 0})) {
             Media.ToggleText("Countdown", false);
+            Media.ToggleText("PromptsAvailableNotice", false);
             Media.SetTextData("NextSession", {shiftTop: -110});
         } else {
             Media.ToggleText("Countdown", true);
             Media.SetTextData("NextSession", {shiftTop: 0});
             Media.SetImgData("SplashMoon_1", {top: countdownRecord[3]}, true);
+            if (arePromptsAssignable()) Media.ToggleText("PromptsAvailableNotice", true);
+            else Media.ToggleText("PromptsAvailableNotice", false);
             Media.SetImg("SplashWater", countdownRecord[4]);
             Media.SetText(
                 "Countdown",
@@ -2495,6 +2528,7 @@ const TimeTracker = (() => {
             if (dateRef) STATE.REF.dateObj = getDateObj(dateRef);
         },
         FormatDate: formatDateString,
+        FormatTime: formatTimeString,
         IsDay: isDateInDay,
         get IsClockRunning() {
             return isTweeningClock || isFastTweeningClock || isTickingClock;
@@ -2514,6 +2548,9 @@ const TimeTracker = (() => {
         },
 
         GetRandomTimeline: getRandomEventTriggers,
+
+        GetPromptsOpenDate: timeTillPromptsOpen,
+        ArePromptsOpen: arePromptsAssignable,
 
         SetAlarm: setAlarm
     };

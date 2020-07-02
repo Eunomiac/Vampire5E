@@ -22,17 +22,33 @@ const Listener = (() => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
         initialize();
     };
-    const regHandlers = () => {
-        const handleMessage = msg => {
-            if (!msg.content.includes("DB LISTENER: ListenFull")) DB({msg}, "ListenFull");
-            if (msg.content.startsWith("!pcommand")) {
-                const [, charRef, ...command] = msg.content.split(" ");
-                msg.content = command.join(" ");
-                msg.playerid = D.GetPlayerID(charRef.replace(/^@/gu, ""));
-                msg.who = D.GetName(msg.playerid);
+    const handleMessage = (msg, isRaw = false) => {
+        if (!msg.content.includes("DB LISTENER: ListenFull")) DB({msg}, "ListenFull");
+        if (msg.content.startsWith("!playerspoof")) {
+            const [, charRef] = msg.content.split(" ");
+            let playerid, who;
+            if (charRef) [playerid, who] = [D.GetPlayerID(charRef.replace(/^@/gu, "")), D.GetName(charRef.replace(/^@/gu, ""))];
+            if (playerid) {
+                Media.ToggleText("PlayerSpoofNotice", true);
+                Media.ToggleText("PlayerSpoofNoticeSplash", true);
+                Media.SetText("PlayerSpoofNotice", `Spoofing: ${who}`);
+                Media.SetText("PlayerSpoofNoticeSplash", `Spoofing: ${who}`);
+                STATE.REF.GMPlayerSpoof = {playerid, who};
+                D.Alert(`Now spoofing ${who}`, "Listener Player Spoofing");
+            } else {
+                Media.ToggleText("PlayerSpoofNotice", false);
+                Media.ToggleText("PlayerSpoofNoticeSplash", false);
+                STATE.REF.GMPlayerSpoof = false;
+                D.Alert("Player Spoofing DISABLED", "Listener Player Spoofing");
             }
+            return true;
+        } else {
             if (STATE.REF.isLocked || msg.type !== "api") return false;
             msg.who = msg.who || "API";
+            if (!isRaw && STATE.REF.GMPlayerSpoof && playerIsGM(msg.playerid)) {
+                msg.playerid = STATE.REF.GMPlayerSpoof.playerid;
+                msg.who = D.LCase(msg.who) === "api" ? msg.who : STATE.REF.GMPlayerSpoof.who;
+            }
             let [call, args] = parseArgString(msg.content); // Splits by space unless surrounded by quotes; removes whitespace and comma separators
             if (call in SCRIPTCALLS.MESSAGE) {
                 const scriptData = SCRIPTCALLS.MESSAGE[call];
@@ -66,7 +82,9 @@ const Listener = (() => {
                 return true;
             }
             return false;
-        };
+        }
+    };
+    const regHandlers = () => {
         on("chat:message", handleMessage);
         on("change:attribute:current", (attrObj, prevData) => {
             /* DB({
@@ -160,6 +178,8 @@ const Listener = (() => {
                 "!sound": {script: Soundscape, gmOnly: true, singleCall: true, needsObjects: false},
                 "!pcom": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!mvc": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
+                "!endmonologue": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
+                "!gmcommand": {script: Player, gmOnly: false, singleCall: false, needsObject: false},
                 "!token": {script: Player, gmOnly: false, singleCall: false},
                 "!links": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!prompt": {script: Player, gmOnly: false, singleCall: false},
@@ -341,7 +361,9 @@ const Listener = (() => {
         GetObjects: getAllObjs,
         Lock: lockListener,
         Unlock: unlockListener,
-        Refresh: refreshObjects
+        Refresh: refreshObjects,
+
+        SendRawCall: msg => handleMessage(msg, true)
     };
 })();
 
