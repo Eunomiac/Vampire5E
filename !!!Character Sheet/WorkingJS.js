@@ -876,7 +876,8 @@
         negadvantage: ["negadvantage", "negadvantage_name", "negadvantage_flag", "negadvantage_type", "negadvantage_details"]
     };
     const DOMCONREPREFS = {
-        domaincontrol: ["district", "level", "summary", "details"]
+        domaincontrolleft: ["district", "level", "details"],
+        domaincontrolright: ["district", "level", "details"]
     };
     const DOMAINCONTROLJSON = `{"Annex": ["+1 to Remorse Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"], "BayStFinancial": ["+1 Resources", "+2 Resources", "+4 Resources"], "Bennington": ["+1 Willpower", "+2 Willpower", "+3 Willpower"], "Cabbagetown": ["-1 Humanity", "-2 Humanity", "-3 Humanity"], "CentreIsland": ["+2 Haven", "+4 Haven", "+6 Haven"], "Chinatown": ["Language ●", "Language ●, ●", "Language ●, ●, ●, ●"], "CityStreets": ["+1 to Travel Rolls", "+2 to Travel Rolls", "+2 to Travel Rolls & Free Reroll"], "Corktown": ["+1 Influence (Crime)", "+2 Influence (Crime)", "+4 Influence (Crime)"], "Danforth": ["+1 to Insight Rolls", "+2 to Insight Rolls", "+2 to Insight Rolls & Free Reroll"], "DeerPark": ["Retainer (Animal) ●●", "Retainer (Animal) ●●, ●●", "Retainer (Animal) ●●, ●●, ●●●●"], "Discovery": ["+1 to Research Rolls", "+2 to Research Rolls", "+4 to Research Rolls"], "DistilleryDist": ["+1 to Acquisition Rolls", "+2 to Acquisition Rolls", "+2 to Acquisition Rolls & Free Reroll"], "DupontByTheCastle": ["+1 to Etiquette Rolls", "+2 to Etiquette Rolls", "+2 to Etiquette Rolls & Free Reroll"], "GayVillage": ["+1 Herd", "+2 Herd", "+4 Herd"], "HarbordVillage": ["+1 Lien", "+2 Lien", "+4 Lien"], "Humewood": ["Phys. Attributes: -1 XP", "Phys. Attributes: -2 XP", "Phys. Attributes: -4 XP"], "LakeOntario": ["+1 to Survival Rolls", "+2 to Survival Rolls", "+2 to Survival Rolls & Free Reroll"], "LibertyVillage": ["+1 to Resolve Rolls", "+2 to Resolve Rolls", "+3 to Resolve Rolls"], "LittleItaly": ["+1 to Hunting Rolls", "+2 to Hunting Rolls", "+1 Hunger Slaked"], "LittlePortugal": ["+1 Blood Potency", "+2 Blood Potency", "+3 Blood Potency"], "PATH": ["+1 to Streetwise Rolls", "+2 to Streetwise Rolls", "+4 to Streetwise Rolls"], "RegentPark": ["Social Attributes: -1 XP", "Social Attributes: -2 XP", "Social Attributes: -4 XP"], "Riverdale": ["Formula ●", "Formula ●, ●●", "Formula ●, ●●, ●●●"], "Rosedale": ["+1 Portillion", "+2 Portillion", "+4 Portillion"], "Sewers": ["+1 to Stealth Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"], "StJamesTown": ["+1 to Remorse Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"], "Summerhill": ["Contactt (Street) ●", "Contactt (Street) ●, ●●", "Contact (Street) ●, ●●, ●●●"], "Waterfront": ["+1 Influence (Nightlife)", "+2 Influence (Nightlife)", "+4 Influence (Nightlife)"], "WestQueenWest": ["+1 to Remorse Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"], "Wychwood": ["Ceremony ●", "Ceremony ●, ●●", "Ceremony ●, ●●, ●●●"], "YongeHospital": ["+1 Health", "+2 Health", "+3 Health"], "YongeMuseum": ["Ritual ●", "Ritual ●, ●●", "Ritual ●, ●●, ●●●"], "YongeStreet": ["Mental Attributes: -1 XP", "Mental Attributes: -2 XP", "Mental Attributes: -4 XP"], "Yorkville": ["+1 to Composure Rolls", "+2 to Composure Rolls", "+2 to Composure Rolls & Free Reroll"]}`;
     const DOMAINCONTROL = JSON.parse(DOMAINCONTROLJSON);
@@ -2626,15 +2627,18 @@
                     getRepAttrs(repSecs.shift());
                 });
             else
-                getAttrs(_.flatten(repAttrs), ATTRS => {
+                getAttrs(["domaincontrolbenefits", ..._.flatten(repAttrs)], ATTRS => {
                     log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
                     const filteredAttrs = _.pick(ATTRS, (v, k) => k.includes("level"));
+                    const domainBenefits = [];
                     for (const levelTrait of Object.keys(filteredAttrs)) {
                         const [, p, pV, pI] = pFuncs(levelTrait, ATTRS);
                         const district = pV("district");
                         const level = pI("level") - 1;
-                        if (district) attrList[p("summary")] = DOMAINCONTROL[district][level] || " ";
+                        if (district && level <= 3) domainBenefits.push(DOMAINCONTROL[district][level] || false);
                     }
+                    if (_.compact(domainBenefits).length) attrList.domaincontrolbenefits = _.compact(domainBenefits).join(", ");
+                    else attrList.domaincontrolbenefits = " ";
                     setAttrs(attrList);
                 });
         };
