@@ -23,35 +23,24 @@ const InitCommands = (() => {
     // #region LOCAL INITIALIZATION
     const initialize = () => {
         D.Flag("Initializing API...");
+        const delayTime = Session.IsTesting ? 1 : 2000;
         Listener.Lock();
-        setTimeout(
-            () => {
-                D.Flag("... Fixing TimeTracker ...");
-                if (TimeTracker && TimeTracker.Fix) TimeTracker.Fix();
-                setTimeout(
-                    () => {
-                        D.Flag("... Fixing Soundscape ...");
-                        if (Soundscape && Soundscape.Sync) Soundscape.Sync(true);
-                        setTimeout(
-                            () => {
-                                D.Flag("... Fixing Character Displays ...");
-                                if (Char && Char.RefreshDisplays) Char.RefreshDisplays();
-                                setTimeout(
-                                    () => {
-                                        D.Flag("Initialization Complete!");
-                                        Listener.Unlock();
-                                    },
-                                    Session.IsTesting ? 500 : 2000
-                                );
-                            },
-                            Session.IsTesting ? 500 : 2000
-                        );
-                    },
-                    Session.IsTesting ? 500 : 2000
-                );
-            },
-            Session.IsTesting ? 500 : 2000
-        );
+        setTimeout(() => {
+            D.Flag("... Fixing TimeTracker ...");
+            if (TimeTracker && TimeTracker.Fix) TimeTracker.Fix();
+            setTimeout(() => {
+                D.Flag("... Fixing Soundscape ...");
+                if (Soundscape && Soundscape.Sync) Soundscape.Sync(true);
+                setTimeout(() => {
+                    D.Flag("... Fixing Character Displays ...");
+                    if (Char && Char.RefreshDisplays) Char.RefreshDisplays();
+                    setTimeout(() => {
+                        D.Flag("Initialization Complete!");
+                        Listener.Unlock();
+                    }, delayTime);
+                }, delayTime);
+            }, delayTime);
+        }, delayTime);
     };
     // #endregion
 

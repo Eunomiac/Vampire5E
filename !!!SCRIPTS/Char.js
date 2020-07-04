@@ -1815,12 +1815,15 @@ const Char = (() => {
                     [
                         C.HANDOUTHTML.EyesOnlyDoc.LineHeader((stakeLines.length && " ") || "<b><u>COTERIE</u></b>", {vertAlign: "middle"}),
                         C.HANDOUTHTML.EyesOnlyDoc.LineBody(cotData.name, {width: "190px", vertAlign: "middle"}),
-                        C.HANDOUTHTML.EyesOnlyDoc.LineBody("●".repeat(cotData.max - cotData.total) + "○".repeat(cotData.total), {
-                            width: "60px",
-                            fontFamily: "Courier New",
-                            fontSize: "12px",
-                            vertAlign: "middle"
-                        }),
+                        C.HANDOUTHTML.EyesOnlyDoc.LineBody(
+                            "●".repeat(Math.max(0, cotData.max - cotData.total)) + "○".repeat(Math.max(0, cotData.total)),
+                            {
+                                width: "60px",
+                                fontFamily: "Courier New",
+                                fontSize: "12px",
+                                vertAlign: "middle"
+                            }
+                        ),
                         C.HANDOUTHTML.EyesOnlyDoc.LineBody(cotData.endDate, {
                             width: "124px",
                             textAlign: "right",
@@ -1841,9 +1844,9 @@ const Char = (() => {
                         }),
                         C.HANDOUTHTML.EyesOnlyDoc.LineBody(persData[1], {width: "190px", vertAlign: "middle"}),
                         C.HANDOUTHTML.EyesOnlyDoc.LineBody(
-                            "●".repeat(persData[3] - persData[2] - _.reduce(persData[5], (tot = 0, n) => tot + n)) +
-                                "○".repeat(persData[2]) +
-                                persData[5].map(x => `/${"○".repeat(x)}`).join(""),
+                            "●".repeat(Math.max(0, persData[3] - persData[2] - _.reduce(persData[5], (tot = 0, n) => tot + n))) +
+                                "○".repeat(Math.max(0, persData[2])) +
+                                persData[5].map(x => `/${"○".repeat(Math.max(0, x))}`).join(""),
                             {width: "60px", fontFamily: "Courier New", fontSize: "12px", vertAlign: "middle"}
                         ),
                         C.HANDOUTHTML.EyesOnlyDoc.LineBody(persData[4], {
@@ -1866,8 +1869,7 @@ const Char = (() => {
         Handouts.Set(
             "MEMO: Fielded Assets",
             undefined,
-            C.HANDOUTHTML.EyesOnlyDoc.Block(stakeLines.join(""), {bgURL: "https://i.imgur.com/qAHrpPv.jpg"}),
-            true
+            C.HANDOUTHTML.EyesOnlyDoc.Block(stakeLines.join(""), {bgURL: "https://i.imgur.com/qAHrpPv.jpg"})
         );
     };
     const updateProjectsDoc = () => {
@@ -1900,8 +1902,7 @@ const Char = (() => {
         Handouts.Set(
             "MEMO: Active Projects",
             undefined,
-            C.HANDOUTHTML.EyesOnlyDoc.Block(projectLines.join(""), {bgURL: "https://i.imgur.com/LsrLDoN.jpg"}),
-            true
+            C.HANDOUTHTML.EyesOnlyDoc.Block(projectLines.join(""), {bgURL: "https://i.imgur.com/LsrLDoN.jpg"})
         );
     };
     const updateHunger = charRef => {

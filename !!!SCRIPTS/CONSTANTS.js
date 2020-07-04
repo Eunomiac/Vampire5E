@@ -247,6 +247,7 @@ const C = (() => {
                     height: auto;
                     min-height: 25px;
                     min-width: ${CHATWIDTH}px;
+                    font-size: 0px;
                     width: ${params.width};
                     ${(params.bgGradient && `background-image: linear-gradient(${params.bgGradient})`) ||
                         (params.bgColor && `background-color: ${params.bgColor}`) ||

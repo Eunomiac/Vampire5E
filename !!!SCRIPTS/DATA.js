@@ -33,6 +33,7 @@ const D = (() => {
         STATE.REF.WATCHLIST = STATE.REF.WATCHLIST || [];
         STATE.REF.BLACKLIST = STATE.REF.BLACKLIST || [];
         STATE.REF.CHARWIDTH = STATE.REF.CHARWIDTH || {};
+        STATE.REF.AlertLineLength = STATE.REF.AlertLineLength || 50;
         STATE.REF.DEBUGLOG = STATE.REF.DEBUGLOG || [];
         STATE.REF.ALERTTHROTTLE = [];
         STATE.REF.flexSpace = STATE.REF.flexSpace || 10.0;
@@ -107,6 +108,9 @@ const D = (() => {
                                 break;
                             case "flex":
                                 STATE.REF.flexSpace = D.Float(args.shift(), 2);
+                                break;
+                            case "linewidth":
+                                STATE.REF.AlertLineLength = D.Int(args.pop());
                                 break;
                             case "fulldebug":
                                 if (args[0] === "true") {
@@ -588,6 +592,41 @@ const D = (() => {
             .replace(/&gt;&gt;/gu, ">") // Restores doubled right brackets to code.
             .replace(/&lt;&lt;/gu, "<")}</pre>`; // Restores doubled left brackets to code.
     };
+    const jStrX = data => {
+        const replacer = match => {
+            const checkReplace = match.replace(/\s+/gu, " ");
+            if (checkReplace.length <= STATE.REF.AlertLineLength) return checkReplace;
+            return match;
+        };
+        return (
+            JSON.stringify(data, null, "^@")
+                .replace(/"(?=.*:)/gu, "")
+                .replace(/(\r\n|\n|\r)/gu, "")
+                .replace(/((?:\^@)+)/gu, "\n$1")
+                .replace(/([^@])\}/gu, "$1\n}")
+                .replace(/\^@/gu, "  ")
+                // .replace(/(?:\n)\s*([^ \}]{0,5}),?(?=\n)/gu, "$1")
+                .replace(/(?:\[(?:[^\[\{\}\]]|\n)*\])|(?:\{(?:[^\[\{\}\]]|\n)*\})/gu, replacer)
+                .replace(/\n([^:\n]*:)/gu, "\n<b>$1</b>")
+                .replace(/\n/gu, "<br>")
+                .replace(/ /gu, "&nbsp;")
+        );
+    };
+
+    // const objJSON = `{"name":{"name":{"name":"marquee_lines_toggle","current":3,"max":"","_id":"-LU7dsbJVozvZe11IriX","_type":"attribute","_characterid":"-Lt3NXv8ES_NsYiwvYW8"},"current":3,"max":"","_id":"-LU7dsbJVozvZe11IriX","_type":"attribute","_characterid":"-Lt3NXv8ES_NsYiwvYW8"},"current":3,"max":"","_id":"-LU7dsbJVozvZe11IriX","_type":"attribute","_characterid":"-Lt3NXv8ES_NsYiwvYW8"}`
+    // const objTest = JSON.parse(objJSON);
+    // // const objTest = {
+    // //     A: [["Resources", 0, 3]],
+    // //     L: [["Resources", 0, 5]],
+    // //     B: [
+    // //         ["Resources", 0, 4],
+    // //         ['Herd ("Employees")', 0, 5]
+    // //     ],
+    // //     N: [["Herd (Mobile Clinic)", 0, 2]]
+    // // };
+
+    // console.log(jStrX(objTest));
+
     const parseParams = (args, delim = " ") => {
         const returnVal = _.object(
             (VAL({array: args}) ? args.join(" ") : args)
@@ -960,11 +999,59 @@ const D = (() => {
     const sendAPICommand = command => {
         sendChat(getName(getGMID()), command);
     };
-    const sendChatMessage = (who, message = "", title) => {
+    const sendChatMessage = (who, message = "", title, isPureCode = false) => {
         /* Whispers chat message to player given: display name OR player ID. 
                 If no Title, message is sent without formatting. */
         const player = getPlayer(who) || who;
         const html =
+            (isPureCode &&
+                `<div style="
+                display: block;
+                margin: -35px 0px -7px -42px;
+                height: auto;
+                min-height: 25px;
+                min-width: 267px;
+                width: auto;
+                background-color: white;
+                text-align: center;
+                border: 2px solid rgba( 0 , 0 , 0 , 1 );
+                padding: 0px;
+                position: relative;
+                overflow-x: scroll;
+            "><span style="
+                    display: block;
+                    height: auto;
+                    line-height: 25px;
+                    width: auto;
+                    margin: 0px;
+                    padding: 0px 5px;
+                    text-align: left;
+                    color: rgba( 255 , 255 , 255 , 1 );
+                    font-family: Voltaire;
+                    font-weight: normal;
+                    font-variant: small-caps;
+                    font-size: 16px;
+                    background-color: rgba( 80 , 80 , 80 , 1 );
+                    border: none;
+                    text-shadow: none;
+                    box-shadow: none;
+                ">${D.JSL(title)}</span>
+                <span style="
+                    display: block;
+                    height: auto;
+                    width: auto;
+                    line-height: 10px;
+                    margin: 0px;
+                    padding: 5px;
+                    color: rgba( 0 , 0 , 0 , 1 );
+                    font-size: 8px;
+                    text-align: left;
+                    font-family: 'Fira Code';
+                    font-weight: normal;
+                    box-shadow: none;
+                    border: none;
+                    white-space: nowrap;
+                ">${message}</span></div>`.replace(/\s+/gu, " ")) ||
             (title === "none" &&
                 jStr(
                     C.HTML.Block(
@@ -1025,7 +1112,12 @@ const D = (() => {
             message;
         // sendChat(from, `/direct <pre>${JSON.stringify(html)}</pre>`)
         if (who === "all" || player === "all" || !player) {
-            sendChat(randomString(3), html);
+            if (Session.IsTesting && !Session.IsFullTest)
+                sendChat(
+                    randomString(3),
+                    `/w Storyteller ${html}<div style="display: block;height: 10px;max-height: 10px;position: relative;z-index: 999;text-align: right;width: 100%;margin-top: -10px;margin-bottom: -7px;background-color: transparent;padding: 0px;font-size: 0px;"><span style="font-size: 10px; display:inline-block; line-height: 10px; background-color: darkgreen;color: white;max-height: 10px;width: auto;">(TO ALL)</span></div>`
+                );
+            else sendChat(randomString(3), html);
         } else {
             sendChat(randomString(3), `/w "${player.get("_displayname")}" ${html}`);
             if (!playerIsGM(player.id))
@@ -1033,11 +1125,11 @@ const D = (() => {
                     randomString(3),
                     `/w Storyteller ${html}<div style="display: block;height: 10px;max-height: 10px;position: relative;z-index: 999;text-align: right;width: 100%;margin-top: -10px;margin-bottom: -7px;background-color: transparent;padding: 0px;font-size: 0px;"><span style="font-size: 10px; display:inline-block; line-height: 10px; background-color: blue;color: white;max-height: 10px;width: auto;">(TO: ${player
                         .get("_displayname")
-                        .slice(0, 5)})</span></div>`
+                        .slice(0, 5)}...)</span></div>`
                 );
         }
     };
-    const sendToGM = (msg, title = "[ALERT]", throttle = 0) => {
+    const sendToGM = (msg, title = "[ALERT]", throttle = 0, isPureCode = false) => {
         if (STATE.REF.ALERTTHROTTLE.includes(title)) {
             return;
         } else if (throttle > 0) {
@@ -1046,7 +1138,7 @@ const D = (() => {
                 STATE.REF.ALERTTHROTTLE = _.without(STATE.REF.ALERTTHROTTLE, title);
             }, throttle);
         }
-        sendChatMessage(getGMID(), msg, title);
+        sendChatMessage(getGMID(), msg, title, isPureCode);
     };
     // #endregion
 
@@ -1245,6 +1337,7 @@ const D = (() => {
             obj[kvp[0].toString().trim()] = parseInt(kvp[1]) || kvp[1];
         return obj;
     };
+    const getLast = array => (array.length ? array[array.length - 1] : null);
     // #endregion
 
     // #region SEARCH & VALIDATION: Match checking, Set membership checking, type validation.
@@ -1802,7 +1895,7 @@ const D = (() => {
                     traceLogLines.push(
                         `${trace[4] - STATE.REF.TRACESTARTTIME},${trace[3]},${trace[1]},${trace[2]},${STATE.REF.TRACELOGSTOPS[trace[0]] - trace[4]}`
                     );
-            Handouts.Make("Trace Report", false, traceLogLines.join("<br>"));
+            Handouts.Report("Trace Report", traceLogLines.join("<br>"));
             STATE.REF.ISDEBUGGING = true;
             TimeTracker.Fix();
         } else {
@@ -2708,6 +2801,7 @@ const D = (() => {
         JSL: jStrL,
         JSH: jStrH,
         JSC: jStrC,
+        JSX: jStrX,
         ParseParams: parseParams,
         ParseCharSelection: parseCharSelect,
         RandomString: randomString,
@@ -2734,6 +2828,7 @@ const D = (() => {
         Call: sendAPICommand,
         Chat: sendChatMessage,
         Alert: sendToGM,
+        Show: object => sendToGM(jStrX(object), "Showing Object", 0, true),
         Flag: msg => sendToGM(msg, "none"),
         Poke: (msg, title = "[ALERT]") => {
             if (Session.IsTesting) sendToGM(msg, title);
@@ -2745,6 +2840,7 @@ const D = (() => {
         RemoveFirst: removeFirst,
         PullIndex: pullIndex,
         PullOut: pullElement,
+        Last: getLast,
         KeyMapObj: kvpMap,
         ParseToObj: parseToObj,
 

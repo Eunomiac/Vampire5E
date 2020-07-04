@@ -1460,6 +1460,8 @@ const Session = (() => {
         );
         const curLocData = Object.assign({}, BLANKLOCRECORD, STATE.REF.curLocation);
         const reportStrings = [`Loc Params: ${D.JS(locParams)}`, `New Loc Data: ${D.JS(newLocData)}`, `Cur Loc Data: ${D.JS(curLocData)}`];
+        // PRELIM:  Record active locations for onExitCalls
+        STATE.REF.prevLocFocus = getActiveLocations();
         // FIRST: Convert curLocData to what is actually shown in the sandbox --- i.e. if Left & Right districts are the same, it's actually DistrictCenter that is displayed.
         if (curLocData.DistrictLeft[0] !== "blank" && curLocData.DistrictLeft[0] === curLocData.DistrictRight[0]) {
             curLocData.DistrictCenter = [...curLocData.DistrictLeft];
@@ -1971,16 +1973,17 @@ const Session = (() => {
     // #region Session Monologue Suggestion Logging & Assigning
     const submitSpotlightPrompt = (toCharRef, fromCharRef, promptText) => {
         const toCharInit = D.GetCharData(toCharRef).initial;
+        const fromCharInit = (D.GetCharData(fromCharRef) || {initial: false}).initial || false;
         STATE.REF.SpotlightPrompts[toCharInit] = _.shuffle([
             ...(STATE.REF.SpotlightPrompts[toCharInit] || []),
             {
                 prompt: D.JS(promptText),
-                author: D.GetCharData(fromCharRef).initial,
+                author: fromCharInit,
                 id: D.RandomString(10)
             }
         ]);
         D.Chat(
-            fromCharRef,
+            D.GetPlayerID(fromCharRef),
             C.HTML.Block(
                 [
                     C.HTML.Header(`Prompt Submitted for ${D.GetName(toCharInit)}:`, C.STYLES.whiteMarble.header),
@@ -1993,17 +1996,17 @@ const Session = (() => {
         DB({toCharRef, toCharInit, fromCharRef, promptText, STATEREF: D.JS(STATE.REF.SpotlightPrompts[toCharInit])}, "submitSpotlightPrompt");
     };
     const reviewSpotlightPrompts = (charRef, subheaderTextOverride) => {
-        const authorInit = D.GetCharData(charRef).initial;
+        const authorInit = (D.GetCharData(charRef) || {initial: false}).initial || false;
         const promptData = STATE.REF.SpotlightPrompts;
         const chatCode = [];
         for (const [init, prompts] of Object.entries(promptData)) {
-            const thesePrompts = prompts.filter(x => x.author === authorInit);
+            const thesePrompts = prompts.filter(x => !authorInit || x.author === authorInit);
             if (thesePrompts.length) {
                 chatCode.push(C.HTML.Header(`... ${D.GetName(init)}`, {textAlign: "left", padding: "0px 0px 0px 10px"}));
                 for (const thisPrompt of thesePrompts)
                     chatCode.push(
                         C.HTML.SubBlock(
-                            [
+                            _.compact([
                                 C.HTML.Column(
                                     C.HTML.Body(thisPrompt.prompt, {
                                         fontSize: "12px",
@@ -2013,22 +2016,24 @@ const Session = (() => {
                                         padding: "3px",
                                         margin: "0px"
                                     }),
-                                    {width: "80%"}
+                                    {width: (authorInit && "80%") || "100%"}
                                 ),
-                                C.HTML.Column(
-                                    C.HTML.Button("Delete", `!prompt delete ${init} ${authorInit} ${thisPrompt.id}`, {
-                                        width: "100%",
-                                        height: "20px",
-                                        margin: "2px 2px 0px -5px",
-                                        border: "1px outset rgba(100, 0, 0, 1)",
-                                        fontSize: "14px",
-                                        lineHeight: "20px",
-                                        textShadow: "0px 0px 2px #000 , 0px 0px 2px #000, 0px 0px 2px #000 , 0px 0px 2px #000",
-                                        boxShadow: "inset -1px -1px 2px #000 , -1px -1px 2px #000 , 1px 1px 2px #000 , 1px 1px 2px #000"
-                                    }),
-                                    {width: "20%", vertAlign: "initial"}
-                                )
-                            ],
+                                (authorInit &&
+                                    C.HTML.Column(
+                                        C.HTML.Button("Delete", `!prompt delete ${init} ${thisPrompt.id}`, {
+                                            width: "100%",
+                                            height: "20px",
+                                            margin: "0px",
+                                            border: "1px outset rgba(100, 0, 0, 1)",
+                                            fontSize: "14px",
+                                            lineHeight: "20px",
+                                            textShadow: "0px 0px 2px #000 , 0px 0px 2px #000, 0px 0px 2px #000 , 0px 0px 2px #000",
+                                            boxShadow: "inset -1px -1px 2px #000 , -1px -1px 2px #000 , 1px 1px 2px #000 , 1px 1px 2px #000"
+                                        }),
+                                        {width: "20%", vertAlign: "initial"}
+                                    )) ||
+                                    false
+                            ]),
                             {border: "none; border-bottom: 1px solid red;"}
                         )
                     );
@@ -2039,11 +2044,14 @@ const Session = (() => {
                 D.GetPlayerID(charRef),
                 C.HTML.Block([
                     C.HTML.Title("Session Monologues"),
-                    C.HTML.SubHeader(subheaderTextOverride || "You Have Submitted Prompts for ...", {
-                        textAlign: "left",
-                        padding: "0px 0px 0px 2px",
-                        lineHeight: "22px"
-                    }),
+                    C.HTML.SubHeader(
+                        subheaderTextOverride || (authorInit && "You Have Submitted Prompts for ...") || "Unassigned Spotlight Prompts:",
+                        {
+                            textAlign: "left",
+                            padding: "0px 0px 0px 2px",
+                            lineHeight: "22px"
+                        }
+                    ),
                     ...chatCode
                 ])
             );
@@ -2052,11 +2060,16 @@ const Session = (() => {
                 D.GetPlayerID(charRef),
                 C.HTML.Block([
                     C.HTML.Title("Session Monologues"),
-                    C.HTML.SubHeader(subheaderTextOverride || "Your Spotlight Prompts Have All<br>Been Assigned to Their Players!", {
-                        height: "40px",
-                        lineHeight: "20px",
-                        textAlign: "center"
-                    }),
+                    C.HTML.SubHeader(
+                        subheaderTextOverride ||
+                            (authorInit && "Your Spotlight Prompts Have All<br>Been Assigned to Their Players!") ||
+                            "All Spotlight Prompts Have Been Assigned!",
+                        {
+                            height: "40px",
+                            lineHeight: "20px",
+                            textAlign: "center"
+                        }
+                    ),
                     C.HTML.Body("(Why not submit some more?)", {
                         fontSize: "12px",
                         fontFamily: "Voltaire",
@@ -2071,57 +2084,13 @@ const Session = (() => {
     const assignSpotlightPrompt = (charRef, isSilent = false) => {
         const {initial, quadrant, spotlightPrompt} = D.GetCharData(charRef);
         DB({initial, quadrant, spotlightPrompt}, "assignSpotlightPrompt");
-        if (Session.IsSessionActive || TimeTracker.ArePromptsOpen()) {
-            if (spotlightPrompt && (spotlightPrompt.author || isSilent)) {
-                if (!isSilent)
-                    D.Chat(
-                        charRef,
-                        C.HTML.Block([
-                            C.HTML.Header(`Your Prompt for Session ${D.NumToText(STATE.REF.SessionNum, true)} Is:`),
-                            C.HTML.Body(spotlightPrompt.prompt, {
-                                fontSize: "12px",
-                                fontFamily: "Voltaire",
-                                lineHeight: "14px",
-                                textAlign: "left",
-                                padding: "3px",
-                                margin: "0px"
-                            })
-                        ])
-                    );
-                DB({step: "Prompt Exists, Returning it", spotlightPrompt}, "assignSpotlightPrompt");
-                return spotlightPrompt;
-            } else {
-                let promptData;
-                if (STATE.REF.SpotlightPrompts[initial].length) {
-                    if (_.any(STATE.REF.SpotlightPrompts[initial], v => v.author === initial)) {
-                        promptData = D.PullOut(STATE.REF.SpotlightPrompts[initial], v => v.author === initial);
-                        promptData.isAwardingXP = false;
-                        delete promptData.author;
-                        DB({step: "Assigning Self-Prompt", promptData}, "assignSpotlightPrompt");
-                    } else {
-                        promptData = D.PullOut(STATE.REF.SpotlightPrompts[initial], v => !STATE.REF.PromptAuthors.includes(v.author));
-                        if (promptData) {
-                            promptData.isAwardingXP = true;
-                            STATE.REF.PromptAuthors.push(promptData.author);
-                            DB(
-                                {step: "Assigning XP-Valid Authored Prompt", promptData, promptAuthors: D.JS(STATE.REF.PromptAuthors)},
-                                "assignSpotlightPrompt"
-                            );
-                        } else {
-                            promptData = STATE.REF.SpotlightPrompts[initial].pop();
-                            promptData.isAwardingXP = false;
-                            DB(
-                                {step: "Assigning NON-XP Authored Prompt", promptData, promptAuthors: D.JS(STATE.REF.PromptAuthors)},
-                                "assignSpotlightPrompt"
-                            );
-                        }
-                    }
-                } else if (STATE.REF.isPromptingGeneric) {
-                    promptData = {prompt: _.sample(C.SPOTLIGHTPROMPTS), author: false, isAwardingXP: false};
-                    DB({step: "Assigning GENERIC Prompt (No Submitted Prompts)", promptData}, "assignSpotlightPrompt");
+        if (initial) {
+            if (Session.IsSessionActive || TimeTracker.ArePromptsOpen()) {
+                // FIRST: Look for prompts authored by the players.
+                if (spotlightPrompt && (spotlightPrompt.author || isSilent)) {
                     if (!isSilent)
                         D.Chat(
-                            charRef,
+                            D.GetPlayerID(charRef),
                             C.HTML.Block([
                                 C.HTML.Header(`Your Prompt for Session ${D.NumToText(STATE.REF.SessionNum, true)} Is:`),
                                 C.HTML.Body(spotlightPrompt.prompt, {
@@ -2134,66 +2103,120 @@ const Session = (() => {
                                 })
                             ])
                         );
-                    isSilent = true;
+                    DB({step: "Prompt Exists, Returning it", spotlightPrompt}, "assignSpotlightPrompt");
+                    return spotlightPrompt;
+                } else {
+                    let promptData;
+                    if (STATE.REF.SpotlightPrompts[initial].length) {
+                        // First, shuffle the prompts.
+                        STATE.REF.SpotlightPrompts[initial] = _.shuffle(STATE.REF.SpotlightPrompts[initial]);
+                        // 1) Grab a prompt that the player submitted to themselves.
+                        if (_.any(STATE.REF.SpotlightPrompts[initial], v => v.author === initial)) {
+                            promptData = D.PullOut(STATE.REF.SpotlightPrompts[initial], v => v.author === initial);
+                            promptData.isAwardingXP = false;
+                            delete promptData.author;
+                            DB({step: "Assigning Self-Prompt", promptData}, "assignSpotlightPrompt");
+                        } else {
+                            // 2) Grab a prompt that (A) has an author and (B) the author hasn't been chosen yet.
+                            promptData = D.PullOut(STATE.REF.SpotlightPrompts[initial], v => v.author && !STATE.REF.PromptAuthors.includes(v.author));
+                            if (promptData) {
+                                promptData.isAwardingXP = true;
+                                STATE.REF.PromptAuthors.push(promptData.author);
+                                DB(
+                                    {step: "Assigning XP-Valid Authored Prompt", promptData, promptAuthors: D.JS(STATE.REF.PromptAuthors)},
+                                    "assignSpotlightPrompt"
+                                );
+                                // 3) Grab ANY prompt.
+                            } else {
+                                promptData = STATE.REF.SpotlightPrompts[initial].pop();
+                                promptData.isAwardingXP = false;
+                                DB(
+                                    {step: "Assigning NON-XP/NON-AUTHORED Prompt", promptData, promptAuthors: D.JS(STATE.REF.PromptAuthors)},
+                                    "assignSpotlightPrompt"
+                                );
+                            }
+                        }
+                    } else if (STATE.REF.isPromptingGeneric) {
+                        promptData = {prompt: _.sample(C.SPOTLIGHTPROMPTS), author: false, isAwardingXP: false};
+                        DB({step: "Assigning GENERIC Prompt (No Submitted Prompts)", promptData}, "assignSpotlightPrompt");
+                        if (!isSilent)
+                            D.Chat(
+                                charRef,
+                                C.HTML.Block([
+                                    C.HTML.Header(`Your Prompt for Session ${D.NumToText(STATE.REF.SessionNum, true)} Is:`),
+                                    C.HTML.Body(spotlightPrompt.prompt, {
+                                        fontSize: "12px",
+                                        fontFamily: "Voltaire",
+                                        lineHeight: "14px",
+                                        textAlign: "left",
+                                        padding: "3px",
+                                        margin: "0px"
+                                    })
+                                ])
+                            );
+                        isSilent = true;
+                    }
+                    if (promptData) {
+                        D.SetCharData(charRef, "spotlightPrompt", promptData);
+                        DB({step: "Prompt Assigned. Recurring...", charData: D.JS(D.GetCharData(charRef))}, "assignSpotlightPrompt");
+                        return assignSpotlightPrompt(charRef, isSilent);
+                    } else if (!isSilent) {
+                        D.Chat(
+                            charRef,
+                            C.HTML.Block([
+                                C.HTML.Header("No Prompts Available"),
+                                C.HTML.Body(
+                                    "Sorry, there are no prompts logged to your character. Consider requesting one in Discord, and trying back later.",
+                                    {
+                                        fontSize: "12px",
+                                        fontFamily: "Voltaire",
+                                        lineHeight: "14px",
+                                        padding: "3px",
+                                        margin: "0px"
+                                    }
+                                )
+                            ])
+                        );
+                    }
                 }
-                if (promptData) {
-                    D.SetCharData(charRef, "spotlightPrompt", promptData);
-                    DB({step: "Prompt Assigned. Recurring...", charData: D.JS(D.GetCharData(charRef))}, "assignSpotlightPrompt");
-                    return assignSpotlightPrompt(charRef, isSilent);
-                } else if (!isSilent) {
-                    D.Chat(
-                        charRef,
-                        C.HTML.Block([
-                            C.HTML.Header("No Prompts Available"),
-                            C.HTML.Body(
-                                "Sorry, there are no prompts logged to your character. Consider requesting one in Discord, and trying back later.",
-                                {
-                                    fontSize: "12px",
-                                    fontFamily: "Voltaire",
-                                    lineHeight: "14px",
-                                    padding: "3px",
-                                    margin: "0px"
-                                }
-                            )
-                        ])
-                    );
-                }
+            } else if (!isSilent) {
+                const promptsOpenData = TimeTracker.GetPromptsOpenDate();
+                const timeElements = [];
+                if (promptsOpenData.delta.days) timeElements.push(`${promptsOpenData.delta.days} day${promptsOpenData.delta.days !== 1 ? "s" : ""}`);
+                if (promptsOpenData.delta.hours)
+                    timeElements.push(`${promptsOpenData.delta.hours} hour${promptsOpenData.delta.hours !== 1 ? "s" : ""}`);
+                if (promptsOpenData.delta.mins)
+                    timeElements.push(`${promptsOpenData.delta.mins} minute${promptsOpenData.delta.mins !== 1 ? "s" : ""}`);
+                if (timeElements.length >= 2) timeElements[timeElements.length - 1] = `and ${timeElements[timeElements.length - 1]}`;
+                const timeString = timeElements.join(", ").replace(/, and/gu, " and");
+                D.Chat(
+                    charRef,
+                    C.HTML.Block([
+                        C.HTML.Header("Spotlight Assignments Closed"),
+                        C.HTML.Body("To leave time for players to submit and update their Spotlight Prompts, prompt assignment is closed until:", {
+                            fontSize: "12px",
+                            fontFamily: "Voltaire",
+                            lineHeight: "14px",
+                            textAlign: "center",
+                            padding: "3px",
+                            margin: "0px"
+                        }),
+                        C.HTML.SubHeader(`${promptsOpenData.date} at ${promptsOpenData.time} EST`),
+                        C.HTML.Body(`Please check back in ${timeString}.`, {
+                            fontSize: "12px",
+                            fontFamily: "Voltaire",
+                            lineHeight: "14px",
+                            padding: "3px",
+                            margin: "0px"
+                        })
+                    ])
+                );
             }
-        } else if (!isSilent) {
-            const promptsOpenData = TimeTracker.GetPromptsOpenDate();
-            const timeElements = [];
-            if (promptsOpenData.delta.days) timeElements.push(`${promptsOpenData.delta.days} days`);
-            if (promptsOpenData.delta.hours) timeElements.push(`${promptsOpenData.delta.hours} hours`);
-            if (promptsOpenData.delta.mins) timeElements.push(`${promptsOpenData.delta.mins} minutes`);
-            if (timeElements.length >= 2) timeElements[timeElements.length - 1] = `and ${timeElements[timeElements.length - 1]}`;
-            const timeString = timeElements.join(", ").replace(/, and/gu, " and");
-            D.Chat(
-                charRef,
-                C.HTML.Block([
-                    C.HTML.Header("Spotlight Assignments Closed"),
-                    C.HTML.Body("To leave time for players to submit and update their Spotlight Prompts, prompt assignment is closed until:", {
-                        fontSize: "12px",
-                        fontFamily: "Voltaire",
-                        lineHeight: "14px",
-                        textAlign: "center",
-                        padding: "3px",
-                        margin: "0px"
-                    }),
-                    C.HTML.SubHeader(`${promptsOpenData.date} at ${promptsOpenData.time} EST`),
-                    C.HTML.Body(`Please check back in ${timeString}.`, {
-                        fontSize: "12px",
-                        fontFamily: "Voltaire",
-                        lineHeight: "14px",
-                        padding: "3px",
-                        margin: "0px"
-                    })
-                ])
+            DB(
+                {step: "Prompt Assignment FAILED", isSessionActive: Session.IsSessionActive, arePromptsAssignable: TimeTracker.ArePromptsOpen()},
+                "assignSpotlightPrompt"
             );
         }
-        DB(
-            {step: "Prompt Assignment FAILED", isSessionActive: Session.IsSessionActive, arePromptsAssignable: TimeTracker.ArePromptsOpen()},
-            "assignSpotlightPrompt"
-        );
         return false;
     };
     const deleteSpotlightPrompt = (toCharRef, fromCharRef, promptID) => {
@@ -2371,6 +2394,19 @@ const Session = (() => {
             Media.ToggleImg("MapIndicator_Base_1", false);
             Media.ToggleAnim("MapIndicator", false);
         }
+        const [prevDistrict, prevSite] = Object.values(STATE.REF.prevLocFocus || getActiveLocations());
+        const [curDistrict, curSite] = Object.values(getActiveLocations());
+        const locCalls = [];
+        if (prevDistrict !== curDistrict) {
+            locCalls.unshift(C.DISTRICTS[prevDistrict].onExitCall);
+            locCalls.push(C.DISTRICTS[curDistrict].onEntryCall);
+        }
+        if (prevSite !== curSite) {
+            locCalls.unshift(C.SITES[prevSite].onExitCall);
+            locCalls.push(C.SITES[curSite].onEntryCall);
+        }
+        for (const locCall of _.compact(locCalls)) D.Call(locCall);
+        STATE.REF.prevLocFocus = getActiveLocations();
         Soundscape.Sync();
     };
     const addSceneAlarm = alarm => {

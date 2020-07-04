@@ -308,7 +308,7 @@ const TimeTracker = (() => {
                 break;
             }
             case "start": {
-                toggleClock(true, parseInt(args[0]) || 60);
+                toggleClock(true, parseInt(args.pop()) || 60);
                 break;
             }
             case "stop": {
@@ -2078,11 +2078,18 @@ const TimeTracker = (() => {
     const updateWeatherHandout = monthNum => {
         const funcID = ONSTACK();
         // Handouts.RemoveAll(MONTHS[monthNum])
-        Handouts.Set(`${D.UCase(MONTHS[monthNum])} (Raw)`, undefined, `<h2>${MONTHS[monthNum]}</h2>${singleMonthBlock(monthNum, false, true)}`, true);
+        Handouts.Set(
+            `${D.UCase(MONTHS[monthNum])} (Raw)`,
+            undefined,
+            `<h2>${MONTHS[monthNum]}</h2>${singleMonthBlock(monthNum, false, true)}`,
+            false,
+            true
+        );
         Handouts.Set(
             `${D.UCase(MONTHS[monthNum])} (Current)`,
             undefined,
             `<h2>${MONTHS[monthNum]}</h2>${singleMonthBlock(monthNum, false, false)}`,
+            false,
             true
         );
         OFFSTACK(funcID);

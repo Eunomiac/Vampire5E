@@ -54,224 +54,83 @@ const Tester = (() => {
     const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
-            case "promptdata": {
-                const reportLines = {
-                    PromptAuthors: state.VAMPIRE.Session.PromptAuthors,
-                    isPromptingGeneric: state.VAMPIRE.Session.isPromptingGeneric,
-                    arePromptsAssignable: state.VAMPIRE.Session.arePromptsAssignable
-                };
-                if ("character" in objects) {
-                    const [charObj] = Listener.GetObjects(objects, "character");
-                    const charData = D.GetCharData(charObj);
-                    reportLines.SpotlightPrompts = state.VAMPIRE.Session.SpotlightPrompts[charData.initial];
-                    reportLines.CharRegistry = charData;
-                } else {
-                    reportLines.CharRegistry = state.VAMPIRE.Char.registry;
-                    reportLines.SpotlightPrompts = state.VAMPIRE.Session.SpotlightPrompts;
-                }
-                D.Alert(D.JS(reportLines), "Prompt Data");
-                break;
-            }
-            case "resetpromptdata": {
-                state.VAMPIRE.Session.PromptAuthors = [];
-                state.VAMPIRE.Session.isPromptingGeneric = true;
-                state.VAMPIRE.Session.SpotlightPrompts = {
-                    L: [
-                        {
-                            prompt:
-                                "I want to see Locke preparing for the night. What are your dusk rituals? Do you prefer american or european suits?",
-                            author: "N",
-                            id: "JaTUMer3L4"
+            case "prompt": {
+                switch (D.LCase((call = args.shift()))) {
+                    case "get": {
+                        const reportLines = {
+                            PromptAuthors: state.VAMPIRE.Session.PromptAuthors,
+                            isPromptingGeneric: state.VAMPIRE.Session.isPromptingGeneric,
+                            arePromptsAssignable: state.VAMPIRE.Session.arePromptsAssignable
+                        };
+                        if ("character" in objects) {
+                            const [charObj] = Listener.GetObjects(objects, "character");
+                            const charData = D.GetCharData(charObj);
+                            reportLines.SpotlightPrompts = state.VAMPIRE.Session.SpotlightPrompts[charData.initial];
+                            reportLines.CharRegistry = charData;
+                        } else {
+                            reportLines.CharRegistry = D.KeyMapObj(
+                                D.Clone(state.VAMPIRE.Char.registry),
+                                (k, v) => v.initial,
+                                v => _.pick(v, "spotlightPrompt")
+                            );
+                            reportLines.SpotlightPrompts = state.VAMPIRE.Session.SpotlightPrompts;
                         }
-                    ],
-                    R: [
-                        {
-                            prompt: "I want to see you actually performing a ritual; chanting, drawing pentagrams, whatever it is you do.",
-                            author: "N",
-                            id: "QpYqB4iIkf"
-                        }
-                    ],
-                    A: [],
-                    N: [
-                        {
-                            prompt:
-                                "Napier has embroiled himself in the cutthroat underworld of gangsters and Kindred with very little compunction. Does he have any reservations about this? Does he ever think about the disconnect between what he wanted fror himself as a mortal and what he's doing now?",
-                            author: "A",
-                            id: "VAqpjBgs9c"
-                        }
-                    ],
-                    B: [
-                        {
-                            prompt: "I want to see you checking on/setting up another contingency that Bacchus has set up for a masquerade break.",
-                            author: "N",
-                            id: "4QrJ5H3cY0"
-                        }
-                    ]
-                };
-                state.VAMPIRE.Char.registry = {
-                    TopLeft: {
-                        id: "-Lt3NYCcsMUqdijYCWEc",
-                        name: "Locke Ulrich",
-                        playerID: "-Ltvp919sIbaWTe0FbaF",
-                        playerName: "PixelPuzzler",
-                        tokenName: "Locke Ulrich",
-                        shortName: "Locke",
-                        initial: "L",
-                        quadrant: "TopLeft",
-                        docName: "L. Ulrich",
-                        isActive: true,
-                        spotlightPrompt: false
-                    },
-                    BotLeft: {
-                        id: "-Lt3NX_VzMz2GjiVS61h",
-                        name: "Dr. Arthur Roy",
-                        playerID: "-Ltu_6_IXWL9uhgmJpvQ",
-                        playerName: "banzai",
-                        tokenName: "Dr. Arthur Roy",
-                        shortName: "Roy",
-                        initial: "R",
-                        quadrant: "BotLeft",
-                        docName: "Dr. Roy",
-                        isActive: true,
-                        spotlightPrompt: false
-                    },
-                    BotRight: {
-                        id: "-Lt3NWi8bDHdWmo06gnm",
-                        name: "Ava Wong",
-                        playerID: "-Ltu_Bv374-umIX8wNhm",
-                        playerName: "TeatimeRationale",
-                        tokenName: "Ava Wong",
-                        shortName: "Ava",
-                        initial: "A",
-                        quadrant: "BotRight",
-                        docName: "A. Wong",
-                        isActive: true,
-                        spotlightPrompt: false
-                    },
-                    MidRight: {
-                        id: "-Lt3NXv8ES_NsYiwvYW8",
-                        name: "Johannes Napier",
-                        playerID: "-Ltu_ABMK_SNmtU1TE4o",
-                        playerName: "Thaumaterge",
-                        tokenName: "Johannes Napier",
-                        shortName: "Napier",
-                        initial: "N",
-                        quadrant: "MidRight",
-                        docName: "Dr. Napier",
-                        isActive: true,
-                        spotlightPrompt: false
-                    },
-                    TopRight: {
-                        id: "-LzZWGWH-yvOZB97qWq_",
-                        name: "Bacchus Giovanni",
-                        playerID: "-LzZU4s5ylON7iWLO-jK",
-                        playerName: "Hastur",
-                        tokenName: "Bacchus Giovanni",
-                        shortName: "Bacchus",
-                        initial: "B",
-                        quadrant: "TopRight",
-                        docName: "B. Giovanni",
-                        isActive: true,
-                        spotlightPrompt: false
+                        D.Show(reportLines);
+                        break;
                     }
-                };
+                    case "save": {
+                        STATE.REF.SpotlightPromptsBackup = D.Clone(state.VAMPIRE.Session.SpotlightPrompts);
+                        STATE.REF.SpotlightPromptsCharsBackup = D.KeyMapObj(D.Clone(state.VAMPIRE.Char.registry), null, v =>
+                            _.pick(v, "spotlightPrompt")
+                        );
+                        D.Alert(
+                            D.JS({
+                                SpotlightPromptsBackup: STATE.REF.SpotlightPromptsBackup,
+                                SpotlightPromptsCharsBackup: STATE.REF.SpotlightPromptsCharsBackup
+                            }),
+                            "!test prompt save"
+                        );
+                        state.VAMPIRE.Char.registry.TopLeft.spotlightPrompt = "This is a test.";
+                        break;
+                    }
+                    case "reset": {
+                        state.VAMPIRE.Session.PromptAuthors = [];
+                        state.VAMPIRE.Session.SpotlightPrompts = D.Clone(STATE.REF.SpotlightPromptsBackup);
+                        state.VAMPIRE.Char.registry = D.KeyMapObj(state.VAMPIRE.Char.registry, null, (v, k) =>
+                            Object.assign(v, STATE.REF.SpotlightPromptsCharsBackup[k])
+                        );
+                        D.Alert(
+                            `Spotlight Prompt Data Reset:<br><br>${D.JS(
+                                D.KeyMapObj(D.Clone(state.VAMPIRE.Char.registry), null, v => _.pick(v, "spotlightPrompt"))
+                            )}`,
+                            "!test prompt reset"
+                        );
+                        break;
+                    }
+                    // no default
+                }
                 break;
             }
-            case "setfakeprompts": {
-                state.VAMPIRE.Session.SpotlightPrompts = {
-                    L: [
-                        {
-                            prompt:
-                                "I want to see Locke preparing for the night. What are your dusk rituals? Do you prefer american or european suits?",
-                            author: "N",
-                            id: "JaTUMer3L4"
+            case "chars": {
+                switch (D.LCase((call = args.shift()))) {
+                    case "backup": {
+                        for (const charObj of D.GetChars("registered")) {
+                            const charAttrs = findObjs({
+                                _type: "attribute",
+                                _characterid: charObj.id
+                            });
+                            Handouts.Report(D.GetName(charObj), charAttrs, true);
                         }
-                    ],
-                    R: [
-                        {
-                            prompt: "I want to see you actually performing a ritual; chanting, drawing pentagrams, whatever it is you do.",
-                            author: "N",
-                            id: "QpYqB4iIkf"
-                        },
-                        {
-                            prompt:
-                                "I want to see ROY preparing for the night. What are your dusk rituals? Do you prefer american or european suits?",
-                            author: "A",
-                            id: "JaTasdr3L4"
-                        }
-                    ],
-                    A: [],
-                    N: [
-                        {
-                            prompt:
-                                "Napier has embroiled himself in the cutthroat underworld of gangsters and Kindred with very little compunction. Does he have any reservations about this? Does he ever think about the disconnect between what he wanted fror himself as a mortal and what he's doing now?",
-                            author: "A",
-                            id: "VAqpjBgs9c"
-                        }
-                    ],
-                    B: [
-                        {
-                            prompt: "I want to see you checking on/setting up another contingency that Bacchus has set up for a masquerade break.",
-                            author: "N",
-                            id: "4QrJ5H3cY0"
-                        }
-                    ]
-                };
-                break;
-            }
-            case "errormessage": {
-                D.Chat(
-                    D.GMID(),
-                    C.HTML.Block([
-                        C.HTML.Title("Session Monologues"),
-                        C.HTML.SubHeader("Something's Fucky...", {
-                            lineHeight: "22px"
-                        }),
-                        C.HTML.Body(
-                            "No such prompt found to delete!  Now, since I'm the one who programmed that button you just clicked, this is entirely my fault.  Please let me know, so I can unfuck things.",
-                            {
-                                fontSize: "12px",
-                                fontFamily: "Voltaire",
-                                lineHeight: "14px",
-                                textAlign: "left",
-                                padding: "3px",
-                                margin: "0px"
-                            }
-                        )
-                    ])
-                );
-                break;
-            }
-            case "pullout": {
-                D.Chat(
-                    "all",
-                    C.HTML.Block([
-                        C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
-                        C.HTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
-                        C.HTML.Header("Dr. Arthur Roy"),
-                        C.HTML.Body(
-                            `"Choose a coterie mate.  Narrate a scene wherein you perform a favor for that character sufficient to earn you a Minor Boon."`,
-                            {
-                                fontFamily: "Voltaire",
-                                textAlign: "left",
-                                lineHeight: "16px",
-                                padding: "3px",
-                                fontSize: "14px"
-                            }
-                        ),
-                        C.HTML.Header("The Spotlight Is Yours!"),
-                        C.HTML.Button("End Spotlight Scene", `!endmonologue`, {
-                            width: "50%",
-                            height: "20px",
-                            margin: "2px 2px 0px -5px",
-                            border: "1px outset rgba(100, 0, 0, 1)",
-                            fontSize: "14px",
-                            lineHeight: "20px",
-                            textShadow: "0px 0px 2px #000 , 0px 0px 2px #000, 0px 0px 2px #000 , 0px 0px 2px #000",
-                            boxShadow: "inset -1px -1px 2px #000 , -1px -1px 2px #000 , 1px 1px 2px #000 , 1px 1px 2px #000"
-                        })
-                    ])
-                );
+                        break;
+                    }
+                    case "code": {
+                        STATE.REF.CharCode = {};
+                        for (const charObj of D.GetChars("registered"))
+                            Handouts.ParseCode(D.GetName(charObj), STATE.REF.CharCode, D.GetName(charObj));
+                        break;
+                    }
+                    // no default
+                }
                 break;
             }
             case "statelength": {
@@ -283,6 +142,9 @@ const Tester = (() => {
                 D.Alert(`${D.JS(lengthVals)}<br><br><b>TOTAL:${JSON.stringify(state.VAMPIRE).length}`, "State Variable Contents");
                 break;
             }
+            // no default
+        }
+        /* #region OLD TESTS    
             case "pause":
                 TimeTracker.Pause();
                 break;
@@ -320,7 +182,7 @@ const Tester = (() => {
                         (D.IsID(trackRef) && getObj("jukeboxtrack", trackRef).get("title")) ||
                         (VAL({obj: trackRef}) && trackRef.get("title")) ||
                         trackRef;
-                    return trackRef.replace(/\s*[([{].*[)\]}]\s*/gu, "").replace(/[^A-Za-z0-9]*/gu, "");
+                    return trackRef.replace(/\s*[([{].*[)\]}]\s*?/gu, "").replace(/[^A-Za-z0-9]*?/gu, "");
                 };
                 const jukeboxData = JSON.parse(Campaign().get("_jukeboxfolder")).map(x =>
                     D.KeyMapObj(
@@ -409,64 +271,6 @@ const Tester = (() => {
                         )
                     )
                 );
-
-                /*
-                    `<div style="
-                    display: block;
-                    width: 540px;
-                    height: 800px;
-                    margin-left: -30px;
-                    background: url('https://i.imgur.com/LsrLDoN.jpg') no-repeat top;
-                    background-size: 100%;
-                    ">
-                        <div style="
-                        display: inline-block;
-                        height: 100%;
-                        width: 449px;
-                        margin-left: 63px;
-                        margin-right: 30px;
-                        margin-top: 185px;
-                        ">
-                            <div style="
-                            display: inline-block;
-                            height: auto;
-                            width: 100%;
-                            background-color: rgba(0,0,0,0.1);
-                            padding-left: 6px;
-                            margin-bottom: 5px;
-                            ">
-                                <div style="
-                                display: inline-block;
-                                width: 75px;
-                                height: auto;
-                                font-family: TypewriterScribbled;
-                                font-size: 10px;
-                                text-align: left;
-                                vertical-align: top;
-                                line-height: 11px;
-                                text-align-last: left;
-                                ">B. Giovanni</div>
-                                <div style="
-                                display: inline-block;
-                                width: 370px;
-                                height: auto;
-                                font-family: TypewriterScribbled;
-                                font-size: 10px;
-                                line-height: 11px;
-                                text-align: left;
-                                text-align-last: left;
-                                ">This is the goal of my project! This is the goal of my project! This is the goal of my project! This is the goal of my project! This is the goal of my project!
-                                    <div style="
-                                    display: inline-block;
-                                    text-align: right;
-                                    text-align-last: right;
-                                    width: 100%;
-                                    "><b><u>COMPLETED ON</u>:</b> Dec. 27, 2020</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`
-                    */
                 break;
             }
             case "randtimeline": {
@@ -585,26 +389,6 @@ const Tester = (() => {
                 break;
             }
             case "buttons": {
-                /* MENU DATA:
-                    {
-                        title: <string>
-                        rows: [
-                            Each element represents a full-width horizontal <div> block, contained with "block".
-                            Elements should be of the form:
-                                {
-                                    type: <string: "Title", "Header", "Body", "ButtonLine", "ButtonSubheader">
-                                    contents: <
-                                        for TITLE, HEADLINE, TEXT: <string>
-                                        for BUTTONS: <array: each element represents a line of buttons, of form:
-                                                        <list: {name, command, [styles]}>   >
-                                    [buttonStyles]: <list of styles to apply to ALL of the buttons in a ButtonLine
-                                    [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
-                                } 
-                        ]
-                        [blockStyles:] <override C.HTML.Block 'options' parameter.
-                    }
-                    */
-
                 const frenzyCharObj = D.GetChar("L");
                 D.CommandMenu({
                     rows: [
@@ -881,8 +665,8 @@ const Tester = (() => {
                 D.Alert(reportLines.join("<br>"), "Text Survey & Verification");
                 break;
             }
-            // no default
-        }
+            no default
+            #endregion */
     };
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************

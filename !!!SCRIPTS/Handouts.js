@@ -22,6 +22,7 @@ const Handouts = (() => {
     // #region LOCAL INITIALIZATION
     const preInitialize = () => {
         STATE.REF.noteCounts = STATE.REF.noteCounts || {projects: 0, debug: 0};
+        STATE.REF.categoryLogs = STATE.REF.categoryLogs || {projects: [], debug: []};
     };
     // #endregion
 
@@ -41,11 +42,11 @@ const Handouts = (() => {
             case "get":
                 switch (D.LCase((call = args.shift()))) {
                     case "projects": {
-                        summarizeProjects("Project Summary", D.GetChars("registered"));
+                        // summarizeProjects("Project Summary", D.GetChars("registered"));
                         break;
                     }
                     case "prestation": {
-                        summarizePrestation("Prestation Summary", D.GetChars("registered"));
+                        // summarizePrestation("Prestation Summary", D.GetChars("registered"));
                         break;
                     }
                     // no default
@@ -57,18 +58,32 @@ const Handouts = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    // #region GETTERS: Retrieving Notes, Data
-    const getCount = category => (STATE.REF.noteCounts && STATE.REF.noteCounts[category]) || 0;
-    const getHandoutObj = (titleRef, charRef) => {
-        const notes = _.filter(
-            findObjs({_type: "handout", archived: false}),
-            v => D.LCase(titleRef) && D.LCase(v.get("name")) && D.LCase(v.get("name")).includes(D.LCase(titleRef))
-        );
-        // notes[0].get("notes", (note) => { log(note) })
-
-        if (charRef) return _.filter(notes, v => v.get("inplayerjournals").includes(D.GetPlayerID(charRef)))[0];
-        else return notes[0];
+    // #region CONFIGURATION
+    const categoryMax = {
+        default: 5,
+        debug: 10
     };
+    // #endregion
+
+    // #region GETTERS: Retrieving Notes, Data
+    const getCount = category => (STATE.REF.categoryLogs[category] || []).length;
+    const getCatNum = category => D.Int(D.LCase(D.Last(STATE.REF.categoryLogs[category])).replace(/^.*? (\d*)$/gu, "$1")) + 1;
+    const getHandoutCode = (titleRef, storageRef, storageKey) => {
+        if (storageRef && storageKey) {
+            const handoutObj = getHandoutObj(titleRef);
+            if (handoutObj)
+                handoutObj.get("gmnotes", notes => {
+                    storageRef[storageKey] = JSON.parse(notes);
+                    D.Flag("Code Parsed!");
+                });
+        } else {
+            D.Flag("Must provide a storage reference and a key to store the code!");
+        }
+    };
+    const getHandoutObj = (titleRef, charRef) =>
+        findObjs({_type: "handout"}).filter(
+            x => D.LCase(x.get("name")).includes(D.LCase(titleRef)) && (!charRef || x.get("inplayerjournals").includes(D.GetPlayerID(charRef)))
+        )[0];
     const getProjectData = charRef => {
         const projAttrs = D.GetRepStats(charRef, "project", null, null, "rowID");
         const projData = [];
@@ -140,36 +155,51 @@ const Handouts = (() => {
     // #endregion
 
     // #region SETTERS: Setting Notes, Deleting Handouts, Appending to Handouts
-    const makeHandoutObj = (title, category, contents, isRawCode = false) => {
-        if (category) STATE.REF.noteCounts[category] = getCount(category) + 1;
-        const noteObj = createObj("handout", {name: `${title} ${category && getCount(category) > 1 ? getCount(category) - 1 : ""}`});
-        if (contents) noteObj.set("notes", C.HANDOUTHTML.main((isRawCode && contents) || D.JS(contents)));
+    const makeHandoutObj = (title, category, contents, isWritingGM = false, isVerbose = false) => {
+        if (category) {
+            STATE.REF.categoryLogs[category] = STATE.REF.categoryLogs[category] || [];
+            while (getCount(category) >= (categoryMax[category] || categoryMax["default"]))
+                delHandoutObj(D.PullIndex(STATE.REF.categoryLogs[category], 0));
+            title += ` ${getCatNum(category)}`;
+            STATE.REF.categoryLogs[category].push(title);
+        } else {
+            delHandoutObj(title);
+        }
+        const noteObj = createObj("handout", {name: title});
+        if (contents) updateHandout(title, category, contents, isWritingGM, isVerbose);
         return noteObj;
     };
-    const makeSimpleHandoutObj = (title, contents) => makeHandoutObj(title, false, contents, true);
-    const updateHandout = (title, category, contents, isRawCode = false) => {
+    const makeSimpleHandoutObj = (title, contents, isVerbose = false) => makeHandoutObj(title, false, contents, true, isVerbose);
+    const updateHandout = (title, category, contents, isWritingGM = false, isVerbose = false) => {
         const handoutObj = getHandoutObj(title);
-        if (VAL({object: handoutObj})) handoutObj.set("notes", (isRawCode && contents) || D.JS(contents));
-        else makeHandoutObj(title, category, contents, isRawCode);
+        const noteData = {
+            notes: C.HANDOUTHTML.main(D.JS(contents, isVerbose)),
+            gmnotes: typeof contents === "string" ? contents : JSON.stringify(contents)
+        };
+        if (handoutObj) {
+            handoutObj.set("notes", noteData.notes);
+            if (isWritingGM) handoutObj.set("gmnotes", noteData.gmnotes);
+        } else {
+            makeHandoutObj(title, category, contents, isWritingGM, isVerbose);
+        }
     };
     const delHandoutObjs = (titleRef, category) => {
-        for (const handout of _.filter(
-            findObjs({_type: "handout", archived: false}),
-            v => D.LCase(titleRef) && D.LCase(v.get("name")) && D.LCase(v.get("name")).includes(D.LCase(titleRef))
-        ))
+        const handoutObjs = findObjs({_type: "handout"}).filter(
+            x => (!category || STATE.REF.categoryLogs[category].includes(x.get("name"))) && D.LCase(x.get("name")).includes(D.LCase(titleRef))
+        );
+        for (const handout of handoutObjs) {
+            if (category && STATE.REF.categoryLogs[category].includes(handout.get("name")))
+                D.PullOut(STATE.REF.categoryLogs[category], v => v === handout.get("name"));
             handout.remove();
-        if (category) STATE.REF.noteCounts[category] = 0;
+        }
     };
     const delHandoutObj = (titleRef, category) => {
-        const handoutObj = _.find(
-            findObjs({_type: "handout", inplayerjournals: "", archived: false}),
-            v => D.LCase(titleRef) && D.LCase(v.get("name")) && D.LCase(v.get("name")).includes(D.LCase(titleRef))
+        const handoutObj = findObjs({_type: "handout", inplayerjournals: "", archived: false}).find(x =>
+            D.LCase(x.get("name")).includes(D.LCase(titleRef))
         );
         if (VAL({object: handoutObj})) {
-            if (category && STATE.REF.noteCounts[category]) {
-                const matcher = handoutObj.get("name").match(/\d+$/u);
-                if (matcher && D.Int(matcher[0]) === getCount(category)) STATE.REF.noteCounts[category] = getCount(category) - 1;
-            }
+            if (category && STATE.REF.categoryLogs[category].includes(handoutObj.get("name")))
+                D.PullOut(STATE.REF.categoryLogs[category], v => v === handoutObj.get("name"));
             handoutObj.remove();
         }
     };
@@ -177,6 +207,7 @@ const Handouts = (() => {
 
     // #region CHARACTER SHEET SUMMARIES
 
+    /* 
     const summarizeProjects = (title, charObjs) => {
         delHandoutObjs("Project Summary", "projects");
         const noteObj = makeHandoutObj(title, "projects");
@@ -185,9 +216,9 @@ const Handouts = (() => {
             const charLines = [];
             for (const projectData of getProjectData(char)) {
                 // D.Alert(D.JS(projectData), "Project Data")
-                /* for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
-                        projectData[item] = projectData[item] || ""
-                    } */
+                // for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
+                //        projectData[item] = projectData[item] || ""
+                //    }
                 if (projectData.projectenddate && TimeTracker.GetDate(projectData.projectenddate) < TimeTracker.CurrentDate) continue;
                 const projLines = [];
                 let projGoal = "";
@@ -212,15 +243,12 @@ const Handouts = (() => {
                         ((!_.isNaN(D.Int(projectData[stakeVar])) && D.Int(projectData[stakeVar]) > 0) || projectData[stakeVar].length > 2)
                     )
                         stakeCheck = true;
-                teamworkCheck =
-                    D.Int(projectData.projectteamwork1) + D.Int(projectData.projectteamwork2) + D.Int(projectData.projectteamwork3) > 0;
+                teamworkCheck = D.Int(projectData.projectteamwork1) + D.Int(projectData.projectteamwork2) + D.Int(projectData.projectteamwork3) > 0;
                 if (teamworkCheck)
                     projLines.push(
                         `${C.HANDOUTHTML.projects.tag("TEAMWORK:", C.COLORS.blue)}${C.HANDOUTHTML.projects.teamwork(
                             "●".repeat(
-                                D.Int(projectData.projectteamwork1) +
-                                    D.Int(projectData.projectteamwork2) +
-                                    D.Int(projectData.projectteamwork3)
+                                D.Int(projectData.projectteamwork1) + D.Int(projectData.projectteamwork2) + D.Int(projectData.projectteamwork3)
                             )
                         )}`
                     );
@@ -244,8 +272,10 @@ const Handouts = (() => {
                     if (D.Int(projectData.projectinccounter) > 0)
                         projLines.push(
                             `<br>${C.HANDOUTHTML.projects.daysLeft(
-                                `(${D.Int(projectData.projectincnum) *
-                                    D.Int(projectData.projectinccounter)} ${projectData.projectincunit.slice(0, -1)}(s) left)`
+                                `(${D.Int(projectData.projectincnum) * D.Int(projectData.projectinccounter)} ${projectData.projectincunit.slice(
+                                    0,
+                                    -1
+                                )}(s) left)`
                             )}`
                         );
                 }
@@ -274,9 +304,9 @@ const Handouts = (() => {
             continue;
             for (const cat of ["boonsowed", "boonsowing"])
                 for (const boonData of prestationData[cat]) {
-                    /* for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
-                            projectData[item] = projectData[item] || ""
-                        } */
+                    // for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
+                    //        projectData[item] = projectData[item] || ""
+                    //    }
                     if (boonData.projectenddate && TimeTracker.GetDate(boonData.projectenddate) < TimeTracker.CurrentDate) continue;
                     const projLines = [];
                     let projGoal = "";
@@ -287,50 +317,48 @@ const Handouts = (() => {
                         projLines.push(`${C.HANDOUTHTML.projects.tag("HOOK:")}${C.HANDOUTHTML.projects.hook(boonData.projectgoal)}`);
                     if (boonData.projectdetails && boonData.projectdetails.length > 2)
                         projLines.push(C.HANDOUTHTML.smallNote(boonData.projectdetails));
-                    /*
-                        let [stakeCheck, teamworkCheck] = [false, false]
-                        for (const stakeVar of ["projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3"])
-                            if (boonData[stakeVar] && (!_.isNaN(D.Int(boonData[stakeVar])) && D.Int(boonData[stakeVar]) > 0 || boonData[stakeVar].length > 2))
-                                stakeCheck = true
-                        teamworkCheck = D.Int(boonData.projectteamwork1) + D.Int(boonData.projectteamwork2) + D.Int(boonData.projectteamwork3) > 0
-                        if (teamworkCheck)
-                            projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", C.COLORS.blue)}${C.HANDOUTHTML.projects.teamwork("●".repeat(D.Int(projectData.projectteamwork1) + D.Int(projectData.projectteamwork2) + D.Int(projectData.projectteamwork3)))}`)
-                        if (stakeCheck) {
-                            const stakeStrings = []
-                            for (let i = 1; i <= 3; i++) {
-                                const [attr, val] = [boonData[`projectstake${i}_name`], D.Int(boonData[`projectstake${i}`])]
-                                if (attr && attr.length > 2 && !_.isNaN(val))
-                                    stakeStrings.push(`${attr} ${"●".repeat(val)}`)
-                            }
-                            projLines.push(`${C.HANDOUTHTML.projects.tag("STAKED:")}${C.HANDOUTHTML.projects.stake(stakeStrings.join(", "))}`)
-                            if (!teamworkCheck)
-                                projLines.push(`${C.HANDOUTHTML.projects.tag("")}${C.HANDOUTHTML.projects.teamwork("")}`)
-                        } else if (teamworkCheck) {
-                            projLines.push(`${C.HANDOUTHTML.projects.tag("")}${C.HANDOUTHTML.projects.stake("")}`)
-                        }          
-                        if (boonData.projectlaunchresults && boonData.projectlaunchresults.length > 2)
-                            if (boonData.projectlaunchresults.includes("CRITICAL"))
-                                projLines.push(C.HANDOUTHTML.projects.critSucc("CRITICAL"))
-                            else
-                                projLines.push(C.HANDOUTHTML.projects.succ(`Success (+${boonData.projectlaunchresultsmargin})`))
-                        else
-                            projLines.push(C.HANDOUTHTML.projects.succ(""))
-                        if (boonData.projectenddate) {
-                            projLines.push(C.HANDOUTHTML.projects.endDate(`Ends ${boonData.projectenddate.toUpperCase()}`))
-                            if (D.Int(boonData.projectinccounter) > 0)
-                                projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${D.Int(boonData.projectincnum) * D.Int(boonData.projectinccounter)} ${boonData.projectincunit.slice(0, -1)}(s) left)`)}`)
-                        }
-                        if (projLines.length === 1 && projLines[0] === C.HANDOUTHTML.projects.goal(""))
-                            continue
-                        charLines.push(C.HANDOUTHTML.main(projLines.join("")))
-                        */
+                        // let [stakeCheck, teamworkCheck] = [false, false]
+                        // for (const stakeVar of ["projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3"])
+                        //     if (boonData[stakeVar] && (!_.isNaN(D.Int(boonData[stakeVar])) && D.Int(boonData[stakeVar]) > 0 || boonData[stakeVar].length > 2))
+                        //         stakeCheck = true
+                        // teamworkCheck = D.Int(boonData.projectteamwork1) + D.Int(boonData.projectteamwork2) + D.Int(boonData.projectteamwork3) > 0
+                        // if (teamworkCheck)
+                        //     projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", C.COLORS.blue)}${C.HANDOUTHTML.projects.teamwork("●".repeat(D.Int(projectData.projectteamwork1) + D.Int(projectData.projectteamwork2) + D.Int(projectData.projectteamwork3)))}`)
+                        // if (stakeCheck) {
+                        //     const stakeStrings = []
+                        //     for (let i = 1; i <= 3; i++) {
+                        //         const [attr, val] = [boonData[`projectstake${i}_name`], D.Int(boonData[`projectstake${i}`])]
+                        //         if (attr && attr.length > 2 && !_.isNaN(val))
+                        //             stakeStrings.push(`${attr} ${"●".repeat(val)}`)
+                        //     }
+                        //     projLines.push(`${C.HANDOUTHTML.projects.tag("STAKED:")}${C.HANDOUTHTML.projects.stake(stakeStrings.join(", "))}`)
+                        //     if (!teamworkCheck)
+                        //         projLines.push(`${C.HANDOUTHTML.projects.tag("")}${C.HANDOUTHTML.projects.teamwork("")}`)
+                        // } else if (teamworkCheck) {
+                        //     projLines.push(`${C.HANDOUTHTML.projects.tag("")}${C.HANDOUTHTML.projects.stake("")}`)
+                        // }          
+                        // if (boonData.projectlaunchresults && boonData.projectlaunchresults.length > 2)
+                        //     if (boonData.projectlaunchresults.includes("CRITICAL"))
+                        //         projLines.push(C.HANDOUTHTML.projects.critSucc("CRITICAL"))
+                        //     else
+                        //         projLines.push(C.HANDOUTHTML.projects.succ(`Success (+${boonData.projectlaunchresultsmargin})`))
+                        // else
+                        //     projLines.push(C.HANDOUTHTML.projects.succ(""))
+                        // if (boonData.projectenddate) {
+                        //     projLines.push(C.HANDOUTHTML.projects.endDate(`Ends ${boonData.projectenddate.toUpperCase()}`))
+                        //     if (D.Int(boonData.projectinccounter) > 0)
+                        //         projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${D.Int(boonData.projectincnum) * D.Int(boonData.projectinccounter)} ${boonData.projectincunit.slice(0, -1)}(s) left)`)}`)
+                        // }
+                        // if (projLines.length === 1 && projLines[0] === C.HANDOUTHTML.projects.goal(""))
+                        //     continue
+                        // charLines.push(C.HANDOUTHTML.main(projLines.join("")))
                 }
 
             if (charLines.length === 0) continue;
             charLines.unshift(C.HANDOUTHTML.projects.charName(D.GetName(charObj).toUpperCase()));
             noteSections.push(charLines.join(""));
         }
-    };
+    }; */
     // #endregion
 
     return {
@@ -344,6 +372,7 @@ const Handouts = (() => {
         Remove: delHandoutObj,
         RemoveAll: delHandoutObjs,
         Get: getHandoutObj,
+        ParseCode: getHandoutCode,
         Count: getCount
     };
 })();

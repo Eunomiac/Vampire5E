@@ -43,21 +43,21 @@ const Player = (() => {
             case "!prompt": {
                 switch (D.LCase((call = args.shift()))) {
                     case "submit": {
-                        const [toChar, fromChar, ...promptText] = args;
-                        Session.SubmitPrompt(toChar, fromChar, promptText.join(" "));
+                        const [toChar, ...promptText] = args;
+                        Session.SubmitPrompt(toChar, msg.playerid, promptText.join(" "));
                         break;
                     }
                     case "review": {
-                        Session.ReviewPrompts(D.GetCharData(msg.who).initial);
+                        Session.ReviewPrompts(msg.playerid);
                         break;
                     }
                     case "delete": {
-                        const [toChar, fromChar, promptID] = args;
-                        Session.DeletePrompt(toChar, fromChar, promptID);
+                        const [toChar, promptID] = args;
+                        Session.DeletePrompt(toChar, msg.playerid, promptID);
                         break;
                     }
                     case "get": {
-                        Session.GetPrompt(msg.who);
+                        Session.GetPrompt(msg.playerid);
                         break;
                     }
                     // no default

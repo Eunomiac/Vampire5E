@@ -382,9 +382,9 @@ const Chat = (() => {
             attrsLines.push(`${attrInfo.name} (${attrInfo.id.slice(10, 14)}): ${attrInfo.current}`);
         });
         D.Alert(
-            `${attrsLines.join("<br/>")}<br/><br/>Num Objs: ${allAttrObjs.length}, Attrs: ${allAttrs.length}, Sorted: ${
-                sortedAttrs.length
-            }, Lines: ${attrsLines.length}`,
+            `${attrsLines.join("<br/>")}<br/><br/>Num Objs: ${allAttrObjs.length}, Attrs: ${allAttrs.length}, Sorted: ${sortedAttrs.length}, Lines: ${
+                attrsLines.length
+            }`,
             `Attributes For ${D.GetName(obj)}`
         );
 
@@ -406,10 +406,7 @@ const Chat = (() => {
             `<div style="display: inline-block; margin: 0px; padding: 0px; width: 49%; background-color: #FFFFCC; border: 1px dotted black; text-align: center; text-align-last: center; vertical-align: middle; padding-top: 40px; padding-bottom: 40px;"><b>${D.Round(
                 obj.get("left"),
                 2
-            )}</b>, <b>${D.Round(obj.get("top"), 2)}</b><br>(<b>${D.Round(obj.get("width"), 2)}</b> x <b>${D.Round(
-                obj.get("height"),
-                2
-            )}</b>)</div>`,
+            )}</b>, <b>${D.Round(obj.get("top"), 2)}</b><br>(<b>${D.Round(obj.get("width"), 2)}</b> x <b>${D.Round(obj.get("height"), 2)}</b>)</div>`,
             `<div style="display: inline-block; margin: 0px; padding: 0px; width: 25%; height: 110px; line-height: 110px; text-align: center; text-align-last: center; font-weight: bold;">${D.Round(
                 obj.get("left") + 0.5 * obj.get("width"),
                 2
@@ -478,10 +475,10 @@ const Chat = (() => {
                     ),
                     title
                 );
-            else D.Alert(D.JS(returnInfo, isVerbose), title);
+            else D.Show(returnInfo, title); // D.Alert(D.JS(returnInfo, isVerbose), title);
         } else {
             stateInfo = D.KeyMapObj(stateInfo, undefined, (v, k) => (ALERTBLACKLIST.includes(k) && "<b><u>(HIDDEN)</u></b>") || v);
-            D.Alert(D.JS(stateInfo, isVerbose), title);
+            D.Show(stateInfo, title);
         }
 
         return true;
@@ -582,13 +579,8 @@ const Chat = (() => {
                     `<tr style="border-left: 2px solid black; border-right: 2px solid black;"><td style="text-align: right;">${fontSize}</td><td style="text-align: right;">${
                         charCounts[0]
                     }</td>${_.zip(testColors, testChars).map(
-                        x =>
-                            `<td style="color: ${x[0]}; text-align: right;">${D.Round(D.CHARWIDTH[fontName][fontSize][x[1]], 2, true)}</td>`
-                    )}<td style="padding-right: 5px; text-align: right;"">${D.Round(
-                        D.CHARWIDTH[fontName][fontSize].lineHeight,
-                        2,
-                        true
-                    )}</td></tr>`
+                        x => `<td style="color: ${x[0]}; text-align: right;">${D.Round(D.CHARWIDTH[fontName][fontSize][x[1]], 2, true)}</td>`
+                    )}<td style="padding-right: 5px; text-align: right;"">${D.Round(D.CHARWIDTH[fontName][fontSize].lineHeight, 2, true)}</td></tr>`
                 );
                 if (charList.length === 0) charList.push(...Object.keys(D.CHARWIDTH[fontName][fontSize]).filter(x => x.length === 1));
             }
@@ -601,9 +593,7 @@ const Chat = (() => {
                             testChars.length}" style = "background-color: #FFBBBB;">${_.uniq(charCounts).join(", ")}</td></tr>`
                     ]
                 );
-            reportTableRows.push(
-                `<tr style="height: 10px;"><td colspan="${3 + testChars.length}" style="border-top: 2px solid black;"></td></tr>`
-            );
+            reportTableRows.push(`<tr style="height: 10px;"><td colspan="${3 + testChars.length}" style="border-top: 2px solid black;"></td></tr>`);
         }
         if (STATE.REF.FontSizes.length) {
             D.Alert(`Completed sizes ${D.JSL(textSizes)}.  Continuing with larger sizes.`, `Resolving '${D.JSL(trueFont)}`);
@@ -619,8 +609,7 @@ const Chat = (() => {
             prepText(STATE.REF.FontTypes.shift());
         } else {
             for (const textObj of textObjs) textObj.remove();
-            for (const missingChar of D.MissingTextChars)
-                if (STATE.REF.Chars.split("").includes(missingChar)) D.MissingTextChars = `!${missingChar}`;
+            for (const missingChar of D.MissingTextChars) if (STATE.REF.Chars.split("").includes(missingChar)) D.MissingTextChars = `!${missingChar}`;
             D.Chat(
                 "Storyteller",
                 C.HTML.Block(

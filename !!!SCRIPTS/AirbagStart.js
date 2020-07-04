@@ -1,5 +1,11 @@
 /* eslint-disable */
+let MarkStart = () => true;
+let MarkStop = () => true;
 let airIndex = new Error();
+
+/* DISABLE AIRBAGSTOP & COMMENT OUT EVERYTHING BELOW TO DISABLE AIRBAG */
+
+
 // ===============================================================================
 // AIRBAG - API Crash Handler
 //
@@ -115,7 +121,7 @@ let lastStart = {
 scriptRanges.push(lastStart);
 
 // Available for dependent scripts.
-const MarkStart = (scriptName) => {
+MarkStart = (scriptName) => {
     scriptNames.push(scriptName)
     let index = new Error();
     let line = GetScriptLine(index, true);
@@ -128,7 +134,7 @@ const MarkStart = (scriptName) => {
 };
 
 // Available for dependent scripts
-const MarkStop = (scriptName) => {
+MarkStop = (scriptName) => {
     let index = new Error();
     let line = GetScriptLine(index, true);
     lastStart.StopLine = line;
@@ -383,3 +389,4 @@ let codebase = (errorMsg) => {
     try {
         MarkStop('AirbagStart');
 /* eslint-enable */
+// */
