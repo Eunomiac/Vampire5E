@@ -865,7 +865,7 @@ const Char = (() => {
             case "send": {
                 switch (D.LCase((call = args.shift()))) {
                     case "home": {
-                        sendCharsHome();
+                        sendCharsHome(charObjs.length ? charObjs : "registered");
                         break;
                     }
                     case "toggle": {
@@ -1070,7 +1070,7 @@ const Char = (() => {
     // #endregion
 
     // #region SETTERS: Moving Tokens, Toggling Characters
-    const sendCharsHome = (charRef = "sandbox") => {
+    const sendCharsHome = (charRef = "registered") => {
         const charTokens = _.groupBy(_.compact(Media.GetTokens(charRef)), v => (VAL({pc: v}) && "pc") || "npc");
         DB({charRef, charTokens, mediaGet: Media.GetTokens(charRef)}, "sendCharsHome");
 
@@ -1078,6 +1078,7 @@ const Char = (() => {
         for (const token of charTokens.pc || []) {
             const quad = D.GetCharData(token).quadrant;
             Media.ToggleImg(token, true);
+            token.set("layer", "objects");
             Media.SetArea(token, `${quad}Token`);
         }
         for (const token of charTokens.npc || []) token.set("layer", "walls");

@@ -90,7 +90,6 @@ const Tester = (() => {
                             }),
                             "!test prompt save"
                         );
-                        state.VAMPIRE.Char.registry.TopLeft.spotlightPrompt = "This is a test.";
                         break;
                     }
                     case "reset": {

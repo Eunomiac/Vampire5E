@@ -23,6 +23,23 @@ const Session = (() => {
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
+        // STATE.REF.curLocation.DistrictCenter = ["DupontByTheCastle"];
+        // STATE.REF.locationRecord.Active.DistrictCenter = ["DupontByTheCastle"];
+        // STATE.REF.quadScene = {
+        //     isActive: false,
+        //     locData: {},
+        //     focus: false
+        // };
+        // STATE.REF.SpotlightPrompts.A = [
+        //     {
+        //         prompt:
+        //             "Every Vampire has a relationship with their beast. What is yours? Do you attempt self control? Or are you embracing your beast? Does this existence bring you great pride? Or shame?",
+        //         author: false,
+        //         id: "QRUl0oCKwq"
+        //     }
+        // ];
+        // state.VAMPIRE.Char.registry.TopLeft.spotlightPrompt = false;
+
         // delete STATE.REF.curLocation
         // delete STATE.REF.locationRecord
         // delete STATE.REF.sceneFocusRecord;
@@ -173,6 +190,59 @@ const Session = (() => {
     const onChatCall = (call, args, objects, msg) => {
         const charObjs = Listener.GetObjects(objects, "character");
         switch (call) {
+            case "casaloma": {
+                switch (D.LCase((call = args.shift()))) {
+                    case "toggle": {
+                        if (STATE.REF.quadScene.isActive) {
+                            setQuadLocations("DupontByTheCastle", false, false);
+                            Media.ToggleTokens("npc", false);
+                            Media.ToggleTokens("pc", true);
+                            Char.SendHome("registered");
+                        } else {
+                            setQuadLocations(
+                                "DupontByTheCastle",
+                                {
+                                    TopLeft: "CLThroneRoom",
+                                    TopRight: "CLSittingRoom",
+                                    Left: "CLGallery",
+                                    Right: "CLBallroom",
+                                    Center: "CLGrounds"
+                                },
+                                "Center"
+                            );
+                            Media.ToggleTokens("Attendant", true);
+                            Media.ToggleTokens("Agnes Bellanger", true);
+                            Media.ToggleTokens("registered", true);
+                            for (const [charRef, areaRef] of Object.entries({
+                                L: "CLE3",
+                                R: "CLE2",
+                                A: "CLE5",
+                                N: "CLE1",
+                                B: "CLE4"
+                            }))
+                                Media.SetArea(charRef, areaRef);
+                        }
+                        break;
+                    }
+                    case "locs": {
+                        const focus = args.filter(x => !x.includes(":")).pop();
+                        const params = D.ParseParams(args);
+                        setQuadLocations("DupontByTheCastle", params, focus || STATE.REF.quadScene.focus || "Center");
+                        break;
+                    }
+                    case "focus": {
+                        setQuadLocations("DupontByTheCastle", null, "All");
+                        Media.ToggleTokens("registered", true);
+                        Media.ToggleTokens("Attendant", false);
+                        const casaLomaLocations = ["CL1", "CL2", "CL3", "CL4", "CL5"];
+                        const pcTokenRefs = Object.values(Char.REGISTRY).map(x => x.id);
+                        for (let i = 0; i < 5; i++) Media.SetArea(pcTokenRefs[i], casaLomaLocations[i]);
+                        break;
+                    }
+                    // no default
+                }
+                break;
+            }
             case "lock": {
                 switch (D.LCase((call = args.shift()))) {
                     case "date":
@@ -2086,8 +2156,8 @@ const Session = (() => {
         DB({initial, quadrant, spotlightPrompt}, "assignSpotlightPrompt");
         if (initial) {
             if (Session.IsSessionActive || TimeTracker.ArePromptsOpen()) {
-                // FIRST: Look for prompts authored by the players.
-                if (spotlightPrompt && (spotlightPrompt.author || isSilent)) {
+                // FIRST: Look for prompts already assigned.
+                if (spotlightPrompt) {
                     if (!isSilent)
                         D.Chat(
                             D.GetPlayerID(charRef),
@@ -2333,6 +2403,141 @@ const Session = (() => {
     // #endregion
 
     // #region Starting & Ending Scenes, Logging Characters to Scene
+    const quadImgRefs = [
+        "DisableSiteTopAll",
+        "DisableSiteBottomAll",
+        "DisableSiteTopLeft",
+        "DisableSiteTopRight",
+        "DisableSiteRight",
+        "DisableSiteLeft",
+        "SiteTopLeft",
+        "SiteTopRight",
+        "SiteLeft",
+        "SiteRight",
+        "SiteCenter"
+    ];
+    const setQuadFocus = locPos => {
+        locPos = locPos || STATE.REF.quadScene.focus || "Center";
+        const enabledRefs = [];
+        const locCalls = [];
+        switch (locPos) {
+            case "All": {
+                enabledRefs.push(...["SiteTopLeft", "SiteTopRight", "SiteLeft", "SiteRight"]);
+                break;
+            }
+            case "Center": {
+                enabledRefs.push(...["SiteCenter", "DisableSiteTopAll", "DisableSiteBottomAll"]);
+                break;
+            }
+            case "Left": {
+                enabledRefs.push(...["SiteLeft", "DisableSiteTopAll", "DisableSiteRight"]);
+                break;
+            }
+            case "Right": {
+                enabledRefs.push(...["SiteRight", "DisableSiteTopAll", "DisableSiteLeft"]);
+                break;
+            }
+            case "TopLeft": {
+                enabledRefs.push(...["SiteTopLeft", "DisableSiteTopRight", "DisableSiteBottomAll"]);
+                break;
+            }
+            case "TopRight": {
+                enabledRefs.push(...["SiteTopRight", "DisableSiteTopLeft", "DisableSiteBottomAll"]);
+                break;
+            }
+            // no default
+        }
+        for (const imgRef of enabledRefs) {
+            if (imgRef.startsWith("Site")) {
+                const siteName = STATE.REF.quadScene.locData[imgRef.replace(/Site/gu, "")];
+                if (siteName) {
+                    Media.SetImg(imgRef, siteName, true, true);
+                    for (const tokenObj of Media.GetContents(imgRef, {padding: 25}, {layer: "walls", _subtype: "token"}))
+                        Media.ToggleToken(tokenObj, true);
+                    locCalls.push(C.SITES[siteName].onEntryCall);
+                }
+            }
+            Media.ToggleImg(imgRef, true, true);
+        }
+        for (const imgRef of _.without(quadImgRefs, ...enabledRefs)) {
+            if (imgRef.startsWith("Site")) {
+                const siteName = STATE.REF.quadScene.locData[imgRef.replace(/Site/gu, "")];
+                for (const tokenObj of Media.GetContents(imgRef, {padding: 25}, {layer: "objects", _subtype: "token"}))
+                    Media.ToggleToken(tokenObj, false);
+                if (siteName) locCalls.unshift(C.SITES[siteName].onExitCall);
+            }
+            Media.ToggleImg(imgRef, false, true);
+        }
+        for (const locCall of _.compact(locCalls)) D.Call(locCall);
+    };
+    const setQuadLocations = (districtName, siteData, locPos) => {
+        if (locPos === false) {
+            // Disable Quad Mode, restoring location cards to normal size and position.
+            STATE.REF.quadScene = {
+                isActive: false,
+                locData: {},
+                focus: false
+            };
+            Media.SetTextData("TimeTracker", {top: 350});
+            Media.SetImgData(
+                "DistrictCenter",
+                {
+                    top: 600,
+                    height: 455,
+                    width: 625
+                },
+                true
+            );
+            Media.SetImgData("SiteCenter", {top: 876, width: 440, height: 325}, true);
+            Media.SetImgData("SiteLeft", {top: 876}, true);
+            Media.SetImgData("DisableSiteLeft", {top: 876}, true);
+            Media.SetImgData("SiteRight", {top: 876}, true);
+            Media.SetImgData("DisableSiteRight", {top: 876}, true);
+            setQuadFocus("OFF");
+            setLocation({DistrictCenter: [districtName], SiteCenter: ["blank"]}, "c", true);
+        } else {
+            // Enable and set location data; if locPos is undefined, use current or Center.
+            setLocation({DistrictCenter: [districtName], SiteCenter: ["blank"]}, "c", true);
+            STATE.REF.quadScene = {
+                isActive: true,
+                locData: D.Clone(siteData),
+                focus: locPos || STATE.REF.quadScene.focus || "Center"
+            };
+            Media.SetTextData("TimeTracker", {top: 275});
+            Media.SetImgData(
+                "DistrictCenter",
+                {
+                    top: 500,
+                    height: 419,
+                    width: 575
+                },
+                true
+            );
+            Media.SetImgData("SiteCenter", {top: 980, width: 500, height: 369}, true);
+            Media.SetImgData("SiteLeft", {top: 815}, true);
+            Media.SetImgData("DisableSiteLeft", {top: 815}, true);
+            Media.SetImgData("SiteRight", {top: 815}, true);
+            Media.SetImgData("DisableSiteRight", {top: 815}, true);
+            setQuadFocus(locPos);
+        }
+    };
+
+    /*
+        setLocation({DistrictCenter: ["DupontByTheCastle"], SiteCenter: ["blank"]}, "c", true);
+        const locCalls = [];
+        for (const quad of ["TopLeft", "TopRight", "Left", "Right"]) {
+            const siteName = siteData[quad] || Media.GetImgSrc(`Site${quad}`);
+            if (locPos) Media.SetImg(`Site${quad}`, siteName, true);
+            else if (["TopLeft", "TopRight"].includes(quad)) Media.ToggleImg(`Site${quad}`, false);
+            if (["TopLeft", "TopRight"].includes(quad) && locPos && quad !== locPos) Media.ToggleImg(`Site${quad}`, false);
+            else Media.ToggleImg(`Site${quad}`, true);
+            Media.ToggleImg(`DisableSite${quad}`, locPos && quad !== locPos);
+            if (siteName in C.SITES)
+                if (quad === locPos) locCalls.push(C.SITES[siteName].onEntryCall);
+                else locCalls.unshift(C.SITES[siteName].onExitCall);
+        }
+        for (const locCall of _.compact(locCalls)) D.Call(locCall);
+    }; */
     const setSceneFocus = locPos => {
         locPos =
             (isLocCentered() === true && "c") ||
@@ -2398,12 +2603,12 @@ const Session = (() => {
         const [curDistrict, curSite] = Object.values(getActiveLocations());
         const locCalls = [];
         if (prevDistrict !== curDistrict) {
-            locCalls.unshift(C.DISTRICTS[prevDistrict].onExitCall);
-            locCalls.push(C.DISTRICTS[curDistrict].onEntryCall);
+            if (prevDistrict) locCalls.unshift(C.DISTRICTS[prevDistrict].onExitCall);
+            if (curDistrict) locCalls.push(C.DISTRICTS[curDistrict].onEntryCall);
         }
         if (prevSite !== curSite) {
-            locCalls.unshift(C.SITES[prevSite].onExitCall);
-            locCalls.push(C.SITES[curSite].onEntryCall);
+            if (prevSite) locCalls.unshift(C.SITES[prevSite].onExitCall);
+            if (curSite) locCalls.push(C.SITES[curSite].onEntryCall);
         }
         for (const locCall of _.compact(locCalls)) D.Call(locCall);
         STATE.REF.prevLocFocus = getActiveLocations();
