@@ -23,11 +23,13 @@ const Listener = (() => {
         initialize();
     };
     const handleMessage = (msg, isRaw = false) => {
-        if (!msg.content.includes("DB LISTENER: ListenFull")) DB({msg}, "ListenFull");
+        if (!msg.content.includes("DB LISTENER: ListenFull"))
+            DB({msg}, "ListenFull");
         if (msg.content.startsWith("!playerspoof")) {
             const [, charRef] = msg.content.split(" ");
             let playerid, who;
-            if (charRef) [playerid, who] = [D.GetPlayerID(charRef.replace(/^@/gu, "")), D.GetName(charRef.replace(/^@/gu, ""))];
+            if (charRef)
+                [playerid, who] = [D.GetPlayerID(charRef.replace(/^@/gu, "")), D.GetName(charRef.replace(/^@/gu, ""))];
             if (playerid) {
                 Media.ToggleText("PlayerSpoofNotice", true);
                 Media.ToggleText("PlayerSpoofNoticeSplash", true);
@@ -43,7 +45,8 @@ const Listener = (() => {
             }
             return true;
         } else {
-            if (STATE.REF.isLocked || msg.type !== "api") return false;
+            if (STATE.REF.isLocked || msg.type !== "api")
+                return false;
             msg.who = msg.who || "API";
             if (!isRaw && STATE.REF.GMPlayerSpoof && playerIsGM(msg.playerid)) {
                 msg.playerid = STATE.REF.GMPlayerSpoof.playerid;
@@ -100,40 +103,48 @@ const Listener = (() => {
                     .replace(/^(.*_){3}/gu, "");
                 for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRCHANGE)
                     for (const attrKey of attrKeys)
-                        if (call.includes(attrKey)) return scriptData.script.OnAttrChange(call, attrObj, prevData.current);
+                        if (call.includes(attrKey))
+                            return scriptData.script.OnAttrChange(call, attrObj, prevData.current);
             }
             return false;
         });
-        on("add:attribute", attrObj => {
+        on("add:attribute", (attrObj) => {
             // DB({["ADD:ATTR"]: Object.assign({}, attrObj)}, "Listen")
             const call = attrObj
                 .get("name")
                 .toLowerCase()
                 .replace(/^(.*_){3}/gu, "");
             for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRADD)
-                for (const attrKey of attrKeys) if (call.includes(attrKey)) return scriptData.script.OnAttrAdd(call, attrObj);
+                for (const attrKey of attrKeys)
+                    if (call.includes(attrKey))
+                        return scriptData.script.OnAttrAdd(call, attrObj);
             return false;
         });
-        on("destroy:attribute", attrObj => {
+        on("destroy:attribute", (attrObj) => {
             // DB({["DESTROY:ATTR"]: Object.assign({}, attrObj)}, "Listen")
             const call = attrObj
                 .get("name")
                 .toLowerCase()
                 .replace(/^(.*_){3}/gu, "");
             for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRDESTROY)
-                for (const attrKey of attrKeys) if (call.includes(attrKey)) return scriptData.script.OnAttrDestroy(call, attrObj);
+                for (const attrKey of attrKeys)
+                    if (call.includes(attrKey))
+                        return scriptData.script.OnAttrDestroy(call, attrObj);
             return false;
         });
-        on("add:graphic", imgObj => {
-            for (const scriptData of SCRIPTCALLS.IMGADD) return scriptData.script.OnGraphicAdd(imgObj);
+        on("add:graphic", (imgObj) => {
+            for (const scriptData of SCRIPTCALLS.IMGADD)
+                return scriptData.script.OnGraphicAdd(imgObj);
             return false;
         });
         on("change:graphic", (imgObj, prevData) => {
-            for (const scriptData of SCRIPTCALLS.IMGCHANGE) return scriptData.script.OnGraphicChange(imgObj, prevData);
+            for (const scriptData of SCRIPTCALLS.IMGCHANGE)
+                return scriptData.script.OnGraphicChange(imgObj, prevData);
             return false;
         });
         on("change:campaign:playerpageid", () => {
-            for (const scriptData of SCRIPTCALLS.PAGECHANGE) return scriptData.script.OnPageChange();
+            for (const scriptData of SCRIPTCALLS.PAGECHANGE)
+                return scriptData.script.OnPageChange();
             return false;
         });
         on("change:jukeboxtrack", (trackObj, prevData) => {
@@ -144,9 +155,10 @@ const Listener = (() => {
                 return false
                 */
         });
-        on("add:character", charObj => {
+        on("add:character", (charObj) => {
             DB({charObj}, "OnCharAdd");
-            for (const scriptData of SCRIPTCALLS.CHARADD) return scriptData.script.OnCharAdd(charObj);
+            for (const scriptData of SCRIPTCALLS.CHARADD)
+                return scriptData.script.OnCharAdd(charObj);
             return false;
         });
     };
@@ -189,7 +201,7 @@ const Listener = (() => {
                 "!test": {script: Tester, gmOnly: true, singleCall: true},
                 "!time": {script: TimeTracker, gmOnly: true, singleCall: true, needsObjects: false}
             },
-            v => v.script === {}
+            (v) => v.script === {}
         );
         SCRIPTCALLS.ATTRCHANGE = _.reject(
             [
@@ -207,31 +219,31 @@ const Listener = (() => {
                     {script: Char}
                 ]
             ],
-            v => v[1].script === {}
+            (v) => v[1].script === {}
         );
-        SCRIPTCALLS.ATTRADD = _.reject([[["desire", "projectstake", "triggertimelinesort"], {script: Char}]], v => v[1].script === {});
-        SCRIPTCALLS.ATTRDESTROY = _.reject([[["desire"], {script: Char}]], v => v[1].script === {});
-        SCRIPTCALLS.IMGCHANGE = _.reject([{script: DragPads}], v => v.script === {});
-        SCRIPTCALLS.IMGADD = _.reject([{script: Media}], v => v.script === {});
-        SCRIPTCALLS.PAGECHANGE = _.reject([{script: Session}], v => v.script === {});
-        SCRIPTCALLS.TRACKCHANGE = _.reject([{script: Soundscape}], v => v.script === {});
-        SCRIPTCALLS.CHARADD = _.reject([{script: Char}], v => v.script === {});
+        SCRIPTCALLS.ATTRADD = _.reject([[["desire", "projectstake", "triggertimelinesort"], {script: Char}]], (v) => v[1].script === {});
+        SCRIPTCALLS.ATTRDESTROY = _.reject([[["desire"], {script: Char}]], (v) => v[1].script === {});
+        SCRIPTCALLS.IMGCHANGE = _.reject([{script: DragPads}], (v) => v.script === {});
+        SCRIPTCALLS.IMGADD = _.reject([{script: Media}], (v) => v.script === {});
+        SCRIPTCALLS.PAGECHANGE = _.reject([{script: Session}], (v) => v.script === {});
+        SCRIPTCALLS.TRACKCHANGE = _.reject([{script: Soundscape}], (v) => v.script === {});
+        SCRIPTCALLS.CHARADD = _.reject([{script: Char}], (v) => v.script === {});
         refreshObjects(true);
     };
     // #endregion
 
-    const parseArgString = argString => {
+    const parseArgString = (argString) => {
         // Splits argument string by space, unless spaces are contained within quotes.
         // Strips quotes used to isolate arguments
         // Removes leading/trailing whitespace
         // Removes commas between arguments
         const [call, ...args] = _.compact(
-            (argString.match(/!\S*|\s@"[^"]*"|\s@[^\s]*|\s"[^"]*"|\s[^\s]*/gu) || []).map(x => x.replace(/^\s*(@)?"?|"?"?\s*$/gu, "$1"))
+            (argString.match(/!\S*|\s@"[^"]*"|\s@[^\s]*|\s"[^"]*"|\s[^\s]*/gu) || []).map((x) => x.replace(/^\s*(@)?"?|"?"?\s*$/gu, "$1"))
         );
         return [call, args];
     };
     const parseMessage = (args, msg, needsObjects) => {
-        const isReturningSelected = args.every(x => !x.startsWith("@"));
+        const isReturningSelected = args.every((x) => !x.startsWith("@"));
         const [objects, returnArgs] = needsObjects ? getObjsFromArgs(args) : [{}, args];
         // For each type, if no objects found in args AND no objects called for with '@', check selection:
         if (needsObjects && isReturningSelected && VAL({selection: msg}))
@@ -252,36 +264,38 @@ const Listener = (() => {
     };
     const getObjsFromArgs = (args = []) => {
         const objects = {};
-        const argParser = argString => {
+        const argParser = (argString) => {
             if (
                 argString.startsWith("@") ||
                 argString
                     .split(",")
-                    .map(x => x.trim())
+                    .map((x) => x.trim())
                     .some(D.IsID)
             ) {
                 const objsFound = parseArgument(argString.replace(/^@/gu, ""));
                 DB({argString, args, objsFound}, "getObjsFromArgs");
                 for (const objType of Object.keys(objsFound))
                     objects[objType] = _.compact(_.uniq([...(objects[objType] || []), ...objsFound[objType]]));
-                if (Object.values(objsFound).some(x => x.length)) D.PullOut(args, v => v === argString);
+                if (Object.values(objsFound).some((x) => x.length))
+                    D.PullOut(args, (v) => v === argString);
             }
         };
-        for (const arg of D.Clone(args)) argParser(arg);
+        for (const arg of D.Clone(args))
+            argParser(arg);
         DB({args, objects}, "getObjsFromArgs");
         return [objects, _.compact(args)];
     };
     const parseArgument = (argString, typeLock = null, isFuzzy = false) => {
         const returnObjs = {};
         const dbLines = {initialArgString: argString, typeLock, isFuzzy};
-        const argCommaSplit = _.compact(argString.split(/,/gu).map(x => x.trim()));
+        const argCommaSplit = _.compact(argString.split(/,/gu).map((x) => x.trim()));
         const returnIDs = [];
 
         // 1) Check if this could be an ID string OR a comma-delimited list of ID strings:
         for (const arg of D.Clone(argCommaSplit))
             if (D.IsID(arg.trim())) {
                 returnIDs.push(arg.trim());
-                D.PullOut(argCommaSplit, v => v === arg);
+                D.PullOut(argCommaSplit, (v) => v === arg);
             }
         argString = argCommaSplit.join(",");
         dbLines.postIDArgString = argString;
@@ -289,7 +303,8 @@ const Listener = (() => {
 
         // 2) Send through to type-specific functions.
         const objTypes = (typeLock && [typeLock]) || ["character", "graphic", "text"];
-        for (const objType of objTypes) returnObjs[objType] = _.compact(parseArgByType[objType](argString, returnIDs, isFuzzy));
+        for (const objType of objTypes)
+            returnObjs[objType] = _.compact(parseArgByType[objType](argString, returnIDs, isFuzzy));
         dbLines.returnObjs = D.Clone(returnObjs);
         DB(dbLines, "parseArgument");
         return returnObjs;
@@ -297,27 +312,30 @@ const Listener = (() => {
     const parseArgByType = {
         character: (argString, ids = [], isFuzzy = false) => {
             const charObjs = [];
-            for (const charID of ids) charObjs.push(getObj("character", charID) || null);
+            for (const charID of ids)
+                charObjs.push(getObj("character", charID) || null);
             return _.compact([...charObjs, ...((argString && D.GetChars(argString, null, isFuzzy)) || [])]);
         },
         graphic: (argString, ids = []) => {
             DB({type: "graphic", argString, ids}, "parseArgByType");
             const graphicObjs = [];
-            for (const graphicID of ids) graphicObjs.push(getObj("graphic", graphicID) || null);
+            for (const graphicID of ids)
+                graphicObjs.push(getObj("graphic", graphicID) || null);
             DB({type: "graphic", argString, ids, idObjs: graphicObjs, argObjs: Media.GetImgs(argString)}, "parseArgByType");
             return _.compact([...graphicObjs, ...((argString && Media.GetImgs(argString)) || [])]);
         },
         text: (argString, ids = []) => {
             const textObjs = [];
-            for (const textID of ids) textObjs.push(getObj("text", textID) || null);
+            for (const textID of ids)
+                textObjs.push(getObj("text", textID) || null);
             return _.compact([...textObjs, ...((argString && Media.GetTexts(argString)) || [])]);
         }
     };
     const refreshObjects = () => {
         const allObjects = findObjs({});
-        OBJECTS.graphic = allObjects.filter(x => x.get("_type") === "graphic");
-        OBJECTS.text = allObjects.filter(x => x.get("_type") === "text");
-        OBJECTS.character = allObjects.filter(x => x.get("_type") === "character");
+        OBJECTS.graphic = allObjects.filter((x) => x.get("_type") === "graphic");
+        OBJECTS.text = allObjects.filter((x) => x.get("_type") === "text");
+        OBJECTS.character = allObjects.filter((x) => x.get("_type") === "character");
         DB({graphics: OBJECTS.graphic.length, text: OBJECTS.text.length, chars: OBJECTS.character.length}, "refreshObjects");
     };
     const getAllObjs = (objects, type) => {
@@ -325,11 +343,11 @@ const Listener = (() => {
         const returnObjs = _.uniq(_.flatten(_.compact([...(objects[type] || []), ...((objects.selected && objects.selected[type]) || [])])));
         DB({objects, type, returnObjs}, "getAllObjs");
         if (returnObjs.length) {
-            STATE.REF.objectLog[type] = returnObjs.map(x => x.id).join(",");
-            DB({objectLog: returnObjs.map(x => x.id).join(","), stateRef: STATE.REF.objectLog}, "getAllObjs");
+            STATE.REF.objectLog[type] = returnObjs.map((x) => x.id).join(",");
+            DB({objectLog: returnObjs.map((x) => x.id).join(","), stateRef: STATE.REF.objectLog}, "getAllObjs");
             return returnObjs;
         }
-        return (STATE.REF.objectLog[type] && STATE.REF.objectLog[type].split(",").map(x => getObj(type, x))) || [];
+        return (STATE.REF.objectLog[type] && STATE.REF.objectLog[type].split(",").map((x) => getObj(type, x))) || [];
     };
     const parseParams = (args, delim = " ") => {
         args = VAL({array: args}) ? args.join(" ") : args;
@@ -337,13 +355,11 @@ const Listener = (() => {
             return _.object(
                 args
                     .split(new RegExp(`,?${delim.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}+`, "gu"))
-                    .filter(x => x.includes(":"))
-                    .map(x =>
-                        x
-                            .trim()
-                            .split(":")
-                            .map(xx => (VAL({number: xx}) ? D.Float(xx, 2) : xx))
-                    )
+                    .filter((x) => x.includes(":"))
+                    .map((x) => x
+                        .trim()
+                        .split(":")
+                        .map((xx) => (VAL({number: xx}) ? D.Float(xx, 2) : xx)))
             );
         return {};
     };
@@ -364,7 +380,7 @@ const Listener = (() => {
         Unlock: unlockListener,
         Refresh: refreshObjects,
 
-        SendRawCall: msg => handleMessage(msg, true)
+        SendRawCall: (msg) => handleMessage(msg, true)
     };
 })();
 

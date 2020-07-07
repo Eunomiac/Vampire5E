@@ -44,7 +44,8 @@ const Tester = (() => {
             "Known Corpse",
             "Adversary (Seneschal)"
         ];
-        for (const adv of advNames) fuz.add(adv);
+        for (const adv of advNames)
+            fuz.add(adv);
     };
 
     const fuz = Fuzzy.Fix();
@@ -71,7 +72,7 @@ const Tester = (() => {
                             reportLines.CharRegistry = D.KeyMapObj(
                                 D.Clone(state.VAMPIRE.Char.registry),
                                 (k, v) => v.initial,
-                                v => _.pick(v, "spotlightPrompt")
+                                (v) => _.pick(v, "spotlightPrompt")
                             );
                             reportLines.SpotlightPrompts = state.VAMPIRE.Session.SpotlightPrompts;
                         }
@@ -80,9 +81,7 @@ const Tester = (() => {
                     }
                     case "save": {
                         STATE.REF.SpotlightPromptsBackup = D.Clone(state.VAMPIRE.Session.SpotlightPrompts);
-                        STATE.REF.SpotlightPromptsCharsBackup = D.KeyMapObj(D.Clone(state.VAMPIRE.Char.registry), null, v =>
-                            _.pick(v, "spotlightPrompt")
-                        );
+                        STATE.REF.SpotlightPromptsCharsBackup = D.KeyMapObj(D.Clone(state.VAMPIRE.Char.registry), null, (v) => _.pick(v, "spotlightPrompt"));
                         D.Alert(
                             D.JS({
                                 SpotlightPromptsBackup: STATE.REF.SpotlightPromptsBackup,
@@ -95,12 +94,10 @@ const Tester = (() => {
                     case "reset": {
                         state.VAMPIRE.Session.PromptAuthors = [];
                         state.VAMPIRE.Session.SpotlightPrompts = D.Clone(STATE.REF.SpotlightPromptsBackup);
-                        state.VAMPIRE.Char.registry = D.KeyMapObj(state.VAMPIRE.Char.registry, null, (v, k) =>
-                            Object.assign(v, STATE.REF.SpotlightPromptsCharsBackup[k])
-                        );
+                        state.VAMPIRE.Char.registry = D.KeyMapObj(state.VAMPIRE.Char.registry, null, (v, k) => Object.assign(v, STATE.REF.SpotlightPromptsCharsBackup[k]));
                         D.Alert(
                             `Spotlight Prompt Data Reset:<br><br>${D.JS(
-                                D.KeyMapObj(D.Clone(state.VAMPIRE.Char.registry), null, v => _.pick(v, "spotlightPrompt"))
+                                D.KeyMapObj(D.Clone(state.VAMPIRE.Char.registry), null, (v) => _.pick(v, "spotlightPrompt"))
                             )}`,
                             "!test prompt reset"
                         );
@@ -136,14 +133,15 @@ const Tester = (() => {
                 const lengthVals = {};
                 for (const [key, value] of Object.entries(state.VAMPIRE)) {
                     lengthVals[`*** ${D.UCase(key)} ***`] = JSON.stringify(value).length;
-                    for (const [kkey, vvalue] of Object.entries(value)) lengthVals[`${key}.${kkey}`] = JSON.stringify(vvalue).length;
+                    for (const [kkey, vvalue] of Object.entries(value))
+                        lengthVals[`${key}.${kkey}`] = JSON.stringify(vvalue).length;
                 }
                 D.Alert(`${D.JS(lengthVals)}<br><br><b>TOTAL:${JSON.stringify(state.VAMPIRE).length}`, "State Variable Contents");
                 break;
             }
             // no default
         }
-        /* #region OLD TESTS    
+        /* #region OLD TESTS
             case "pause":
                 TimeTracker.Pause();
                 break;

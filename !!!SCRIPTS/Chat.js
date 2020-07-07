@@ -63,7 +63,8 @@ const Chat = (() => {
                         break;
                     }
                     default: {
-                        if (D.GetSelected(msg)) [obj] = D.GetSelected(msg);
+                        if (D.GetSelected(msg))
+                            [obj] = D.GetSelected(msg);
                         else
                             for (let i = 1; i < args.length; i++) {
                                 [obj] = findObjs({
@@ -76,37 +77,45 @@ const Chat = (() => {
                             }
                         switch (call) {
                             case "pages":
-                                if (!getPages()) sendHelpMsg();
+                                if (!getPages())
+                                    sendHelpMsg();
                                 break;
                             case "data":
-                                if (!getSelected(obj, true)) sendHelpMsg();
+                                if (!getSelected(obj, true))
+                                    sendHelpMsg();
                                 break;
                             case "id":
                                 D.Alert(obj.id);
                                 break;
                             case "name":
-                                if (!getName(obj)) sendHelpMsg();
+                                if (!getName(obj))
+                                    sendHelpMsg();
                                 break;
                             case "gm":
                                 D.Alert(`The player ID of the GM is ${D.GMID()}`, "!GET GM");
                                 break;
                             case "img":
-                                if (!getImg(obj)) sendHelpMsg();
+                                if (!getImg(obj))
+                                    sendHelpMsg();
                                 break;
                             case "chars":
                             case "allchars":
-                                if (!getAllChars()) sendHelpMsg();
+                                if (!getAllChars())
+                                    sendHelpMsg();
                                 break;
                             case "char": {
-                                if (!getChar(obj, args[0] !== "id")) sendHelpMsg();
+                                if (!getChar(obj, args[0] !== "id"))
+                                    sendHelpMsg();
                                 break;
                             }
                             case "pos":
                             case "position":
-                                if (!getPos(obj)) sendHelpMsg();
+                                if (!getPos(obj))
+                                    sendHelpMsg();
                                 break;
                             case "attrs":
-                                if (!getCharAttrs(args.shift() || obj)) sendHelpMsg();
+                                if (!getCharAttrs(args.shift() || obj))
+                                    sendHelpMsg();
                                 break;
                             case "attr":
                                 if (
@@ -125,13 +134,16 @@ const Chat = (() => {
                                 break;
                             case "prop":
                             case "property":
-                                if (!getProperty(obj, args.shift())) sendHelpMsg();
+                                if (!getProperty(obj, args.shift()))
+                                    sendHelpMsg();
                                 break;
                             case "state":
-                                if (!getStateData(args)) sendHelpMsg();
+                                if (!getStateData(args))
+                                    sendHelpMsg();
                                 break;
                             case "statekeys":
-                                if (!getStateData(args, true)) sendHelpMsg();
+                                if (!getStateData(args, true))
+                                    sendHelpMsg();
                                 break;
                             case "statevals": {
                                 // !get statevals name, id|VAMPIRE Media ...
@@ -144,7 +156,8 @@ const Chat = (() => {
                                     .join(" ")
                                     .split("|")[1]
                                     .split(/\s+/gu);
-                                if (!getStateData(theseArgs, returnVals)) sendHelpMsg();
+                                if (!getStateData(theseArgs, returnVals))
+                                    sendHelpMsg();
                                 break;
                             }
                             case "page":
@@ -169,8 +182,10 @@ const Chat = (() => {
                             left = D.Int(left) || null;
                             top = D.Int(top) || null;
                             for (const selObj of D.GetSelected(msg)) {
-                                if (left) selObj.set({left});
-                                if (top) selObj.set({top});
+                                if (left)
+                                    selObj.set({left});
+                                if (top)
+                                    selObj.set({top});
                             }
                         }
                         break;
@@ -178,12 +193,16 @@ const Chat = (() => {
                     case "dims":
                     case "dimensions": {
                         if (D.GetSelected(msg)) {
-                            let [width, height] = [args.shift(), args.shift()].map(x => (x === "x" ? x : D.Int(x) || null));
+                            let [width, height] = [args.shift(), args.shift()].map((x) => (x === "x" ? x : D.Int(x) || null));
                             for (const selObj of D.GetSelected(msg)) {
-                                if (width === "x" && height) width = (selObj.get("width") * height) / selObj.get("height");
-                                else if (height === "x" && width) height = (selObj.get("height") * width) / selObj.get("width");
-                                if (width) selObj.set({width});
-                                if (height) selObj.set({height});
+                                if (width === "x" && height)
+                                    width = (selObj.get("width") * height) / selObj.get("height");
+                                else if (height === "x" && width)
+                                    height = (selObj.get("height") * width) / selObj.get("width");
+                                if (width)
+                                    selObj.set({width});
+                                if (height)
+                                    selObj.set({height});
                             }
                         }
                         break;
@@ -194,7 +213,7 @@ const Chat = (() => {
                                 obj = getObj(objData._type, objData._id);
                                 if (obj) {
                                     attrList = args.join(" ").split(/|\s*/gu);
-                                    _.each(attrList, v => {
+                                    _.each(attrList, (v) => {
                                         params[v.split(":")[0]] = D.Int(v.split(":")[1]) || v.split(":")[1];
                                     });
                                     obj.set(params);
@@ -224,12 +243,14 @@ const Chat = (() => {
                                 break;
                             }
                             case "upper": {
-                                if (!msg.selected || !msg.selected[0]) break;
+                                if (!msg.selected || !msg.selected[0])
+                                    break;
                                 caseText(msg.selected, "upper");
                                 break;
                             }
                             case "lower": {
-                                if (!msg.selected || !msg.selected[0]) break;
+                                if (!msg.selected || !msg.selected[0])
+                                    break;
                                 caseText(msg.selected, "lower");
                                 break;
                             }
@@ -250,12 +271,14 @@ const Chat = (() => {
                                 _pageid: Campaign().get("playerpageid"),
                                 _type: objType
                             }),
-                            v => v && v.get("name").includes(pattern)
+                            (v) => v && v.get("name").includes(pattern)
                         );
-                        for (obj of objsToKill) obj.remove();
+                        for (obj of objsToKill)
+                            obj.remove();
                         break;
                     case "state":
-                        if (!clearStateData(args)) sendHelpMsg();
+                        if (!clearStateData(args))
+                            sendHelpMsg();
                         break;
                     // no default
                 }
@@ -302,18 +325,21 @@ const Chat = (() => {
     const getPages = () => {
         const pageObjs = findObjs({_type: "page"});
         const msgLines = [];
-        for (const pageObj of pageObjs) msgLines.push(`Page '${pageObj.get("name")}' = '${pageObj.id}'`);
+        for (const pageObj of pageObjs)
+            msgLines.push(`Page '${pageObj.get("name")}' = '${pageObj.id}'`);
         D.Alert(msgLines.join("<br>"), "getPages");
         return true;
     };
     const getSelected = (obj, isGettingAll) => {
-        if (!VAL({object: obj})) return false;
+        if (!VAL({object: obj}))
+            return false;
         D.Alert(isGettingAll ? D.JS(obj, true) : obj.id);
 
         return true;
     };
-    const getImg = obj => {
-        if (!VAL({graphicObj: obj})) return false;
+    const getImg = (obj) => {
+        if (!VAL({graphicObj: obj}))
+            return false;
         D.Alert(`<b>ID:</b> ${obj.id}<br/><b>SRC:</b> ${obj.get("imgsrc").replace("max", "thumb")}`, "Image Data");
 
         return true;
@@ -322,13 +348,13 @@ const Chat = (() => {
         const allCharObjs = findObjs({
             _type: "character"
         });
-        const allCharIDs = allCharObjs.map(v => ({
+        const allCharIDs = allCharObjs.map((v) => ({
             name: v.get("name"),
             id: v.id
         }));
         const sortedAttrs = _.sortBy(allCharIDs, "id");
         const attrsLines = [];
-        _.each(sortedAttrs, attrInfo => {
+        _.each(sortedAttrs, (attrInfo) => {
             attrsLines.push(`${attrInfo.id}: ${attrInfo.name}`);
         });
         D.Alert(attrsLines.join("<br/>"), "All Characters");
@@ -336,26 +362,31 @@ const Chat = (() => {
         return true;
     };
     const getChar = (obj, isGettingAll = false) => {
-        if (!VAL({token: obj})) return false;
+        if (!VAL({token: obj}))
+            return false;
         try {
             const charObj = getObj("character", obj.get("represents"));
             const name = charObj.get("name");
             const playerID = charObj.get("controlledby").replace("all,", "");
-            if (isGettingAll) D.Alert(D.JS(charObj, true), "Character Data");
-            else D.Alert(`<b>Name:</b> ${name}<br/><b>CharID:</b> ${charObj.id}<br/><b>PlayerID:</b> ${playerID}`, "Character Data");
+            if (isGettingAll)
+                D.Alert(D.JS(charObj, true), "Character Data");
+            else
+                D.Alert(`<b>Name:</b> ${name}<br/><b>CharID:</b> ${charObj.id}<br/><b>PlayerID:</b> ${playerID}`, "Character Data");
         } catch (errObj) {
             return THROW("", "getChar", errObj);
         }
 
         return true;
     };
-    const getName = obj => {
-        if (!VAL({object: obj})) return false;
+    const getName = (obj) => {
+        if (!VAL({object: obj}))
+            return false;
         D.Alert(`<b>Name:</b> ${D.JS(obj.get("name"))}`, "Object Name");
         return true;
     };
     const getCharAttrs = (obj, filter = []) => {
-        if (!obj) return false;
+        if (!obj)
+            return false;
         let sortedAttrs = [];
         const allAttrObjs = _.uniq(
             findObjs({
@@ -363,7 +394,7 @@ const Chat = (() => {
                 _characterid: typeof obj === "string" ? obj : obj.get("represents")
             })
         );
-        const allAttrs = allAttrObjs.map(v => ({
+        const allAttrs = allAttrObjs.map((v) => ({
             name: v
                 .get("name")
                 .replace(/^repeating_/gu, "@@@")
@@ -374,11 +405,12 @@ const Chat = (() => {
         const attrsLines = [];
         if (filter.length)
             sortedAttrs = _.sortBy(
-                _.pick(_.uniq(allAttrs), v => filter.includes(v.name)),
+                _.pick(_.uniq(allAttrs), (v) => filter.includes(v.name)),
                 "name"
             );
-        else sortedAttrs = _.sortBy(_.uniq(allAttrs), "name");
-        _.each(sortedAttrs, attrInfo => {
+        else
+            sortedAttrs = _.sortBy(_.uniq(allAttrs), "name");
+        _.each(sortedAttrs, (attrInfo) => {
             attrsLines.push(`${attrInfo.name} (${attrInfo.id.slice(10, 14)}): ${attrInfo.current}`);
         });
         D.Alert(
@@ -390,8 +422,9 @@ const Chat = (() => {
 
         return true;
     };
-    const getPos = obj => {
-        if (!obj) return false;
+    const getPos = (obj) => {
+        if (!obj)
+            return false;
         const posInfo = [
             "<div style='display: block; width: 100%; height: 150px; margin: 0px; padding: 0px; text-align: center; text-align-last: center; font-size: 8px;'>",
             `<div style="display: block; margin: 0px; padding: 0px; width: 100%; height: 20px; text-align:center; text-align-last: center; font-weight: bold; line-height: 20px;">${D.Round(
@@ -422,12 +455,14 @@ const Chat = (() => {
         return true;
     };
     const getProperty = (obj, property) => {
-        if (!property || !obj) return false;
-        const propString = obj.get(property, v => {
+        if (!property || !obj)
+            return false;
+        const propString = obj.get(property, (v) => {
             D.Alert(v, `${obj.get("_type").toUpperCase()} '${obj.get("name")}' - ${property}`);
             return v;
         });
-        if (propString) D.Alert(D.JS(propString), `${obj.get("_type").toUpperCase()} '${obj.get("name")}' - ${property}`);
+        if (propString)
+            D.Alert(D.JS(propString), `${obj.get("_type").toUpperCase()} '${obj.get("name")}' - ${property}`);
 
         return true;
     };
@@ -440,7 +475,8 @@ const Chat = (() => {
             namespace.shift();
         }
         if (namespace[0] !== C.GAMENAME)
-            if (SCRIPTS.includes(namespace[0])) namespace.unshift(C.GAMENAME);
+            if (SCRIPTS.includes(namespace[0]))
+                namespace.unshift(C.GAMENAME);
             else
                 D.Alert(
                     "Syntax:<br><br><b>!get state {SCRIPTNAME} {key} {key}...<br><b>!get statekeys {SCRIPTNAME} {key} {key}...<br><b>!get statevals {val},{val}|{SCRIPTNAME} {key} {key}...</b>",
@@ -449,7 +485,8 @@ const Chat = (() => {
 
         const title = `state.${namespace.join(".")}`;
         const commandPrefix = `!get state ${namespace.join(" ")} `;
-        while (namespace && namespace.length) stateInfo = stateInfo[namespace.shift()];
+        while (namespace && namespace.length)
+            stateInfo = stateInfo[namespace.shift()];
         if (returnVals) {
             const returnInfo = {};
             _.each(stateInfo, (data, key) => {
@@ -457,7 +494,7 @@ const Chat = (() => {
                     returnInfo[key] = "<b><u>(HIDDEN)</u></b>";
                 } else {
                     const returnData = {};
-                    _.each(_.isString(returnVals) ? returnVals.split(",") : returnVals, val => {
+                    _.each(_.isString(returnVals) ? returnVals.split(",") : returnVals, (val) => {
                         returnData[val] = data[val];
                     });
                     returnInfo[key] = _.clone(returnData);
@@ -468,14 +505,14 @@ const Chat = (() => {
                     D.JS(
                         Object.keys(stateInfo)
                             .map(
-                                x =>
-                                    `<a style="display: block; color: black; padding: 0px; line-height: 16px; border: none; background-color: transparent;" href="${commandPrefix} ${x}">${x}</a>`
+                                (x) => `<a style="display: block; color: black; padding: 0px; line-height: 16px; border: none; background-color: transparent;" href="${commandPrefix} ${x}">${x}</a>`
                             )
                             .join("")
                     ),
                     title
                 );
-            else D.Show(returnInfo, title); // D.Alert(D.JS(returnInfo, isVerbose), title);
+            else
+                D.Show(returnInfo, title); // D.Alert(D.JS(returnInfo, isVerbose), title);
         } else {
             stateInfo = D.KeyMapObj(stateInfo, undefined, (v, k) => (ALERTBLACKLIST.includes(k) && "<b><u>(HIDDEN)</u></b>") || v);
             D.Show(stateInfo, title);
@@ -483,11 +520,13 @@ const Chat = (() => {
 
         return true;
     };
-    const clearStateData = namespace => {
+    const clearStateData = (namespace) => {
         let stateInfo = state;
-        if (namespace[0] !== C.GAMENAME) namespace.unshift(C.GAMENAME);
+        if (namespace[0] !== C.GAMENAME)
+            namespace.unshift(C.GAMENAME);
         const title = `Clearing state.${namespace.join(".")}`;
-        while (namespace && namespace.length > 1) stateInfo = stateInfo[namespace.shift()];
+        while (namespace && namespace.length > 1)
+            stateInfo = stateInfo[namespace.shift()];
 
         D.Alert(`DELETED ${namespace[0]} of ${D.JS(stateInfo)}`, title);
         delete stateInfo[namespace.shift()];
@@ -498,14 +537,15 @@ const Chat = (() => {
     // #endregion
 
     // #region Text Length Testing
-    const prepText = fonts => {
+    const prepText = (fonts) => {
         const isDoingAll = STATE.REF.Chars.length < 10;
         fonts = (fonts && _.flatten([fonts])) || STATE.REF.FontTypes;
         if (STATE.REF.FontSizes.length) {
             const sizes = (isDoingAll && STATE.REF.FontSizes.splice(0, STATE.REF.FontSizes.length)) || STATE.REF.FontSizes.splice(0, 6);
             const [textObjs, newTextObjs] = [findObjs({_pageid: D.THISPAGEID, _type: "text", layer: "objects"}), {}];
             let [left, top] = [300, 100];
-            for (const obj of textObjs) obj.remove();
+            for (const obj of textObjs)
+                obj.remove();
             for (const font of fonts) {
                 newTextObjs[font] = {};
                 for (const size of sizes) {
@@ -553,15 +593,18 @@ const Chat = (() => {
             D.CHARWIDTH[font][size] = D.CHARWIDTH[font][size] || {};
             D.CHARWIDTH[font][size][char] = D.Int((width * 100) / 40) / 100;
             D.CHARWIDTH[font][size].lineHeight = D.Int(height * 10) / 10;
-            if (!textSizes.includes(size)) textSizes.push(size);
+            if (!textSizes.includes(size))
+                textSizes.push(size);
         }
-        if (trueFont !== font) D.CHARWIDTH[trueFont] = D.CHARWIDTH[font];
+        if (trueFont !== font)
+            D.CHARWIDTH[trueFont] = D.CHARWIDTH[font];
         const [charList, charCounts] = [[], []];
         const testChars = ["M", "t", " ", "0"];
         const testColors = ["red", "blue", "green", "purple"];
         const reportTableRows = [];
         for (const fontName of Object.keys(D.CHARWIDTH)) {
-            if (!FONTDATA.types.includes(D.Capitalize(fontName))) continue;
+            if (!FONTDATA.types.includes(D.Capitalize(fontName)))
+                continue;
             reportTableRows.push(
                 ...[
                     `<tr style="border: 2px solid black;"><th colspan = "${3 +
@@ -569,20 +612,21 @@ const Chat = (() => {
                         fontName
                     )}</h4></th></tr>`,
                     `<tr style="height: 20px; font-size: 12px; background-color: #AAAAAA; border: 2px solid black; border-bottom: 1px solid black; line-height: 16px;"><th style="width: 30px; text-align: right;">S</th><th style="width: 30px; text-align: right;">#</th>${testChars.map(
-                        x => `<th style="width: 50px; text-align: right;">[${x.replace(/\s/gu, "&nbsp;")}]</th>`
+                        (x) => `<th style="width: 50px; text-align: right;">[${x.replace(/\s/gu, "&nbsp;")}]</th>`
                     )}<th style="width: 50px; text-align: right; font-size: 8px; line-height: 8px;padding-right: 5px;">Line<br>Height</th><tr>`
                 ]
             );
             for (const fontSize of Object.keys(D.CHARWIDTH[fontName])) {
-                charCounts.unshift(Object.keys(D.CHARWIDTH[fontName][fontSize]).filter(x => x.length === 1).length);
+                charCounts.unshift(Object.keys(D.CHARWIDTH[fontName][fontSize]).filter((x) => x.length === 1).length);
                 reportTableRows.push(
                     `<tr style="border-left: 2px solid black; border-right: 2px solid black;"><td style="text-align: right;">${fontSize}</td><td style="text-align: right;">${
                         charCounts[0]
                     }</td>${_.zip(testColors, testChars).map(
-                        x => `<td style="color: ${x[0]}; text-align: right;">${D.Round(D.CHARWIDTH[fontName][fontSize][x[1]], 2, true)}</td>`
+                        (x) => `<td style="color: ${x[0]}; text-align: right;">${D.Round(D.CHARWIDTH[fontName][fontSize][x[1]], 2, true)}</td>`
                     )}<td style="padding-right: 5px; text-align: right;"">${D.Round(D.CHARWIDTH[fontName][fontSize].lineHeight, 2, true)}</td></tr>`
                 );
-                if (charList.length === 0) charList.push(...Object.keys(D.CHARWIDTH[fontName][fontSize]).filter(x => x.length === 1));
+                if (charList.length === 0)
+                    charList.push(...Object.keys(D.CHARWIDTH[fontName][fontSize]).filter((x) => x.length === 1));
             }
             if (_.uniq(charCounts).length !== 1)
                 reportTableRows.push(
@@ -608,14 +652,17 @@ const Chat = (() => {
             );
             prepText(STATE.REF.FontTypes.shift());
         } else {
-            for (const textObj of textObjs) textObj.remove();
-            for (const missingChar of D.MissingTextChars) if (STATE.REF.Chars.split("").includes(missingChar)) D.MissingTextChars = `!${missingChar}`;
+            for (const textObj of textObjs)
+                textObj.remove();
+            for (const missingChar of D.MissingTextChars)
+                if (STATE.REF.Chars.split("").includes(missingChar))
+                    D.MissingTextChars = `!${missingChar}`;
             D.Chat(
                 "Storyteller",
                 C.HTML.Block(
                     C.HTML.Body(
                         [
-                            '<h4 style="text-align: center; background-color: black; color: white; border-bottom: 2px solid black;">Text Width Calibration Complete!</h3>',
+                            "<h4 style=\"text-align: center; background-color: black; color: white; border-bottom: 2px solid black;\">Text Width Calibration Complete!</h3>",
                             `<h4 style="display: block; text-align: center; width: 90%; margin-left: 5%; margin-top: 10px;">${charList.length} Characters Analyzed:</h5>`,
                             `<h5 style="display: block; text-align: center; width: 100%; font-size: 10px; background-color: #DFCCFF;">${_.escape(
                                 [..._.compact(charList)].sort().join(" ")
@@ -644,7 +691,7 @@ const Chat = (() => {
         }
     };
     const caseText = (objs, textCase) => {
-        objs.forEach(obj => {
+        objs.forEach((obj) => {
             obj.set("text", textCase === "upper" ? obj.get("text").toUpperCase() : obj.get("text").toLowerCase());
         });
     };

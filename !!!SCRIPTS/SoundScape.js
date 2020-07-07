@@ -14,7 +14,7 @@ const Soundscape = (() => {
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
     const ONSTACK = () => D.ONSTACK(ONSTACK);
-    const OFFSTACK = funcID => D.OFFSTACK(funcID);
+    const OFFSTACK = (funcID) => D.OFFSTACK(funcID);
 
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
@@ -50,8 +50,10 @@ const Soundscape = (() => {
                 playSound(args[0]);
                 break;
             case "stop":
-                if (args[0]) stopSound(args[0]);
-                else stopSoundscape();
+                if (args[0])
+                    stopSound(args[0]);
+                else
+                    stopSoundscape();
                 break;
             case "inc":
             case "increase": {
@@ -109,7 +111,7 @@ const Soundscape = (() => {
                         D.JS(STATE.REF.VOLUME, true),
                         "<h3>PLAYING TRACKS</h3>",
                         getPlayingTrackObjs()
-                            .map(x => `<b>${x.get("title")}:</b> ${x.get("volume")}`)
+                            .map((x) => `<b>${x.get("title")}:</b> ${x.get("volume")}`)
                             .join("<br>")
                     ].join(""),
                     "Current Volume"
@@ -167,11 +169,12 @@ const Soundscape = (() => {
         REGISTRY.Tracks = [];
         REGISTRY.Playlists = [];
         const trackObjs = _.uniq(findObjs({_type: "jukeboxtrack"}));
-        for (const trackObj of trackObjs) regTrack(trackObj);
-        const jukeboxData = JSON.parse(Campaign().get("_jukeboxfolder")).map(x => {
+        for (const trackObj of trackObjs)
+            regTrack(trackObj);
+        const jukeboxData = JSON.parse(Campaign().get("_jukeboxfolder")).map((x) => {
             const xData = D.KeyMapObj(
                 x,
-                k => {
+                (k) => {
                     switch (k) {
                         case "i":
                             return "trackKeys";
@@ -186,7 +189,7 @@ const Soundscape = (() => {
                 (v, k) => {
                     switch (k) {
                         case "i":
-                            return v.map(xx => parseKeyFromTitle(xx));
+                            return v.map((xx) => parseKeyFromTitle(xx));
                         case "s":
                             return {
                                 isLooping: ["s", "b"].includes(v),
@@ -245,7 +248,7 @@ const Soundscape = (() => {
     // #endregion
 
     // #region GETTERS: Track & Playlist Data
-    const parseKeyFromTitle = trackRef => {
+    const parseKeyFromTitle = (trackRef) => {
         trackRef =
             (D.IsID(trackRef) && (getObj("jukeboxtrack", trackRef) || {get: () => false}).get("title")) ||
             (VAL({obj: trackRef}) && trackRef.get("title")) ||
@@ -253,13 +256,15 @@ const Soundscape = (() => {
             false;
         return VAL({string: trackRef}) && trackRef.replace(/\s*[([{].*[)\]}]\s*/gu, "").replace(/[^A-Za-z0-9]*/gu, "");
     };
-    const getSoundKey = soundRef => {
+    const getSoundKey = (soundRef) => {
         const funcID = ONSTACK();
         if (VAL({string: soundRef})) {
-            if (soundRef in REGISTRY.Tracks || soundRef in REGISTRY.Playlists) return OFFSTACK(funcID) && soundRef;
+            if (soundRef in REGISTRY.Tracks || soundRef in REGISTRY.Playlists)
+                return OFFSTACK(funcID) && soundRef;
             if (D.IsID(soundRef)) {
                 const jukeObj = getObj("jukeboxtrack", soundRef);
-                if (VAL({object: jukeObj})) return OFFSTACK(funcID) && parseKeyFromTitle(jukeObj.get("title"));
+                if (VAL({object: jukeObj}))
+                    return OFFSTACK(funcID) && parseKeyFromTitle(jukeObj.get("title"));
             }
         } else if (VAL({object: soundRef})) {
             return OFFSTACK(funcID) && parseKeyFromTitle(soundRef.get("title"));
@@ -267,28 +272,31 @@ const Soundscape = (() => {
         return OFFSTACK(funcID) && false;
     };
     // getSoundKeys = (soundRefs) => _.flatten([soundRefs || []]).map(x => getSoundKey(x)),
-    const getSoundData = soundRef => {
+    const getSoundData = (soundRef) => {
         const funcID = ONSTACK();
         const soundKey = getSoundKey(soundRef);
         return (OFFSTACK(funcID) && REGISTRY.Tracks[soundKey]) || REGISTRY.Playlists[soundKey];
     };
-    const isTrack = soundRef => getSoundKey(soundRef) in REGISTRY.Tracks;
-    const isPlaylist = soundRef => getSoundKey(soundRef) in REGISTRY.Playlists;
+    const isTrack = (soundRef) => getSoundKey(soundRef) in REGISTRY.Tracks;
+    const isPlaylist = (soundRef) => getSoundKey(soundRef) in REGISTRY.Playlists;
     const getTrackKey = (soundRef, isGettingAllTracks = false) => {
         const funcID = ONSTACK();
-        if (isTrack(soundRef)) return OFFSTACK(funcID) && getSoundKey(soundRef);
+        if (isTrack(soundRef))
+            return OFFSTACK(funcID) && getSoundKey(soundRef);
         else if (isPlaylist(soundRef))
-            if (isGettingAllTracks) return OFFSTACK(funcID) && getSoundData(soundRef).trackKeys;
-            else return OFFSTACK(funcID) && getSoundData(soundRef).currentTracks[0];
+            if (isGettingAllTracks)
+                return OFFSTACK(funcID) && getSoundData(soundRef).trackKeys;
+            else
+                return OFFSTACK(funcID) && getSoundData(soundRef).currentTracks[0];
         return OFFSTACK(funcID) && false;
     };
-    const getPlaylistKey = soundRef => {
+    const getPlaylistKey = (soundRef) => {
         const funcID = ONSTACK();
         if (isTrack(soundRef)) {
             const trackKey = getTrackKey(soundRef);
             return (
                 OFFSTACK(funcID) &&
-                ((Object.values(REGISTRY.Playlists).find(x => x.currentTracks.includes(trackKey)) || {name: false}).name ||
+                ((Object.values(REGISTRY.Playlists).find((x) => x.currentTracks.includes(trackKey)) || {name: false}).name ||
                     getTrackData(trackKey).playlists[0] ||
                     false)
             );
@@ -297,15 +305,16 @@ const Soundscape = (() => {
         }
         return OFFSTACK(funcID) && false;
     };
-    const getTrackData = soundRef => getSoundData(getTrackKey(soundRef));
-    const getPlaylistData = soundRef => getSoundData(getPlaylistKey(soundRef));
-    const getTrackObj = soundRef => getObj("jukeboxtrack", (getTrackData(soundRef) || {id: false}).id);
-    const getVolume = soundRef => {
+    const getTrackData = (soundRef) => getSoundData(getTrackKey(soundRef));
+    const getPlaylistData = (soundRef) => getSoundData(getPlaylistKey(soundRef));
+    const getTrackObj = (soundRef) => getObj("jukeboxtrack", (getTrackData(soundRef) || {id: false}).id);
+    const getVolume = (soundRef) => {
         const trackKey = getTrackKey(soundRef);
         const playlistKey = getPlaylistKey(soundRef);
         const volumeMults = [STATE.REF.VOLUME.MasterVolumeMult];
         const baseVolume = STATE.REF.VOLUME[trackKey] || STATE.REF.VOLUME[playlistKey] || STATE.REF.VOLUME.base;
-        if (Session.Mode === "Inactive") return D.Int(volumeMults.filter(x => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume));
+        if (Session.Mode === "Inactive")
+            return D.Int(volumeMults.filter((x) => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume));
         if (!Session.IsOutside)
             volumeMults.push(
                 STATE.REF.VOLUME.MULTS.Inside[trackKey] || STATE.REF.VOLUME.MULTS.Inside[playlistKey] || STATE.REF.VOLUME.MULTS.Inside.base
@@ -317,12 +326,11 @@ const Soundscape = (() => {
                     STATE.REF.VOLUME.MULTS.Raining.base
             );
         // DB({trackKey, playlistKey, volumeMults, baseVolume, reduction: D.Int(volumeMults.reduce((tot, x) => tot * x, baseVolume))}, "getVolume")
-        return D.Int(volumeMults.filter(x => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume));
+        return D.Int(volumeMults.filter((x) => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume));
     };
-    const isTrackObjPlaying = trackObj => VAL({obj: trackObj}) && trackObj.get("playing") && !trackObj.get("softstop");
-    const isTrackObjLooping = trackObj => isTrackObjPlaying(trackObj) && trackObj.get("looping");
-    const getPlayingTrackObjs = (isLoopingOnly = false) =>
-        _.uniq(findObjs({_type: "jukeboxtrack"})).filter(x => (isLoopingOnly ? isTrackObjLooping(x) : isTrackObjPlaying(x)));
+    const isTrackObjPlaying = (trackObj) => VAL({obj: trackObj}) && trackObj.get("playing") && !trackObj.get("softstop");
+    const isTrackObjLooping = (trackObj) => isTrackObjPlaying(trackObj) && trackObj.get("looping");
+    const getPlayingTrackObjs = (isLoopingOnly = false) => _.uniq(findObjs({_type: "jukeboxtrack"})).filter((x) => (isLoopingOnly ? isTrackObjLooping(x) : isTrackObjPlaying(x)));
     // getPlayingPlaylists = () => Object.keys(REGISTRY.Playlists).filter(x => REGISTRY.Playlists[x].isPlaying),
     // getPlayingTracks = (isExcludingPlaylists = false) => Object.values(REGISTRY.Tracks).filter(x => x.isPlaying && (!isExcludingPlaylists || !x.masterPlaylist)).map(x => x.name),
     const getScore = () => STATE.REF.scoreOverride || C.SOUNDSCORES[Session.Mode][0];
@@ -331,7 +339,8 @@ const Soundscape = (() => {
         const weatherCode = TimeTracker.WeatherCode;
         const weatherSounds = [];
 
-        if (Session.Mode === "Inactive" || !Session.IsOutside) return OFFSTACK(funcID) && [];
+        if (Session.Mode === "Inactive" || !Session.IsOutside)
+            return OFFSTACK(funcID) && [];
 
         // RAIN:
         switch (weatherCode.charAt(0)) {
@@ -371,16 +380,20 @@ const Soundscape = (() => {
             District: dist.soundScape[0],
             Site: site.soundScape[0]
         };
-        if (Session.Mode === "Inactive") return OFFSTACK(funcID) && false;
-        if (Object.values(locSounds).includes("(TOTALSILENCE)")) return OFFSTACK(funcID) && "TOTALSILENCE";
-        if (locSounds.Site && locSounds.Site !== "(NONE)") return OFFSTACK(funcID) && locSounds.Site;
-        if (locSounds.District && locSounds.District !== "(NONE)" && Session.IsOutside) return OFFSTACK(funcID) && locSounds.District;
+        if (Session.Mode === "Inactive")
+            return OFFSTACK(funcID) && false;
+        if (Object.values(locSounds).includes("(TOTALSILENCE)"))
+            return OFFSTACK(funcID) && "TOTALSILENCE";
+        if (locSounds.Site && locSounds.Site !== "(NONE)")
+            return OFFSTACK(funcID) && locSounds.Site;
+        if (locSounds.District && locSounds.District !== "(NONE)" && Session.IsOutside)
+            return OFFSTACK(funcID) && locSounds.District;
         return OFFSTACK(funcID) && false;
     };
     // #endregion
 
     // #region SETTERS: Registration & Setting Parameters
-    const regTrack = trackObj => {
+    const regTrack = (trackObj) => {
         if (VAL({obj: trackObj})) {
             const trackKey = parseKeyFromTitle(trackObj);
             if (trackKey in REGISTRY.Tracks) {
@@ -404,13 +417,14 @@ const Soundscape = (() => {
     const regPlaylist = (playlistKey, trackRefs = [], playModes = {}) => {
         REGISTRY.Playlists[playlistKey] = {
             name: playlistKey,
-            trackKeys: trackRefs.map(x => getTrackKey(x)),
+            trackKeys: trackRefs.map((x) => getTrackKey(x)),
             playModes,
             currentTracks: [],
             isPlaying: false,
             trackSequence: []
         };
-        for (const trackKey of REGISTRY.Playlists[playlistKey].trackKeys) REGISTRY.Tracks[trackKey].playlists.push(playlistKey);
+        for (const trackKey of REGISTRY.Playlists[playlistKey].trackKeys)
+            REGISTRY.Tracks[trackKey].playlists.push(playlistKey);
         setPlayModes(playlistKey);
     };
     const setPlayModes = (soundRef, playModes = {}) => {
@@ -439,7 +453,7 @@ const Soundscape = (() => {
                 playModes
             );
             if (playlistData.playModes.isLooping && !playlistData.playModes.isPlayingAll)
-                playlistData.trackKeys.map(x => setPlayModes(x, {isLooping: true}));
+                playlistData.trackKeys.map((x) => setPlayModes(x, {isLooping: true}));
         }
     };
     const setVolume = (soundRef, volume) => {
@@ -447,11 +461,12 @@ const Soundscape = (() => {
             STATE.REF.VOLUME.base = D.Int(volume);
         } else {
             const soundKey = getSoundKey(soundRef);
-            if (soundKey) STATE.REF.VOLUME[soundKey] = D.Int(volume);
+            if (soundKey)
+                STATE.REF.VOLUME[soundKey] = D.Int(volume);
         }
         syncSoundscape();
     };
-    const setMasterVolumeMult = volumeMult => {
+    const setMasterVolumeMult = (volumeMult) => {
         STATE.REF.VOLUME.MasterVolumeMult = D.Float(volumeMult, 2);
         syncSoundscape();
     };
@@ -460,7 +475,8 @@ const Soundscape = (() => {
             STATE.REF.VOLUME.MULTS.Inside.base = D.Float(volumeMult, 2);
         } else {
             const soundKey = getSoundKey(soundRef);
-            if (soundKey) STATE.REF.VOLUME.MULTS.Inside[soundKey] = D.Float(volumeMult, 2);
+            if (soundKey)
+                STATE.REF.VOLUME.MULTS.Inside[soundKey] = D.Float(volumeMult, 2);
         }
         syncSoundscape();
     };
@@ -469,7 +485,8 @@ const Soundscape = (() => {
             STATE.REF.VOLUME.MULTS.Raining.base = D.Float(volumeMult, 2);
         } else {
             const soundKey = getSoundKey(soundRef);
-            if (soundKey) STATE.REF.VOLUME.MULTS.Raining[soundKey] = D.Float(volumeMult, 2);
+            if (soundKey)
+                STATE.REF.VOLUME.MULTS.Raining[soundKey] = D.Float(volumeMult, 2);
         }
         syncSoundscape();
     };
@@ -494,12 +511,15 @@ const Soundscape = (() => {
                 const {trackKeys} = playlistData;
                 if (!playlistData.trackSequence.length) {
                     if (playlistData.playModes.isRandom)
-                        playlistData.trackSequence = _.shuffle(trackKeys).filter(x => !playlistData.currentTracks.includes(x));
-                    else playlistData.trackSequence = D.Clone(trackKeys).filter(x => !playlistData.currentTracks.includes(x));
+                        playlistData.trackSequence = _.shuffle(trackKeys).filter((x) => !playlistData.currentTracks.includes(x));
+                    else
+                        playlistData.trackSequence = D.Clone(trackKeys).filter((x) => !playlistData.currentTracks.includes(x));
                     return playSound(playlistData.name, masterSound);
                 }
-                if (playlistData.playModes.isTogether) playlistData.trackKeys.map(x => playSound(x, playlistData.name));
-                else playlistData.currentTracks.push(playSound(playlistData.trackSequence.shift(), playlistData.name));
+                if (playlistData.playModes.isTogether)
+                    playlistData.trackKeys.map((x) => playSound(x, playlistData.name));
+                else
+                    playlistData.currentTracks.push(playSound(playlistData.trackSequence.shift(), playlistData.name));
                 playlistData.isPlaying = true;
                 return true;
             } else if (isTrack(soundKey)) {
@@ -537,7 +557,7 @@ const Soundscape = (() => {
             } else {
                 playlistData.currentTracks = [];
                 playlistData.isPlaying = false;
-                curTracks.map(x => stopSound(x));
+                curTracks.map((x) => stopSound(x));
             }
         } else if (isTrack(soundKey)) {
             const trackData = getTrackData(soundKey);
@@ -551,22 +571,24 @@ const Soundscape = (() => {
         }
     };
     const syncSoundscape = (isResetting = false) => {
-        if (Session.Mode === "Complications") return;
+        if (Session.Mode === "Complications")
+            return;
         if (isResetting) {
-            [...Object.keys(REGISTRY.Playlists), ...Object.keys(REGISTRY.Tracks)].map(x => stopSound(x));
+            [...Object.keys(REGISTRY.Playlists), ...Object.keys(REGISTRY.Tracks)].map((x) => stopSound(x));
             STATE.REF.activeSounds = [];
         }
         const activeSounds = _.compact([getScore(), getLocationSounds(), ...getWeatherSounds()]);
-        const soundsToStop = STATE.REF.activeSounds.filter(x => !activeSounds.includes(x));
-        const soundsToPlay = activeSounds.filter(x => !STATE.REF.activeSounds.includes(x));
-        const soundsToCheck = activeSounds.filter(x => STATE.REF.activeSounds.includes(x));
+        const soundsToStop = STATE.REF.activeSounds.filter((x) => !activeSounds.includes(x));
+        const soundsToPlay = activeSounds.filter((x) => !STATE.REF.activeSounds.includes(x));
+        const soundsToCheck = activeSounds.filter((x) => STATE.REF.activeSounds.includes(x));
         DB({activeSounds, soundsToStop, soundsToPlay, soundsToCheck}, "syncSoundscape");
-        soundsToStop.map(x => stopSound(x));
-        soundsToPlay.map(x => playSound(x));
+        soundsToStop.map((x) => stopSound(x));
+        soundsToPlay.map((x) => playSound(x));
         for (const soundKey of soundsToCheck) {
             const trackObj = getTrackObj(soundKey);
             const trackVolume = getVolume(soundKey);
-            if (trackObj && D.Int(trackObj.get("volume")) !== trackVolume) trackObj.set({volume: trackVolume});
+            if (trackObj && D.Int(trackObj.get("volume")) !== trackVolume)
+                trackObj.set({volume: trackVolume});
         }
     };
     const startSoundscape = (isResetting = false) => {
@@ -575,9 +597,10 @@ const Soundscape = (() => {
     };
     const stopSoundscape = () => {
         STATE.REF.isSoundscapeActive = false;
-        for (const soundKey of STATE.REF.activeSounds) stopSound(soundKey);
+        for (const soundKey of STATE.REF.activeSounds)
+            stopSound(soundKey);
     };
-    const playNextSound = trackRef => {
+    const playNextSound = (trackRef) => {
         // Playlist must have been initialized for sequencing: First play should be with playSound()
         if (STATE.REF.isSoundscapeActive) {
             const trackData = getSoundData(trackRef);
@@ -591,7 +614,8 @@ const Soundscape = (() => {
                     } else {
                         stopSound(playlistData.name, trackData.name);
                     }
-                else stopSound(trackData.name);
+                else
+                    stopSound(trackData.name);
             }
         }
     };

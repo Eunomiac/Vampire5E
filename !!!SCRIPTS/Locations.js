@@ -152,7 +152,8 @@ const Locations = (() => {
 
         // #region ~ PUBLIC METHODS
         Enter() {
-            if (this.onEntryCall) D.Call(this.onEntryCall);
+            if (this.onEntryCall)
+                D.Call(this.onEntryCall);
             // setSoundScape();
             // findCharsInLoc();
             // activateRollEffects();

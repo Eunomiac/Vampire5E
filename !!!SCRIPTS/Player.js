@@ -126,7 +126,7 @@ const Player = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region MVC: Minimally-Viable Character Design
-    const MVC = playerID => {
+    const MVC = (playerID) => {
         const results = [];
         for (const mvc of C.MVCVALS) {
             results.push(C.HTML.MVC.title(mvc[0]));

@@ -62,7 +62,7 @@ const D = (() => {
             // Initialize PCDICT Fuzzy Dictionary and PCLIST Strict Lookup
             STATE.REF.PCDICT = Fuzzy.Fix();
             STATE.REF.PCLIST = [];
-            for (const name of _.values(Char.REGISTRY).map(x => x.name)) {
+            for (const name of _.values(Char.REGISTRY).map((x) => x.name)) {
                 STATE.REF.PCDICT.add(name);
                 STATE.REF.PCLIST.push(name);
             }
@@ -71,12 +71,11 @@ const D = (() => {
             STATE.REF.NPCDICT = Fuzzy.Fix();
             STATE.REF.NPCLIST = [];
             for (const name of getChars("all")
-                .map(x => x.get("name"))
+                .map((x) => x.get("name"))
                 .filter(
-                    x =>
-                        !_.values(Char.REGISTRY)
-                            .map(xx => xx.name)
-                            .includes(x)
+                    (x) => !_.values(Char.REGISTRY)
+                        .map((xx) => xx.name)
+                        .includes(x)
                 )) {
                 STATE.REF.NPCDICT.add(name);
                 STATE.REF.NPCLIST.push(name);
@@ -193,14 +192,16 @@ const D = (() => {
                                 const srcData = {};
                                 for (const charObj of D.GetChars("all")) {
                                     const nameKey = getName(charObj, true);
-                                    charObj.get("_defaulttoken", defToken => {
+                                    charObj.get("_defaulttoken", (defToken) => {
                                         const imgMatch = D.JS(defToken).match(/imgsrc:(.*?),/u);
-                                        if (imgMatch && imgMatch.length) srcData[nameKey] = imgMatch[1].replace(/med\.png/gu, "thumb.png");
+                                        if (imgMatch && imgMatch.length)
+                                            srcData[nameKey] = imgMatch[1].replace(/med\.png/gu, "thumb.png");
                                     });
                                 }
                                 setTimeout(() => {
                                     state[C.GAMENAME].Media.TokenSrcs = {};
-                                    for (const srcRef of Object.keys(srcData)) state[C.GAMENAME].Media.TokenSrcs[srcRef] = srcData[srcRef];
+                                    for (const srcRef of Object.keys(srcData))
+                                        state[C.GAMENAME].Media.TokenSrcs[srcRef] = srcData[srcRef];
                                     D.Alert(
                                         `Finished! Media Token Sources updated to:<br><br>${D.JS(state[C.GAMENAME].Media.TokenSrcs)}`,
                                         "!data refresh tokensrcs"
@@ -249,8 +250,10 @@ const D = (() => {
                 break;
             }
             case "!reply": {
-                if (args.length) receivePrompt(args.join(" "), objects);
-                else receivePrompt("", objects);
+                if (args.length)
+                    receivePrompt(args.join(" "), objects);
+                else
+                    receivePrompt("", objects);
                 break;
             }
             // no default
@@ -264,22 +267,26 @@ const D = (() => {
     const FUNCSONSTACK = [];
     // #region DECLARATIONS: Reference Variables, Temporary Storage Variables
     const VALS = {
-        PAGEID: pageRef => {
+        PAGEID: (pageRef) => {
             // DB({pageRef}, "VALS")
             if (pageRef) {
-                if (isID(pageRef)) return (getObj("page", pageRef) || {id: false}).id;
+                if (isID(pageRef))
+                    return (getObj("page", pageRef) || {id: false}).id;
                 if (_.isString(pageRef)) {
-                    if (pageRef in C.PAGES) return C.PAGES[pageRef];
-                    const pageObj = (findObjs({_type: "page"}).find(x => x.get("name") === pageRef) || {id: false}).id;
+                    if (pageRef in C.PAGES)
+                        return C.PAGES[pageRef];
+                    const pageObj = (findObjs({_type: "page"}).find((x) => x.get("name") === pageRef) || {id: false}).id;
                     // DB({page: findObjs({_type: "page"}).find(x => x.get("name") === pageRef)}, "VALS")
-                    if (pageObj && pageObj.id) return pageObj.id;
+                    if (pageObj && pageObj.id)
+                        return pageObj.id;
                 }
                 // const object = getChar(pageRef) || Media.GetImg(pageRef) || Media.GetTokens(pageRef).pop() || Media.GetAnim(pageRef) || Media.GetText(pageRef)
-                if (VAL({object: pageRef})) return pageRef.get("_pageid");
+                if (VAL({object: pageRef}))
+                    return pageRef.get("_pageid");
             }
             return getObj("page", D.GetPlayer(D.GMID()).get("_lastpage")).id;
         },
-        CELLSIZE: pageRef => C.PIXELSPERSQUARE * (getObj("page", VALS.PAGEID(pageRef)) || {get: () => 70}).get("snapping_increment")
+        CELLSIZE: (pageRef) => C.PIXELSPERSQUARE * (getObj("page", VALS.PAGEID(pageRef)) || {get: () => 70}).get("snapping_increment")
     };
     const FunctionQueue = {};
     const ISRUNNINGQUEUE = {};
@@ -303,8 +310,10 @@ const D = (() => {
         }
 
         set name(v) {
-            if (VAL({string: v})) this._name = v;
-            else this._name = this._name || _.escape("<BTN>");
+            if (VAL({string: v}))
+                this._name = v;
+            else
+                this._name = this._name || _.escape("<BTN>");
         }
 
         get command() {
@@ -312,8 +321,10 @@ const D = (() => {
         }
 
         set command(v) {
-            if (VAL({string: v})) this._command = v;
-            else this._command = this._command || _.escape(`[Button '${this.name}'] Invalid Command`);
+            if (VAL({string: v}))
+                this._command = v;
+            else
+                this._command = this._command || _.escape(`[Button '${this.name}'] Invalid Command`);
         }
 
         get styles() {
@@ -321,8 +332,10 @@ const D = (() => {
         }
 
         set styles(v) {
-            if (VAL({list: v})) this._styles = v;
-            else this._styles = this._styles || {};
+            if (VAL({list: v}))
+                this._styles = v;
+            else
+                this._styles = this._styles || {};
         }
 
         get HTML() {
@@ -332,8 +345,9 @@ const D = (() => {
     // #endregion
 
     // #region ASYNC FUNCTION HANDLING: Function Queing, Running
-    const isFuncQueueClear = queueName => {
-        if (!FunctionQueue[queueName]) FunctionQueue[queueName] = [];
+    const isFuncQueueClear = (queueName) => {
+        if (!FunctionQueue[queueName])
+            FunctionQueue[queueName] = [];
         return !ISRUNNINGQUEUE[queueName] && FunctionQueue[queueName].length === 0;
     };
     const queueFunc = (func, args = [], queueName = "main", waitAfterSecs = 2) => {
@@ -343,7 +357,7 @@ const D = (() => {
         }
         try {
             if (VAL({function: func, array: args})) {
-                const funcWrapper = cback => {
+                const funcWrapper = (cback) => {
                     func(...args);
                     setTimeout(cback, waitAfterSecs * 1000);
                 };
@@ -358,9 +372,10 @@ const D = (() => {
         }
         return true;
     };
-    const $runFuncQueue = cback => {
+    const $runFuncQueue = (cback) => {
         const queueName = STATE.REF.FuncQueueName.pop();
-        if (!queueName) return THROW("Attempt to run function queue without any queue names.", "runFuncQueue");
+        if (!queueName)
+            return THROW("Attempt to run function queue without any queue names.", "runFuncQueue");
         DB(`Beginning Function Queue ${queueName}`, "runFuncQueue");
         ISRUNNINGQUEUE[queueName] = true;
         let current = 0;
@@ -385,7 +400,8 @@ const D = (() => {
                     );
                 ISRUNNINGQUEUE[queueName] = false;
                 FunctionQueue[queueName] = [];
-                if (cback) cback(...newArgs);
+                if (cback)
+                    cback(...newArgs);
                 if (WAITINGQUEUES.length) {
                     const [nextQueueName, nextQueueCBack] = WAITINGQUEUES.shift();
                     runFuncQueue(nextQueueName, nextQueueCBack);
@@ -419,12 +435,14 @@ const D = (() => {
                 FunctionQueue[queueName][current][0].apply(undefined, [].concat(args, each));
             }
         };
-        if (FunctionQueue[queueName].length) FunctionQueue[queueName][0][0](each);
-        else done(null);
+        if (FunctionQueue[queueName].length)
+            FunctionQueue[queueName][0][0](each);
+        else
+            done(null);
         return true;
     };
     const runFuncQueue = (queueName = "main", cback) => {
-        const runningQueues = Object.keys(ISRUNNINGQUEUE).filter(x => ISRUNNINGQUEUE[x] === true);
+        const runningQueues = Object.keys(ISRUNNINGQUEUE).filter((x) => ISRUNNINGQUEUE[x] === true);
         if (ISRUNNINGQUEUE[queueName]) {
             D.Alert(`Attempting to run <b>${queueName}</b>, but it's already running!`, "ERROR: Function Queue");
             return false;
@@ -445,7 +463,7 @@ const D = (() => {
         /* Parses a value of any type via JSON.stringify, and then further styles it for display either
                 in Roll20 chat, in the API console log, or both. */
         try {
-            const typeColor = type => {
+            const typeColor = (type) => {
                 switch (pLowerCase(type)) {
                     case "character":
                         return C.COLORS.brightgold;
@@ -470,8 +488,10 @@ const D = (() => {
                     let name = (v.get && v.get("name")) || v.name || "(Unnamed)";
                     if (name === "(Unnamed)" && type === "text") {
                         const textString = v.get && v.get("text");
-                        if (textString.length > 15) name = `${textString.slice(0, 15)}...`;
-                        else if (textString) name = textString;
+                        if (textString.length > 15)
+                            name = `${textString.slice(0, 15)}...`;
+                        else if (textString)
+                            name = textString;
                     }
                     returnVal = `@@NAMESTART${typeColor(type)}@@${name}@@NAMEEND@@`;
                 } else if (_.isUndefined(v)) {
@@ -483,12 +503,13 @@ const D = (() => {
                 } else if (_.isFunction(v)) {
                     returnVal = "<b>&lt;FUNCTION&gt;</b>";
                 } else if (_.isArray(v)) {
-                    if (v.map(x => replacer(k, x)).join(",&nbsp;").length < 150) {
-                        returnVal = `<b>[</b> ${v.map(x => replacer(k, x)).join(",&nbsp;")} <b>]</b>`.replace(/\[\s+\]/gu, "<b>[]</b>");
+                    if (v.map((x) => replacer(k, x)).join(",&nbsp;").length < 150) {
+                        returnVal = `<b>[</b> ${v.map((x) => replacer(k, x)).join(",&nbsp;")} <b>]</b>`.replace(/\[\s+\]/gu, "<b>[]</b>");
                     } else {
-                        const arrayDelver = array => {
+                        const arrayDelver = (array) => {
                             const returns = [];
-                            for (const val of array) returns.push(`<div style="display: block; margin-left: 7px;">${replacer(k, val)},</div>`);
+                            for (const val of array)
+                                returns.push(`<div style="display: block; margin-left: 7px;">${replacer(k, val)},</div>`);
                             return `<b>[</b><div style="display: block; margin-left: 7px;">${returns.join("").slice(0, -7)}</div></div><b>]</b>`;
                         };
                         returnVal = arrayDelver(v);
@@ -500,7 +521,7 @@ const D = (() => {
                     if (stringifyTest.length < 150) {
                         returnVal = stringifyTest;
                     } else {
-                        const listDelver = list => {
+                        const listDelver = (list) => {
                             const returns = [];
                             for (const key of Object.keys(list))
                                 returns.push(`<div style="display: block; margin-left: 7px;">${key}: ${replacer(key, list[key])},</div>`);
@@ -516,12 +537,10 @@ const D = (() => {
                 if (_.isString(returnVal))
                     returnVal = `${returnVal}`
                         .replace(/[\n\r]/gu, "ϙNϙ")
-                        .replace(/<(.*?)>/gu, x =>
-                            x
-                                .replace(/"/gu, "ϙHϙ")
-                                .replace(/ϙNϙ/gu, "\n")
-                                .replace(/\s\s+/gu, " ")
-                        ) // Hides HTML-code quotes so they aren't replaced AND strips line breaks from inside HTML tags.
+                        .replace(/<(.*?)>/gu, (x) => x
+                            .replace(/"/gu, "ϙHϙ")
+                            .replace(/ϙNϙ/gu, "\n")
+                            .replace(/\s\s+/gu, " ")) // Hides HTML-code quotes so they aren't replaced AND strips line breaks from inside HTML tags.
                         .replace(/"/gu, "") // Removes all double-quotes.
                         // replace(/[\t\n\r]/gu, "").
                         // replace(/\\/gu, ""). // Strips tabs and escape slashes.
@@ -540,34 +559,38 @@ const D = (() => {
                 // replace(/>&quot;/gu, ">").replace(/&quot;</gu, "<"). // Removes quotes from within entire HTML tags.
                 // replace(/&amp;quot;/gu, "\"").
                 .replace(/ϙ[A-Z]ϙ\/w/gu, "/w") // Fix whisper.
-                .replace(/@@NAMESTART(.*?)@@/gu, '<span style="background-color: $1;"><b>&lt;</b>')
+                .replace(/@@NAMESTART(.*?)@@/gu, "<span style=\"background-color: $1;\"><b>&lt;</b>")
                 .replace(/@@NAMEEND@@/gu, "<b>&gt;</b></span>")
-                .replace(/ϙHϙ/gu, '"') // Restores deliberate quotes to HTML code.
+                .replace(/ϙHϙ/gu, "\"") // Restores deliberate quotes to HTML code.
                 .replace(/ϙQϙ/gu, "&quot;") // Restores quotes everywhere else
                 .replace(/ϙNϙ/gu, "\\n") // Restores deliberate line breaks.
                 .replace(/$(\n|\s|\t|"|&quot;)*?/gu, "") // Restores deliberate line breaks.
                 .replace(/(\n|\s|\t|"|&quot;)*?^/gu, "") // Removes lines that are JUST white space and quotes.
                 .replace(/\n/gu, "<br>"); // Replaces line breaks with <br>.
-            if (finalString.slice(0, 7) === '"&quot;') finalString = finalString.slice(7);
-            if (finalString.slice(-7) === '&quot;"') finalString = finalString.slice(0, -7);
+            if (finalString.slice(0, 7) === "\"&quot;")
+                finalString = finalString.slice(7);
+            if (finalString.slice(-7) === "&quot;\"")
+                finalString = finalString.slice(0, -7);
             return finalString;
         } catch (errObj) {
             return `ERROR: ${JSON.stringify(errObj)}`;
         }
     };
-    const jStrH = data => {
+    const jStrH = (data) => {
         /* Parses data as above, but removes raw line breaks instead of converting them to <br>.
                 Line breaks must be specified in the code with '<br>' to be parsed as such.  */
-        if (_.isUndefined(data)) return _.escape("<UNDEFINED>");
+        if (_.isUndefined(data))
+            return _.escape("<UNDEFINED>");
         /* if (VAL({ string: data }))
                 data = data.replace(/(\r\n|\n|\r)/gu, " ") */
         return jStr(_.isString(data) ? `${data}`.replace(/<br\/?>/gu, "<br>") : data)
             .replace(/<br\/>/gu, "")
             .replace(/<br>/gu, "<br/>");
     };
-    const jStrL = data => {
+    const jStrL = (data) => {
         /* Parses data in a way that is appropriate to the console log, removing line breaks and redundant characters. */
-        if (_.isUndefined(data)) return "<UNDEFINED>";
+        if (_.isUndefined(data))
+            return "<UNDEFINED>";
 
         return (
             jStrH(data)
@@ -586,16 +609,18 @@ const D = (() => {
     const jStrC = (data, isShortForm = false, properties = []) => {
         /* Parses data to show all HTML code raw, rather than parsing it for formatting.
 				Can override this for specific tags by double-bracketing them (e.g. "<<b>>") */
-        if (_.isUndefined(data)) return _.escape("<UNDEFINED>");
+        if (_.isUndefined(data))
+            return _.escape("<UNDEFINED>");
 
         return `<pre>${_.escape(jStr(data, isShortForm, properties))
             .replace(/&gt;&gt;/gu, ">") // Restores doubled right brackets to code.
             .replace(/&lt;&lt;/gu, "<")}</pre>`; // Restores doubled left brackets to code.
     };
-    const jStrX = data => {
-        const replacer = match => {
+    const jStrX = (data) => {
+        const replacer = (match) => {
             const checkReplace = match.replace(/\s+/gu, " ");
-            if (checkReplace.length <= STATE.REF.AlertLineLength) return checkReplace;
+            if (checkReplace.length <= STATE.REF.AlertLineLength)
+                return checkReplace;
             return match;
         };
         return (
@@ -631,8 +656,8 @@ const D = (() => {
         const returnVal = _.object(
             (VAL({array: args}) ? args.join(" ") : args)
                 .split(new RegExp(`,?${delim}+`, "gu"))
-                .filter(x => x.includes(":"))
-                .map(x => x.trim().split(":"))
+                .filter((x) => x.includes(":"))
+                .map((x) => x.trim().split(":"))
         );
         D.Alert(`Args: ${D.JS(args)}<br>Delim: '${D.JS(delim)}'<br>Return: ${D.JS(returnVal)}`);
         return returnVal;
@@ -643,7 +668,7 @@ const D = (() => {
             charObjs = getChars(call);
             charIDString = call.toLowerCase();
         } else {
-            charObjs = _.compact(call.split(",").map(x => getObj("character", x.trim())));
+            charObjs = _.compact(call.split(",").map((x) => getObj("character", x.trim())));
             charIDString = call;
         }
         if (VAL({charObj: charObjs}, null, true)) {
@@ -662,8 +687,7 @@ const D = (() => {
     };
     const summarizeHTML = (htmlString = "") => ((htmlString.match(/.*?>([^<>]+)<.*?/g) || [""]).pop().match(/.*?>([^<>]+)<.*?/) || [""]).pop();
     const pInt = (strRef, isRounding = false) => parseInt(isRounding ? Math.round(parseFloat(strRef) || 0) : strRef) || 0;
-    const pFloat = (strRef, sigDigits = false) =>
-        (VAL({number: sigDigits}) && roundSig(parseFloat(strRef) || 0, sigDigits)) || parseFloat(strRef) || 0;
+    const pFloat = (strRef, sigDigits = false) => (VAL({number: sigDigits}) && roundSig(parseFloat(strRef) || 0, sigDigits)) || parseFloat(strRef) || 0;
     const roundSig = (num, digits, isReturningPaddedString = false) => {
         if (VAL({number: digits}) && D.Int(digits) > 0) {
             const returnNum = Math.round(num * 10 ** D.Int(digits) + Number.EPSILON) / 10 ** D.Int(digits);
@@ -680,24 +704,29 @@ const D = (() => {
     };
     const boundNum = (num, minVal, maxVal) => Math.max(Math.min(num, maxVal), minVal);
     const cycleNum = (num, minVal, maxVal) => {
-        while (num > maxVal) num -= maxVal - minVal;
-        while (num < minVal) num += maxVal - minVal;
+        while (num > maxVal)
+            num -= maxVal - minVal;
+        while (num < minVal)
+            num += maxVal - minVal;
         return num;
     };
-    const pLowerCase = strRef => `${strRef || ""}`.toLowerCase();
-    const pUpperCase = strRef => `${strRef || ""}`.toUpperCase();
+    const pLowerCase = (strRef) => `${strRef || ""}`.toLowerCase();
+    const pUpperCase = (strRef) => `${strRef || ""}`.toUpperCase();
     const numToText = (num, isTitleCase = false) => {
         const numString = `${num}`;
-        const parseThreeDigits = v => {
-            const digits = _.map(v.toString().split(""), vv => parseInt(vv));
+        const parseThreeDigits = (v) => {
+            const digits = _.map(v.toString().split(""), (vv) => parseInt(vv));
             let result = "";
             if (digits.length === 3) {
                 const hundreds = digits.shift();
                 result += hundreds > 0 ? `${C.NUMBERWORDS.low[hundreds]} hundred` : "";
-                if (digits[0] + digits[1] > 0) result += " and ";
-                else return result.toLowerCase();
+                if (digits[0] + digits[1] > 0)
+                    result += " and ";
+                else
+                    return result.toLowerCase();
             }
-            if (parseInt(digits.join("")) <= C.NUMBERWORDS.low.length) result += C.NUMBERWORDS.low[parseInt(digits.join(""))];
+            if (parseInt(digits.join("")) <= C.NUMBERWORDS.low.length)
+                result += C.NUMBERWORDS.low[parseInt(digits.join(""))];
             else
                 result +=
                     C.NUMBERWORDS.tens[parseInt(digits.shift())] + (parseInt(digits[0]) > 0 ? `-${C.NUMBERWORDS.low[parseInt(digits[0])]}` : "");
@@ -711,46 +740,48 @@ const D = (() => {
                 .reverse()
                 .join("")
                 .match(/.{1,3}/g),
-            v =>
-                v
-                    .split("")
-                    .reverse()
-                    .join("")
+            (v) => v
+                .split("")
+                .reverse()
+                .join("")
         ).reverse();
         const [intStrings, decStrings] = [[], []];
-        while (intArray.length) intStrings.push(`${parseThreeDigits(intArray.shift())} ${C.NUMBERWORDS.tiers[intArray.length]}`.toLowerCase().trim());
+        while (intArray.length)
+            intStrings.push(`${parseThreeDigits(intArray.shift())} ${C.NUMBERWORDS.tiers[intArray.length]}`.toLowerCase().trim());
         if (VAL({number: decimals})) {
             decStrings.push(" point");
-            for (const digit of decimals.split("")) decStrings.push(C.NUMBERWORDS.low[parseInt(digit)]);
+            for (const digit of decimals.split(""))
+                decStrings.push(C.NUMBERWORDS.low[parseInt(digit)]);
         }
         return capitalize((isNegative ? "negative " : "") + intStrings.join(", ") + decStrings.join(" "), isTitleCase);
     };
-    const textToNum = num => {
+    const textToNum = (num) => {
         const [tenText, oneText] = num.split("-");
         if (VAL({string: tenText}, "textToNum"))
             return Math.max(
                 0,
                 _.indexOf(
-                    _.map(C.NUMBERWORDS.tens, v => v.toLowerCase()),
+                    _.map(C.NUMBERWORDS.tens, (v) => v.toLowerCase()),
                     tenText.toLowerCase()
                 ) * 10,
                 _.indexOf(
-                    _.map(C.NUMBERWORDS.low, v => v.toLowerCase()),
+                    _.map(C.NUMBERWORDS.low, (v) => v.toLowerCase()),
                     tenText.toLowerCase()
                 )
-            ) + VAL({string: oneText})
-                ? Math.max(
-                      0,
-                      _.indexOf(
-                          _.map(C.NUMBERWORDS.low, v => v.toLowerCase()),
-                          oneText.toLowerCase()
-                      )
-                  )
-                : 0;
+            ) + VAL({string: oneText}) ?
+                Math.max(
+                    0,
+                    _.indexOf(
+                        _.map(C.NUMBERWORDS.low, (v) => v.toLowerCase()),
+                        oneText.toLowerCase()
+                    )
+                ) :
+                0;
         return 0;
     };
     const numToRomanNum = (num, isGroupingSymbols = true) => {
-        if (isNaN(num)) return NaN;
+        if (isNaN(num))
+            return NaN;
         const digits = String(D.Int(num)).split("");
         const key = (isGroupingSymbols && [
             // Ⅰ Ⅱ Ⅲ Ⅳ Ⅴ Ⅵ Ⅶ Ⅷ Ⅸ Ⅹ Ⅺ Ⅻ Ⅼ Ⅽ Ⅾ Ⅿ
@@ -819,10 +850,11 @@ const D = (() => {
         ];
         let roman = "",
             i = 3;
-        while (i--) roman = (key[D.Int(digits.pop()) + i * 10] || "") + roman;
-        return isGroupingSymbols
-            ? (Array(D.Int(digits.join("")) + 1).join("M") + roman).replace(/ⅩⅠ/gu, "Ⅺ").replace(/ⅩⅡ/gu, "Ⅻ")
-            : Array(D.Int(digits.join("")) + 1).join("M") + roman;
+        while (i--)
+            roman = (key[D.Int(digits.pop()) + i * 10] || "") + roman;
+        return isGroupingSymbols ?
+            (Array(D.Int(digits.join("")) + 1).join("M") + roman).replace(/ⅩⅠ/gu, "Ⅺ").replace(/ⅩⅡ/gu, "Ⅻ") :
+            Array(D.Int(digits.join("")) + 1).join("M") + roman;
     };
     const ordinal = (num, isFullText = false) => {
         /* Converts any number by adding its appropriate ordinal ("2nd", "3rd", etc.) */
@@ -831,7 +863,8 @@ const D = (() => {
             return numText.replace(new RegExp(`${suffix}$`, "u"), "") + C.ORDINALSUFFIX[suffix] || `${suffix}th`;
         }
         const tNum = parseInt(num) - 100 * Math.floor(parseInt(num) / 100);
-        if ([11, 12, 13].includes(tNum)) return `${num}th`;
+        if ([11, 12, 13].includes(tNum))
+            return `${num}th`;
 
         return `${num}${["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"][num % 10]}`;
     };
@@ -839,37 +872,36 @@ const D = (() => {
         if (VAL({string: str}, "capitalize"))
             if (isTitleCase)
                 return _.map(
-                    _.map(str.split(" "), v => v.slice(0, 1).toUpperCase() + v.slice(1))
+                    _.map(str.split(" "), (v) => v.slice(0, 1).toUpperCase() + v.slice(1))
                         .join(" ")
                         .split("-"),
-                    v => v.slice(0, 1).toUpperCase() + v.slice(1)
+                    (v) => v.slice(0, 1).toUpperCase() + v.slice(1)
                 )
                     .join("-")
                     .replace(/And/gu, "and");
-            else return str.slice(0, 1).toUpperCase() + str.slice(1);
+            else
+                return str.slice(0, 1).toUpperCase() + str.slice(1);
         THROW(`Attempt to capitalize non-string '${jStrL(str)}'`, "capitalize");
         return str;
     };
-    const clone = obj => {
+    const clone = (obj) => {
         if (_.isObject(obj) && Object.keys(obj).length) {
             const objToString = JSON.stringify(obj);
-            if (_.isString(objToString)) return JSON.parse(objToString);
+            if (_.isString(objToString))
+                return JSON.parse(objToString);
         }
         return {};
     };
-    const rbgToHex = (rgb = [0, 0, 0]) =>
-        `#${rgb
-            .slice(0, 3)
-            .map(x => x.toString(16))
-            .join("")}`;
-    const colorGradient = (startColor, endColor, step, totalSteps) =>
-        `rgba(${startColor
-            .replace(/[^\d\s,]*/gu, "")
-            .split(",")
-            .map((x, i) => D[i === 3 ? "Round" : "Int"](x, 2))
-            .map((x, i) =>
-                D[i === 3 ? "Round" : "Int"](
-                    x +
+    const rbgToHex = (rgb = [0, 0, 0]) => `#${rgb
+        .slice(0, 3)
+        .map((x) => x.toString(16))
+        .join("")}`;
+    const colorGradient = (startColor, endColor, step, totalSteps) => `rgba(${startColor
+        .replace(/[^\d\s,]*/gu, "")
+        .split(",")
+        .map((x, i) => D[i === 3 ? "Round" : "Int"](x, 2))
+        .map((x, i) => D[i === 3 ? "Round" : "Int"](
+            x +
                         ((endColor
                             .replace(/[^\d\s,]*/gu, "")
                             .split(",")
@@ -877,18 +909,15 @@ const D = (() => {
                             x) *
                             step) /
                             totalSteps,
-                    2
-                )
-            )
-            .join(", ")})`;
-    const parseStack = stackObj => {
+            2
+        ))
+        .join(", ")})`;
+    const parseStack = (stackObj) => {
         const stackData = processStack(stackObj);
-        const reportLines = stackData.filteredStackLines.map(x =>
-            x
-                .replace(/ *\[ *as[^\]]*\] */gu, " ")
-                .replace(/^.*?at /gu, "")
-                .replace(/\(([^:]*:[^:]*):\d+\)/gu, "($1)")
-        ); // .join("◄")
+        const reportLines = stackData.filteredStackLines.map((x) => x
+            .replace(/ *\[ *as[^\]]*\] */gu, " ")
+            .replace(/^.*?at /gu, "")
+            .replace(/\(([^:]*:[^:]*):\d+\)/gu, "($1)")); // .join("◄")
         reportLines[0] = `<b>${reportLines[0].split(" ")[0]}</b> ${reportLines[0].split(" ")[1]}`;
         return reportLines;
     };
@@ -897,30 +926,31 @@ const D = (() => {
             [^(( +)(const )? *[^ \r\n\=]* *=.*?=> *\{)] >> [$1\r\n$2    const funcID = ONSTACK\(\)] (RegExp Replace)
             [ return ] >> [ return OFFSTACK(funcID) && ] (Normal Replace)
         */
-    const dampenStackVal = code => {
-        return code
-            .replace(/<\/?b>/gu, "")
-            .replace(/\(([A-Z])[a-z]*?([A-Z])?[a-z]*?([A-Z])?[a-z]*?([A-Z])?[a-z]*:(\d+)\)/gu, '<span style="font-size: 10px;"> ($1$2$3$4:$5)</span>')
-            .replace(
-                /^ *([a-z_]) *[ a-z._]*?([A-Z._])? *([a-z._]{0,3})[ a-z._]*([A-Z])?[ a-z._]*([A-Z])?[ a-z._]*([A-Z])?[ a-z._]*/gu,
-                '<span style="background-color: rgba(0,0,0,0.3);">$1$2$3$4$5$6</span>'
-            );
-    };
+    const dampenStackVal = (code) => code
+        .replace(/<\/?b>/gu, "")
+        .replace(/\(([A-Z])[a-z]*?([A-Z])?[a-z]*?([A-Z])?[a-z]*?([A-Z])?[a-z]*:(\d+)\)/gu, "<span style=\"font-size: 10px;\"> ($1$2$3$4:$5)</span>")
+        .replace(
+            /^ *([a-z_]) *[ a-z._]*?([A-Z._])? *([a-z._]{0,3})[ a-z._]*([A-Z])?[ a-z._]*([A-Z])?[ a-z._]*([A-Z])?[ a-z._]*/gu,
+            "<span style=\"background-color: rgba(0,0,0,0.3);\">$1$2$3$4$5$6</span>"
+        );
     const putOnStack = (excludeFunc, isThrottlingStackLog = false) => {
-        if (!STATE.REF.isFullDebug || STATE.REF.isThrottlingStackLog) return true;
+        if (!STATE.REF.isFullDebug || STATE.REF.isThrottlingStackLog)
+            return true;
         const obj = {};
         let funcID = D.RandomString(20);
-        const filterFunc = fID => x => x[0] === fID;
-        while (FUNCSONSTACK.filter(filterFunc(funcID)).length) funcID = D.RandomString(20);
+        const filterFunc = (fID) => (x) => x[0] === fID;
+        while (FUNCSONSTACK.filter(filterFunc(funcID)).length)
+            funcID = D.RandomString(20);
         Error.captureStackTrace(obj, excludeFunc);
         if (FUNCSONSTACK.length) {
-            if (STACKLOG.length > 450) getStackRecord("... Stack");
+            if (STACKLOG.length > 450)
+                getStackRecord("... Stack");
             logStackAlert(
                 `<span style="background-color: rgba(0,0,0,0.${STACKLOG.length %
                     2}); width: 1550px; display: block; font-family: 'Carrois Gothic SC'; font-size: 12px;"> ${"> ".repeat(
                     FUNCSONSTACK.length - 1
                 )}${FUNCSONSTACK.slice(1)
-                    .map(x => dampenStackVal(x[1]))
+                    .map((x) => dampenStackVal(x[1]))
                     .join(" > ")} ► ${D.ParseStack(obj).shift()}</span>`
             );
         } else {
@@ -933,13 +963,16 @@ const D = (() => {
             );
         }
         FUNCSONSTACK.push([funcID, D.ParseStack(obj).shift()]);
-        if (isThrottlingStackLog) STATE.REF.isThrottlingStackLog = funcID;
+        if (isThrottlingStackLog)
+            STATE.REF.isThrottlingStackLog = funcID;
         return funcID;
     };
-    const pullOffStack = funcID => {
-        if (STATE.REF.isTHrottlingStackLog === funcID) STATE.REF.isThrottlingStackLog = false;
-        if (!STATE.REF.isFullDebug || STATE.REF.isThrottlingStackLog) return true;
-        const remFunc = D.PullOut(FUNCSONSTACK, v => v[0] === funcID);
+    const pullOffStack = (funcID) => {
+        if (STATE.REF.isTHrottlingStackLog === funcID)
+            STATE.REF.isThrottlingStackLog = false;
+        if (!STATE.REF.isFullDebug || STATE.REF.isThrottlingStackLog)
+            return true;
+        const remFunc = D.PullOut(FUNCSONSTACK, (v) => v[0] === funcID);
         if (remFunc)
             if (FUNCSONSTACK.length > 1)
                 if (STACKLOG[STACKLOG.length - 1].endsWith(`${remFunc[1]}</span>`))
@@ -951,7 +984,7 @@ const D = (() => {
                             FUNCSONSTACK.length
                         )}${D.Clone(FUNCSONSTACK)
                             .slice(1)
-                            .map(x => dampenStackVal(x[1]))
+                            .map((x) => dampenStackVal(x[1]))
                             .join(" > ")} > ${remFunc[1]} ◄</span>`
                     );
             else if (FUNCSONSTACK.length === 1)
@@ -961,16 +994,17 @@ const D = (() => {
     // #endregion
 
     // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
-    const formatTitle = (funcName, scriptName, prefix = "") =>
-        `[${prefix}${VAL({string: funcName}) || VAL({string: scriptName}) ? " " : ""}${
-            VAL({string: scriptName}) ? `${scriptName.toUpperCase()}` : ""
-        }${VAL({string: [scriptName, funcName]}, null, true) ? ": " : ""}${funcName || ""}]`;
+    const formatTitle = (funcName, scriptName, prefix = "") => `[${prefix}${VAL({string: funcName}) || VAL({string: scriptName}) ? " " : ""}${
+        VAL({string: scriptName}) ? `${scriptName.toUpperCase()}` : ""
+    }${VAL({string: [scriptName, funcName]}, null, true) ? ": " : ""}${funcName || ""}]`;
     const formatLogLine = (msg, funcName, scriptName, prefix = "") => `${formatTitle(funcName, scriptName, prefix)} ${formatMsgContents(msg, false)}`;
     const formatMsgContents = (msg, isHTMLOk = true, isStrippingHTML = false) => {
         if (typeof msg === "object" && !Array.isArray(msg))
             if (isHTMLOk) {
-                if (isStrippingHTML) msg = Object.values(kvpMap(msg, null, (v, k) => `<b>${jStrL(k)}:</b> ${jStrL(v)}`)).join("<br>");
-                else msg = Object.values(kvpMap(msg, null, (v, k) => `<b>${jStr(k)}:</b> ${jStr(v)}`)).join("<br>");
+                if (isStrippingHTML)
+                    msg = Object.values(kvpMap(msg, null, (v, k) => `<b>${jStrL(k)}:</b> ${jStrL(v)}`)).join("<br>");
+                else
+                    msg = Object.values(kvpMap(msg, null, (v, k) => `<b>${jStr(k)}:</b> ${jStr(v)}`)).join("<br>");
             } else {
                 msg = Object.values(kvpMap(msg, null, (v, k) => `${jStrL(k)}: ${jStrL(v)}`)).join(" ");
             }
@@ -978,29 +1012,32 @@ const D = (() => {
             if (isHTMLOk) {
                 if (isStrippingHTML)
                     msg = _.flatten([msg], true)
-                        .map(x => jStr(x))
+                        .map((x) => jStr(x))
                         .join("");
                 else
                     msg = _.flatten([msg], true)
-                        .map(x => jStrL(x))
+                        .map((x) => jStrL(x))
                         .join("");
             } else {
                 msg = _.flatten([msg], true)
-                    .map(x => jStrL(x))
+                    .map((x) => jStrL(x))
                     .join(" ");
             }
-        else if (isHTMLOk && !isStrippingHTML) msg = jStr(msg);
-        else msg = jStrL(msg);
+        else if (isHTMLOk && !isStrippingHTML)
+            msg = jStr(msg);
+        else
+            msg = jStrL(msg);
 
-        if (!isHTMLOk) msg = msg.replace(/<[a-z/\s]*>/gu, " ").replace(/\s\s+/gu, " ");
+        if (!isHTMLOk)
+            msg = msg.replace(/<[a-z/\s]*>/gu, " ").replace(/\s\s+/gu, " ");
 
         return msg;
     };
-    const sendAPICommand = command => {
+    const sendAPICommand = (command) => {
         sendChat(getName(getGMID()), command);
     };
     const sendChatMessage = (who, message = "", title, isPureCode = false) => {
-        /* Whispers chat message to player given: display name OR player ID. 
+        /* Whispers chat message to player given: display name OR player ID.
                 If no Title, message is sent without formatting. */
         const player = getPlayer(who) || who;
         const html =
@@ -1117,7 +1154,8 @@ const D = (() => {
                     randomString(3),
                     `/w Storyteller ${html}<div style="display: block;height: 10px;max-height: 10px;position: relative;z-index: 999;text-align: right;width: 100%;margin-top: -10px;margin-bottom: -7px;background-color: transparent;padding: 0px;font-size: 0px;"><span style="font-size: 10px; display:inline-block; line-height: 10px; background-color: darkgreen;color: white;max-height: 10px;width: auto;">(TO ALL)</span></div>`
                 );
-            else sendChat(randomString(3), html);
+            else
+                sendChat(randomString(3), html);
         } else {
             sendChat(randomString(3), `/w "${player.get("_displayname")}" ${html}`);
             if (!playerIsGM(player.id))
@@ -1171,8 +1209,9 @@ const D = (() => {
             }
         }
     };
-    const memoMenu = menuData => {
-        if (VAL({string: menuData})) return menuData;
+    const memoMenu = (menuData) => {
+        if (VAL({string: menuData}))
+            return menuData;
         const menuString = _.escape(JSON.stringify(menuData));
         // if (!(menuString in STATE.REF.COMMANDMENUS))
         //     STATE.REF.COMMANDMENUS[menuString] = getCommandMenuHTML(menuData)
@@ -1206,14 +1245,16 @@ const D = (() => {
                 margin: "7px 0px 7px 0px"
             }
         };
-        if (VAL({string: menuData})) DB({menuString: menuData}, "getCommandMenuHTML");
-        else DB({menuTitle: D.JS(menuData.title)}, "getCommandMenuHTML");
+        if (VAL({string: menuData}))
+            DB({menuString: menuData}, "getCommandMenuHTML");
+        else
+            DB({menuTitle: D.JS(menuData.title)}, "getCommandMenuHTML");
         // DB({menuData}, "getCommandMenuHTML")
         const dbData = {rows: []};
-        const parseSection = sectionData => {
+        const parseSection = (sectionData) => {
             const sectionHTML = [];
             if (VAL({list: sectionData})) {
-                const parseRow = rowData => {
+                const parseRow = (rowData) => {
                     if (VAL({string: rowData})) {
                         sectionHTML.push(rowData);
                         DB({rowDataIsString: rowData, sectionHTML}, "getCommandMenuHTML");
@@ -1225,31 +1266,30 @@ const D = (() => {
                         try {
                             const buttonsCode = [];
                             const totalFlexEntities = rowData.contents.filter(
-                                x => (VAL({list: x}) && (!x.styles || !x.styles.width)) || (VAL({number: x}) && x === 0)
+                                (x) => (VAL({list: x}) && (!x.styles || !x.styles.width)) || (VAL({number: x}) && x === 0)
                             ).length;
                             const strictSpacerTotWidth =
                                 rowData.contents
-                                    .map(x =>
-                                        VAL({list: x}) && "text" in x
-                                            ? D.Int(
-                                                  Object.assign({width: "40px"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(
-                                                      /%|(px)/gu,
-                                                      ""
-                                                  )
-                                              )
-                                            : x
-                                    )
-                                    .filter(x => VAL({number: x}))
+                                    .map((x) => (VAL({list: x}) && "text" in x ?
+                                        D.Int(
+                                            Object.assign({width: "40px"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(
+                                                /%|(px)/gu,
+                                                ""
+                                            )
+                                        ) :
+                                        x))
+                                    .filter((x) => VAL({number: x}))
                                     .reduce((tot, x) => tot + x + 2, 0) || 0;
                             // strictSpacerTotWidth = Math.floor(C.CHATWIDTH * (strictSpacerTotPercentWidth / 100)),
                             const totFlexSpacing = C.CHATWIDTH - strictSpacerTotWidth;
                             const flexEntityWidth = Math.floor(totFlexSpacing / totalFlexEntities);
                             DB({rowDataContents: D.JS(rowData.contents)}, "getCommandMenuHTML");
                             // DB({totalFlexEntities, strictSpacerTotWidth, totFlexSpacing, flexEntityWidth}, "getCommandMenuHTML")
-                            rowData.contents = rowData.contents.map(x => (VAL({number: x}) && x === 0 && flexEntityWidth) || x);
+                            rowData.contents = rowData.contents.map((x) => (VAL({number: x}) && x === 0 && flexEntityWidth) || x);
                             dbData.rows.push({strictSpacerTotWidth, totFlexSpacing, flexEntityWidth, rowData, entities: []});
                             for (const entity of rowData.contents)
-                                if (VAL({number: entity})) buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}px`));
+                                if (VAL({number: entity}))
+                                    buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}px`));
                                 else if (VAL({list: entity}))
                                     if ("text" in entity) {
                                         buttonsCode.push(C.HTML.ButtonSubheader(entity.text, entity.styles));
@@ -1283,8 +1323,10 @@ const D = (() => {
                         sectionHTML.push(C.HTML.SubBlock(colHTML.join("")));
                     }
                 };
-                if ("rows" in sectionData) sectionData.rows.forEach(x => parseRow(x));
-                else parseRow(sectionData);
+                if ("rows" in sectionData)
+                    sectionData.rows.forEach((x) => parseRow(x));
+                else
+                    parseRow(sectionData);
             } else {
                 sectionHTML.push(sectionData);
                 DB({sectionDataIsString: sectionData, sectionHTML}, "getCommandMenuHTML");
@@ -1292,8 +1334,10 @@ const D = (() => {
             return sectionHTML.join("");
         };
         htmlRows.push(parseSection(menuData));
-        if (!("rows" in menuData)) return htmlRows.join("");
-        if ("title" in menuData) htmlRows.unshift(C.HTML.Title(menuData.title, Object.assign({}, customStyles.Title)));
+        if (!("rows" in menuData))
+            return htmlRows.join("");
+        if ("title" in menuData)
+            htmlRows.unshift(C.HTML.Title(menuData.title, Object.assign({}, customStyles.Title)));
         // DB(dbData, "commandMenu")
         return C.HTML.Block(htmlRows.join(""), menuData.blockParams || {});
     };
@@ -1316,7 +1360,7 @@ const D = (() => {
         });
         return newObj;
     };
-    const removeFirst = (array, element) => array.splice(array.findIndex(v => v === element));
+    const removeFirst = (array, element) => array.splice(array.findIndex((v) => v === element));
     const pullElement = (
         array,
         checkFunc = (_v = true, _i = 0, _a = []) => {
@@ -1330,19 +1374,23 @@ const D = (() => {
     const parseToObj = (val, delim = ",", keyValDelim = ":") => {
         /* Converts an array or comma-delimited string of parameters ("key:val, key:val, key:val") into an object. */
         const [obj, args] = [{}, []];
-        if (VAL({string: val})) args.push(...val.split(delim));
-        else if (VAL({array: val})) args.push(...val);
-        else return THROW(`Cannot parse value '${jStrC(val)}' to object.`, "parseToObj");
-        for (const kvp of _.map(args, v => v.split(new RegExp(`\\s*${keyValDelim}\\s*(?!\\/)`, "u"))))
+        if (VAL({string: val}))
+            args.push(...val.split(delim));
+        else if (VAL({array: val}))
+            args.push(...val);
+        else
+            return THROW(`Cannot parse value '${jStrC(val)}' to object.`, "parseToObj");
+        for (const kvp of _.map(args, (v) => v.split(new RegExp(`\\s*${keyValDelim}\\s*(?!\\/)`, "u"))))
             obj[kvp[0].toString().trim()] = parseInt(kvp[1]) || kvp[1];
         return obj;
     };
-    const getLast = array => (array.length ? array[array.length - 1] : null);
+    const getLast = (array) => (array.length ? array[array.length - 1] : null);
     // #endregion
 
     // #region SEARCH & VALIDATION: Match checking, Set membership checking, type validation.
     const looseMatch = (first, second) => {
-        if (VAL({string: [first, second]}, "looseMatch", true)) return first.toLowerCase() === second.toLowerCase();
+        if (VAL({string: [first, second]}, "looseMatch", true))
+            return first.toLowerCase() === second.toLowerCase();
         return false;
     };
     const fuzzyMatch = (first, second) => {
@@ -1372,7 +1420,8 @@ const D = (() => {
                 // HAYSTACK = LIST? ---> HAY = ARRAY (Object.keys(H))
                 // HAYSTACK = STRING? -> HAY = H
 
-                if (haystack && haystack.gramSizeLower) return isIn(needle, haystack);
+                if (haystack && haystack.gramSizeLower)
+                    return isIn(needle, haystack);
                 const hayType = (VAL({array: haystack}) && "array") || (VAL({list: haystack}) && "list") || (VAL({string: haystack}) && "string");
                 let ndl = needle.toString(),
                     hay,
@@ -1402,27 +1451,31 @@ const D = (() => {
                     for (let i = 0; i <= 1; i++) {
                         let thisNeedle = ndl,
                             thisHay = hay;
-                        match = _.findIndex(thisHay, v => thisNeedle === v) + 1; // Adding 1 means "!match" passes on failure return of -1.
-                        if (match) break;
+                        match = _.findIndex(thisHay, (v) => thisNeedle === v) + 1; // Adding 1 means "!match" passes on failure return of -1.
+                        if (match)
+                            break;
                         thisHay = _.map(
                             thisHay,
-                            v => ((v || v === 0) && (VAL({string: v}) || VAL({number: v}) ? v.toString().toLowerCase() : v)) || "§¥£"
+                            (v) => ((v || v === 0) && (VAL({string: v}) || VAL({number: v}) ? v.toString().toLowerCase() : v)) || "§¥£"
                         );
                         thisNeedle = thisNeedle.toString().toLowerCase();
-                        match = _.findIndex(thisHay, v => thisNeedle === v) + 1;
-                        if (match) break;
+                        match = _.findIndex(thisHay, (v) => thisNeedle === v) + 1;
+                        if (match)
+                            break;
                         // Now strip all non-word characters and try again from the top.
                         ndl = ndl.replace(/\W+/gu, "");
-                        hay = _.map(hay, v => (VAL({string: v}) || VAL({number: v}) ? v.toString().replace(/\W+/gu, "") : v));
+                        hay = _.map(hay, (v) => (VAL({string: v}) || VAL({number: v}) ? v.toString().replace(/\W+/gu, "") : v));
                     }
                     return match && hayType === "array" ? haystack[match - 1] : haystack[Object.keys(haystack)[match - 1]];
                 } else {
                     for (let i = 0; i <= 1; i++) {
                         match = hay === ndl && ["", hay];
-                        if (match) break;
+                        if (match)
+                            break;
                         const thisNeedleRegExp = new RegExp(`^(${ndl})$`, "iu");
                         match = hay.match(thisNeedleRegExp);
-                        if (match) break;
+                        if (match)
+                            break;
                         // Now strip all non-word characters and try again from the top.
                         ndl = ndl.replace(/\W+/gu, "");
                         hay = hay.replace(/\W+/gu, "");
@@ -1437,25 +1490,27 @@ const D = (() => {
     };
     const isIn = (needle, haystack, isExact = false) => {
         let dict;
-        if (isExact) return isInExact(needle, haystack);
+        if (isExact)
+            return isInExact(needle, haystack);
         if (!haystack) {
             dict = STATE.REF.STATSDICT;
         } else if (haystack.add) {
             dict = haystack;
         } else {
             dict = Fuzzy.Fix();
-            for (const str of haystack) dict.add(str);
+            for (const str of haystack)
+                dict.add(str);
         }
         const result = dict.get(needle);
         return result && result[0][1];
     };
-    const isID = testStr => typeof testStr === "string" && testStr.length === 20 && testStr.charAt(0) === "-";
+    const isID = (testStr) => typeof testStr === "string" && testStr.length === 20 && testStr.charAt(0) === "-";
     /* isntIn = (needle, haystack = ALLSTATS, isFuzzyMatching = true) => {
-            // Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. 
+            // Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack.
             try {
                 // STEP ZERO: VALIDATE NEEDLE & HAYSTACK
                       // NEEDLE --> Must be STRING
-                      // HAYSTACK --> Can be ARRAY, LIST or STRING 
+                      // HAYSTACK --> Can be ARRAY, LIST or STRING
                 if (VAL({string: needle}) || VAL({number: needle})) {
                     // STEP ONE: BUILD HAYSTACK.
                         // HAYSTACK = ARRAY? --> HAY = ARRAY
@@ -1463,7 +1518,7 @@ const D = (() => {
                         // HAYSTACK = STRING? -> HAY = H
                     const hayType = VAL({array: haystack}) && "array" ||
                                     VAL({list: haystack}) && "list" ||
-                                    VAL({string: haystack}) && "string"                                    
+                                    VAL({string: haystack}) && "string"
                     let ndl = needle.toString(),
                         hay, match
                     switch (hayType) {
@@ -1486,13 +1541,13 @@ const D = (() => {
                             // *END: Search for match with end of haystack strings, case insensitive.
                             // *INCLUDE: Search for match of needle anywhere in haystack strings, case insensitive.
                             // *REVERSE INCLUDE: Search for match of HAYSTACK strings inside needle, case insensitive.
-                            // FUZZY: Start again after stripping all non-word characters. 
+                            // FUZZY: Start again after stripping all non-word characters.
                     if (hayType === "array" || hayType === "list") {
                         for (let i = 0; i <= 1; i++) {
                             let thisNeedle = ndl,
                                 thisHay = hay
                             match = _.findIndex(thisHay, v => thisNeedle === v) + 1 // Adding 1 means "!match" passes on failure return of -1.
-                            if (match) break                            
+                            if (match) break
                             thisHay = _.map(thisHay, v => (v || v === 0) && (VAL({string: v}) || VAL({number: v}) ? v.toString().toLowerCase() : v) || "§¥£")
                             thisNeedle = thisNeedle.toString().toLowerCase()
                             match = _.findIndex(thisHay, v => thisNeedle === v) + 1
@@ -1523,22 +1578,22 @@ const D = (() => {
                             if (match) break
                             if (isFuzzyMatching) {
                                 thisNeedleRegExp = new RegExp(`^(${ndl})`, "iu")
-                                match = hay.match(thisNeedleRegExp) 
+                                match = hay.match(thisNeedleRegExp)
                             }
-                            if (match) break                            
+                            if (match) break
                             if (isFuzzyMatching) {
                                 thisNeedleRegExp = new RegExp(`(${ndl})$`, "iu")
-                                match = hay.match(thisNeedleRegExp) 
+                                match = hay.match(thisNeedleRegExp)
                             }
-                            if (match) break                           
+                            if (match) break
                             if (isFuzzyMatching) {
                                 thisNeedleRegExp = new RegExp(`(${ndl})`, "iu")
-                                match = hay.match(thisNeedleRegExp) 
+                                match = hay.match(thisNeedleRegExp)
                             }
-                            if (match) break                           
+                            if (match) break
                             if (isFuzzyMatching) {
                                 let thisHayRegExp = new RegExp(`(${hay})`, "iu")
-                                match = ndl.match(thisHayRegExp) 
+                                match = ndl.match(thisHayRegExp)
                             }
                             if (match) break
                             // Now strip all non-word characters and try again from the top.
@@ -1555,16 +1610,18 @@ const D = (() => {
         }, */
     const validate = (varList, funcName, scriptName, isArray = false) => {
         // NOTE: To avoid accidental recursion, DO NOT use validate to confirm a type within the getter of that type.
-        //		(E.g do not use VAL{char} inside any of the getChar() functions.)
+        //       (E.g do not use VAL{char} inside any of the getChar() functions.)
         const [errorLines, valArray, charArray] = [[], [], []];
         let detailsMsg;
-        if (_.isArray(funcName)) [funcName, detailsMsg] = funcName;
+        if (_.isArray(funcName))
+            [funcName, detailsMsg] = funcName;
         _.each(varList, (val, cat) => {
             valArray.length = 0;
             valArray.push(...(isArray ? val : [val]));
-            if (isArray && valArray.length === 0) errorLines.push("No values to check in array.");
+            if (isArray && valArray.length === 0)
+                errorLines.push("No values to check in array.");
             else
-                _.each(valArray, v => {
+                _.each(valArray, (v) => {
                     let errorCheck = null;
                     switch (cat.toLowerCase()) {
                         case "object":
@@ -1573,21 +1630,26 @@ const D = (() => {
                                 errorLines.push(`Invalid object: ${jStrL((v && v.get && v.get("name")) || (v && v.id) || v, true)}`);
                             break;
                         case "number": // If v starts with digits (returns true even if it's a string)
-                            if (_.isNaN(parseInt(v))) errorLines.push(`Invalid number: ${jStrL(v)}`);
+                            if (_.isNaN(parseInt(v)))
+                                errorLines.push(`Invalid number: ${jStrL(v)}`);
                             break;
                         case "string": // If
-                            if (!_.isString(v) && !_.isNumber(v)) errorLines.push(`Invalid string: ${jStrL(v)}`);
+                            if (!_.isString(v) && !_.isNumber(v))
+                                errorLines.push(`Invalid string: ${jStrL(v)}`);
                             break;
                         case "func":
                         case "function":
-                            if (!_.isFunction(v)) errorLines.push("Invalid function.");
+                            if (!_.isFunction(v))
+                                errorLines.push("Invalid function.");
                             break;
                         case "bool":
                         case "boolean":
-                            if (v !== true && v !== false) errorLines.push(`Invalid boolean: ${jStrL(v)}`);
+                            if (v !== true && v !== false)
+                                errorLines.push(`Invalid boolean: ${jStrL(v)}`);
                             break;
                         case "array":
-                            if (!_.isArray(v)) errorLines.push(`Invalid array: ${jStrL(v)}`);
+                            if (!_.isArray(v))
+                                errorLines.push(`Invalid array: ${jStrL(v)}`);
                             break;
                         case "list":
                             if (!_.isObject(v) || _.isFunction(v) || _.isArray(v) || (v && v.get && v.get("_type")))
@@ -1604,18 +1666,21 @@ const D = (() => {
                         case "msg":
                         case "selection":
                         case "selected":
-                            if (!v || !v.selected || !v.selected[0]) errorLines.push("Invalid selection: Select objects first!");
+                            if (!v || !v.selected || !v.selected[0])
+                                errorLines.push("Invalid selection: Select objects first!");
                             break;
                         case "char":
                         case "charref":
                             if (!getChar(v, true))
                                 errorLines.push(`Invalid character reference: ${jStrL((v && v.get && v.get("name")) || (v && v.id) || v, true)}`);
-                            else charArray.push(getChar(v, true));
+                            else
+                                charArray.push(getChar(v, true));
                             break;
                         case "charobj":
                             if (!v || !v.get || v.get("_type") !== "character")
                                 errorLines.push(`Invalid character object: ${jStrL((v && v.get && v.get("name")) || (v && v.id) || v, true)}`);
-                            else charArray.push(v);
+                            else
+                                charArray.push(v);
                             break;
                         case "playerchar":
                         case "playercharref":
@@ -1625,7 +1690,7 @@ const D = (() => {
                                 errorLines.push(`Invalid character reference: ${jStrL((v && v.get && v.get("name")) || (v && v.id) || v, true)}`);
                             else if (
                                 !_.values(Char.REGISTRY)
-                                    .map(x => x.id)
+                                    .map((x) => x.id)
                                     .includes(getChar(v, true).id)
                             )
                                 errorLines.push(
@@ -1640,7 +1705,7 @@ const D = (() => {
                                 errorLines.push(`Invalid character reference: ${jStrL((v && v.get && v.get("name")) || (v && v.id) || v, true)}`);
                             else if (
                                 _.values(Char.REGISTRY)
-                                    .map(x => x.id)
+                                    .map((x) => x.id)
                                     .includes(getChar(v, true).id)
                             )
                                 errorLines.push(
@@ -1700,8 +1765,9 @@ const D = (() => {
                         case "trait":
                             if (charArray.length) {
                                 errorCheck = [];
-                                _.each(charArray, charObj => {
-                                    if (!getStat(charObj, v, true)) errorCheck.push(charObj.get("name"));
+                                _.each(charArray, (charObj) => {
+                                    if (!getStat(charObj, v, true))
+                                        errorCheck.push(charObj.get("name"));
                                 });
                                 if (errorCheck.length)
                                     errorLines.push(
@@ -1717,11 +1783,14 @@ const D = (() => {
                             if (charArray.length) {
                                 errorCheck = [];
                                 let [section, rowID, statName] = [];
-                                if (_.isString(v) && v.match("^repeating_[^_]*?_[^_]*?_.+")) [section, rowID, statName] = parseRepStat(v);
-                                else [section, statName] = _.isString(v) ? v.split(":") : [];
+                                if (_.isString(v) && v.match("^repeating_[^_]*?_[^_]*?_.+"))
+                                    [section, rowID, statName] = parseRepStat(v);
+                                else
+                                    [section, statName] = _.isString(v) ? v.split(":") : [];
                                 if (statName) {
-                                    _.each(charArray, charObj => {
-                                        if (!getRepStat(charObj, section, rowID, statName, true)) errorCheck.push(charObj.get("name"));
+                                    _.each(charArray, (charObj) => {
+                                        if (!getRepStat(charObj, section, rowID, statName, true))
+                                            errorCheck.push(charObj.get("name"));
                                     });
                                     if (errorCheck.length)
                                         errorLines.push(
@@ -1749,7 +1818,8 @@ const D = (() => {
                 });
         });
         if (errorLines.length) {
-            if (!funcName || !scriptName) return false;
+            if (!funcName || !scriptName)
+                return false;
             if (detailsMsg)
                 return THROW(
                     `[From ${D.JSL(scriptName).toUpperCase()}:${D.JSL(funcName)}]<br><b>MSG</b>: ${detailsMsg}<br>... ${errorLines.join("<br>... ")}`,
@@ -1762,14 +1832,16 @@ const D = (() => {
     // #endregion
 
     // #region DEBUGGING & ERROR MANAGEMENT
-    const setWatchList = keywords => {
+    const setWatchList = (keywords) => {
         if (keywords === "clear") {
             STATE.REF.WATCHLIST = [];
         } else {
             const watchwords = _.flatten([keywords]);
-            _.each(watchwords, v => {
-                if (v.startsWith("!")) STATE.REF.WATCHLIST = _.without(STATE.REF.WATCHLIST, v.slice(1));
-                else STATE.REF.WATCHLIST = _.uniq([...STATE.REF.WATCHLIST, v]);
+            _.each(watchwords, (v) => {
+                if (v.startsWith("!"))
+                    STATE.REF.WATCHLIST = _.without(STATE.REF.WATCHLIST, v.slice(1));
+                else
+                    STATE.REF.WATCHLIST = _.uniq([...STATE.REF.WATCHLIST, v]);
             });
         }
         sendToGM(
@@ -1778,14 +1850,16 @@ const D = (() => {
         );
     };
     const getWatchList = () => sendToGM(`${jStr(STATE.REF.WATCHLIST)}`, "DEBUG WATCH LIST");
-    const setBlackList = keywords => {
+    const setBlackList = (keywords) => {
         if (keywords === "clear") {
             STATE.REF.BLACKLIST = [];
         } else {
             const watchwords = _.flatten([keywords]);
-            _.each(watchwords, v => {
-                if (v.startsWith("!")) STATE.REF.BLACKLIST = _.without(STATE.REF.BLACKLIST, v.slice(1));
-                else STATE.REF.BLACKLIST = _.uniq([...STATE.REF.BLACKLIST, v]);
+            _.each(watchwords, (v) => {
+                if (v.startsWith("!"))
+                    STATE.REF.BLACKLIST = _.without(STATE.REF.BLACKLIST, v.slice(1));
+                else
+                    STATE.REF.BLACKLIST = _.uniq([...STATE.REF.BLACKLIST, v]);
             });
         }
         sendToGM(
@@ -1804,14 +1878,15 @@ const D = (() => {
                     contents: msg
                 });
                 if (STATE.REF.DEBUGLOG.length > 100) {
-                    if (Handouts.Count("debug") > 20) Handouts.RemoveAll("... DBLog", "debug");
+                    if (Handouts.Count("debug") > 20)
+                        Handouts.RemoveAll("... DBLog", "debug");
                     getDebugRecord("... DBLog");
                 }
             }
             log(formatLogLine(msg, funcName, scriptName, prefix));
         }
     };
-    const logStackAlert = rawCode => {
+    const logStackAlert = (rawCode) => {
         if (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) {
             if (STACKLOG.length > 500)
                 if (Handouts.Count("stack") > 20) {
@@ -1823,13 +1898,12 @@ const D = (() => {
             STACKLOG.push(rawCode.replace(/ *\[as/gu, "").replace(/Object\./gu, ""));
         }
     };
-    const throwError = (msg, funcName, scriptName, errObj) =>
-        sendDebugAlert(
-            `${formatMsgContents(msg, false)}${errObj ? `${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}` : ""}`,
-            funcName,
-            scriptName,
-            "ERROR"
-        );
+    const throwError = (msg, funcName, scriptName, errObj) => sendDebugAlert(
+        `${formatMsgContents(msg, false)}${errObj ? `${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}` : ""}`,
+        funcName,
+        scriptName,
+        "ERROR"
+    );
     const sendDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
         if (
             (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) &&
@@ -1864,7 +1938,8 @@ const D = (() => {
                 logDate.setUTCHours(logDate.getUTCHours() - 4);
                 if (logDate.getUTCHours() >= 12) {
                     ampm = "P.M.";
-                    if (logDate.getUTCHours() > 12) logDate.setUTCHours(logDate.getUTCHours() - 12);
+                    if (logDate.getUTCHours() > 12)
+                        logDate.setUTCHours(logDate.getUTCHours() - 12);
                 }
                 logLines.push(
                     "</div>",
@@ -1873,7 +1948,8 @@ const D = (() => {
             }
             if (lastTitle === logData.title)
                 logLines.push(C.HANDOUTHTML.bodyParagraph(jStr(logData.contents), {"border-top": `1px solid ${C.COLORS.black}`}));
-            else logLines.push(C.HANDOUTHTML.bodyParagraph(C.HANDOUTHTML.subTitle(logData.title.replace("DB ", "")) + jStr(logData.contents)));
+            else
+                logLines.push(C.HANDOUTHTML.bodyParagraph(C.HANDOUTHTML.subTitle(logData.title.replace("DB ", "")) + jStr(logData.contents)));
             lastTimeStamp = logData.timeStamp;
             lastTitle = logData.title;
         }
@@ -1913,7 +1989,8 @@ const D = (() => {
     const traceFuncStart = (funcName, funcParams, scriptName, message) => {
         if (ISTRACING) {
             funcParams = funcParams.length === 0 ? ["none"] : funcParams;
-            if (STATE.REF.TRACESTARTTIME === 0) STATE.REF.TRACESTARTTIME = Date.now();
+            if (STATE.REF.TRACESTARTTIME === 0)
+                STATE.REF.TRACESTARTTIME = Date.now();
             // if (Date.now() - STATE.REF.TRACELASTTIME <= 5) {
             //    STATE.REF.TRACELASTTIME = Date.now()
             //    return false
@@ -1923,7 +2000,7 @@ const D = (() => {
                 funcID,
                 `${scriptName.toUpperCase()}.${funcName}`,
                 funcParams
-                    .map(x => `'${JSON.stringify(x)}'`)
+                    .map((x) => `'${JSON.stringify(x)}'`)
                     .join("▐ ")
                     .replace(/,/gu, "¸"),
                 STATE.REF.TRACENESTCOUNTER,
@@ -1949,7 +2026,7 @@ const D = (() => {
     // #region GETTERS: Object, Character and Player Data
     const getGMID = () => {
         /* Finds the first player who is GM. */
-        const gmObj = _.find(findObjs({_type: "player"}), v => playerIsGM(v.id));
+        const gmObj = _.find(findObjs({_type: "player"}), (v) => playerIsGM(v.id));
         return gmObj ? gmObj.id : THROW("No GM found.", "getGMID");
     };
     const getSelected = (msg, typeFilter = []) => {
@@ -1960,19 +2037,23 @@ const D = (() => {
         const selObjs = new Set();
         const types = _.flatten([typeFilter]);
         if (VAL({selection: msg}))
-            _.each(_.compact(msg.selected), v => {
-                if (types.length === 0 || types.includes(v._type)) selObjs.add(getObj(v._type, v._id));
+            _.each(_.compact(msg.selected), (v) => {
+                if (types.length === 0 || types.includes(v._type))
+                    selObjs.add(getObj(v._type, v._id));
                 else if (v._type === "graphic" && VAL({token: getObj("graphic", v._id)}))
-                    if (types.includes("token")) selObjs.add(getObj("graphic", v.id));
+                    if (types.includes("token"))
+                        selObjs.add(getObj("graphic", v.id));
                     else if ((types.includes("char") || types.includes("character")) && VAL({char: getObj("graphic", v._id)}))
                         selObjs.add(getObj("character", getObj("graphic", v._id).get("represents")));
             });
-        if (selObjs.size === 0) THROW(`None of the selected objects are of type(s) '${jStrL(types)}'`, "getSelected");
+        if (selObjs.size === 0)
+            THROW(`None of the selected objects are of type(s) '${jStrL(types)}'`, "getSelected");
         return [...selObjs];
     };
     const refreshShortNames = () => {
         STATE.REF.shortNames = [];
-        for (const charObj of getChars("all")) STATE.REF.shortNames.push(getName(charObj, true));
+        for (const charObj of getChars("all"))
+            STATE.REF.shortNames.push(getName(charObj, true));
     };
     const getName = (value, isShort = false) => {
         // Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
@@ -1984,10 +2065,10 @@ const D = (() => {
         const name = (VAL({player: obj}) && obj.get("_displayname")) || (VAL({object: obj}, "getName") && obj.get("name"));
         if (VAL({object: obj, string: name}, "getName")) {
             if (isShort) {
-                if (_.find(_.values(Char.REGISTRY), v => v.name === name))
+                if (_.find(_.values(Char.REGISTRY), (v) => v.name === name))
                     // If this is a registered character, return its short name.
-                    return _.find(_.values(Char.REGISTRY), v => v.name === name).shortName;
-                if (name.includes('"'))
+                    return _.find(_.values(Char.REGISTRY), (v) => v.name === name).shortName;
+                if (name.includes("\""))
                     // If name contains quotes, remove everything except the quoted portion of the name.
                     return name.replace(/.*?["]/iu, "").replace(/["].*/iu, "");
                 return name
@@ -2006,11 +2087,12 @@ const D = (() => {
         let [searchParams, dbstring] = [[], ""];
         try {
             if (charRef.who) {
-                _.each(getSelected(charRef, "character"), charObj => {
+                _.each(getSelected(charRef, "character"), (charObj) => {
                     charObjs.add(charObj);
                 });
                 dbstring += `REF: Msg.  RETURNING: ${jStrL(...charObjs)}`;
-                if (charObjs.size > 0) return [...(charObjs || [])];
+                if (charObjs.size > 0)
+                    return [...(charObjs || [])];
                 return (VAL({string: funcName}) && THROW("Must Select a Token!", `${D.JSL(funcName)} > getChars`)) || [];
             } else if (VAL({array: charRef})) {
                 searchParams = charRef;
@@ -2024,8 +2106,9 @@ const D = (() => {
         } catch (errObj) {
             return (VAL({string: funcName}) && THROW("", `${D.JSL(funcName)} > getChars`, errObj)) || [];
         }
-        _.each(searchParams, v => {
-            if (searchParams.length > 1) dbstring += "<br>";
+        _.each(searchParams, (v) => {
+            if (searchParams.length > 1)
+                dbstring += "<br>";
             // If parameter is a digit corresponding to a REGISTERED CHARACTER:
             if (VAL({string: v}) && ["TopLeft", "BotLeft", "TopRight", "BotRight"].includes(v) && Char.REGISTRY[v] && Char.REGISTRY[v].id) {
                 charObjs.add(getObj("character", Char.REGISTRY[v].id));
@@ -2039,12 +2122,12 @@ const D = (() => {
                 charObjs.add(getObj("character", v));
                 dbstring += " ... CharID: ";
                 // If parameter is a (NON-GM) PLAYER OBJECT:
-            } else if (VAL({object: v}) && v.id !== getGMID() && _.findKey(Char.REGISTRY, vv => vv.playerID === v.id)) {
-                charObjs.add(getObj("character", Char.REGISTRY[_.findKey(Char.REGISTRY, vv => vv.playerID === v)].id));
+            } else if (VAL({object: v}) && v.id !== getGMID() && _.findKey(Char.REGISTRY, (vv) => vv.playerID === v.id)) {
+                charObjs.add(getObj("character", Char.REGISTRY[_.findKey(Char.REGISTRY, (vv) => vv.playerID === v)].id));
                 dbstring += " ... CharID: ";
                 // If parameters is a REGISTERED PLAYER ID:
-            } else if (VAL({string: v}) && v !== getGMID() && _.findKey(Char.REGISTRY, vv => vv.playerID === v)) {
-                charObjs.add(getObj("character", Char.REGISTRY[_.findKey(Char.REGISTRY, vv => vv.playerID === v)].id));
+            } else if (VAL({string: v}) && v !== getGMID() && _.findKey(Char.REGISTRY, (vv) => vv.playerID === v)) {
+                charObjs.add(getObj("character", Char.REGISTRY[_.findKey(Char.REGISTRY, (vv) => vv.playerID === v)].id));
                 dbstring += " ... CharID: ";
                 // If parameters is a TOKEN OBJECT:
             } else if (VAL({token: v}) && getObj("character", v.get("represents"))) {
@@ -2053,55 +2136,62 @@ const D = (() => {
             } else if (VAL({string: v})) {
                 // If parameter is "all":
                 if (v.toLowerCase() === "all") {
-                    _.each(findObjs({_type: "character"}), char => charObjs.add(char));
+                    _.each(findObjs({_type: "character"}), (char) => charObjs.add(char));
                     dbstring += ` ... "${jStrL(v)}": `;
                     // If parameter calls for REGISTERED CHARACTERS or PC CHARACTERS:
                 } else if (["registered", "pc", "pcs"].includes(v.toLowerCase())) {
-                    for (const [, charData] of Object.entries(Char.REGISTRY)) if (charData.isActive) charObjs.add(getObj("character", charData.id));
+                    for (const [, charData] of Object.entries(Char.REGISTRY))
+                        if (charData.isActive)
+                            charObjs.add(getObj("character", charData.id));
                     dbstring += ` ... "${jStrL(v)}": `;
                 } else if (v.toLowerCase() === "disabled") {
-                    for (const [, charData] of Object.entries(Char.REGISTRY)) if (!charData.isActive) charObjs.add(getObj("character", charData.id));
+                    for (const [, charData] of Object.entries(Char.REGISTRY))
+                        if (!charData.isActive)
+                            charObjs.add(getObj("character", charData.id));
                     dbstring += ` ... "${jStrL(v)}": `;
                 } else if (["allregistered", "allreg", "allpcs"].includes(v.toLowerCase())) {
-                    for (const [, charData] of Object.entries(Char.REGISTRY)) charObjs.add(getObj("character", charData.id));
+                    for (const [, charData] of Object.entries(Char.REGISTRY))
+                        charObjs.add(getObj("character", charData.id));
                     dbstring += ` ... "${jStrL(v)}": `;
                 } else if (["npc", "npcs"].includes(v.toLowerCase())) {
                     _.each(
                         findObjs({_type: "character"}).filter(
-                            x =>
-                                !Object.values(Char.REGISTRY)
-                                    .map(xx => xx.id)
-                                    .includes(x.id)
+                            (x) => !Object.values(Char.REGISTRY)
+                                .map((xx) => xx.id)
+                                .includes(x.id)
                         ),
-                        charObj => charObjs.add(charObj)
+                        (charObj) => charObjs.add(charObj)
                     );
                     dbstring += ` ... "${jStrL(v)}": `;
                     // If parameter is "sandbox", calls for all characters with tokens in the sandbox (do player characters first)
                 } else if (v.toLowerCase() === "sandbox") {
-                    _.each(Media.GetContainedChars("Horizon", {padding: 50}), vv => charObjs.add(vv));
+                    _.each(Media.GetContainedChars("Horizon", {padding: 50}), (vv) => charObjs.add(vv));
                     dbstring += ` ... "${jStrL(v)}": `;
                     // If parameter is "scene", it calls for all characters with tokens on or in the focused location card(s).
                 } else if (v.toLowerCase() === "scene") {
-                    _.each(Session.SceneChars, vv => charObjs.add(vv));
+                    _.each(Session.SceneChars, (vv) => charObjs.add(vv));
                     dbstring += ` ... "${jStrL(v)}": `;
                     // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
-                } else if (v.length === 1 && _.find(Char.REGISTRY, data => data.initial.toLowerCase() === v.toLowerCase())) {
-                    const charData = _.find(Char.REGISTRY, data => data.initial.toLowerCase() === v.toLowerCase());
-                    if (charData) charObjs.add(getObj("character", charData.id));
+                } else if (v.length === 1 && _.find(Char.REGISTRY, (data) => data.initial.toLowerCase() === v.toLowerCase())) {
+                    const charData = _.find(Char.REGISTRY, (data) => data.initial.toLowerCase() === v.toLowerCase());
+                    if (charData)
+                        charObjs.add(getObj("character", charData.id));
                     dbstring += ` ... "${jStrL(v)}": `;
                     // If parameter is a STRING, assume it is a character name to fuzzy-match UNLESS isStrict is true.
                 } else {
-                    const charName = isFuzzyMatching
-                        ? D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCDICT, false)
-                        : D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCLIST, true);
+                    const charName = isFuzzyMatching ?
+                        D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCDICT, false) :
+                        D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCLIST, true);
                     const charObj = charName && (findObjs({_type: "character", name: charName}) || [])[0];
-                    if (charObj) charObjs.add(charObj);
+                    if (charObj)
+                        charObjs.add(charObj);
                     dbstring += " ... String: ";
                 }
             }
             dbstring += `${charObjs.size} Characters Found.`;
         });
-        if (!STATE.REF.BLACKLIST.includes("getChars")) DB(dbstring, "getChars");
+        if (!STATE.REF.BLACKLIST.includes("getChars"))
+            DB(dbstring, "getChars");
         if (charObjs.size === 0)
             return (
                 (VAL({string: funcName}) &&
@@ -2114,9 +2204,10 @@ const D = (() => {
         return _.compact([...(charObjs || [])]);
     };
     const getChar = (charRef, funcName = false) => Char.SelectedChar || (getChars(charRef, funcName) || [false])[0];
-    const getCharData = charRef => {
+    const getCharData = (charRef) => {
         const charObj = getChar(charRef);
-        if (VAL({playerchar: charObj}, "getCharData")) return _.find(_.values(Char.REGISTRY), v => v.id === charObj.id);
+        if (VAL({playerchar: charObj}, "getCharData"))
+            return _.find(_.values(Char.REGISTRY), (v) => v.id === charObj.id);
         else if (VAL({npc: charObj}, "getCharData"))
             return {
                 id: charObj.id,
@@ -2133,7 +2224,8 @@ const D = (() => {
     const getCharsProps = (charRefs, property, funcName = false) => {
         const charObjs = getChars(charRefs, funcName);
         const propData = {};
-        for (const char of charObjs) propData[char.id] = getCharData(char, funcName)[property];
+        for (const char of charObjs)
+            propData[char.id] = getCharData(char, funcName)[property];
         return propData;
     };
     const getStat = (charRef, statName, funcName = false) => {
@@ -2146,22 +2238,22 @@ const D = (() => {
             // STEP ONE: LOOK THROUGH NON-REPEATING ATTRIBUTES:
             const attrObjs = _.filter(
                 findObjs({_type: "attribute", _characterid: charObj.id}),
-                v => !v.get("name").includes("repeating") || stat.includes("repeating")
+                (v) => !v.get("name").includes("repeating") || stat.includes("repeating")
             ); // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
             // D.Alert(`All Attr Objs: ${D.JS(_.map(allAttrObjs, v => v.get("name")))}<br><br>Filtered Attr Objs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
-            attrValueObj = _.find(attrObjs, v => v.get("name").toLowerCase() === stat.toLowerCase());
+            attrValueObj = _.find(attrObjs, (v) => v.get("name").toLowerCase() === stat.toLowerCase());
 
             // STEP TWO: LOOK THROUGH NON-REPEATING ATTRIBUTES FOR NAME/VAL PAIRS (e.g. "disc1_name, disc1")
             if (!attrValueObj) {
                 const attrNameObj = _.find(
                     attrObjs,
-                    v =>
-                        v
-                            .get("name")
-                            .toLowerCase()
-                            .endsWith("_name") && v.get("current").toLowerCase() === stat.toLowerCase()
+                    (v) => v
+                        .get("name")
+                        .toLowerCase()
+                        .endsWith("_name") && v.get("current").toLowerCase() === stat.toLowerCase()
                 );
-                if (attrNameObj) attrValueObj = _.find(attrObjs, v => v.get("name") === attrNameObj.get("name").slice(0, -5));
+                if (attrNameObj)
+                    attrValueObj = _.find(attrObjs, (v) => v.get("name") === attrNameObj.get("name").slice(0, -5));
             }
 
             // STEP THREE: LOOK THROUGH REPEATING ATTRIBUTES IN C.TRAITREPSECS = ["advantage", "negadvantage", "discleft", "discmid", "discright"]
@@ -2169,11 +2261,13 @@ const D = (() => {
                 for (const repSec of C.TRAITREPSECS) {
                     const repValData = getRepStats(charObj, repSec, null, stat);
                     attrValueObj = repValData && repValData[0] && repValData[0].obj;
-                    if (attrValueObj) break;
+                    if (attrValueObj)
+                        break;
                 }
             if (attrValueObj) {
                 attrValue = attrValueObj.get(isGettingMax ? "max" : "current");
-                if (!_.isNaN(parseInt(attrValue))) attrValue = parseInt(attrValue);
+                if (!_.isNaN(parseInt(attrValue)))
+                    attrValue = parseInt(attrValue);
             }
 
             DB(
@@ -2192,20 +2286,18 @@ const D = (() => {
         // rowRef: rowID (string), stat:value (list, with special "name" entry for shortname), array of either (array), or null (all)
         DB(`GetRepIDs(${jStrL(charRef, true)}, ${section}, ${jStrL(rowFilter)})`, "getRepIDs");
         const charObj = getChar(charRef, funcName);
-        const getUniqIDs = attrObjs => _.uniq(_.map(attrObjs, v => v.get("name").match("repeating_[^_]*?_(.*?)_")[1]));
+        const getUniqIDs = (attrObjs) => _.uniq(_.map(attrObjs, (v) => v.get("name").match("repeating_[^_]*?_(.*?)_")[1]));
         let validRowIDs = [],
             dbstring = "";
         if (VAL({char: charObj, string: section}, "getRepIDs")) {
-            const attrObjs = _.filter(findObjs({_type: "attribute", _characterid: charObj.id}), v =>
-                v
-                    .get("name")
-                    .toLowerCase()
-                    .startsWith(section === "*" ? "repeating_" : `repeating_${section.toLowerCase()}_`)
-            );
+            const attrObjs = _.filter(findObjs({_type: "attribute", _characterid: charObj.id}), (v) => v
+                .get("name")
+                .toLowerCase()
+                .startsWith(section === "*" ? "repeating_" : `repeating_${section.toLowerCase()}_`));
             // D.Alert(`attrObjs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
             const rowIDs = getUniqIDs(attrObjs);
             DB(
-                `attrObjsInSection: ${jStrL(_.map(attrObjs, v => parseRepStat(v.get("name"))[2]))}<br><br>rowIDsInSection: ${jStrL(rowIDs)}`,
+                `attrObjsInSection: ${jStrL(_.map(attrObjs, (v) => parseRepStat(v.get("name"))[2]))}<br><br>rowIDsInSection: ${jStrL(rowIDs)}`,
                 "getRepIDs"
             );
             if (VAL({string: rowFilter})) {
@@ -2214,14 +2306,14 @@ const D = (() => {
                     return [
                         _.find(
                             rowIDs,
-                            v => v.toLowerCase() === (getStatVal(charObj, `_reporder_repeating_${section}`) || "").split(",")[0].toLowerCase()
+                            (v) => v.toLowerCase() === (getStatVal(charObj, `_reporder_repeating_${section}`) || "").split(",")[0].toLowerCase()
                         )
                     ];
                 DB(
-                    `RowRef: STRING (${rowFilter}).  Valid Row IDs: ${jStrL(_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase()))}`,
+                    `RowRef: STRING (${rowFilter}).  Valid Row IDs: ${jStrL(_.find(rowIDs, (v) => v.toLowerCase() === rowFilter.toLowerCase()))}`,
                     "getRepIDs"
                 );
-                return [_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase())];
+                return [_.find(rowIDs, (v) => v.toLowerCase() === rowFilter.toLowerCase())];
             } else if (VAL({list: rowFilter})) {
                 // RowRef is a key/value list of stat name and value to filter by. Only row IDs referring to ALL matching key/value pairs will be returned.
                 // If value === "*", any value is accepted (only checks for presence of stat name)
@@ -2232,23 +2324,21 @@ const D = (() => {
                     DB(`RowData: ${key}, ${val}`, "getRepIDs");
                     // Check each row against this filter element: Must satisfy, or remove from validRowIDs
                     for (const rowID of [...validRowIDs]) {
-                        const attrObjsInRow = _.filter(attrObjs, v =>
-                            v
-                                .get("name")
-                                .toLowerCase()
-                                .includes(rowID.toLowerCase())
-                        );
+                        const attrObjsInRow = _.filter(attrObjs, (v) => v
+                            .get("name")
+                            .toLowerCase()
+                            .includes(rowID.toLowerCase()));
                         dbstring += `RowID: ${rowID}`;
                         if (
                             !_.find(
                                 attrObjsInRow,
-                                v => fuzzyMatch(v.get("name"), key) && (val === "*" || looseMatch(v.get("current").toString(), val.toString()))
+                                (v) => fuzzyMatch(v.get("name"), key) && (val === "*" || looseMatch(v.get("current").toString(), val.toString()))
                             )
                         ) {
                             // If no direct match is found, check if the row contains a "_name" attribute that matches the key.
                             const nameAttrObj = _.find(
                                 attrObjsInRow,
-                                v => v.get("name").endsWith("_name") && looseMatch(v.get("current").toString(), key.toString())
+                                (v) => v.get("name").endsWith("_name") && looseMatch(v.get("current").toString(), key.toString())
                             );
                             dbstring += " -- No Direct Match.";
                             // If _name attribute exists, now find corresponding non-name attribute and compare its value to val.
@@ -2257,8 +2347,7 @@ const D = (() => {
                                 if (
                                     !_.find(
                                         attrObjsInRow,
-                                        v =>
-                                            looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5)) &&
+                                        (v) => looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5)) &&
                                             (val === "*" || looseMatch(v.get("current").toString(), val.toString()))
                                     )
                                 ) {
@@ -2268,8 +2357,7 @@ const D = (() => {
                                 } else {
                                     const obj = _.find(
                                         attrObjsInRow,
-                                        v =>
-                                            looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5)) &&
+                                        (v) => looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5)) &&
                                             (val === "*" || looseMatch(v.get("current").toString(), val.toString()))
                                     );
                                     dbstring += `. . .  NAME+VALUE MATCH: VAL[${val}] = ${obj.get("current")}, VALNAME[${
@@ -2283,7 +2371,7 @@ const D = (() => {
                         } else {
                             const matchedAttr = _.find(
                                 attrObjsInRow,
-                                v => fuzzyMatch(v.get("name"), key) && (val === "*" || looseMatch(v.get("current").toString(), val.toString()))
+                                (v) => fuzzyMatch(v.get("name"), key) && (val === "*" || looseMatch(v.get("current").toString(), val.toString()))
                             );
                             dbstring += ` -- DIRECT MATCH! ${matchedAttr.get("name")}: ${matchedAttr.get("current")}`;
                         }
@@ -2293,7 +2381,8 @@ const D = (() => {
                 }
             } else if (VAL({array: rowFilter})) {
                 // RowRef is an array of nested rowrefs, requiring recursion.
-                for (const ref of rowFilter) validRowIDs.push(...getRepIDs(charRef, section, ref, funcName));
+                for (const ref of rowFilter)
+                    validRowIDs.push(...getRepIDs(charRef, section, ref, funcName));
             } else if (!rowFilter) {
                 // No rowRef means the IDs of all section rows are returned.
                 validRowIDs.push(...rowIDs);
@@ -2312,31 +2401,27 @@ const D = (() => {
             const filter = VAL({string: statName, list: rowFilter}) ? Object.assign({[statName]: "*"}, rowFilter) : rowFilter;
             const rowIDs = _.compact(getRepIDs(charObj, section, filter, funcName));
             const attrObjs = [];
-            if (filter === "top" && !rowIDs.length) rowIDs.push(..._.compact(getRepIDs(charObj, section, null, funcName)));
+            if (filter === "top" && !rowIDs.length)
+                rowIDs.push(..._.compact(getRepIDs(charObj, section, null, funcName)));
             attrObjs.push(
                 ..._.filter(
                     findObjs({_type: "attribute", _characterid: charObj.id}),
-                    v =>
-                        v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`) &&
+                    (v) => v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`) &&
                         rowIDs.includes(v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)[1])
                 )
             );
             // STEP TWO: ITERATE THROUGH EACH ROW TO LOOK FOR REQUESTED STAT(S)
             for (const rowID of rowIDs) {
-                const rowAttrObjs = _.filter(attrObjs, v =>
-                    v
-                        .get("name")
-                        .toLowerCase()
-                        .includes(rowID.toLowerCase())
-                ); // Select the attribute objects from this row.
-                const attrNameObjs = _.filter(rowAttrObjs, v =>
-                    v
-                        .get("name")
-                        .toLowerCase()
-                        .endsWith("_name")
-                ); // Select ALL row attribute objects that end with "_name"
+                const rowAttrObjs = _.filter(attrObjs, (v) => v
+                    .get("name")
+                    .toLowerCase()
+                    .includes(rowID.toLowerCase())); // Select the attribute objects from this row.
+                const attrNameObjs = _.filter(rowAttrObjs, (v) => v
+                    .get("name")
+                    .toLowerCase()
+                    .endsWith("_name")); // Select ALL row attribute objects that end with "_name"
                 const attrNameData = _.compact(
-                    _.map(attrNameObjs, v => {
+                    _.map(attrNameObjs, (v) => {
                         // ... and compile their data by linking them to their value objects.
                         const data = {
                             charID: charObj.id,
@@ -2345,8 +2430,7 @@ const D = (() => {
                             fullName: v.get("name").replace(/_name$/gu, ""),
                             obj: _.find(
                                 rowAttrObjs,
-                                vv =>
-                                    vv.get("name").toLowerCase() ===
+                                (vv) => vv.get("name").toLowerCase() ===
                                     v
                                         .get("name")
                                         .toLowerCase()
@@ -2366,26 +2450,26 @@ const D = (() => {
                 // IF a STATNAME has been specified...
                 if (statName) {
                     const foundStat =
-                        _.find(attrNameData, v => looseMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) || // FIRST match it against an EXACT ATTRIBUTE NAME already found above.
-                        _.find(attrNameData, v => looseMatch(parseRepStat(v.name)[2], statName)) || // SECOND try to match with the EXACT "FOUND" NAME of a NAME/VALUE link.
-                        _.find(rowAttrObjs, v => looseMatch(parseRepStat(v.get("name"))[2], statName)) || // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
-                        _.find(attrNameData, v => fuzzyMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) || // FINALLY repeat the above but with fuzzy matching. match it against an EXACT ATTRIBUTE NAME already found above.
-                        _.find(attrNameData, v => fuzzyMatch(parseRepStat(v.name)[2], statName)) ||
-                        _.find(rowAttrObjs, v => fuzzyMatch(parseRepStat(v.get("name"))[2], statName));
+                        _.find(attrNameData, (v) => looseMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) || // FIRST match it against an EXACT ATTRIBUTE NAME already found above.
+                        _.find(attrNameData, (v) => looseMatch(parseRepStat(v.name)[2], statName)) || // SECOND try to match with the EXACT "FOUND" NAME of a NAME/VALUE link.
+                        _.find(rowAttrObjs, (v) => looseMatch(parseRepStat(v.get("name"))[2], statName)) || // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
+                        _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) || // FINALLY repeat the above but with fuzzy matching. match it against an EXACT ATTRIBUTE NAME already found above.
+                        _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.name)[2], statName)) ||
+                        _.find(rowAttrObjs, (v) => fuzzyMatch(parseRepStat(v.get("name"))[2], statName));
                     if (foundStat) {
                         // If a stat was found, change it to a data set if it isn't one already
                         finalRepData.push(
-                            foundStat.fullName
-                                ? foundStat
-                                : {
-                                      charID: charObj.id,
-                                      rowID,
-                                      name: parseRepStat(foundStat.get("name"))[2],
-                                      attrName: parseRepStat(foundStat.get("name"))[2],
-                                      fullName: foundStat.get("name"),
-                                      obj: foundStat,
-                                      val: foundStat.get("current")
-                                  }
+                            foundStat.fullName ?
+                                foundStat :
+                                {
+                                    charID: charObj.id,
+                                    rowID,
+                                    name: parseRepStat(foundStat.get("name"))[2],
+                                    attrName: parseRepStat(foundStat.get("name"))[2],
+                                    fullName: foundStat.get("name"),
+                                    obj: foundStat,
+                                    val: foundStat.get("current")
+                                }
                         );
                         DB(`FinalRepData: ${D.JSL(finalRepData, true)}`, "getRepStats");
                     }
@@ -2393,7 +2477,7 @@ const D = (() => {
                 } else {
                     finalRepData.push(...attrNameData);
                     finalRepData.push(
-                        ..._.map(rowAttrObjs, v => ({
+                        ..._.map(rowAttrObjs, (v) => ({
                             charID: charObj.id,
                             rowID,
                             name: parseRepStat(v.get("name"))[2],
@@ -2409,22 +2493,21 @@ const D = (() => {
             finalRepData = _.compact(finalRepData);
             // Check for grouping and property-picking, and transform the data accordingly:
             if (VAL({string: groupBy}) && ["rowID", "fullName", "attrName", "name", "val"].includes(groupBy)) {
-                finalRepData = _.groupBy(finalRepData, v => v[groupBy]);
+                finalRepData = _.groupBy(finalRepData, (v) => v[groupBy]);
                 if (VAL({string: pickProperty}) && ["fullName", "attrName", "name", "obj", "val"].includes(pickProperty)) {
                     const pickData = {};
                     _.each(finalRepData, (v, k) => {
-                        pickData[k] = _.map(v, vv => vv[pickProperty]);
+                        pickData[k] = _.map(v, (vv) => vv[pickProperty]);
                     });
                     finalRepData = pickData;
                 }
             } else if (VAL({string: pickProperty}) && ["fullName", "attrName", "name", "obj", "val"].includes(pickProperty)) {
-                finalRepData = _.map(finalRepData, v => v[pickProperty]);
+                finalRepData = _.map(finalRepData, (v) => v[pickProperty]);
             }
         }
         return finalRepData;
     };
-    const getRepStat = (charRef, section, rowFilter, statName, funcName = false) =>
-        getRepStats(charRef, section, rowFilter, statName, null, null, funcName)[0];
+    const getRepStat = (charRef, section, rowFilter, statName, funcName = false) => getRepStats(charRef, section, rowFilter, statName, null, null, funcName)[0];
     const getPlayerID = (playerRef, funcName = false) => {
         // Returns a PLAYER ID given: display name, token object, character reference.
         let playerID = null;
@@ -2534,7 +2617,7 @@ const D = (() => {
                 [playerID] = charObj
                     .get("controlledby")
                     .split(",")
-                    .filter(x => !["all", "", getGMID()].includes(x));
+                    .filter((x) => !["all", "", getGMID()].includes(x));
                 DB(`PlayerRef identified as Character Object: ${D.JSL(charObj.get("name"))}... "controlledby": ${D.JSL(playerID)}`, "getPlayerID");
                 return playerID || getGMID();
             }
@@ -2554,7 +2637,8 @@ const D = (() => {
     };
     const getPlayer = (playerRef, funcName = false) => {
         const playerID = getPlayerID(playerRef, true);
-        if (VAL({string: playerID}) && VAL({object: getObj("player", playerID)})) return getObj("player", playerID);
+        if (VAL({string: playerID}) && VAL({object: getObj("player", playerID)}))
+            return getObj("player", playerID);
         else
             DB(
                 `Searching for Player with Player Ref: ${playerRef}
@@ -2573,7 +2657,8 @@ const D = (() => {
     // #region SETTERS: Attributes
     const setStats = (charRef, statList) => {
         const charObj = getChar(charRef);
-        if (VAL({charObj, list: statList}, "setStats")) setAttrs(charObj.id, statList);
+        if (VAL({charObj, list: statList}, "setStats"))
+            setAttrs(charObj.id, statList);
     };
     const setStat = (charRef, statName, statValue) => setStats(charRef, {[statName]: statValue});
     const setRepStats = (charRef, section, rowID, statList, funcName = false) => {
@@ -2586,8 +2671,7 @@ const D = (() => {
             setAttrs(charObj.id, attrList);
         }
     };
-    const setRepStat = (charRef, section, rowID, statName, statValue, funcName = false) =>
-        setRepStats(charRef, section, rowID, {[statName]: statValue}, funcName);
+    const setRepStat = (charRef, section, rowID, statName, statValue, funcName = false) => setRepStats(charRef, section, rowID, {[statName]: statValue}, funcName);
     const setCharData = (charRef, key, val) => {
         const {quadrant} = getCharData(charRef);
         state.VAMPIRE.Char.registry[quadrant][key] = val;
@@ -2595,7 +2679,7 @@ const D = (() => {
     // #endregion
 
     // #region Repeating Section Manipulation
-    const parseRepStat = repRef => {
+    const parseRepStat = (repRef) => {
         const repStatName = VAL({object: repRef}) ? repRef.get("name") : repRef;
         if (VAL({repname: repStatName})) {
             const nameParts = repStatName.split("_");
@@ -2621,12 +2705,15 @@ const D = (() => {
             }
             IDc = IDe.join("");
             if (IDd) {
-                for (IDf = 11; IDf >= 0 && IDb[IDf] === 63; IDf--) IDb[IDf] = 0;
+                for (IDf = 11; IDf >= 0 && IDb[IDf] === 63; IDf--)
+                    IDb[IDf] = 0;
                 IDb[IDf]++;
             } else {
-                for (IDf = 0; IDf < 12; IDf++) IDb[IDf] = Math.floor(64 * Math.random());
+                for (IDf = 0; IDf < 12; IDf++)
+                    IDb[IDf] = Math.floor(64 * Math.random());
             }
-            for (IDf = 0; IDf < 12; IDf++) IDc += characters.charAt(IDb[IDf]);
+            for (IDf = 0; IDf < 12; IDf++)
+                IDc += characters.charAt(IDb[IDf]);
 
             return IDc;
         })();
@@ -2661,8 +2748,9 @@ const D = (() => {
         if (VAL({char: [charRef], string: [secName, rowID]}, "deleteRepRow", true)) {
             const attrObjs = getRepStats(charRef, secName, rowID, null, null, "obj");
             DB(`AttrObjs to Delete: ${jStrL(attrObjs, true)}`, "deleteRepRow");
-            if (attrObjs.length === 0) return THROW(`No row "repeating_${secName}_${rowID}" to delete for ${D.GetName(charRef)}.`, "deleteRepRow");
-            _.each(attrObjs, v => v.remove());
+            if (attrObjs.length === 0)
+                return THROW(`No row "repeating_${secName}_${rowID}" to delete for ${D.GetName(charRef)}.`, "deleteRepRow");
+            _.each(attrObjs, (v) => v.remove());
             return true;
         }
         return false;
@@ -2671,7 +2759,7 @@ const D = (() => {
         const attrList = kvpMap(
             getRepStats(charRef, sourceSec, sourceRowID),
             (k, v) => v.name,
-            v => v.val
+            (v) => v.val
         );
         DB(
             `CharRef: ${D.JSL(charRef)}, SourceSec: ${sourceSec}, RowID: ${sourceRowID}, TargetSec: ${targetSec}<br>... AttrList: ${D.JSL(
@@ -2683,7 +2771,7 @@ const D = (() => {
         makeRepRow(charRef, targetSec, attrList);
         deleteRepRow(charRef, sourceSec, sourceRowID);
     };
-    const sortRepSec = (charRef, secName, sortTrait, isDescending = false, transformFunc = v => v) => {
+    const sortRepSec = (charRef, secName, sortTrait, isDescending = false, transformFunc = (v) => v) => {
         const rowIDs = getRepIDs(charRef, secName);
         const rowData = [];
         // let dbString = ""
@@ -2691,17 +2779,20 @@ const D = (() => {
             // dbString += `<br><br><b>${rowID}</b><br>`
             const rowAttrData = getRepStats(charRef, secName, rowID);
             const theseVals = {rowID};
-            for (const statData of rowAttrData) theseVals[statData.attrName] = statData.val;
+            for (const statData of rowAttrData)
+                theseVals[statData.attrName] = statData.val;
             // dbString += `... ${D.JS(statData.attrName, true)}: ${D.JS(theseVals[statData.attrName])}<br>`
             theseVals.SORTER = transformFunc(theseVals[sortTrait]);
             // dbString += `... SORTER: ${D.JS(theseVals.SORTER)}<br>`
             rowData.push(theseVals);
         }
-        for (const rowID of rowIDs) deleteRepRow(charRef, secName, rowID);
+        for (const rowID of rowIDs)
+            deleteRepRow(charRef, secName, rowID);
         // D.Alert(dbString, "sortRepSec")
         // D.Alert(D.JS(rowData, true), "sortRepSec")
         const sortedData = _.sortBy(rowData, "SORTER");
-        if (isDescending) sortedData.reverse();
+        if (isDescending)
+            sortedData.reverse();
         // D.Alert(D.JS(sortedData, true), "sortRepSec")
         for (let i = 0; i < sortedData.length; i++) {
             const attrList = _.omit(sortedData[i], "SORTER", "rowID");
@@ -2718,7 +2809,7 @@ const D = (() => {
         // D.Alert(`splitRepSec(charRef, ${D.JS(sourceSec)}, ${D.JS(targetSec)}, sortFunc, ${D.JS(mode)})`, "DATA:SplitRepSec")
 
         // D.Alert("@@@ STARTING _.EACH COPYTOREPSEC @@@", "DATA:SplitRepSec")
-        _.each(getRepIDs(charRef, targetSec), id => {
+        _.each(getRepIDs(charRef, targetSec), (id) => {
             copyToRepSec(charRef, targetSec, id, sourceSec);
         });
         const sortedIDs = sortRepSec(charRef, sourceSec, sortFunc);
@@ -2727,12 +2818,15 @@ const D = (() => {
             case "split":
                 sortedIDs.splice(0, Math.ceil(sortedIDs.length / 2));
                 // D.Alert(`@@@ SPLIT: STARTING SPLIT. @@@<br><br><b>sortedIDs (NEW):</b><br>${D.JS(sortedIDs)}`, "DATA:SplitRepSec")
-                while (sortedIDs.length) copyToRepSec(charRef, sourceSec, sortedIDs.shift(), targetSec);
+                while (sortedIDs.length)
+                    copyToRepSec(charRef, sourceSec, sortedIDs.shift(), targetSec);
                 // D.Alert("@@@ SPLIT: FINISHED SPLIT.", "DATA:SplitRepSec")
                 break;
             case "even":
                 // D.Alert("@@@ EVEN: STARTING EVEN.", "DATA:SplitRepSec")
-                for (let i = 0; i < sortedIDs.length; i++) if (i % 2) copyToRepSec(charRef, sourceSec, sortedIDs[i], targetSec);
+                for (let i = 0; i < sortedIDs.length; i++)
+                    if (i % 2)
+                        copyToRepSec(charRef, sourceSec, sortedIDs[i], targetSec);
 
                 // D.Alert("@@@ EVEN: FINISHED EVEN.", "DATA:SplitRepSec")
                 break;
@@ -2774,11 +2868,13 @@ const D = (() => {
             return STATE.REF.MissingTextChars;
         },
         set MissingTextChars(char) {
-            if (char.length > 1 && char.startsWith("!")) STATE.REF.MissingTextChars = _.without([...STATE.REF.MissingTextChars], char.charAt(1));
-            else if (char.length === 1) STATE.REF.MissingTextChars = _.uniq([...STATE.REF.MissingTextChars, char]);
+            if (char.length > 1 && char.startsWith("!"))
+                STATE.REF.MissingTextChars = _.without([...STATE.REF.MissingTextChars], char.charAt(1));
+            else if (char.length === 1)
+                STATE.REF.MissingTextChars = _.uniq([...STATE.REF.MissingTextChars, char]);
         },
 
-        GetPageID: pageRef => VALS.PAGEID(pageRef),
+        GetPageID: (pageRef) => VALS.PAGEID(pageRef),
         get MAINPAGEID() {
             return VALS.PAGEID("GAME");
         },
@@ -2788,7 +2884,7 @@ const D = (() => {
         get CELLSIZE() {
             return VALS.CELLSIZE();
         },
-        GetCellSize: pageRef => VALS.CELLSIZE(pageRef),
+        GetCellSize: (pageRef) => VALS.CELLSIZE(pageRef),
 
         get IsReportingListener() {
             return STATE.REF.isReportingListener;
@@ -2828,10 +2924,11 @@ const D = (() => {
         Call: sendAPICommand,
         Chat: sendChatMessage,
         Alert: sendToGM,
-        Show: object => sendToGM(jStrX(object), "Showing Object", 0, true),
-        Flag: msg => sendToGM(msg, "none"),
+        Show: (object) => sendToGM(jStrX(object), "Showing Object", 0, true),
+        Flag: (msg) => sendToGM(msg, "none"),
         Poke: (msg, title = "[ALERT]") => {
-            if (Session.IsTesting) sendToGM(msg, title);
+            if (Session.IsTesting)
+                sendToGM(msg, title);
         },
         Prompt: promptGM,
         CommandMenu: commandMenu,

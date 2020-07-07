@@ -26,7 +26,8 @@ const SCRIPTS = [
 
 state = state || {};
 state[GAMENAME] = state[GAMENAME] || {};
-for (const scriptName of SCRIPTS) state[GAMENAME][scriptName] = state[GAMENAME][scriptName] || {};
+for (const scriptName of SCRIPTS)
+    state[GAMENAME][scriptName] = state[GAMENAME][scriptName] || {};
 // #endregion
 // #endregion
 
@@ -462,7 +463,7 @@ const C = (() => {
             const params = Object.assign({height: "14px", width: "100%", margin: "5px 0px 5px 0px", textAlign: "center"}, options);
             if (D.WatchList.includes("HTML-ButtonLine") && !options.isSilent)
                 sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "ButtonLine", content: {options, params, content: D.JSC(content)}})}`);
-            content = _.flatten([content]).map(x => x.replace(/a\s*style.*?height[^;]*;/gu, `a style="height: ${params.height};`));
+            content = _.flatten([content]).map((x) => x.replace(/a\s*style.*?height[^;]*;/gu, `a style="height: ${params.height};`));
             if (D.WatchList.includes("HTML-ButtonLine") && !options.isSilent)
                 sendChat(
                     "HTML",
@@ -673,7 +674,7 @@ const C = (() => {
                 boxes.clear.repeat(numClear)}</div>`);
         },
         CodeBlock: (content, options = {}) => {
-            /* if (VAL({list: content})) 
+            /* if (VAL({list: content}))
                     content = D.KeyMapObj(content, undefined, v => D.JS(v).replace(/<br\s*\/?>/gu, "@@BR@@").replace(/</gu, "&lt;").replace(/>/gu, "&gt;").replace(/@@BR@@/gu, "<br>")) */
             const params = {
                 fontSize: options.fontSize || "9px"
@@ -695,8 +696,7 @@ const C = (() => {
             );
         },
         MVC: {
-            fullBox: content => {
-                return D.JSH(`<div style="
+            fullBox: (content) => D.JSH(`<div style="
                     display: block;
                     width: 100%;
                     padding: 5px 5px;
@@ -712,10 +712,8 @@ const C = (() => {
                     bg-color: ${COLORS.black};
                     z-index: 100;
                     position: relative;
-                    ">${content}</div>`);
-            },
-            title: content => {
-                return D.JSH(`<div style="
+                    ">${content}</div>`),
+            title: (content) => D.JSH(`<div style="
                     display:block;
                     width: 120%;
                     margin: 10px -10%;
@@ -723,57 +721,42 @@ const C = (() => {
                     text-align: center;
                     font: normal normal 22px/22px Effloresce;
                     border-bottom: 1px ${COLORS.white} solid;
-                    ">${content}</div>`);
-            },
-            header: content => {
-                return D.JSH(`<div style="
+                    ">${content}</div>`),
+            header: (content) => D.JSH(`<div style="
                     display:block; 
                     width: 120%; 
                     margin: 0px -10% 0px -10%;
                     color: ${COLORS.white}; 
                     text-align: center; 
                     font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT'; 
-                    ">${content}</div>`);
-            },
-            headerL: content => {
-                return D.JSH(`<div style="
+                    ">${content}</div>`),
+            headerL: (content) => D.JSH(`<div style="
                     display:inline-block; 
                     width: 120%; 
                     margin: 5% -10% 0px -10%;
                     color: ${COLORS.white}; 
                     text-align: center; 
                     font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT';
-                    ">${content}`);
-            },
-            headerR: content => {
-                return D.JSH(` ${content}</div>`);
-            },
-            para: content => {
-                return D.JSH(`<div style="
+                    ">${content}`),
+            headerR: (content) => D.JSH(` ${content}</div>`),
+            para: (content) => D.JSH(`<div style="
                     display:block; 
                     width: 103%; 
                     margin: 5px 0px;
                     color: ${COLORS.white}; 
                     text-align: left; 
                     font: normal normal 12px/14px Rockwell; 
-                    ">${content}</div>`);
-            },
-            paraStart: content => {
-                return D.JSH(`<div style="
+                    ">${content}</div>`),
+            paraStart: (content) => D.JSH(`<div style="
                     display:block; 
                     width: 100%; 
                     margin: 5px 0px;
                     color: ${COLORS.white}; 
                     text-align: left; 
                     font: normal normal 12px/14px Rockwell; 
-                    ">${content}`);
-            },
-            paraMid: content => {
-                return D.JSH(` ${content} `);
-            },
-            paraEnd: content => {
-                return D.JSH(`${content}</div>`);
-            }
+                    ">${content}`),
+            paraMid: (content) => D.JSH(` ${content} `),
+            paraEnd: (content) => D.JSH(`${content}</div>`)
         }
     };
     const HANDOUTHTML = {
@@ -856,24 +839,19 @@ const C = (() => {
                         vertical-align: ${params.vertAlign};
                         ">${content}</div>`);
             },
-            LineBodyRight: content => {
-                return D.JSH(`<div style="
+            LineBodyRight: (content) => D.JSH(`<div style="
                         display: inline-block;
                         text-align: right;
                         text-align-last: right;
                         width: 100%;
                         margin: 0px 5px 5px -5px;
-                    ">${content}</div>`);
-            }
+                    ">${content}</div>`)
         },
-        main: content => {
-            return D.JSH(`<div style="
+        main: (content) => D.JSH(`<div style="
                 display: block;
                 width: 600px;
-            ">${content}</div>`);
-        },
-        title: content => {
-            return D.JSH(`<span style="
+            ">${content}</div>`),
+        title: (content) => D.JSH(`<span style="
                 display: block;
                 width: 602px;
                 height: 16px;
@@ -885,10 +863,8 @@ const C = (() => {
                 padding: 3px 3px;
                 box-sizing: border-box;
                 margin-top: 10px;
-            ">${content}</span>`);
-        },
-        subTitle: content => {
-            return D.JSH(`<span style="
+            ">${content}</span>`),
+        subTitle: (content) => D.JSH(`<span style="
                 display: block;
                 width: 600px;
                 height: 12px;
@@ -899,10 +875,8 @@ const C = (() => {
                 font-family: 'Century Gothic';
                 font-size: 12px;
                 padding-bottom: 3px;
-            ">${content}</span>`);
-        },
-        bodyParagraph: (content, params = {}) => {
-            return D.JSH(`<span style="
+            ">${content}</span>`),
+        bodyParagraph: (content, params = {}) => D.JSH(`<span style="
                 display: block;
                 width: 586px;
                 font-family: 'Trebuchet MS';
@@ -913,10 +887,8 @@ const C = (() => {
                 border-left: 1px solid ${COLORS.grey};
                 border-right: 1px solid ${COLORS.grey};
                 padding: 3px 10px;
-            ">${content}</span>`);
-        },
-        smallNote: (content, color = COLORS.black) => {
-            return D.JSH(`<span style="
+            ">${content}</span>`),
+        smallNote: (content, color = COLORS.black) => D.JSH(`<span style="
                 display:block; 
                 width: 560px; 
                 font-size: 10px;
@@ -925,21 +897,17 @@ const C = (() => {
                 margin: 0px 20px;
                 padding: 0px 3px;
                 background-color: ${COLORS.fadedblack};
-            ">${content}</span>`);
-        },
+            ">${content}</span>`),
         projects: {
-            charName: content => {
-                return D.JSH(`<span style="
+            charName: (content) => D.JSH(`<span style="
                     display: block; 
                     width: 600px;
                     font-size: 32px; 
                     color: ${COLORS.darkred}; 
                     font-family: Voltaire; 
                     font-variant: small-caps;
-                ">${content}</span>`);
-            },
-            goal: content => {
-                return D.JSH(`<span style="
+                ">${content}</span>`),
+            goal: (content) => D.JSH(`<span style="
                     display: block; 
                     width: 600px; 
                     height: 24px; 
@@ -952,10 +920,8 @@ const C = (() => {
                     border-bottom: 1px solid ${COLORS.black}; 
                     border-top: 1px solid ${COLORS.black};
                     overflow: hidden;
-                ">${content}</span>`);
-            },
-            tag: (content, color = COLORS.black) => {
-                return D.JSH(`<span style="
+                ">${content}</span>`),
+            tag: (content, color = COLORS.black) => D.JSH(`<span style="
                     display:inline-block; 
                     width: 60px; 
                     font-size: 14px; 
@@ -967,10 +933,8 @@ const C = (() => {
                     margin-right: 10px;
                     height: 20px;
                     line-height: 20px;
-                ">${content}</span>`);
-            },
-            hook: content => {
-                return D.JSH(`<span style="
+                ">${content}</span>`),
+            hook: (content) => D.JSH(`<span style="
                     display:inline-block; 
                     width: 530px; 
                     font-size: 12px; 
@@ -979,30 +943,24 @@ const C = (() => {
                     vertical-align: top; 
                     padding-top: 2px;
                     overflow: hidden;
-                ">${content}</span>`);
-            },
-            critSucc: content => {
-                return D.JSH(`<span style="
+                ">${content}</span>`),
+            critSucc: (content) => D.JSH(`<span style="
                     display: inline-block; 
                     width: 300px; 
                     font-size: 20px; 
                     color: ${COLORS.purple}; 
                     font-family: Voltaire; 
                     font-weight: bold;
-                ">${content}</span>`);
-            },
-            succ: content => {
-                return D.JSH(`<span style="
+                ">${content}</span>`),
+            succ: (content) => D.JSH(`<span style="
                     display: inline-block; 
                     width: 300px; 
                     font-size: 20px; 
                     color: ${COLORS.black}; 
                     font-family: goodfish; 
                     font-weight: bold;
-                ">${content}</span>`);
-            },
-            endDate: content => {
-                return D.JSH(`<span style="
+                ">${content}</span>`),
+            endDate: (content) => D.JSH(`<span style="
                     display: inline-block; 
                     width: 300px; 
                     font-size: 20px; 
@@ -1010,10 +968,8 @@ const C = (() => {
                     font-family: Voltaire; 
                     font-weight: bold; 
                     text-align: right;
-                ">${content}</span>`);
-            },
-            daysLeft: content => {
-                return D.JSH(`<span style="
+                ">${content}</span>`),
+            daysLeft: (content) => D.JSH(`<span style="
                     display: inline-block; 
                     width: 600px; 
                     font-size: 14px; 
@@ -1021,19 +977,15 @@ const C = (() => {
                     font-family: 'Alice Regular'; 
                     font-style: italic; 
                     text-align: right;
-                ">${content}</span>`);
-            },
-            stake: content => {
-                return D.JSH(`<span style="
+                ">${content}</span>`),
+            stake: (content) => D.JSH(`<span style="
                     display: inline-block; 
                     width: 410px; 
                     font-family: 'Alice Regular';
                     height: 20px;
                     line-height: 20px;
-                ">${content}</span>`);
-            },
-            teamwork: content => {
-                return D.JSH(`<span style="
+                ">${content}</span>`),
+            teamwork: (content) => D.JSH(`<span style="
                     display: inline-block; 
                     width: 50px; 
                     font-family: 'Alice Regular'; 
@@ -1042,29 +994,20 @@ const C = (() => {
                     height: 20px;
                     line-height: 20px;
                     font-size: 16px;
-                ">${content}</span>`);
-            }
+                ">${content}</span>`)
         }
     };
     const ROLLERHTML = {
-        fullBox: content =>
-            `<div style="display: block;width: 259px;padding: 5px 5px;margin-left: -42px;color: ${COLORS.white};font-family: 'Bodoni SvtyTwo ITC TT';font-size: 16px;border: 3px outset ${COLORS.darkred};background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;">${content}</div>`,
-        spacer: width => `<span style="display: inline-block; width: ${width}px;"></span>`,
-        rollerName: content =>
-            `<div style="display: block; width: 100%; font-variant: small-caps; font-size: 16px; height: 15px; padding-bottom: 5px; border-bottom: 1px solid ${COLORS.white}; overflow: hidden;">${content}</div>`,
-        mainRoll: (content, subcontent) =>
-            `<div style="display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid ${COLORS.white};"><span style="display: block; height: 16px; line-height: 16px; width: 100%; font-size: 14px; ">${content}</span><span style="display: block; height: 12px; line-height: 12px; width: 100%; margin-left: 24px; font-size: 10px; font-variant: italic;">${subcontent}</span></div>`,
-        check: content =>
-            `<div style="display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid ${COLORS.white};"><span style="display: block; height: 20px;  line-height: 20px; width: 100%; margin-left: 10%;">${content}</span></div>`,
-        dicePool: content =>
-            `<div style="display: block; width: 100%; padding: 3px 0px; height: auto; "><span style="display: block; height: 16px; width: 100%; margin-left: 5%; line-height: 16px; font-size: 14px;">${content}</span></div>`,
-        result: (content, subcontent, width, topMargin, subWidth) =>
-            `<div style="display: block; width: 100%; height: auto; "><div style="display: inline-block; width: ${width}px; margin-top:${topMargin}px; vertical-align: top; text-align: right; height: 100%; "><span style="display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: right; margin-right: 10px; font-size: 12px;">${content}</span></div><div style="display: inline-block ; width: ${subWidth}px ; height: auto; margin-bottom: 5px">${subcontent}</div></div>`,
-        diceLine: content =>
-            `<div style="display: block ; width: 100% ; height: 24px ; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} ; ">${content}</div>`,
-        smallResult: content =>
-            `<div style="display: block ; width: 100% ; height: 24px ; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} ; ">${content}</div>`,
-        die: dieVal => {
+        fullBox: (content) => `<div style="display: block;width: 259px;padding: 5px 5px;margin-left: -42px;color: ${COLORS.white};font-family: 'Bodoni SvtyTwo ITC TT';font-size: 16px;border: 3px outset ${COLORS.darkred};background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;">${content}</div>`,
+        spacer: (width) => `<span style="display: inline-block; width: ${width}px;"></span>`,
+        rollerName: (content) => `<div style="display: block; width: 100%; font-variant: small-caps; font-size: 16px; height: 15px; padding-bottom: 5px; border-bottom: 1px solid ${COLORS.white}; overflow: hidden;">${content}</div>`,
+        mainRoll: (content, subcontent) => `<div style="display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid ${COLORS.white};"><span style="display: block; height: 16px; line-height: 16px; width: 100%; font-size: 14px; ">${content}</span><span style="display: block; height: 12px; line-height: 12px; width: 100%; margin-left: 24px; font-size: 10px; font-variant: italic;">${subcontent}</span></div>`,
+        check: (content) => `<div style="display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid ${COLORS.white};"><span style="display: block; height: 20px;  line-height: 20px; width: 100%; margin-left: 10%;">${content}</span></div>`,
+        dicePool: (content) => `<div style="display: block; width: 100%; padding: 3px 0px; height: auto; "><span style="display: block; height: 16px; width: 100%; margin-left: 5%; line-height: 16px; font-size: 14px;">${content}</span></div>`,
+        result: (content, subcontent, width, topMargin, subWidth) => `<div style="display: block; width: 100%; height: auto; "><div style="display: inline-block; width: ${width}px; margin-top:${topMargin}px; vertical-align: top; text-align: right; height: 100%; "><span style="display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: right; margin-right: 10px; font-size: 12px;">${content}</span></div><div style="display: inline-block ; width: ${subWidth}px ; height: auto; margin-bottom: 5px">${subcontent}</div></div>`,
+        diceLine: (content) => `<div style="display: block ; width: 100% ; height: 24px ; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} ; ">${content}</div>`,
+        smallResult: (content) => `<div style="display: block ; width: 100% ; height: 24px ; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} ; ">${content}</div>`,
+        die: (dieVal) => {
             switch (dieVal) {
                 case "BcL":
                     return D.JSH(
@@ -1116,28 +1059,24 @@ const C = (() => {
                     );
             }
         },
-        margin: (content, width, topMargin) =>
-            D.JSH(
-                `<div style="display: inline-block; width: ${width}px; vertical-align: top; margin-top:${topMargin}px; text-align: left; height: 100%; "><span style="display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left; margin-left: 10px; font-size: 12px;">${content}</span></div>`
-            ),
-        outcome: (content, color) =>
-            D.JSH(
-                `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[
-                    color
-                ] || COLORS.white}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
-            ),
-        smallOutcome: (content, color) =>
-            D.JSH(
-                `<div style="display: block; width: 100%; margin-top: 5px; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[
-                    color
-                ] || COLORS.white}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
-            ),
-        subOutcome: (content, color) =>
-            D.JSH(
-                `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[
-                    color
-                ] || COLORS.white}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
-            )
+        margin: (content, width, topMargin) => D.JSH(
+            `<div style="display: inline-block; width: ${width}px; vertical-align: top; margin-top:${topMargin}px; text-align: left; height: 100%; "><span style="display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left; margin-left: 10px; font-size: 12px;">${content}</span></div>`
+        ),
+        outcome: (content, color) => D.JSH(
+            `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[
+                color
+            ] || COLORS.white}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
+        ),
+        smallOutcome: (content, color) => D.JSH(
+            `<div style="display: block; width: 100%; margin-top: 5px; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[
+                color
+            ] || COLORS.white}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
+        ),
+        subOutcome: (content, color) => D.JSH(
+            `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[
+                color
+            ] || COLORS.white}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
+        )
     };
     const STYLES = {
         whiteMarble: {
@@ -1342,13 +1281,13 @@ const C = (() => {
             "Will Ss": "!char dmg willpower social_superficial ?{Damage done (negative numbers heal)?}",
             "Will As": "!char dmg willpower social_aggravated ?{Damage done (negative numbers heal)?}"
         },
-        v => v.replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;")
+        (v) => v.replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;")
     );
     // #endregion
 
     // #region ROLL20 OBJECT PROPERTIES
-    const SHEETATTRSJSON = `{"academics": 0,"academics_flag": 0,"academics_spec": "","ambition": "","animal_ken": 0,"animal_ken_flag": 0,"animal_ken_spec": "","applybloodsurge": 0,"applyresonance": 0,"applyspecialty": 0,"assets_carried": "","assets_other": "","assets_stashed": "","assets_vehicles": "","athletics": 0,"athletics_flag": 0,"athletics_spec": "","awareness": 0,"awareness_flag": 0,"awareness_spec": "","bane_text": "","bane_title": "","blood_potency": 0,"blood_potency_max": 0,"bloodline": "","bloodline_toggle": 0,"bonus_bp": 0,"bonus_health": 0,"bonus_willpower": 0,"bottomdisplay": "","bp_baneseverity": 0,"bp_discbonus": 0,"bp_discbonustext": "","bp_mend": 0,"bp_mendtext": "","bp_rousereroll": 0,"bp_slakeanimal": 0,"bp_slakebag": 0,"bp_slakehuman": 0,"bp_slakekill": 0,"bp_slaketext": "","bp_surge": 0,"bp_surgetext": "","brawl": 0,"brawl_flag": 0,"brawl_spec": "","ceremonies_toggle": 0,"char_dob": "","char_dobdoe": "","char_doe": "","charflags": "","character_name": "","charisma": 1,"charisma_flag": 0,"clan": "","composure": 1,"composure_flag": 0,"compulsion": "","compulsion_toggle": 0,"craft": 0,"craft_flag": 0,"craft_spec": "","date_today": 1578628740000,"dexterity": 1,"dexterity_flag": 0,"disc1": 0,"disc1_1": "","disc1_2": "","disc1_3": "","disc1_4": "","disc1_5": "","disc1_flag": 0,"disc1_name": "","disc1_toggle": 0,"disc1power_toggle": 0,"disc2": 0,"disc2_1": "","disc2_2": "","disc2_3": "","disc2_4": "","disc2_5": "","disc2_flag": 0,"disc2_name": "","disc2_toggle": 0,"disc2power_toggle": 0,"disc3": 0,"disc3_1": "","disc3_2": "","disc3_3": "","disc3_4": "","disc3_5": "","disc3_flag": 0,"disc3_name": "","disc3_toggle": 0,"disc3power_toggle": 0,"distillation": "","domain_coterie": "","domain_haven": "","domain_hunt": "","domain_personal": "","drive": 0,"drive_flag": 0,"drive_spec": "","dyscrasias": "","dyscrasias_toggle": 0,"effectchecks": "","etiquette": 0,"etiquette_flag": 0,"etiquette_spec": "","faction": "","finance": 0,"finance_flag": 0,"finance_spec": "","firearms": 0,"firearms_flag": 0,"firearms_spec": "","formulae_toggle": 0,"generation": "","health": 3,"health_1": 0,"health_10": 0,"health_11": 0,"health_12": 0,"health_13": 0,"health_14": 0,"health_15": 0,"health_2": 0,"health_3": 0,"health_4": 0,"health_5": 0,"health_6": 0,"health_7": 0,"health_8": 0,"health_9": 0,"health_admg": 0,"health_aggravated": 0,"health_bashing": 0,"health_impair_toggle": 0,"health_max": 3,"health_sdmg": 0,"hum_details": "","hum_negbullets": "","hum_negbullets_toggle": 0,"hum_neutralbullets": "","hum_neutralbullets_toggle": 0,"hum_posbullets": "","hum_posbullets_toggle": 0,"humanity": 7,"humanity_1": 2,"humanity_10": 2,"humanity_2": 2,"humanity_3": 2,"humanity_4": 2,"humanity_5": 2,"humanity_6": 2,"humanity_7": 2,"humanity_8": 2,"humanity_9": 2,"humanity_impair_toggle": 0,"humanity_max": 10,"hunger": 1,"incap": "","insight": 0,"insight_flag": 0,"insight_spec": "","intelligence": 1,"intelligence_flag": 0,"intimidation": 0,"intimidation_flag": 0,"intimidation_spec": "","investigation": 0,"investigation_flag": 0,"investigation_spec": "","larceny": 0,"larceny_flag": 0,"larceny_spec": "","leadership": 0,"leadership_flag": 0,"leadership_spec": "","manipulation": 1,"manipulation_flag": 0,"marquee": "When the Sabbat assault a city, no strategy is more threatening to the Masquerade than their penchant formass-Embracing mortals, knocking them unconscious with a shovel before they frenzy, and throwing them intoan open grave from which they must dig themselves out — a process that invariably drives them insane.","marquee_lines_toggle": 3,"marquee_title": "Shovelheads","marquee_toggle": 1,"marquee_tracker": "10,63,47,50,28,8,3,24,1,12,51,20,19,65,30,4,40,54,71,45,70,73,23,43,15,53,2,25,16,72,37,36,62,38,14,57,60,55,35,21,64,32,33,9,22,42,48,34,58,59,31,46,67,6,27,17,29,61,0,13,66,44,69,7,5,11,18","mask": "","maskname": "","medicine": 0,"medicine_flag": 0,"medicine_spec": "","melee": 0,"melee_flag": 0,"melee_spec": "","mortal_ambition": "","mortal_history": "","npcbox_title": "","npcbox_toggle": 0,"npctoggle": 0,"occult": 0,"occult_flag": 0,"occult_spec": "","performance": 0,"performance_flag": 0,"performance_spec": "","persuasion": 0,"persuasion_flag": 0,"persuasion_spec": "","politics": 0,"politics_flag": 0,"politics_spec": "","predator": "","repstats": "","res_discs": "","resolve": 1,"resolve_flag": 0,"resonance": "None","rituals_toggle": 0,"rollarray": "","rolldiff": 0,"rolleffects": "","rollflagdisplay": "","rollmod": 0,"rollparams": "","rollpooldisplay": "","science": 0,"science_flag": 0,"science_spec": "","sheetworkertoggle": 0,"stains": 0,"stamina": 1,"stamina_flag": 0,"stealth": 0,"stealth_flag": 0,"stealth_spec": "","streetwise": 0,"streetwise_flag": 0,"streetwise_spec": "","strength": 1,"strength_flag": 0,"subterfuge": 0,"subterfuge_flag": 0,"subterfuge_spec": "","survival": 0,"survival_flag": 0,"survival_spec": "","tab_core": 1,"technology": 0,"technology_flag": 0,"technology_spec": "","topdisplay": "","triggertimelinesort": 0,"willpower": 3,"willpower_1": 0,"willpower_10": 0,"willpower_2": 0,"willpower_3": 0,"willpower_4": 0,"willpower_5": 0,"willpower_6": 0,"willpower_7": 0,"willpower_8": 0,"willpower_9": 0,"willpower_admg": 0,"willpower_admg_social": 0,"willpower_admg_socialtotal": 0,"willpower_aggravated": 0,"willpower_bashing": 0,"willpower_impair_toggle": 0,"willpower_max": 3,"willpower_sdmg": 0,"willpower_sdmg_social": 0,"willpower_sdmg_socialtotal": 0,"willpower_social_toggle": 0,"wits": 1,"wits_flag": 0,"xp_earnedtotal": 0,"xp_summary": ""}`;
-    const REPATTRSJSON = `{"discleft": ["disc", "disc_flag", "disc_name", "discpower_1", "discpower_2", "discpower_3", "discpower_4", "discpower_5", "discpower_toggle"],"discmid": ["disc", "disc_flag", "disc_name", "discpower_1", "discpower_2", "discpower_3", "discpower_4", "discpower_5", "discpower_toggle"],"discright": ["disc", "disc_flag", "disc_name", "discpower_1", "discpower_2", "discpower_3", "discpower_4", "discpower_5", "discpower_toggle"],"ceremonyleft": ["ceremony", "ceremony_name", "ceremony_type"],"ceremonymid": ["ceremony", "ceremony_name", "ceremony_type"],"ceremonyright": ["ceremony", "ceremony_name", "ceremony_type"],"ritualleft": ["ritual", "ritual_name", "ritual_type"],"ritualmid": ["ritual", "ritual_name", "ritual_type"],"ritualright": ["ritual", "ritual_name", "ritual_type"],"formulaleft": ["formula", "formula_type"],"formulamid": ["formula", "formula_type"],"formularight": ["formula", "formula_type"],"advantage": ["advantage", "advantage_details", "advantage_flag", "advantage_name", "advantage_type"],"negadvantage": ["negadvantage", "negadvantage_details", "negadvantage_flag", "negadvantage_name", "negadvantage_type"],"boonsOwed": ["boonowed_details", "boonowed_to", "boonowed_type"],"boonsOwing": ["boonowing_details", "boonowing_from", "boonowing_type"],"tenet": ["tenet", "tenetid"],"beliefs": ["conviction", "convictionid", "touchstone_details", "touchstone_name", "touchstoneid"],"project": ["archiveevent", "archiveevent_toggle", "archivememoriam", "archivememoriam_toggle", "archiveobjective", "archiveobjective_toggle", "archiveproject", "eventdate", "memoriamdate", "memoriamdiff", "memoriamresult", "memoriamrewards", "objectivedate", "projectdetails", "projectenddate", "projectforcedstakemod", "projectforcedstakemodline", "projectgoal", "projectinccounter", "projectincnum", "projectincunit", "projectlaunchdiff", "projectlaunchdiffmod", "projectlaunchmod", "projectlaunchresults", "projectlaunchresultsmargin", "projectlaunchroll_toggle", "projectlaunchrollparams", "projectlaunchtrait1", "projectlaunchtrait1_name", "projectlaunchtrait2", "projectlaunchtrait2_name", "projectrushpool", "projectrushstakelost", "projectrushstakelosttogo", "projectscope", "projectscope_name", "projectsrowid", "projectstake1", "projectstake1_name", "projectstake2", "projectstake2_name", "projectstake3", "projectstake3_name", "projectstakes_toggle", "projectstakesatrush", "projectstartdate", "projectteamwork1", "projectteamwork2", "projectteamwork3", "projecttotalstake", "projectwasrushed", "schemetype", "schemetypeevent_toggle", "schemetypemem_toggle", "schemetypeobj_toggle", "schemetypeproj_toggle"],"timeline": ["timelinerowid", "tlcategory", "tldetails", "tldotdisplay", "tlenddate", "tlsortby", "tlstartdate", "tlsummary", "tlthirdline", "tlthirdline_toggle", "tltitle"],"desire": ["desire", "desireid"],"spentxp": ["xp_arrow_toggle", "xp_category", "xp_cost", "xp_initial", "xp_initial_toggle", "xp_new", "xp_new_toggle", "xp_spent_toggle", "xp_trait", "xp_trait_toggle"],"earnedxp": ["xp_award", "xp_reason", "xp_session"],"earnedxpright": ["xp_award", "xp_reason", "xp_session"]}`;
+    const SHEETATTRSJSON = "{\"academics\": 0,\"academics_flag\": 0,\"academics_spec\": \"\",\"ambition\": \"\",\"animal_ken\": 0,\"animal_ken_flag\": 0,\"animal_ken_spec\": \"\",\"applybloodsurge\": 0,\"applyresonance\": 0,\"applyspecialty\": 0,\"assets_carried\": \"\",\"assets_other\": \"\",\"assets_stashed\": \"\",\"assets_vehicles\": \"\",\"athletics\": 0,\"athletics_flag\": 0,\"athletics_spec\": \"\",\"awareness\": 0,\"awareness_flag\": 0,\"awareness_spec\": \"\",\"bane_text\": \"\",\"bane_title\": \"\",\"blood_potency\": 0,\"blood_potency_max\": 0,\"bloodline\": \"\",\"bloodline_toggle\": 0,\"bonus_bp\": 0,\"bonus_health\": 0,\"bonus_willpower\": 0,\"bottomdisplay\": \"\",\"bp_baneseverity\": 0,\"bp_discbonus\": 0,\"bp_discbonustext\": \"\",\"bp_mend\": 0,\"bp_mendtext\": \"\",\"bp_rousereroll\": 0,\"bp_slakeanimal\": 0,\"bp_slakebag\": 0,\"bp_slakehuman\": 0,\"bp_slakekill\": 0,\"bp_slaketext\": \"\",\"bp_surge\": 0,\"bp_surgetext\": \"\",\"brawl\": 0,\"brawl_flag\": 0,\"brawl_spec\": \"\",\"ceremonies_toggle\": 0,\"char_dob\": \"\",\"char_dobdoe\": \"\",\"char_doe\": \"\",\"charflags\": \"\",\"character_name\": \"\",\"charisma\": 1,\"charisma_flag\": 0,\"clan\": \"\",\"composure\": 1,\"composure_flag\": 0,\"compulsion\": \"\",\"compulsion_toggle\": 0,\"craft\": 0,\"craft_flag\": 0,\"craft_spec\": \"\",\"date_today\": 1578628740000,\"dexterity\": 1,\"dexterity_flag\": 0,\"disc1\": 0,\"disc1_1\": \"\",\"disc1_2\": \"\",\"disc1_3\": \"\",\"disc1_4\": \"\",\"disc1_5\": \"\",\"disc1_flag\": 0,\"disc1_name\": \"\",\"disc1_toggle\": 0,\"disc1power_toggle\": 0,\"disc2\": 0,\"disc2_1\": \"\",\"disc2_2\": \"\",\"disc2_3\": \"\",\"disc2_4\": \"\",\"disc2_5\": \"\",\"disc2_flag\": 0,\"disc2_name\": \"\",\"disc2_toggle\": 0,\"disc2power_toggle\": 0,\"disc3\": 0,\"disc3_1\": \"\",\"disc3_2\": \"\",\"disc3_3\": \"\",\"disc3_4\": \"\",\"disc3_5\": \"\",\"disc3_flag\": 0,\"disc3_name\": \"\",\"disc3_toggle\": 0,\"disc3power_toggle\": 0,\"distillation\": \"\",\"domain_coterie\": \"\",\"domain_haven\": \"\",\"domain_hunt\": \"\",\"domain_personal\": \"\",\"drive\": 0,\"drive_flag\": 0,\"drive_spec\": \"\",\"dyscrasias\": \"\",\"dyscrasias_toggle\": 0,\"effectchecks\": \"\",\"etiquette\": 0,\"etiquette_flag\": 0,\"etiquette_spec\": \"\",\"faction\": \"\",\"finance\": 0,\"finance_flag\": 0,\"finance_spec\": \"\",\"firearms\": 0,\"firearms_flag\": 0,\"firearms_spec\": \"\",\"formulae_toggle\": 0,\"generation\": \"\",\"health\": 3,\"health_1\": 0,\"health_10\": 0,\"health_11\": 0,\"health_12\": 0,\"health_13\": 0,\"health_14\": 0,\"health_15\": 0,\"health_2\": 0,\"health_3\": 0,\"health_4\": 0,\"health_5\": 0,\"health_6\": 0,\"health_7\": 0,\"health_8\": 0,\"health_9\": 0,\"health_admg\": 0,\"health_aggravated\": 0,\"health_bashing\": 0,\"health_impair_toggle\": 0,\"health_max\": 3,\"health_sdmg\": 0,\"hum_details\": \"\",\"hum_negbullets\": \"\",\"hum_negbullets_toggle\": 0,\"hum_neutralbullets\": \"\",\"hum_neutralbullets_toggle\": 0,\"hum_posbullets\": \"\",\"hum_posbullets_toggle\": 0,\"humanity\": 7,\"humanity_1\": 2,\"humanity_10\": 2,\"humanity_2\": 2,\"humanity_3\": 2,\"humanity_4\": 2,\"humanity_5\": 2,\"humanity_6\": 2,\"humanity_7\": 2,\"humanity_8\": 2,\"humanity_9\": 2,\"humanity_impair_toggle\": 0,\"humanity_max\": 10,\"hunger\": 1,\"incap\": \"\",\"insight\": 0,\"insight_flag\": 0,\"insight_spec\": \"\",\"intelligence\": 1,\"intelligence_flag\": 0,\"intimidation\": 0,\"intimidation_flag\": 0,\"intimidation_spec\": \"\",\"investigation\": 0,\"investigation_flag\": 0,\"investigation_spec\": \"\",\"larceny\": 0,\"larceny_flag\": 0,\"larceny_spec\": \"\",\"leadership\": 0,\"leadership_flag\": 0,\"leadership_spec\": \"\",\"manipulation\": 1,\"manipulation_flag\": 0,\"marquee\": \"When the Sabbat assault a city, no strategy is more threatening to the Masquerade than their penchant formass-Embracing mortals, knocking them unconscious with a shovel before they frenzy, and throwing them intoan open grave from which they must dig themselves out — a process that invariably drives them insane.\",\"marquee_lines_toggle\": 3,\"marquee_title\": \"Shovelheads\",\"marquee_toggle\": 1,\"marquee_tracker\": \"10,63,47,50,28,8,3,24,1,12,51,20,19,65,30,4,40,54,71,45,70,73,23,43,15,53,2,25,16,72,37,36,62,38,14,57,60,55,35,21,64,32,33,9,22,42,48,34,58,59,31,46,67,6,27,17,29,61,0,13,66,44,69,7,5,11,18\",\"mask\": \"\",\"maskname\": \"\",\"medicine\": 0,\"medicine_flag\": 0,\"medicine_spec\": \"\",\"melee\": 0,\"melee_flag\": 0,\"melee_spec\": \"\",\"mortal_ambition\": \"\",\"mortal_history\": \"\",\"npcbox_title\": \"\",\"npcbox_toggle\": 0,\"npctoggle\": 0,\"occult\": 0,\"occult_flag\": 0,\"occult_spec\": \"\",\"performance\": 0,\"performance_flag\": 0,\"performance_spec\": \"\",\"persuasion\": 0,\"persuasion_flag\": 0,\"persuasion_spec\": \"\",\"politics\": 0,\"politics_flag\": 0,\"politics_spec\": \"\",\"predator\": \"\",\"repstats\": \"\",\"res_discs\": \"\",\"resolve\": 1,\"resolve_flag\": 0,\"resonance\": \"None\",\"rituals_toggle\": 0,\"rollarray\": \"\",\"rolldiff\": 0,\"rolleffects\": \"\",\"rollflagdisplay\": \"\",\"rollmod\": 0,\"rollparams\": \"\",\"rollpooldisplay\": \"\",\"science\": 0,\"science_flag\": 0,\"science_spec\": \"\",\"sheetworkertoggle\": 0,\"stains\": 0,\"stamina\": 1,\"stamina_flag\": 0,\"stealth\": 0,\"stealth_flag\": 0,\"stealth_spec\": \"\",\"streetwise\": 0,\"streetwise_flag\": 0,\"streetwise_spec\": \"\",\"strength\": 1,\"strength_flag\": 0,\"subterfuge\": 0,\"subterfuge_flag\": 0,\"subterfuge_spec\": \"\",\"survival\": 0,\"survival_flag\": 0,\"survival_spec\": \"\",\"tab_core\": 1,\"technology\": 0,\"technology_flag\": 0,\"technology_spec\": \"\",\"topdisplay\": \"\",\"triggertimelinesort\": 0,\"willpower\": 3,\"willpower_1\": 0,\"willpower_10\": 0,\"willpower_2\": 0,\"willpower_3\": 0,\"willpower_4\": 0,\"willpower_5\": 0,\"willpower_6\": 0,\"willpower_7\": 0,\"willpower_8\": 0,\"willpower_9\": 0,\"willpower_admg\": 0,\"willpower_admg_social\": 0,\"willpower_admg_socialtotal\": 0,\"willpower_aggravated\": 0,\"willpower_bashing\": 0,\"willpower_impair_toggle\": 0,\"willpower_max\": 3,\"willpower_sdmg\": 0,\"willpower_sdmg_social\": 0,\"willpower_sdmg_socialtotal\": 0,\"willpower_social_toggle\": 0,\"wits\": 1,\"wits_flag\": 0,\"xp_earnedtotal\": 0,\"xp_summary\": \"\"}";
+    const REPATTRSJSON = "{\"discleft\": [\"disc\", \"disc_flag\", \"disc_name\", \"discpower_1\", \"discpower_2\", \"discpower_3\", \"discpower_4\", \"discpower_5\", \"discpower_toggle\"],\"discmid\": [\"disc\", \"disc_flag\", \"disc_name\", \"discpower_1\", \"discpower_2\", \"discpower_3\", \"discpower_4\", \"discpower_5\", \"discpower_toggle\"],\"discright\": [\"disc\", \"disc_flag\", \"disc_name\", \"discpower_1\", \"discpower_2\", \"discpower_3\", \"discpower_4\", \"discpower_5\", \"discpower_toggle\"],\"ceremonyleft\": [\"ceremony\", \"ceremony_name\", \"ceremony_type\"],\"ceremonymid\": [\"ceremony\", \"ceremony_name\", \"ceremony_type\"],\"ceremonyright\": [\"ceremony\", \"ceremony_name\", \"ceremony_type\"],\"ritualleft\": [\"ritual\", \"ritual_name\", \"ritual_type\"],\"ritualmid\": [\"ritual\", \"ritual_name\", \"ritual_type\"],\"ritualright\": [\"ritual\", \"ritual_name\", \"ritual_type\"],\"formulaleft\": [\"formula\", \"formula_type\"],\"formulamid\": [\"formula\", \"formula_type\"],\"formularight\": [\"formula\", \"formula_type\"],\"advantage\": [\"advantage\", \"advantage_details\", \"advantage_flag\", \"advantage_name\", \"advantage_type\"],\"negadvantage\": [\"negadvantage\", \"negadvantage_details\", \"negadvantage_flag\", \"negadvantage_name\", \"negadvantage_type\"],\"boonsOwed\": [\"boonowed_details\", \"boonowed_to\", \"boonowed_type\"],\"boonsOwing\": [\"boonowing_details\", \"boonowing_from\", \"boonowing_type\"],\"tenet\": [\"tenet\", \"tenetid\"],\"beliefs\": [\"conviction\", \"convictionid\", \"touchstone_details\", \"touchstone_name\", \"touchstoneid\"],\"project\": [\"archiveevent\", \"archiveevent_toggle\", \"archivememoriam\", \"archivememoriam_toggle\", \"archiveobjective\", \"archiveobjective_toggle\", \"archiveproject\", \"eventdate\", \"memoriamdate\", \"memoriamdiff\", \"memoriamresult\", \"memoriamrewards\", \"objectivedate\", \"projectdetails\", \"projectenddate\", \"projectforcedstakemod\", \"projectforcedstakemodline\", \"projectgoal\", \"projectinccounter\", \"projectincnum\", \"projectincunit\", \"projectlaunchdiff\", \"projectlaunchdiffmod\", \"projectlaunchmod\", \"projectlaunchresults\", \"projectlaunchresultsmargin\", \"projectlaunchroll_toggle\", \"projectlaunchrollparams\", \"projectlaunchtrait1\", \"projectlaunchtrait1_name\", \"projectlaunchtrait2\", \"projectlaunchtrait2_name\", \"projectrushpool\", \"projectrushstakelost\", \"projectrushstakelosttogo\", \"projectscope\", \"projectscope_name\", \"projectsrowid\", \"projectstake1\", \"projectstake1_name\", \"projectstake2\", \"projectstake2_name\", \"projectstake3\", \"projectstake3_name\", \"projectstakes_toggle\", \"projectstakesatrush\", \"projectstartdate\", \"projectteamwork1\", \"projectteamwork2\", \"projectteamwork3\", \"projecttotalstake\", \"projectwasrushed\", \"schemetype\", \"schemetypeevent_toggle\", \"schemetypemem_toggle\", \"schemetypeobj_toggle\", \"schemetypeproj_toggle\"],\"timeline\": [\"timelinerowid\", \"tlcategory\", \"tldetails\", \"tldotdisplay\", \"tlenddate\", \"tlsortby\", \"tlstartdate\", \"tlsummary\", \"tlthirdline\", \"tlthirdline_toggle\", \"tltitle\"],\"desire\": [\"desire\", \"desireid\"],\"spentxp\": [\"xp_arrow_toggle\", \"xp_category\", \"xp_cost\", \"xp_initial\", \"xp_initial_toggle\", \"xp_new\", \"xp_new_toggle\", \"xp_spent_toggle\", \"xp_trait\", \"xp_trait_toggle\"],\"earnedxp\": [\"xp_award\", \"xp_reason\", \"xp_session\"],\"earnedxpright\": [\"xp_award\", \"xp_reason\", \"xp_session\"]}";
     const SHEETATTRS = JSON.parse(SHEETATTRSJSON);
     const REPATTRS = JSON.parse(REPATTRSJSON);
     const TRAITREPSECS = ["advantage", "negadvantage", "discleft", "discmid", "discright"];
@@ -1422,7 +1361,7 @@ const C = (() => {
                         if (name.includes("_Pad_")) {
                             const imgData = Media.GetImgData((DragPads.GetGraphic(obj) || {id: ""}).id);
                             if (VAL({list: imgData}))
-                                return D.KeyMapObj(imgData.modes, null, v => Object.assign(_.omit(v, "lastState"), {isForcedState: null}));
+                                return D.KeyMapObj(imgData.modes, null, (v) => Object.assign(_.omit(v, "lastState"), {isForcedState: null}));
                         }
                         if (name.includes("_PartnerPad_"))
                             return D.KeyMapObj(
@@ -1436,7 +1375,8 @@ const C = (() => {
                         const objData = Media.GetTextData(obj) || {name: "", shadowMaster: false};
                         if (objData.shadowMaster) {
                             const textData = Media.GetTextData(objData.shadowMaster);
-                            if (VAL({list: textData})) return textData.modes;
+                            if (VAL({list: textData}))
+                                return textData.modes;
                         }
                         break;
                     }
@@ -1447,7 +1387,7 @@ const C = (() => {
         _.each(modeStatuses, (v, k) => {
             modeStatus[k] = v;
         });
-        return D.KeyMapObj(modeStatuses, null, v => {
+        return D.KeyMapObj(modeStatuses, null, (v) => {
             switch (v) {
                 case true:
                     return {
@@ -2450,25 +2390,25 @@ const C = (() => {
         ],
         Masquerade: [
             "~ THE FIRST TRADITION ~",
-            '"Thou shall not reveal thy true nature to those not of the Blood.',
-            'Doing so forfeits your claim to the Blood."'
+            "\"Thou shall not reveal thy true nature to those not of the Blood.",
+            "Doing so forfeits your claim to the Blood.\""
         ],
-        Domain: ["~ THE SECOND TRADITION ~", '"All others owe thee respect while in thy domain.', 'None may challenge thy word while in it."'],
-        Progeny: ["~ THE THIRD TRADITION ~", '"Thou shall only Sire another with the permission of thine Eldest."'],
+        Domain: ["~ THE SECOND TRADITION ~", "\"All others owe thee respect while in thy domain.", "None may challenge thy word while in it.\""],
+        Progeny: ["~ THE THIRD TRADITION ~", "\"Thou shall only Sire another with the permission of thine Eldest.\""],
         Accounting: [
             "~ THE FOURTH TRADITION ~",
-            '"Those thou create are thine own children.',
-            'Until thy Progeny shall be Released, their sins are thine to endure."'
+            "\"Those thou create are thine own children.",
+            "Until thy Progeny shall be Released, their sins are thine to endure.\""
         ],
         Hospitality: [
             "~ THE FIFTH TRADITION ~",
-            '"When thou comest to a foreign city, thou shall present thyself to the Eldest who ruleth there.',
-            'Without the word of acceptance, thou art nothing."'
+            "\"When thou comest to a foreign city, thou shall present thyself to the Eldest who ruleth there.",
+            "Without the word of acceptance, thou art nothing.\""
         ],
         Destruction: [
             "~ THE SIXTH TRADITION ~",
-            '"The right to destroy another of thy kind belongeth only to thine Eldest.',
-            'Only the Eldest among thee shall call the Blood Hunt."'
+            "\"The right to destroy another of thy kind belongeth only to thine Eldest.",
+            "Only the Eldest among thee shall call the Blood Hunt.\""
         ],
         "The Prince": [
             "The prince is the vampire who has claimed leadership over a city on behalf of the Camarilla. Only the",
@@ -2527,12 +2467,12 @@ const C = (() => {
             "The only visible facet of the sect seems to be the Monitors, who watch vampiric events while avoiding direct interference."
         ],
         "Resonance & Dyscrasias": [
-            'Strong emotions can give a mortal\'s blood "resonance". Drinking strongly-resonant blood empowers the use of associated disciplines; the',
-            'strongest resonances (called "dyscrasias") confer even greater rewards. It is possible to influence resonances in mortals, cultivating',
+            "Strong emotions can give a mortal's blood \"resonance\". Drinking strongly-resonant blood empowers the use of associated disciplines; the",
+            "strongest resonances (called \"dyscrasias\") confer even greater rewards. It is possible to influence resonances in mortals, cultivating",
             "their blood to your tastes. With a Project, you can change a resonance entirely, and even confer a dyscrasia upon the blood."
         ],
         "The Blood Hunt": [
-            'If the prince calls a Blood Hunt (or the more-formal "Lexitalionis") against a',
+            "If the prince calls a Blood Hunt (or the more-formal \"Lexitalionis\") against a",
             "vampire, all Kindred in the city are given permission to kill and even diablerize the convicted.",
             "It is one of the few times diablerie is sanctioned by the Camarilla."
         ],
@@ -2588,9 +2528,9 @@ const C = (() => {
             "are ruthless social Darwinists who believe in the worthy ruling, and the unworthy serving."
         ],
         "Clan Tzimisce: The Clan of Shapers": [
-            'Clan Tzimisce ("zih-ME-see") of the Sabbat descends from an Antediluvian known only as "the Eldest", childe of Enoch the Wise, childe',
+            "Clan Tzimisce (\"zih-ME-see\") of the Sabbat descends from an Antediluvian known only as \"the Eldest\", childe of Enoch the Wise, childe",
             "of Caine the First. Scholars, sorcerers and flesh-shapers, the Tzimisce are alien and inscrutable, proudly renouncing",
-            'their humanity to focus on transcending the limitations of the vampiric state, by following their "Path of Metamorphosis".'
+            "their humanity to focus on transcending the limitations of the vampiric state, by following their \"Path of Metamorphosis\"."
         ],
         "Clan Assamite: The Clan of the Hunt": [
             "Clan Assamite of the mountain fortress Alamut in the Middle East, known as the Banu Haqim, descends from Haqim of the Third",
@@ -2612,7 +2552,7 @@ const C = (() => {
             "It is prophesied to be the time when the Antediluvians will rise from their slumbers and devour their descendants."
         ],
         Jyhad: [
-            'The Jyhad is said to be the "eternal struggle" for dominance between ancient methuselahs and the surviving Antediluvians.',
+            "The Jyhad is said to be the \"eternal struggle\" for dominance between ancient methuselahs and the surviving Antediluvians.",
             "Believers claim it is a subtle and insidious conflict, one that is fought in the everynight interactions of",
             "younger vampires, most of whom are entirely unaware they are being controlled and used as pawns."
         ],
@@ -2655,16 +2595,16 @@ const C = (() => {
         ],
         "The Blush of Life": [
             "With effort, Kindred can force their hearts to beat and their cheeks to flush for a time, assuming the appearance of a living mortal.",
-            'Called "the Blush of Life", it is an imperfect disguise that grows ever more difficult to achieve as one loses touch with humanity.'
+            "Called \"the Blush of Life\", it is an imperfect disguise that grows ever more difficult to achieve as one loses touch with humanity."
         ],
         "Mechanic: Memoriam": [
-            'If you want to assert that you did something in the past, you can call for a "Memoriam".',
+            "If you want to assert that you did something in the past, you can call for a \"Memoriam\".",
             "During Memoriam, we play out a quick flashback scene to see how things really turned out.",
             "If you are successful, you retroactively gain the benefits of your past efforts in the present."
         ],
         "The Prophecy of Gehenna": [
-            '"You will know these last times by the Time of Thin Blood, which will mark vampires that cannot beget.',
-            'You will know them by the Clanless, who will come to rule."',
+            "\"You will know these last times by the Time of Thin Blood, which will mark vampires that cannot beget.",
+            "You will know them by the Clanless, who will come to rule.\"",
             " — The Book of Nod"
         ],
         "The Second Inquisition": [
@@ -2744,7 +2684,7 @@ const C = (() => {
         ],
         "Clan Rivalries: Nosferatu & Toreador": [
             "Throughout history, Clan Toreador has been behind a cavalcade of subtle machinations against Clan Nosferatu, ostracizing them from",
-            '"polite" Kindred society and resigning them to the slums and sewers. For most clans, these acts would be unforgivable, but the',
+            "\"polite\" Kindred society and resigning them to the slums and sewers. For most clans, these acts would be unforgivable, but the",
             "Nosferatu are subtle and indisposed to grudges. Nevertheless, the Toreador know to expect a very steep price to secure Nosferatu services."
         ],
         "The First Inquisition: The Burning Times": [
@@ -2754,11 +2694,11 @@ const C = (() => {
         ],
         Prestation: [
             "Prestation describes the system of exchanging favors among the Kindred. Since debts do not expire and eternity is a very long",
-            'time, prestation carries great weight among immortals of all sects. Though favors (or "boons" as they are known) are usually tracked',
+            "time, prestation carries great weight among immortals of all sects. Though favors (or \"boons\" as they are known) are usually tracked",
             "informally, a Kindred who renegs on such a debt is quickly identified, and risks social ostracism — or worse."
         ],
         "Mechanic: Projects": [
-            'Any long-term goal that you have for your character should be tracked as a "Project". To start a Project, describe the goal you ',
+            "Any long-term goal that you have for your character should be tracked as a \"Project\". To start a Project, describe the goal you ",
             "wish to accomplish, and we'll go from there. Be warned: Your adversaries are running their own Projects, and may interfere with yours.",
             "There are systems for discovering Projects, interfering with Projects, and even stealing a Project and reaping its benefits."
         ],
@@ -2796,8 +2736,8 @@ const C = (() => {
     // #endregion
 
     // #region CITY DETAILS
-    const DISTRICTSJSON = `{"Annex": {"fullName": "the Annex", "resonance": ["p", "m"], "huntDiff": 3, "homestead": [4, 2, 2, 1], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityRevelers"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "BayStFinancial": {"fullName": "the Bay St. Financial District", "resonance": ["p", "s"], "huntDiff": 4, "homestead": [5, 4, 6, 5], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Bennington": {"fullName": "Bennington Heights", "resonance": ["p", "s"], "huntDiff": 6, "homestead": [5, 1, 5, 1], "rollEffects": ["loc:Bennington+blood surge;nobloodsurge;[-1]Total Eclipse of the Heart;District Quirk: No Blood Surge"], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CitySuburb"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Cabbagetown": {"fullName": "Cabbagetown", "resonance": ["i", "s"], "huntDiff": 2, "homestead": [2, 1, 1, 1], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "CentreIsland": {"fullName": "Centre Island", "resonance": ["s", "p"], "huntDiff": 6, "homestead": [2, 3, 0, 2], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityPark"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Chinatown": {"fullName": "Chinatown", "resonance": ["s", "m"], "huntDiff": 2, "homestead": [2, 4, 4, 2], "rollEffects": ["loc:Chinatown+brawl;2;[+1]<#> Kung-Fu Fighting|loc;Chinatown+firearms/melee;-2;[-1]<#> Kung-Fu Fighting"], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "CityStreets": {"fullName": "City Streets", "resonance": ["c", "m"], "huntDiff": 6, "homestead": [2, 2, 2, 4], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Corktown": {"fullName": "Corktown", "resonance": ["c", "p"], "huntDiff": 2, "homestead": [2, 3, 1, 0], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Danforth": {"fullName": "the Danforth", "resonance": ["s", "p"], "huntDiff": 3, "homestead": [4, 2, 4, 2], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityWalking"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "DeerPark": {"fullName": "Deer Park", "resonance": ["r", "s"], "huntDiff": 5, "homestead": [2, 1, 2, 3], "rollEffects": ["loc:DeerPark;bestialcancel;[!1]Bad Moon Rising"], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CitySuburb"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Discovery": {"fullName": "the Discovery District", "resonance": ["m", "c"], "huntDiff": 4, "homestead": [5, 2, 3, 3], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityChatter"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "DistilleryDist": {"fullName": "the Distillery District", "resonance": ["c", "s"], "huntDiff": 5, "homestead": [1, 2, 4, 4], "rollEffects": ["loc:DistilleryDist+firearms;2;[+1]<#> Janie's Got a Gun|loc:DistilleryDist+brawl/melee;-2;[-1]<#> Janie's Got a Gun"], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "DupontByTheCastle": {"fullName": "Dupont by the Castle", "resonance": ["m", "c"], "huntDiff": 4, "homestead": [5, 3, 5, 2], "rollEffects": ["loc:DupontByTheCastle+messycrit;;[!1]Can't Stop the Feeling"], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityWalking"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "GayVillage": {"fullName": "the Gay Village", "resonance": ["s", "m"], "huntDiff": 2, "homestead": [4, 3, 2, 3], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "HarbordVillage": {"fullName": "Harbord Village", "resonance": ["c", "p"], "huntDiff": 4, "homestead": [3, 5, 3, 4], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Humewood": {"fullName": "Humewood", "resonance": ["r", "s"], "huntDiff": 3, "homestead": [2, 1, 4, 2], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CitySuburb"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "LakeOntario": {"fullName": "Lake Ontario", "resonance": ["p", "s"], "huntDiff": "~", "homestead": [2, 1, 4, 4], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Waterside"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "LibertyVillage": {"fullName": "Liberty Village", "resonance": ["c", "m"], "huntDiff": 3, "homestead": [3, 3, 2, 1], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityRevelers"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "LittleItaly": {"fullName": "Little Italy", "resonance": ["c", "p"], "huntDiff": 2, "homestead": [3, 3, 3, 3], "rollEffects": ["loc:LittleItaly+melee;2;[+1]<#> Beat It|loc:LittleItaly+firearms/melee;-2;[-1]<#> Beat It"], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "LittlePortugal": {"fullName": "Little Portugal", "resonance": ["m", "p"], "huntDiff": 2, "homestead": [1, 4, 3, 3], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(TOTALSILENCE)"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "PATH": {"fullName": "P.A.T.H.", "resonance": ["p", "c"], "huntDiff": 4, "homestead": [3, 6, 4, 5], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["IndoorMarket"], "outside": false, "domainControl": {"rollEffects": [], "statEffects:": []}}, "RegentPark": {"fullName": "Regent Park", "resonance": ["p", "c"], "huntDiff": 3, "homestead": [4, 4, 3, 4], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CitySuburb"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Riverdale": {"fullName": "Riverdale", "resonance": ["q", "m"], "huntDiff": 3, "homestead": [3, 5, 4, 3], "rollEffects": ["loc:Riverdale+messycrit;nomessycrit;[LOC]Steady As She Goes"], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CitySuburb"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Rosedale": {"fullName": "Rosedale", "resonance": ["p", "m"], "huntDiff": 6, "homestead": [5, 1, 5, 4], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CitySuburb"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Sewers": {"fullName": "the Sewers", "resonance": ["m", "s"], "huntDiff": "~", "homestead": [0, 1, 4, 5], "rollEffects": ["loc:Sewers+Nosferatu+physical/discipline;2;[+1]<#> Demons"], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Sewers"], "outside": false, "domainControl": {"rollEffects": [], "statEffects:": []}}, "StJamesTown": {"fullName": "St. James Town", "resonance": ["i", "p"], "huntDiff": 2, "homestead": [1, 1, 4, 1], "rollEffects": ["loc:StJamesTown+Lasombra+Dominate;2;[+1]<#> Music of the Night"], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Summerhill": {"fullName": "Summerhill", "resonance": ["m", "s"], "huntDiff": 2, "homestead": [1, 3, 3, 2], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CitySuburb"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Waterfront": {"fullName": "the Waterfront", "resonance": ["s", "c"], "huntDiff": 4, "homestead": [6, 5, 4, 5], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "WestQueenWest": {"fullName": "West Queen West", "resonance": ["s", "p"], "huntDiff": 3, "homestead": [4, 4, 3, 4], "rollEffects": ["loc:WestQueenWest+success+rouse;reroll;[!1]Hungry Like the Wolf"], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Wychwood": {"fullName": "Wychwood", "resonance": ["s", "c"], "huntDiff": 5, "homestead": [2, 0, 5, 1], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CitySuburb"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "YongeHospital": {"fullName": "the Yonge & College Hospital District", "resonance": ["p", "c"], "huntDiff": 4, "homestead": [4, 4, 4, 5], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "YongeMuseum": {"fullName": "the Yonge & Bloor Museum District", "resonance": ["m", "c"], "huntDiff": 4, "homestead": [5, 4, 4, 3], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityChatter"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "YongeStreet": {"fullName": "Yonge Street", "resonance": ["q", "m"], "huntDiff": 3, "homestead": [4, 5, 4, 6], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true, "domainControl": {"rollEffects": [], "statEffects:": []}}, "Yorkville": {"fullName": "Yorkville", "resonance": ["c", "m"], "huntDiff": 6, "homestead": [5, 2, 4, 5], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CitySuburb"], "outside": true, "domainControl": {"rollEffects": ["composure;1;+ Domain Bonus: Composure (<.>)", "composure;2;+ Domain Bonus: Composure (<.>)", "composure;freewpreroll;Domain Bonus: Free Reroll"], "statEffects:": []}}}`;
-    const SITESJSON = `{"AnarchBar": {"fullName": "an Anarch Dive Bar", "district": null, "resonance": ["c", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["DiveBar"], "outside": false}, "AptCorridor": {"fullName": "an apartment corridor", "district": null, "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "AptLobby": {"fullName": "an apartment lobby", "district": null, "resonance": ["c", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "AptStreetside": {"fullName": "an apartment streetside", "district": null, "resonance": ["q", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": true}, "ArtGallery": {"fullName": "the Art Gallery of Ontario", "district": ["WestQueenWest"], "resonance": ["s", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "BackAlley": {"fullName": "a back alley", "district": null, "resonance": [null, "s"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["UrbanDark"], "outside": true}, "BayTower": {"fullName": "the Bay Wellington Tower", "district": ["BayStFinancial"], "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "BBootyCells": {"fullName": "Bookies' Booty: Cells", "district": ["HarbordVillage"], "resonance": [null, "p"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftHum"], "outside": false}, "BillyBishopFerry": {"fullName": "the Billy Bishop Ferry", "district": ["Waterfront", "LakeOntario"], "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Waterside"], "outside": false}, "BrickWorks": {"fullName": "the Evergreen Brick Works", "district": ["Rosedale"], "resonance": [null, "s"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Industry"], "outside": false}, "CabbagetownPenthouse": {"fullName": "a Cabbagetown Penthouse", "district": ["Cabbagetown"], "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": false}, "Cemetary": {"fullName": "a cemetary", "district": null, "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityPark"], "outside": true}, "CeramicsMuseum": {"fullName": "the Gardiner Ceramics Museum", "district": ["YongeHospital"], "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "ChristiePitsPark": {"fullName": "Christie Pits Park", "district": ["Wychwood"], "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityPark"], "outside": true}, "CityApt1": {"fullName": "a city apartment", "district": null, "resonance": ["c", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": false}, "CityHall": {"fullName": "City Hall", "district": ["WestQueenWest"], "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "CityPark": {"fullName": "a city park", "district": null, "resonance": ["s", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityPark"], "outside": true}, "CLBallroom": {"fullName": "the Casa Loma Ballroom", "district": ["DupontByTheCastle"], "resonance": ["s", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Church"], "outside": false}, "CLGallery": {"fullName": "the Casa Loma Gallery", "district": ["DupontByTheCastle"], "resonance": ["s", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "CLGrounds": {"fullName": "the Casa Loma Estate Grounds", "district": ["DupontByTheCastle"], "resonance": [null, "m"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CitySuburb"], "outside": true}, "CLSittingRoom": {"fullName": "the Sitting Room at Casa Loma", "district": ["DupontByTheCastle"], "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "!time start clock 20", "onExitCall": "!time start clock 60", "soundScape": ["(NONE)"], "outside": false}, "CLThroneRoom": {"fullName": "the Throne Room at Casa Loma", "district": ["DupontByTheCastle"], "resonance": [null, "c"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "CNTower": {"fullName": "the CN Tower", "district": ["Waterfront"], "resonance": ["s", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["RoofTop"], "outside": false}, "Distillery": {"fullName": "the Historic Distillery", "district": ["DistilleryDist"], "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Industry"], "outside": false}, "Docks": {"fullName": "the Docks", "district": ["DistilleryDist"], "resonance": ["c", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Waterside"], "outside": true}, "Drake": {"fullName": "the Drake Hotel", "district": ["LittlePortugal"], "resonance": ["s", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(TOTALSILENCE)"], "outside": false}, "Elevator": {"fullName": "an elevator", "district": null, "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftHum"], "outside": false}, "Elysium": {"fullName": "Elysium", "district": null, "resonance": [null, "c"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "EvergreenPalisades": {"fullName": "the Evergreen Palisades", "district": ["RegentPark"], "resonance": ["i", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": false}, "FightClub": {"fullName": "fight club", "district": null, "resonance": ["c", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["DiveBar"], "outside": false}, "GayClub": {"fullName": "a gay nightclub", "district": null, "resonance": ["s", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Nightclub"], "outside": false}, "GENERIC": {"fullName": "generic", "district": null, "resonance": [], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"]}, "GiovanniEstate": {"fullName": "the Giovanni Estate", "district": ["Wychwood"], "resonance": ["i", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityPark"], "outside": true}, "HauntedMansion": {"fullName": "a haunted mansion", "district": ["Wychwood"], "resonance": ["i", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "Kensington": {"fullName": "Kensington Market", "district": ["HarbordVillage"], "resonance": [null, "m"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityWalking"], "outside": true}, "Laboratory": {"fullName": "a laboratory", "district": null, "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": false}, "LectureHall": {"fullName": "a lecture hall", "district": null, "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "Library": {"fullName": "a library", "district": null, "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "MadinaMasjid": {"fullName": "Madina Masjid", "district": ["Danforth"], "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Church"], "outside": false}, "MiddleOfRoad": {"fullName": "the middle of the road", "district": null, "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true}, "Nightclub": {"fullName": "a nightclub", "district": null, "resonance": ["s", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Nightclub"], "outside": false}, "Office": {"fullName": "an office", "district": null, "resonance": [null, "c"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "ParkingLot": {"fullName": "a parking lot", "district": null, "resonance": [null, "p"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": true}, "PMHospital": {"fullName": "Princess Margaret Hospital", "district": ["YongeMuseum"], "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Hospital"], "outside": false}, "ProfOffice": {"fullName": "a professor's office", "district": ["Discovery"], "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "RedemptionHouse": {"fullName": "Redemption House", "district": ["Danforth"], "resonance": [null, "p"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "RegentParkApt": {"fullName": "a Regent Park Apartment", "district": ["RegentPark"], "resonance": ["i", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(TOTALSILENCE)"], "outside": false}, "RogersCentre": {"fullName": "the Rogers Centre", "district": ["Waterfront"], "resonance": ["c", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityPark"], "outside": true}, "ROM": {"fullName": "the Royal Ontario Museum", "district": ["YongeHospital"], "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "Rooftops": {"fullName": "the rooftops", "district": null, "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["RoofTop"], "outside": true}, "Sidewalk1": {"fullName": "a sidewalk", "district": null, "resonance": [null, "s"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": true}, "Sidewalk2": {"fullName": "a sidewalk", "district": null, "resonance": ["q", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": true}, "Sidewalk3": {"fullName": "a sidewalk", "district": null, "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": true}, "SiteLotus": {"fullName": "Site: Lotus", "district": ["YongeStreet"], "resonance": [null, null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftHum"], "outside": false}, "SpawningPool": {"fullName": "a spawning pool", "district": ["Sewers"], "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Sewers"], "outside": false}, "Stairwell": {"fullName": "a stairwell", "district": null, "resonance": ["s", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "StMichaelsCathedral": {"fullName": "St. Michael's Cathedral Basilica", "district": ["Cabbagetown"], "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Church"], "outside": false}, "StripClub": {"fullName": "a strip club", "district": null, "resonance": ["s", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Nightclub"], "outside": false}, "StudentVillage": {"fullName": "the Student Village", "district": ["Discovery"], "resonance": ["s", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityRevelers"], "outside": true}, "SubwayStation": {"fullName": "a subway station", "district": ["PATH"], "resonance": ["c", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Subway"], "outside": false}, "SubwayTunnels": {"fullName": "a subway tunnels", "district": ["PATH"], "resonance": [null, "s"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Sewers"], "outside": false}, "TorontoWestern": {"fullName": "Toronto Western Hospital", "district": ["HarbordVillage"], "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Hospital"], "outside": false}, "TremereChantry": {"fullName": "the Tremere Chantry", "district": ["Discovery"], "resonance": ["p", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Church"], "outside": false}, "UndergroundMedClinic": {"fullName": "an underground medical clinic", "district": null, "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Hospital"], "outside": false}, "UndergroundMedOffice": {"fullName": "an underground medical office", "district": null, "resonance": [null, "c"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["SoftIndoor"], "outside": false}, "VacantLot": {"fullName": "a vacant lot", "district": null, "resonance": ["i", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["UrbanDark"], "outside": true}, "Vehicle2": {"fullName": "a vehicle", "district": null, "resonance": [null, null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true}, "Vehicle4": {"fullName": "a vehicle", "district": null, "resonance": [null, null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true}, "Vehicle5": {"fullName": "a vehicle", "district": null, "resonance": [null, null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true}, "Vehicle7": {"fullName": "a vehicle", "district": null, "resonance": [null, null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityTraffic"], "outside": true}, "WalkingPath": {"fullName": "a walking path", "district": null, "resonance": ["q", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityPark"], "outside": true}, "WarrensAntechamber": {"fullName": "the Warrens: Antechamber", "district": ["Sewers"], "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Sewers"], "outside": false}, "WychwoodPub": {"fullName": "a Wychwood Pub", "district": ["Wychwood"], "resonance": [null, "c"], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": false}, "Yacht": {"fullName": "a luxury yacht", "district": ["Waterfront", "LakeOntario"], "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["Waterside"], "outside": false}, "YongeDundasSquare": {"fullName": "Yonge & Dundas Square", "district": ["YongeStreet"], "resonance": ["c", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": true}, "YorkvilleApt1": {"fullName": "a Yorkville Apartment", "district": ["Yorkville"], "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": false}, "YorkvilleApt2": {"fullName": "a Yorkville Apartment", "district": ["Yorkville"], "resonance": ["m", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["(NONE)"], "outside": false}, "YouthShelter": {"fullName": "a youth shelter", "district": null, "resonance": ["c", null], "rollEffects": [], "statEffects": [], "onEntryCall": "", "onExitCall": "", "soundScape": ["CityRevelers"], "outside": false}}`;
+    const DISTRICTSJSON = "{\"Annex\": {\"fullName\": \"the Annex\", \"resonance\": [\"p\", \"m\"], \"huntDiff\": 3, \"homestead\": [4, 2, 2, 1], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityRevelers\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"BayStFinancial\": {\"fullName\": \"the Bay St. Financial District\", \"resonance\": [\"p\", \"s\"], \"huntDiff\": 4, \"homestead\": [5, 4, 6, 5], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Bennington\": {\"fullName\": \"Bennington Heights\", \"resonance\": [\"p\", \"s\"], \"huntDiff\": 6, \"homestead\": [5, 1, 5, 1], \"rollEffects\": [\"loc:Bennington+blood surge;nobloodsurge;[-1]Total Eclipse of the Heart;District Quirk: No Blood Surge\"], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CitySuburb\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Cabbagetown\": {\"fullName\": \"Cabbagetown\", \"resonance\": [\"i\", \"s\"], \"huntDiff\": 2, \"homestead\": [2, 1, 1, 1], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"CentreIsland\": {\"fullName\": \"Centre Island\", \"resonance\": [\"s\", \"p\"], \"huntDiff\": 6, \"homestead\": [2, 3, 0, 2], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityPark\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Chinatown\": {\"fullName\": \"Chinatown\", \"resonance\": [\"s\", \"m\"], \"huntDiff\": 2, \"homestead\": [2, 4, 4, 2], \"rollEffects\": [\"loc:Chinatown+brawl;2;[+1]<#> Kung-Fu Fighting|loc;Chinatown+firearms/melee;-2;[-1]<#> Kung-Fu Fighting\"], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"CityStreets\": {\"fullName\": \"City Streets\", \"resonance\": [\"c\", \"m\"], \"huntDiff\": 6, \"homestead\": [2, 2, 2, 4], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Corktown\": {\"fullName\": \"Corktown\", \"resonance\": [\"c\", \"p\"], \"huntDiff\": 2, \"homestead\": [2, 3, 1, 0], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Danforth\": {\"fullName\": \"the Danforth\", \"resonance\": [\"s\", \"p\"], \"huntDiff\": 3, \"homestead\": [4, 2, 4, 2], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityWalking\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"DeerPark\": {\"fullName\": \"Deer Park\", \"resonance\": [\"r\", \"s\"], \"huntDiff\": 5, \"homestead\": [2, 1, 2, 3], \"rollEffects\": [\"loc:DeerPark;bestialcancel;[!1]Bad Moon Rising\"], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CitySuburb\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Discovery\": {\"fullName\": \"the Discovery District\", \"resonance\": [\"m\", \"c\"], \"huntDiff\": 4, \"homestead\": [5, 2, 3, 3], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityChatter\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"DistilleryDist\": {\"fullName\": \"the Distillery District\", \"resonance\": [\"c\", \"s\"], \"huntDiff\": 5, \"homestead\": [1, 2, 4, 4], \"rollEffects\": [\"loc:DistilleryDist+firearms;2;[+1]<#> Janie's Got a Gun|loc:DistilleryDist+brawl/melee;-2;[-1]<#> Janie's Got a Gun\"], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"DupontByTheCastle\": {\"fullName\": \"Dupont by the Castle\", \"resonance\": [\"m\", \"c\"], \"huntDiff\": 4, \"homestead\": [5, 3, 5, 2], \"rollEffects\": [\"loc:DupontByTheCastle+messycrit;;[!1]Can't Stop the Feeling\"], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityWalking\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"GayVillage\": {\"fullName\": \"the Gay Village\", \"resonance\": [\"s\", \"m\"], \"huntDiff\": 2, \"homestead\": [4, 3, 2, 3], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"HarbordVillage\": {\"fullName\": \"Harbord Village\", \"resonance\": [\"c\", \"p\"], \"huntDiff\": 4, \"homestead\": [3, 5, 3, 4], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Humewood\": {\"fullName\": \"Humewood\", \"resonance\": [\"r\", \"s\"], \"huntDiff\": 3, \"homestead\": [2, 1, 4, 2], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CitySuburb\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"LakeOntario\": {\"fullName\": \"Lake Ontario\", \"resonance\": [\"p\", \"s\"], \"huntDiff\": \"~\", \"homestead\": [2, 1, 4, 4], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Waterside\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"LibertyVillage\": {\"fullName\": \"Liberty Village\", \"resonance\": [\"c\", \"m\"], \"huntDiff\": 3, \"homestead\": [3, 3, 2, 1], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityRevelers\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"LittleItaly\": {\"fullName\": \"Little Italy\", \"resonance\": [\"c\", \"p\"], \"huntDiff\": 2, \"homestead\": [3, 3, 3, 3], \"rollEffects\": [\"loc:LittleItaly+melee;2;[+1]<#> Beat It|loc:LittleItaly+firearms/melee;-2;[-1]<#> Beat It\"], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"LittlePortugal\": {\"fullName\": \"Little Portugal\", \"resonance\": [\"m\", \"p\"], \"huntDiff\": 2, \"homestead\": [1, 4, 3, 3], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(TOTALSILENCE)\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"PATH\": {\"fullName\": \"P.A.T.H.\", \"resonance\": [\"p\", \"c\"], \"huntDiff\": 4, \"homestead\": [3, 6, 4, 5], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"IndoorMarket\"], \"outside\": false, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"RegentPark\": {\"fullName\": \"Regent Park\", \"resonance\": [\"p\", \"c\"], \"huntDiff\": 3, \"homestead\": [4, 4, 3, 4], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CitySuburb\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Riverdale\": {\"fullName\": \"Riverdale\", \"resonance\": [\"q\", \"m\"], \"huntDiff\": 3, \"homestead\": [3, 5, 4, 3], \"rollEffects\": [\"loc:Riverdale+messycrit;nomessycrit;[LOC]Steady As She Goes\"], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CitySuburb\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Rosedale\": {\"fullName\": \"Rosedale\", \"resonance\": [\"p\", \"m\"], \"huntDiff\": 6, \"homestead\": [5, 1, 5, 4], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CitySuburb\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Sewers\": {\"fullName\": \"the Sewers\", \"resonance\": [\"m\", \"s\"], \"huntDiff\": \"~\", \"homestead\": [0, 1, 4, 5], \"rollEffects\": [\"loc:Sewers+Nosferatu+physical/discipline;2;[+1]<#> Demons\"], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Sewers\"], \"outside\": false, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"StJamesTown\": {\"fullName\": \"St. James Town\", \"resonance\": [\"i\", \"p\"], \"huntDiff\": 2, \"homestead\": [1, 1, 4, 1], \"rollEffects\": [\"loc:StJamesTown+Lasombra+Dominate;2;[+1]<#> Music of the Night\"], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Summerhill\": {\"fullName\": \"Summerhill\", \"resonance\": [\"m\", \"s\"], \"huntDiff\": 2, \"homestead\": [1, 3, 3, 2], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CitySuburb\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Waterfront\": {\"fullName\": \"the Waterfront\", \"resonance\": [\"s\", \"c\"], \"huntDiff\": 4, \"homestead\": [6, 5, 4, 5], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"WestQueenWest\": {\"fullName\": \"West Queen West\", \"resonance\": [\"s\", \"p\"], \"huntDiff\": 3, \"homestead\": [4, 4, 3, 4], \"rollEffects\": [\"loc:WestQueenWest+success+rouse;reroll;[!1]Hungry Like the Wolf\"], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Wychwood\": {\"fullName\": \"Wychwood\", \"resonance\": [\"s\", \"c\"], \"huntDiff\": 5, \"homestead\": [2, 0, 5, 1], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CitySuburb\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"YongeHospital\": {\"fullName\": \"the Yonge & College Hospital District\", \"resonance\": [\"p\", \"c\"], \"huntDiff\": 4, \"homestead\": [4, 4, 4, 5], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"YongeMuseum\": {\"fullName\": \"the Yonge & Bloor Museum District\", \"resonance\": [\"m\", \"c\"], \"huntDiff\": 4, \"homestead\": [5, 4, 4, 3], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityChatter\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"YongeStreet\": {\"fullName\": \"Yonge Street\", \"resonance\": [\"q\", \"m\"], \"huntDiff\": 3, \"homestead\": [4, 5, 4, 6], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [], \"statEffects:\": []}}, \"Yorkville\": {\"fullName\": \"Yorkville\", \"resonance\": [\"c\", \"m\"], \"huntDiff\": 6, \"homestead\": [5, 2, 4, 5], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CitySuburb\"], \"outside\": true, \"domainControl\": {\"rollEffects\": [\"composure;1;+ Domain Bonus: Composure (<.>)\", \"composure;2;+ Domain Bonus: Composure (<.>)\", \"composure;freewpreroll;Domain Bonus: Free Reroll\"], \"statEffects:\": []}}}";
+    const SITESJSON = "{\"AnarchBar\": {\"fullName\": \"an Anarch Dive Bar\", \"district\": null, \"resonance\": [\"c\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"DiveBar\"], \"outside\": false}, \"AptCorridor\": {\"fullName\": \"an apartment corridor\", \"district\": null, \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"AptLobby\": {\"fullName\": \"an apartment lobby\", \"district\": null, \"resonance\": [\"c\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"AptStreetside\": {\"fullName\": \"an apartment streetside\", \"district\": null, \"resonance\": [\"q\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": true}, \"ArtGallery\": {\"fullName\": \"the Art Gallery of Ontario\", \"district\": [\"WestQueenWest\"], \"resonance\": [\"s\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"BackAlley\": {\"fullName\": \"a back alley\", \"district\": null, \"resonance\": [null, \"s\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"UrbanDark\"], \"outside\": true}, \"BayTower\": {\"fullName\": \"the Bay Wellington Tower\", \"district\": [\"BayStFinancial\"], \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"BBootyCells\": {\"fullName\": \"Bookies' Booty: Cells\", \"district\": [\"HarbordVillage\"], \"resonance\": [null, \"p\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftHum\"], \"outside\": false}, \"BillyBishopFerry\": {\"fullName\": \"the Billy Bishop Ferry\", \"district\": [\"Waterfront\", \"LakeOntario\"], \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Waterside\"], \"outside\": false}, \"BrickWorks\": {\"fullName\": \"the Evergreen Brick Works\", \"district\": [\"Rosedale\"], \"resonance\": [null, \"s\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Industry\"], \"outside\": false}, \"CabbagetownPenthouse\": {\"fullName\": \"a Cabbagetown Penthouse\", \"district\": [\"Cabbagetown\"], \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": false}, \"Cemetary\": {\"fullName\": \"a cemetary\", \"district\": null, \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityPark\"], \"outside\": true}, \"CeramicsMuseum\": {\"fullName\": \"the Gardiner Ceramics Museum\", \"district\": [\"YongeHospital\"], \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"ChristiePitsPark\": {\"fullName\": \"Christie Pits Park\", \"district\": [\"Wychwood\"], \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityPark\"], \"outside\": true}, \"CityApt1\": {\"fullName\": \"a city apartment\", \"district\": null, \"resonance\": [\"c\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": false}, \"CityHall\": {\"fullName\": \"City Hall\", \"district\": [\"WestQueenWest\"], \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"CityPark\": {\"fullName\": \"a city park\", \"district\": null, \"resonance\": [\"s\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityPark\"], \"outside\": true}, \"CLBallroom\": {\"fullName\": \"the Casa Loma Ballroom\", \"district\": [\"DupontByTheCastle\"], \"resonance\": [\"s\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Church\"], \"outside\": false}, \"CLGallery\": {\"fullName\": \"the Casa Loma Gallery\", \"district\": [\"DupontByTheCastle\"], \"resonance\": [\"s\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"CLGrounds\": {\"fullName\": \"the Casa Loma Estate Grounds\", \"district\": [\"DupontByTheCastle\"], \"resonance\": [null, \"m\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CitySuburb\"], \"outside\": true}, \"CLSittingRoom\": {\"fullName\": \"the Sitting Room at Casa Loma\", \"district\": [\"DupontByTheCastle\"], \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"!time start clock 20\", \"onExitCall\": \"!time start clock 60\", \"soundScape\": [\"(NONE)\"], \"outside\": false}, \"CLThroneRoom\": {\"fullName\": \"the Throne Room at Casa Loma\", \"district\": [\"DupontByTheCastle\"], \"resonance\": [null, \"c\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"CNTower\": {\"fullName\": \"the CN Tower\", \"district\": [\"Waterfront\"], \"resonance\": [\"s\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"RoofTop\"], \"outside\": false}, \"Distillery\": {\"fullName\": \"the Historic Distillery\", \"district\": [\"DistilleryDist\"], \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Industry\"], \"outside\": false}, \"Docks\": {\"fullName\": \"the Docks\", \"district\": [\"DistilleryDist\"], \"resonance\": [\"c\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Waterside\"], \"outside\": true}, \"Drake\": {\"fullName\": \"the Drake Hotel\", \"district\": [\"LittlePortugal\"], \"resonance\": [\"s\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(TOTALSILENCE)\"], \"outside\": false}, \"Elevator\": {\"fullName\": \"an elevator\", \"district\": null, \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftHum\"], \"outside\": false}, \"Elysium\": {\"fullName\": \"Elysium\", \"district\": null, \"resonance\": [null, \"c\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"EvergreenPalisades\": {\"fullName\": \"the Evergreen Palisades\", \"district\": [\"RegentPark\"], \"resonance\": [\"i\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": false}, \"FightClub\": {\"fullName\": \"fight club\", \"district\": null, \"resonance\": [\"c\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"DiveBar\"], \"outside\": false}, \"GayClub\": {\"fullName\": \"a gay nightclub\", \"district\": null, \"resonance\": [\"s\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Nightclub\"], \"outside\": false}, \"GENERIC\": {\"fullName\": \"generic\", \"district\": null, \"resonance\": [], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"]}, \"GiovanniEstate\": {\"fullName\": \"the Giovanni Estate\", \"district\": [\"Wychwood\"], \"resonance\": [\"i\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityPark\"], \"outside\": true}, \"HauntedMansion\": {\"fullName\": \"a haunted mansion\", \"district\": [\"Wychwood\"], \"resonance\": [\"i\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"Kensington\": {\"fullName\": \"Kensington Market\", \"district\": [\"HarbordVillage\"], \"resonance\": [null, \"m\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityWalking\"], \"outside\": true}, \"Laboratory\": {\"fullName\": \"a laboratory\", \"district\": null, \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": false}, \"LectureHall\": {\"fullName\": \"a lecture hall\", \"district\": null, \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"Library\": {\"fullName\": \"a library\", \"district\": null, \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"MadinaMasjid\": {\"fullName\": \"Madina Masjid\", \"district\": [\"Danforth\"], \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Church\"], \"outside\": false}, \"MiddleOfRoad\": {\"fullName\": \"the middle of the road\", \"district\": null, \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true}, \"Nightclub\": {\"fullName\": \"a nightclub\", \"district\": null, \"resonance\": [\"s\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Nightclub\"], \"outside\": false}, \"Office\": {\"fullName\": \"an office\", \"district\": null, \"resonance\": [null, \"c\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"ParkingLot\": {\"fullName\": \"a parking lot\", \"district\": null, \"resonance\": [null, \"p\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": true}, \"PMHospital\": {\"fullName\": \"Princess Margaret Hospital\", \"district\": [\"YongeMuseum\"], \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Hospital\"], \"outside\": false}, \"ProfOffice\": {\"fullName\": \"a professor's office\", \"district\": [\"Discovery\"], \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"RedemptionHouse\": {\"fullName\": \"Redemption House\", \"district\": [\"Danforth\"], \"resonance\": [null, \"p\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"RegentParkApt\": {\"fullName\": \"a Regent Park Apartment\", \"district\": [\"RegentPark\"], \"resonance\": [\"i\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(TOTALSILENCE)\"], \"outside\": false}, \"RogersCentre\": {\"fullName\": \"the Rogers Centre\", \"district\": [\"Waterfront\"], \"resonance\": [\"c\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityPark\"], \"outside\": true}, \"ROM\": {\"fullName\": \"the Royal Ontario Museum\", \"district\": [\"YongeHospital\"], \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"Rooftops\": {\"fullName\": \"the rooftops\", \"district\": null, \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"RoofTop\"], \"outside\": true}, \"Sidewalk1\": {\"fullName\": \"a sidewalk\", \"district\": null, \"resonance\": [null, \"s\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": true}, \"Sidewalk2\": {\"fullName\": \"a sidewalk\", \"district\": null, \"resonance\": [\"q\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": true}, \"Sidewalk3\": {\"fullName\": \"a sidewalk\", \"district\": null, \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": true}, \"SiteLotus\": {\"fullName\": \"Site: Lotus\", \"district\": [\"YongeStreet\"], \"resonance\": [null, null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftHum\"], \"outside\": false}, \"SpawningPool\": {\"fullName\": \"a spawning pool\", \"district\": [\"Sewers\"], \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Sewers\"], \"outside\": false}, \"Stairwell\": {\"fullName\": \"a stairwell\", \"district\": null, \"resonance\": [\"s\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"StMichaelsCathedral\": {\"fullName\": \"St. Michael's Cathedral Basilica\", \"district\": [\"Cabbagetown\"], \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Church\"], \"outside\": false}, \"StripClub\": {\"fullName\": \"a strip club\", \"district\": null, \"resonance\": [\"s\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Nightclub\"], \"outside\": false}, \"StudentVillage\": {\"fullName\": \"the Student Village\", \"district\": [\"Discovery\"], \"resonance\": [\"s\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityRevelers\"], \"outside\": true}, \"SubwayStation\": {\"fullName\": \"a subway station\", \"district\": [\"PATH\"], \"resonance\": [\"c\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Subway\"], \"outside\": false}, \"SubwayTunnels\": {\"fullName\": \"a subway tunnels\", \"district\": [\"PATH\"], \"resonance\": [null, \"s\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Sewers\"], \"outside\": false}, \"TorontoWestern\": {\"fullName\": \"Toronto Western Hospital\", \"district\": [\"HarbordVillage\"], \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Hospital\"], \"outside\": false}, \"TremereChantry\": {\"fullName\": \"the Tremere Chantry\", \"district\": [\"Discovery\"], \"resonance\": [\"p\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Church\"], \"outside\": false}, \"UndergroundMedClinic\": {\"fullName\": \"an underground medical clinic\", \"district\": null, \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Hospital\"], \"outside\": false}, \"UndergroundMedOffice\": {\"fullName\": \"an underground medical office\", \"district\": null, \"resonance\": [null, \"c\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"SoftIndoor\"], \"outside\": false}, \"VacantLot\": {\"fullName\": \"a vacant lot\", \"district\": null, \"resonance\": [\"i\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"UrbanDark\"], \"outside\": true}, \"Vehicle2\": {\"fullName\": \"a vehicle\", \"district\": null, \"resonance\": [null, null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true}, \"Vehicle4\": {\"fullName\": \"a vehicle\", \"district\": null, \"resonance\": [null, null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true}, \"Vehicle5\": {\"fullName\": \"a vehicle\", \"district\": null, \"resonance\": [null, null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true}, \"Vehicle7\": {\"fullName\": \"a vehicle\", \"district\": null, \"resonance\": [null, null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityTraffic\"], \"outside\": true}, \"WalkingPath\": {\"fullName\": \"a walking path\", \"district\": null, \"resonance\": [\"q\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityPark\"], \"outside\": true}, \"WarrensAntechamber\": {\"fullName\": \"the Warrens: Antechamber\", \"district\": [\"Sewers\"], \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Sewers\"], \"outside\": false}, \"WychwoodPub\": {\"fullName\": \"a Wychwood Pub\", \"district\": [\"Wychwood\"], \"resonance\": [null, \"c\"], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": false}, \"Yacht\": {\"fullName\": \"a luxury yacht\", \"district\": [\"Waterfront\", \"LakeOntario\"], \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"Waterside\"], \"outside\": false}, \"YongeDundasSquare\": {\"fullName\": \"Yonge & Dundas Square\", \"district\": [\"YongeStreet\"], \"resonance\": [\"c\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": true}, \"YorkvilleApt1\": {\"fullName\": \"a Yorkville Apartment\", \"district\": [\"Yorkville\"], \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": false}, \"YorkvilleApt2\": {\"fullName\": \"a Yorkville Apartment\", \"district\": [\"Yorkville\"], \"resonance\": [\"m\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"(NONE)\"], \"outside\": false}, \"YouthShelter\": {\"fullName\": \"a youth shelter\", \"district\": null, \"resonance\": [\"c\", null], \"rollEffects\": [], \"statEffects\": [], \"onEntryCall\": \"\", \"onExitCall\": \"\", \"soundScape\": [\"CityRevelers\"], \"outside\": false}}";
     const DISTRICTS = JSON.parse(DISTRICTSJSON);
     const SITES = JSON.parse(SITESJSON);
     // #endregion
@@ -2811,7 +2751,7 @@ const C = (() => {
     // #region MVC: Minimally-Viable Character Design
     const MVCVALS = [
         [
-            '<span style="display: block; width: 100%; margin-top: -10px;">Concept</span></div><div style="display: block; width: 100%; margin-top: -10px;">',
+            "<span style=\"display: block; width: 100%; margin-top: -10px;\">Concept</span></div><div style=\"display: block; width: 100%; margin-top: -10px;\">",
             [
                 "headerL",
                 "A depressed",
@@ -2871,42 +2811,42 @@ const C = (() => {
             "Pivotal Event",
             [
                 "para",
-                '<span style="font-size: 14px; margin-top: 10px;"><b>In the past ...</b></span><br>... you fell in love with the wrong person, who dragged you into an exciting world you never knew existed. You freaked out and left them.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>In the past ...</b></span><br>... your best friend accused you of a crime you know you didn\'t commit, but they have photos that prove otherwise.',
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... you fell in love with the wrong person, who dragged you into an exciting world you never knew existed. You freaked out and left them.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... your best friend accused you of a crime you know you didn't commit, but they have photos that prove otherwise.",
                 "<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... you ended up in a literal warzone, bullets flying all around you. If it weren't for a dangerous psychopath you befriended you'd be a corpse.",
-                '<span style="font-size: 14px; margin-top: 10px;"><b>In the past ...</b></span><br>... your parents were deranged on some basal level and you grew up in chaos. You escaped as soon as you could.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>In the past ...</b></span><br>... somehow, through no fault of your own, you ended up with money and status. You don\'t know what happened to it all.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>In the past ...</b></span><br>... someone once took you out into some isolated place and showed you something that gives you weird dreams to this day.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>In the past ...</b></span><br>... you had a talent that showed itself at an early age. Everyone told you you would be famous for it, but here you are.',
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... your parents were deranged on some basal level and you grew up in chaos. You escaped as soon as you could.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... somehow, through no fault of your own, you ended up with money and status. You don't know what happened to it all.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... someone once took you out into some isolated place and showed you something that gives you weird dreams to this day.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... you had a talent that showed itself at an early age. Everyone told you you would be famous for it, but here you are.",
                 "<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... you look a job with no experience that no one thought you could do. After a few years, you quit and didn't look back. You can't say why.",
-                '<span style="font-size: 14px; margin-top: 10px;"><b>In the past ...</b></span><br>... someone very close to you died. No one would tell you what happened, and the people around you refused to talk about it.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>In the past ...</b></span><br>... Work. Sleep. Work. Sleep. Forever. One day you\'d had enough, and in the middle of the day exploded in a rage. You left that life behind and never talk about it.'
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... someone very close to you died. No one would tell you what happened, and the people around you refused to talk about it.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... Work. Sleep. Work. Sleep. Forever. One day you'd had enough, and in the middle of the day exploded in a rage. You left that life behind and never talk about it."
             ],
             [
                 "para",
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You <i>still</i> feel <span style="font-size: 14px; margin-top: 10px;"><u>Endless Regret</u>:</b></span><br>You didn\'t comport yourself with any dignity or honesty. You thought you were better than that.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You <i>still</i> feel <span style="font-size: 14px; margin-top: 10px;"><u>Simmering Rage</u>:</b></span><br>They know what they did, and they did it knowing what would happen.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You <i>still</i> feel a <span style="font-size: 14px; margin-top: 10px;"><u>Miasma of Confusion</u>:</b></span><br>You can\'t square this circle. Nothing about this makes any sense and the more you think about it the worse it is.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You <i>still</i> feel <span style="font-size: 14px; margin-top: 10px;"><u>Arrogant Certainty</u>:</b></span><br>You were there for the whole thing and it didn\'t beat you. Nothing can stand in your way now.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You <i>still</i> feel <span style="font-size: 14px; margin-top: 10px;"><u>Bleak Joy</u>:</b></span><br>It\'s funny when you think about it. We\'re all just stuck here on this planet and absurd things keep happening.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You <i>still</i> feel <span style="font-size: 14px; margin-top: 10px;"><u>Numb Disbelief</u>:</b></span><br>Did that really happen? It can\'t have happened. It doesn\'t feel real.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You <i>still</i> feel <span style="font-size: 14px; margin-top: 10px;"><u>Renewed Purpose</u>:</b></span><br>Everything is lined up for you. You know what you have to do with your life now.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You <i>still</i> feel <span style="font-size: 14px; margin-top: 10px;"><u>Frail Hopelessness</u>:</b></span><br>Nothing matters, and the more you look at it the more you feel like the Universe is a great, crushing wave.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You\'re <i>still</i> driven to <span style="font-size: 14px; margin-top: 10px;"><u>Hypervigilance</u>:</b></span><br>This could happen at any moment to anyone. You keep your head on a swivel for the next time it does.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You <i>still</i> feel <span style="font-size: 14px; margin-top: 10px;"><u>Overwhelming Oneness</u>:</b></span><br>Have you laid in the grass and felt the Earth spinning around you? That\'s how you feel when you reflect on this memory.'
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Endless Regret</u>:</b></span><br>You didn't comport yourself with any dignity or honesty. You thought you were better than that.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Simmering Rage</u>:</b></span><br>They know what they did, and they did it knowing what would happen.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel a <span style=\"font-size: 14px; margin-top: 10px;\"><u>Miasma of Confusion</u>:</b></span><br>You can't square this circle. Nothing about this makes any sense and the more you think about it the worse it is.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Arrogant Certainty</u>:</b></span><br>You were there for the whole thing and it didn't beat you. Nothing can stand in your way now.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Bleak Joy</u>:</b></span><br>It's funny when you think about it. We're all just stuck here on this planet and absurd things keep happening.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Numb Disbelief</u>:</b></span><br>Did that really happen? It can't have happened. It doesn't feel real.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Renewed Purpose</u>:</b></span><br>Everything is lined up for you. You know what you have to do with your life now.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Frail Hopelessness</u>:</b></span><br>Nothing matters, and the more you look at it the more you feel like the Universe is a great, crushing wave.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You're <i>still</i> driven to <span style=\"font-size: 14px; margin-top: 10px;\"><u>Hypervigilance</u>:</b></span><br>This could happen at any moment to anyone. You keep your head on a swivel for the next time it does.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Overwhelming Oneness</u>:</b></span><br>Have you laid in the grass and felt the Earth spinning around you? That's how you feel when you reflect on this memory."
             ],
             [
                 "para",
                 "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... it never ended. You just move forward and try to put the past behind you. But when you can't help but look back, it's always there, right at your heels.",
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You can\'t let go because ... </b></span><br> ... the responsible parties died before they could be confronted about their part in it.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You can\'t let go because ... </b></span><br> ... things keep repeating, the same situations keep appearing in your periphery and reopening old wounds.',
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... the responsible parties died before they could be confronted about their part in it.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... things keep repeating, the same situations keep appearing in your periphery and reopening old wounds.",
                 "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... some problems are too big.  Some problems are systemic things that won't budge to one person's will.",
                 "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... forgiveness is earned, and the person or people responsible haven't earned it.",
                 "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... you can't put it right, because what is done is done.",
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You can\'t let go because ... </b></span><br> ... the system stepped in, the state or family, and took it all out of your hands.',
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... the system stepped in, the state or family, and took it all out of your hands.",
                 "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... you don't understand how it happened, and because you don't understand it, you can't resolve it.",
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You can\'t let go because ... </b></span><br> ... everything returned to normal on the outside, but just underneath that veneer of normalcy... it sits.',
-                '<span style="font-size: 14px; margin-top: 10px;"><b>You can\'t let go because ... </b></span><br> ... other things took priority, so it remained an open loop, still in the back of your head.'
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... everything returned to normal on the outside, but just underneath that veneer of normalcy... it sits.",
+                "<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... other things took priority, so it remained an open loop, still in the back of your head."
             ]
         ],
         [

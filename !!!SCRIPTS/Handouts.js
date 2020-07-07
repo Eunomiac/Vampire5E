@@ -66,13 +66,13 @@ const Handouts = (() => {
     // #endregion
 
     // #region GETTERS: Retrieving Notes, Data
-    const getCount = category => (STATE.REF.categoryLogs[category] || []).length;
-    const getCatNum = category => D.Int(D.LCase(D.Last(STATE.REF.categoryLogs[category])).replace(/^.*? (\d*)$/gu, "$1")) + 1;
+    const getCount = (category) => (STATE.REF.categoryLogs[category] || []).length;
+    const getCatNum = (category) => D.Int(D.LCase(D.Last(STATE.REF.categoryLogs[category])).replace(/^.*? (\d*)$/gu, "$1")) + 1;
     const getHandoutCode = (titleRef, storageRef, storageKey) => {
         if (storageRef && storageKey) {
             const handoutObj = getHandoutObj(titleRef);
             if (handoutObj)
-                handoutObj.get("gmnotes", notes => {
+                handoutObj.get("gmnotes", (notes) => {
                     storageRef[storageKey] = JSON.parse(notes);
                     D.Flag("Code Parsed!");
                 });
@@ -80,24 +80,23 @@ const Handouts = (() => {
             D.Flag("Must provide a storage reference and a key to store the code!");
         }
     };
-    const getHandoutObj = (titleRef, charRef) =>
-        findObjs({_type: "handout"}).filter(
-            x => D.LCase(x.get("name")).includes(D.LCase(titleRef)) && (!charRef || x.get("inplayerjournals").includes(D.GetPlayerID(charRef)))
-        )[0];
-    const getProjectData = charRef => {
+    const getHandoutObj = (titleRef, charRef) => findObjs({_type: "handout"}).filter(
+        (x) => D.LCase(x.get("name")).includes(D.LCase(titleRef)) && (!charRef || x.get("inplayerjournals").includes(D.GetPlayerID(charRef)))
+    )[0];
+    const getProjectData = (charRef) => {
         const projAttrs = D.GetRepStats(charRef, "project", null, null, "rowID");
         const projData = [];
         // D.Alert(`Project Attributes: ${D.JS(projAttrs)}`)
         _.each(projAttrs, (attrDatas, rowID) => {
             const rowData = {rowID};
-            _.each(attrDatas, attrData => {
+            _.each(attrDatas, (attrData) => {
                 rowData[attrData.name] = attrData.val;
             });
             projData.push(rowData);
         });
         return projData;
     };
-    const getPrestationData = charRef => {
+    const getPrestationData = (charRef) => {
         const prestationAttrs = {
             boonsowed: D.GetRepStats(charRef, "boonsowed", null, null, "rowID"),
             boonsowing: D.GetRepStats(charRef, "boonsowing", null, null, "rowID")
@@ -107,10 +106,10 @@ const Handouts = (() => {
             boonsowing: []
         };
         // D.Alert(`Project Attributes: ${D.JS(projAttrs)}`)
-        _.each(["boonsowed", "boonsowing"], cat => {
+        _.each(["boonsowed", "boonsowing"], (cat) => {
             _.each(prestationAttrs[cat], (attrDatas, rowID) => {
                 const rowData = {rowID};
-                _.each(attrDatas, attrData => {
+                _.each(attrDatas, (attrData) => {
                     rowData[attrData.name] = attrData.val;
                 });
                 prestationData[cat].push(rowData);
@@ -124,28 +123,28 @@ const Handouts = (() => {
         const groupedData = `<h2>OWED:</h2>${_.map(
             D.KeyMapObj(
                 _.groupBy(
-                    prestationData.boonsowed.map(x => ({to: x.boonowed_to, type: x.boonowed_type, details: x.boonowed_details})),
-                    x => x.to
+                    prestationData.boonsowed.map((x) => ({to: x.boonowed_to, type: x.boonowed_type, details: x.boonowed_details})),
+                    (x) => x.to
                 ),
                 null,
-                x => x.map(xx => `<b>${xx.type.toUpperCase()}</b>: ${xx.details}`)
+                (x) => x.map((xx) => `<b>${xx.type.toUpperCase()}</b>: ${xx.details}`)
             ),
             (v, k) => `<h3>${k}</h3><ul><li>${v.join("<li>")}</ul>`
         ).join("")}<h2>OWING:</h2>${_.map(
             D.KeyMapObj(
                 _.groupBy(
-                    prestationData.boonsowing.map(x => ({from: x.boonowing_from, type: x.boonowing_type, details: x.boonowing_details})),
-                    x => x.from
+                    prestationData.boonsowing.map((x) => ({from: x.boonowing_from, type: x.boonowing_type, details: x.boonowing_details})),
+                    (x) => x.from
                 ),
                 null,
-                x => x.map(xx => `<b>${xx.type.toUpperCase()}</b>: ${xx.details}`)
+                (x) => x.map((xx) => `<b>${xx.type.toUpperCase()}</b>: ${xx.details}`)
             ),
             (v, k) => `<h3>${k}</h3><ul><li>${v.join("<li>")}</ul>`
         ).join("")}`;
 
         /*  _.values(D.KeyMapObj({
                 boonsowed: ,
-                boonsowing: 
+                boonsowing:
             }, null, v => D.KeyMapObj(v, null, (vv, kk) => `<h3>${kk}</h3><ul>${vv.map(x => `<li>${x}</li>`).join("")}</ul>`))) */
 
         D.Alert(`Prestation Data for ${D.GetChar(charRef).get("name")}:<br>${D.JS(groupedData)}`, "Prestation Data");
@@ -166,7 +165,8 @@ const Handouts = (() => {
             delHandoutObj(title);
         }
         const noteObj = createObj("handout", {name: title});
-        if (contents) updateHandout(title, category, contents, isWritingGM, isVerbose);
+        if (contents)
+            updateHandout(title, category, contents, isWritingGM, isVerbose);
         return noteObj;
     };
     const makeSimpleHandoutObj = (title, contents, isVerbose = false) => makeHandoutObj(title, false, contents, true, isVerbose);
@@ -178,28 +178,27 @@ const Handouts = (() => {
         };
         if (handoutObj) {
             handoutObj.set("notes", noteData.notes);
-            if (isWritingGM) handoutObj.set("gmnotes", noteData.gmnotes);
+            if (isWritingGM)
+                handoutObj.set("gmnotes", noteData.gmnotes);
         } else {
             makeHandoutObj(title, category, contents, isWritingGM, isVerbose);
         }
     };
     const delHandoutObjs = (titleRef, category) => {
         const handoutObjs = findObjs({_type: "handout"}).filter(
-            x => (!category || STATE.REF.categoryLogs[category].includes(x.get("name"))) && D.LCase(x.get("name")).includes(D.LCase(titleRef))
+            (x) => (!category || STATE.REF.categoryLogs[category].includes(x.get("name"))) && D.LCase(x.get("name")).includes(D.LCase(titleRef))
         );
         for (const handout of handoutObjs) {
             if (category && STATE.REF.categoryLogs[category].includes(handout.get("name")))
-                D.PullOut(STATE.REF.categoryLogs[category], v => v === handout.get("name"));
+                D.PullOut(STATE.REF.categoryLogs[category], (v) => v === handout.get("name"));
             handout.remove();
         }
     };
     const delHandoutObj = (titleRef, category) => {
-        const handoutObj = findObjs({_type: "handout", inplayerjournals: "", archived: false}).find(x =>
-            D.LCase(x.get("name")).includes(D.LCase(titleRef))
-        );
+        const handoutObj = findObjs({_type: "handout", inplayerjournals: "", archived: false}).find((x) => D.LCase(x.get("name")).includes(D.LCase(titleRef)));
         if (VAL({object: handoutObj})) {
             if (category && STATE.REF.categoryLogs[category].includes(handoutObj.get("name")))
-                D.PullOut(STATE.REF.categoryLogs[category], v => v === handoutObj.get("name"));
+                D.PullOut(STATE.REF.categoryLogs[category], (v) => v === handoutObj.get("name"));
             handoutObj.remove();
         }
     };
@@ -207,7 +206,7 @@ const Handouts = (() => {
 
     // #region CHARACTER SHEET SUMMARIES
 
-    /* 
+    /*
     const summarizeProjects = (title, charObjs) => {
         delHandoutObjs("Project Summary", "projects");
         const noteObj = makeHandoutObj(title, "projects");
@@ -336,7 +335,7 @@ const Handouts = (() => {
                         //         projLines.push(`${C.HANDOUTHTML.projects.tag("")}${C.HANDOUTHTML.projects.teamwork("")}`)
                         // } else if (teamworkCheck) {
                         //     projLines.push(`${C.HANDOUTHTML.projects.tag("")}${C.HANDOUTHTML.projects.stake("")}`)
-                        // }          
+                        // }
                         // if (boonData.projectlaunchresults && boonData.projectlaunchresults.length > 2)
                         //     if (boonData.projectlaunchresults.includes("CRITICAL"))
                         //         projLines.push(C.HANDOUTHTML.projects.critSucc("CRITICAL"))

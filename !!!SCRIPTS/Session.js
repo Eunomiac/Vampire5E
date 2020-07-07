@@ -100,7 +100,7 @@ const Session = (() => {
                         Right: "Laboratory",
                         BotRight: "SiteLotus_AvaQuarters"
                     },
-                    pointerPos: {left: 1001, top: 1995} 
+                    pointerPos: {left: 1001, top: 1995}
                 }
             } */
 
@@ -125,7 +125,7 @@ const Session = (() => {
             Spotlight: {}
         };
         STATE.REF.ActiveTokens = STATE.REF.ActiveTokens || [];
-        STATE.REF.SessionScribes = STATE.REF.SessionScribes || _.shuffle(Object.values(Char.REGISTRY).map(x => x.playerName));
+        STATE.REF.SessionScribes = STATE.REF.SessionScribes || _.shuffle(Object.values(Char.REGISTRY).map((x) => x.playerName));
         STATE.REF.SessionModes = STATE.REF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications", "Spotlight"];
         STATE.REF.Mode = STATE.REF.Mode || "Inactive";
         STATE.REF.LastMode = STATE.REF.LastMode || "Inactive";
@@ -167,7 +167,8 @@ const Session = (() => {
 
         if (!STATE.REF.locationRecord) {
             STATE.REF.locationRecord = {};
-            for (const mode of STATE.REF.SessionModes) STATE.REF.locationRecord[mode] = D.Clone(STATE.REF.curLocation);
+            for (const mode of STATE.REF.SessionModes)
+                STATE.REF.locationRecord[mode] = D.Clone(STATE.REF.curLocation);
         }
         if (!STATE.REF.sceneFocusRecord) {
             STATE.REF.sceneFocusRecord = {};
@@ -225,7 +226,7 @@ const Session = (() => {
                         break;
                     }
                     case "locs": {
-                        const focus = args.filter(x => !x.includes(":")).pop();
+                        const focus = args.filter((x) => !x.includes(":")).pop();
                         const params = D.ParseParams(args);
                         setQuadLocations("DupontByTheCastle", params, focus || STATE.REF.quadScene.focus || "Center");
                         break;
@@ -235,8 +236,9 @@ const Session = (() => {
                         Media.ToggleTokens("registered", true);
                         Media.ToggleTokens("Attendant", false);
                         const casaLomaLocations = ["CL1", "CL2", "CL3", "CL4", "CL5"];
-                        const pcTokenRefs = Object.values(Char.REGISTRY).map(x => x.id);
-                        for (let i = 0; i < 5; i++) Media.SetArea(pcTokenRefs[i], casaLomaLocations[i]);
+                        const pcTokenRefs = Object.values(Char.REGISTRY).map((x) => x.id);
+                        for (let i = 0; i < 5; i++)
+                            Media.SetArea(pcTokenRefs[i], casaLomaLocations[i]);
                         break;
                     }
                     // no default
@@ -281,8 +283,10 @@ const Session = (() => {
             case "start":
             case "end":
             case "toggle": {
-                if (isSessionActive()) endSession(args[0] !== "skip");
-                else startSession();
+                if (isSessionActive())
+                    endSession(args[0] !== "skip");
+                else
+                    startSession();
                 break;
             }
             case "next":
@@ -314,7 +318,7 @@ const Session = (() => {
                         const [macroName, macroAction] = args
                             .join(" ")
                             .split(/\|?!/gu)
-                            .map(x => x.trim());
+                            .map((x) => x.trim());
                         D.Alert(D.JS({macroName: `'${macroName}'`, macroAction: `'${macroAction}'`}));
                         setMacro(charObj, macroName, `!${macroAction}`);
                         break;
@@ -327,11 +331,11 @@ const Session = (() => {
                 switch (D.LCase((call = args.shift()))) {
                     case "macros": {
                         const macroObjs = findObjs({_type: "macro"});
-                        const macroData = macroObjs.map(x => {
+                        const macroData = macroObjs.map((x) => {
                             const visibleTo = x
                                 .get("visibleto")
                                 .split(",")
-                                .map(xx => (D.LCase(xx) === "all" ? "ALL" : D.GetName(xx)));
+                                .map((xx) => (D.LCase(xx) === "all" ? "ALL" : D.GetName(xx)));
                             return {
                                 createdBy: D.GetName(x.get("_playerid")),
                                 name: x.get("name"),
@@ -459,12 +463,15 @@ const Session = (() => {
                             false;
                         if (customLocRef)
                             if (args.length) {
-                                if (args.join(" ") in C.DISTRICTS) customLocRef.district = args.join(" ");
-                                else D.Alert(`No such district: ${D.JS(args.join(" "))}`, "!sess set customsitedist");
+                                if (args.join(" ") in C.DISTRICTS)
+                                    customLocRef.district = args.join(" ");
+                                else
+                                    D.Alert(`No such district: ${D.JS(args.join(" "))}`, "!sess set customsitedist");
                             } else {
                                 delete customLocRef.district;
                             }
-                        else D.Alert(`No custom site registered for ${siteName || siteRef}`, "!sess set customsitedist");
+                        else
+                            D.Alert(`No custom site registered for ${siteName || siteRef}`, "!sess set customsitedist");
                         break;
                     }
                     default: {
@@ -500,8 +507,10 @@ const Session = (() => {
                 toggleDowntime();
                 break;
             case "spotlight": {
-                if (args.shift() === "end" || !charObjs || !charObjs.length) toggleSpotlight();
-                else toggleSpotlight(charObjs.shift());
+                if (args.shift() === "end" || !charObjs || !charObjs.length)
+                    toggleSpotlight();
+                else
+                    toggleSpotlight(charObjs.shift());
                 break;
             }
             case "daylighters": {
@@ -592,8 +601,10 @@ const Session = (() => {
         }
     };
     const onPageChange = () => {
-        if (Campaign().get("playerpageid") === C.PAGES.GAME && Session.IsTesting) Media.ToggleText("playerPageAlertMessage", true);
-        else Media.ToggleText("playerPageAlertMessage", false);
+        if (Campaign().get("playerpageid") === C.PAGES.GAME && Session.IsTesting)
+            Media.ToggleText("playerPageAlertMessage", true);
+        else
+            Media.ToggleText("playerPageAlertMessage", false);
     };
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
@@ -604,7 +615,8 @@ const Session = (() => {
         outroMode: {
             Active: () => {},
             Inactive: () => {
-                if (!STATE.REF.isTestingActive || STATE.REF.isFullTest) setPlayerPage("GAME");
+                if (!STATE.REF.isTestingActive || STATE.REF.isFullTest)
+                    setPlayerPage("GAME");
             },
             Downtime: () => {
                 D.Chat(
@@ -632,7 +644,7 @@ const Session = (() => {
             Downtime: () => {},
             Daylighter: () => {},
             Spotlight: () => {
-                for (const charData of D.GetChars("registered").map(x => D.GetCharData(x))) {
+                for (const charData of D.GetChars("registered").map((x) => D.GetCharData(x))) {
                     // Char.SetNPC(charData.id, "base")
                     Media.ToggleToken(charData.id, true); // Char.TogglePC(charData.quadrant, true)
                     Media.ToggleText(`${charData.name}Desire`, true);
@@ -652,7 +664,8 @@ const Session = (() => {
         enterMode: {
             Active: () => {
                 Char.RefreshDisplays();
-                if (!STATE.REF.isTestingActive || STATE.REF.isFullTest) TimeTracker.ToggleClock(true);
+                if (!STATE.REF.isTestingActive || STATE.REF.isFullTest)
+                    TimeTracker.ToggleClock(true);
             },
             Inactive: () => {
                 setPlayerPage("SplashPage");
@@ -736,13 +749,13 @@ const Session = (() => {
     };
     const verifyStateIntegrity = () => {
         // A series of simple validations of registry data.
-        const [siteNames, /* distNames, */ posNames /* subPosNames */] = [
+        const [siteNames, /* distNames, */ posNames] = [
             Object.keys(C.SITES),
             /* Object.keys(C.DISTRICTS), */
             ["DistrictCenter", "DistrictRight", "DistrictLeft", "SiteCenter", "SiteRight", "SiteLeft", "subLocs"]
             /* ["TopLeft", "Left", "BotLeft", "TopRight", "Right", "BotRight"] */
         ];
-        STATE.REF.FavoriteSites = _.reject(STATE.REF.FavoriteSites, x => !siteNames.includes(x));
+        STATE.REF.FavoriteSites = _.reject(STATE.REF.FavoriteSites, (x) => !siteNames.includes(x));
 
         for (const [modeName] of Object.entries(STATE.REF.locationRecord))
             STATE.REF.locationRecord[modeName] = _.omit(STATE.REF.locationRecord[modeName], (v, k) => !posNames.includes(k));
@@ -754,7 +767,7 @@ const Session = (() => {
 
     // #region Getting & Setting Session Data
     const isSessionActive = () => STATE.REF.Mode !== "Inactive";
-    const setSessionNum = sNum => {
+    const setSessionNum = (sNum) => {
         sNum = sNum || ++STATE.REF.SessionNum;
         STATE.REF.SessionNum = sNum;
         Media.SetText(
@@ -770,33 +783,35 @@ const Session = (() => {
     // #region Starting/Ending Sessions
     const startSession = () => {
         const sessionScribe = STATE.REF.isTestingActive && !STATE.REF.isFullTest ? STATE.REF.SessionScribes[0] : STATE.REF.SessionScribes.shift();
-        if (STATE.REF.isTestingActive && !STATE.REF.isFullTest) STATE.REF.dateRecord = TimeTracker.CurrentDate.getTime();
-        else STATE.REF.dateRecord = null;
+        if (STATE.REF.isTestingActive && !STATE.REF.isFullTest)
+            STATE.REF.dateRecord = TimeTracker.CurrentDate.getTime();
+        else
+            STATE.REF.dateRecord = null;
         if (STATE.REF.SessionScribes.length === 0) {
             DB(
                 `Scribe: ${sessionScribe}, SessionScribes: ${D.JSL(STATE.REF.SessionScribes)}
-                    PICK: ${D.JS(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe))}
+                    PICK: ${D.JS(_.pick(Char.REGISTRY, (v) => v.playerName !== sessionScribe))}
                     PLUCK: ${D.JS(
-                        _.pluck(
-                            _.pick(Char.REGISTRY, v => v.playerName !== sessionScribe),
-                            "playerName"
-                        )
-                    )}
+        _.pluck(
+            _.pick(Char.REGISTRY, (v) => v.playerName !== sessionScribe),
+            "playerName"
+        )
+    )}
                     WITHOUT: ${D.JS(
-                        _.without(
-                            _.pluck(
-                                _.pick(Char.REGISTRY, v => v.playerName !== sessionScribe),
-                                "playerName"
-                            ),
-                            "Storyteller"
-                        )
-                    )}`,
+        _.without(
+            _.pluck(
+                _.pick(Char.REGISTRY, (v) => v.playerName !== sessionScribe),
+                "playerName"
+            ),
+            "Storyteller"
+        )
+    )}`,
                 "startSession"
             );
             const otherScribes = _.shuffle(
                 _.without(
                     _.pluck(
-                        _.pick(Char.REGISTRY, v => v.playerName !== sessionScribe),
+                        _.pick(Char.REGISTRY, (v) => v.playerName !== sessionScribe),
                         "playerName"
                     ),
                     "Storyteller"
@@ -804,10 +819,11 @@ const Session = (() => {
             );
             STATE.REF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]));
         }
-        STATE.REF.SessionMonologues = _.shuffle(D.GetChars("registered").map(x => D.GetCharData(x).name));
+        STATE.REF.SessionMonologues = _.shuffle(D.GetChars("registered").map((x) => D.GetCharData(x).name));
         STATE.REF.spotlightChar = false;
         STATE.REF.PromptAuthors = [];
-        for (const quad of Object.keys(Char.REGISTRY)) Char.REGISTRY[quad].spotlightPrompt = false;
+        for (const quad of Object.keys(Char.REGISTRY))
+            Char.REGISTRY[quad].spotlightPrompt = false;
         changeMode("Active", true, [
             [
                 D.Chat,
@@ -820,7 +836,7 @@ const Session = (() => {
                         C.HTML.Body("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
                         C.HTML.Header(`Session Scribe: ${sessionScribe || "(None Set)"}`),
                         C.HTML.Body(
-                            '(Click <a style = "color: white; font-weight: normal; background-color: rgba(255,0,0,0.5);" href="https://docs.google.com/document/d/1GsGGDdYTVeHVHgGe9zrztEIN4Qmtpb2xZA8I-_WBnDM/edit?usp=sharing" target="_blank">&nbsp;here&nbsp;</a> to open the template in a new tab,<br>then create a copy to use for this session.)',
+                            "(Click <a style = \"color: white; font-weight: normal; background-color: rgba(255,0,0,0.5);\" href=\"https://docs.google.com/document/d/1GsGGDdYTVeHVHgGe9zrztEIN4Qmtpb2xZA8I-_WBnDM/edit?usp=sharing\" target=\"_blank\">&nbsp;here&nbsp;</a> to open the template in a new tab,<br>then create a copy to use for this session.)",
                             {fontSize: "14px", lineHeight: "14px"}
                         ),
                         C.HTML.Body("Thank you for your service!")
@@ -855,8 +871,10 @@ const Session = (() => {
             if (!STATE.REF.isTestingActive || STATE.REF.isFullTest) {
                 STATE.REF.dateRecord = null;
                 for (const char of D.GetChars("registered"))
-                    if (STATE.REF.isTestingActive) D.Alert(`Would award 1 XP to ${D.JS(char)} if session active.`, "Full Test: Session.endSession()");
-                    else Char.AwardXP(char, 1, "Session XP award.");
+                    if (STATE.REF.isTestingActive)
+                        D.Alert(`Would award 1 XP to ${D.JS(char)} if session active.`, "Full Test: Session.endSession()");
+                    else
+                        Char.AwardXP(char, 1, "Session XP award.");
                 STATE.REF.SessionNum++;
             } else if (STATE.REF.dateRecord) {
                 TimeTracker.CurrentDate = STATE.REF.dateRecord;
@@ -869,12 +887,12 @@ const Session = (() => {
             );
         }
     };
-    const logTokens = mode => {
+    const logTokens = (mode) => {
         const tokenObjs = findObjs({
             _pageid: D.MAINPAGEID,
             _type: "graphic",
             _subtype: "token"
-        }).filter(x => x.get("represents"));
+        }).filter((x) => x.get("represents"));
         STATE.REF.tokenRecord[mode] = {};
         for (const tokenObj of tokenObjs)
             STATE.REF.tokenRecord[mode][tokenObj.id] = {
@@ -885,7 +903,7 @@ const Session = (() => {
                 src: (Media.TOKENS[D.GetName(tokenObj.get("represents"))] || {curSrc: "base"}).curSrc || "base"
             };
     };
-    const restoreTokens = mode => {
+    const restoreTokens = (mode) => {
         for (const [tokenID, tokenData] of Object.entries(STATE.REF.tokenRecord[mode])) {
             Media.SetToken(tokenData.charID, tokenData.src);
             Media.SetImgTemp(tokenID, _.omit(tokenData, "src"));
@@ -898,8 +916,9 @@ const Session = (() => {
     const changeMode = (mode, args, endFuncs = []) => {
         args = _.flatten([args]);
         DB({mode, args}, "changeMode");
-        if (D.Capitalize(D.LCase(mode)) === Session.Mode) return null;
-        if (VAL({string: mode}, "changeMode") && STATE.REF.SessionModes.map(x => x.toLowerCase()).includes(mode.toLowerCase())) {
+        if (D.Capitalize(D.LCase(mode)) === Session.Mode)
+            return null;
+        if (VAL({string: mode}, "changeMode") && STATE.REF.SessionModes.map((x) => x.toLowerCase()).includes(mode.toLowerCase())) {
             const [lastMode, curMode] = [`${STATE.REF.Mode}`, D.Capitalize(mode.toLowerCase())];
             if (lastMode === "Inactive" && curMode === "Active") {
                 D.Queue(
@@ -935,7 +954,8 @@ const Session = (() => {
                 D.Queue(Roller.Clean, [], "ModeSwitch", 1);
                 D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2);
                 D.Queue(setModeLocations, [curMode], "ModeSwitch", 1);
-                if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds)) D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1);
+                if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
+                    D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1);
                 D.Queue(Media.SetLoadingMessage, ["Setting Time, Location & Weather..."], "ModeSwitch", 0.1);
                 D.Queue(MODEFUNCTIONS.enterMode[curMode], args, "ModeSwitch", 1);
                 D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1);
@@ -975,7 +995,8 @@ const Session = (() => {
                 D.Queue(Roller.Clean, [], "ModeSwitch", 1);
                 D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2);
                 D.Queue(setModeLocations, [curMode], "ModeSwitch", 1);
-                if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds)) D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1);
+                if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
+                    D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1);
                 D.Queue(Media.SetLoadingMessage, [`Deploying ${D.UCase(curMode)} Assets ...`], "ModeSwitch", 0.1);
                 D.Queue(MODEFUNCTIONS.enterMode[curMode], args, "ModeSwitch", 1);
                 D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1);
@@ -984,7 +1005,8 @@ const Session = (() => {
             }
             // D.Queue(Media.ToggleLoadingScreen, [false], "ModeSwitch", 0.1)
             D.Queue(MODEFUNCTIONS.introMode[curMode], args, "ModeSwitch", 0.1);
-            for (const endFunc of endFuncs) D.Queue(endFunc[0], endFunc[1], "ModeSwitch", endFunc[2] || 0.1);
+            for (const endFunc of endFuncs)
+                D.Queue(endFunc[0], endFunc[1], "ModeSwitch", endFunc[2] || 0.1);
             // D.Queue(setSceneFocus, [])
             D.Run("ModeSwitch");
             Media.SetText("testSessionNotice", `TESTING (${curMode})`);
@@ -992,7 +1014,7 @@ const Session = (() => {
         }
         return true;
     };
-    const toggleFullTest = isFullTesting => {
+    const toggleFullTest = (isFullTesting) => {
         isFullTesting = VAL({bool: isFullTesting}) ? isFullTesting : !STATE.REF.isFullTest;
         STATE.REF.isFullTest = isFullTesting;
         Media.SetTextData("testSessionNotice", {color: (isFullTesting && C.COLORS.brightred) || C.COLORS.puregreen});
@@ -1012,9 +1034,10 @@ const Session = (() => {
             STATE.REF.fullTestRecord = {};
         }
     };
-    const toggleTesting = isTesting => {
+    const toggleTesting = (isTesting) => {
         if (VAL({bool: isTesting})) {
-            if (isTesting !== STATE.REF.isTestingActive) MODEFUNCTIONS[isTesting ? "enterMode" : "leaveMode"].Testing();
+            if (isTesting !== STATE.REF.isTestingActive)
+                MODEFUNCTIONS[isTesting ? "enterMode" : "leaveMode"].Testing();
         } else {
             MODEFUNCTIONS[STATE.REF.isTestingActive ? "leaveMode" : "enterMode"].Testing();
         }
@@ -1023,9 +1046,12 @@ const Session = (() => {
     const toggleSpotlight = (charRef, messageText) => {
         DB({charRef, messageText}, "toggleSpotlight");
         if (STATE.REF.Mode === "Spotlight")
-            if (charRef) setSpotlightChar(charRef, messageText);
-            else changeMode(STATE.REF.LastMode);
-        else changeMode("Spotlight", [charRef, messageText]);
+            if (charRef)
+                setSpotlightChar(charRef, messageText);
+            else
+                changeMode(STATE.REF.LastMode);
+        else
+            changeMode("Spotlight", [charRef, messageText]);
     };
     const setSpotlightChar = (charRef, messageText) => {
         // DB({charRef, messageText}, "setSpotlightChar");
@@ -1039,8 +1065,8 @@ const Session = (() => {
                 const charData = D.GetCharData(charObj);
                 const quad = charData.quadrant;
                 const otherCharData = D.GetChars("registered")
-                    .filter(x => x.id !== charData.id)
-                    .map(x => D.GetCharData(x));
+                    .filter((x) => x.id !== charData.id)
+                    .map((x) => D.GetCharData(x));
                 for (const otherData of otherCharData) {
                     Media.ToggleToken(otherData.id, false); // Char.TogglePC(otherData.quadrant, false)
                     Char.SetNPC(otherData.id, "base");
@@ -1055,10 +1081,12 @@ const Session = (() => {
             }
         }
     };
-    const setPlayerPage = pageRef => {
+    const setPlayerPage = (pageRef) => {
         pageRef = pageRef || getObj("page", Campaign().get("playerpageid")).get("name");
-        if (pageRef === "GAME" && STATE.REF.isTestingActive) Media.ToggleText("playerPageAlertMessage", true);
-        else Media.ToggleText("playerPageAlertMessage", false);
+        if (pageRef === "GAME" && STATE.REF.isTestingActive)
+            Media.ToggleText("playerPageAlertMessage", true);
+        else
+            Media.ToggleText("playerPageAlertMessage", false);
         Campaign().set({playerpageid: D.GetPageID(pageRef)});
     };
     // #endregion
@@ -1073,7 +1101,7 @@ const Session = (() => {
         const districtMenuData = {
             rows: [
                 ..._.chain(["blank", "match", "reset"])
-                    .map(x => ({
+                    .map((x) => ({
                         name: D.UCase(x),
                         command: `!reply ${x}`,
                         styles: {
@@ -1082,7 +1110,7 @@ const Session = (() => {
                         }
                     }))
                     .groupBy((x, i) => Math.floor(i / 3))
-                    .map(x => ({
+                    .map((x) => ({
                         type: "ButtonLine",
                         contents: x,
                         buttonStyles: {
@@ -1094,9 +1122,9 @@ const Session = (() => {
                     }))
                     .value(),
                 ..._.chain(["left", "center", "right"])
-                    .map(x => ({name: D.UCase(x), command: `!reply ${x}`}))
+                    .map((x) => ({name: D.UCase(x), command: `!reply ${x}`}))
                     .groupBy((x, i) => Math.floor(i / 3))
-                    .map(x => ({
+                    .map((x) => ({
                         type: "ButtonLine",
                         contents: [{text: "SAME AS:", styles: {color: C.COLORS.white}}, ...x],
                         buttonStyles: {
@@ -1109,9 +1137,9 @@ const Session = (() => {
                     }))
                     .value(),
                 ..._.chain(STATE.REF.FavoriteDistricts)
-                    .map(x => ({name: x, command: `!reply ${x}`}))
+                    .map((x) => ({name: x, command: `!reply ${x}`}))
                     .groupBy((x, i) => Math.floor(i / 3))
-                    .map(x => ({
+                    .map((x) => ({
                         type: "ButtonLine",
                         contents: x,
                         buttonStyles: {
@@ -1123,9 +1151,9 @@ const Session = (() => {
                     }))
                     .value(),
                 ..._.chain(Object.keys(C.DISTRICTS))
-                    .map(x => ({name: x, command: `!reply ${x}`}))
+                    .map((x) => ({name: x, command: `!reply ${x}`}))
                     .groupBy((x, i) => Math.floor(i / 3))
-                    .map(x => ({
+                    .map((x) => ({
                         type: "ButtonLine",
                         contents: x,
                         buttonStyles: {
@@ -1140,9 +1168,9 @@ const Session = (() => {
         };
         const siteMenuFirstRows = _.compact([
             ..._.chain(["blank"])
-                .map(x => ({name: D.UCase(x), command: `!reply site@${x}`}))
+                .map((x) => ({name: D.UCase(x), command: `!reply site@${x}`}))
                 .groupBy((x, i) => Math.floor(i / 3))
-                .map(x => ({
+                .map((x) => ({
                     type: "ButtonLine",
                     contents: [...x, 0, 0],
                     buttonStyles: {
@@ -1154,9 +1182,9 @@ const Session = (() => {
                 }))
                 .value(),
             ..._.chain(["left", "center", "right"])
-                .map(x => ({name: D.UCase(x), command: `!reply site@${x}`}))
+                .map((x) => ({name: D.UCase(x), command: `!reply site@${x}`}))
                 .groupBy((x, i) => Math.floor(i / 3))
-                .map(x => ({
+                .map((x) => ({
                     type: "ButtonLine",
                     contents: [{text: "SAME AS:", styles: {color: C.COLORS.white}}, ...x],
                     buttonStyles: {
@@ -1171,10 +1199,10 @@ const Session = (() => {
             "~~~favsitescode~~~",
             "~~~namedsitescode~~~",
             "~~~distsitescode~~~",
-            ..._.chain(Object.keys(C.SITES).filter(x => C.SITES[x].district === null))
-                .map(x => ({name: x, command: `!reply site@${x}`}))
+            ..._.chain(Object.keys(C.SITES).filter((x) => C.SITES[x].district === null))
+                .map((x) => ({name: x, command: `!reply site@${x}`}))
                 .groupBy((x, i) => Math.floor(i / 3))
-                .map(x => ({
+                .map((x) => ({
                     type: "ButtonLine",
                     contents: x,
                     buttonStyles: {
@@ -1193,7 +1221,7 @@ const Session = (() => {
                 .mapObject((v, k) => (v ? {name: k, command: v[0], styles: v[1]} : 0))
                 .values()
                 .groupBy((x, i) => Math.floor(i / 3))
-                .map(x => ({
+                .map((x) => ({
                     type: "ButtonLine",
                     contents: x,
                     buttonStyles: {
@@ -1212,7 +1240,7 @@ const Session = (() => {
                 .mapObject((v, k) => (v ? {name: k, command: v[0], styles: v[1]} : 0))
                 .values()
                 .groupBy((x, i) => Math.floor(i / 3))
-                .map(x => ({
+                .map((x) => ({
                     type: "ButtonLine",
                     contents: x,
                     buttonStyles: {
@@ -1239,7 +1267,7 @@ const Session = (() => {
                     .mapObject((v, k) => (v ? {name: k, command: v[0], styles: v[1]} : 0))
                     .values()
                     .groupBy((x, i) => Math.floor(i / 3))
-                    .map(x => ({
+                    .map((x) => ({
                         type: "ButtonLine",
                         contents: x,
                         buttonStyles: {
@@ -1269,7 +1297,7 @@ const Session = (() => {
                     .mapObject((v, k) => (v ? {name: k, command: v[0], styles: v[1]} : 0))
                     .values()
                     .groupBy((x, i) => Math.floor(i / 3))
-                    .map(x => ({
+                    .map((x) => ({
                         type: "ButtonLine",
                         contents: x,
                         buttonStyles: {
@@ -1289,59 +1317,53 @@ const Session = (() => {
         districtName = VAL({array: districtName}) ? districtName[0] : districtName;
         DB({districtName}, "getSiteMenuCode");
         const favSites = STATE.REF.FavoriteSites.filter(
-            x => (C.SITES[x] || STATE.REF.customLocs[x]).district === null || (C.SITES[x] || STATE.REF.customLocs[x]).district.includes(districtName)
+            (x) => (C.SITES[x] || STATE.REF.customLocs[x]).district === null || (C.SITES[x] || STATE.REF.customLocs[x]).district.includes(districtName)
         );
-        const distSites = Object.keys(C.SITES).filter(x => C.SITES[x].district && C.SITES[x].district.includes(districtName));
+        const distSites = Object.keys(C.SITES).filter((x) => C.SITES[x].district && C.SITES[x].district.includes(districtName));
         const namedSites = Object.keys(STATE.REF.customLocs).filter(
-            x => !STATE.REF.customLocs[x].district || STATE.REF.customLocs[x].district === districtName
+            (x) => !STATE.REF.customLocs[x].district || STATE.REF.customLocs[x].district === districtName
         );
         DB({favSites, distSites, namedSites}, "getSiteMenuCode");
         const favSitesCode = _.chain(favSites)
-            .map(x => ({name: x, command: `!reply site@${x}`}))
+            .map((x) => ({name: x, command: `!reply site@${x}`}))
             .groupBy((x, i) => Math.floor(i / 3))
-            .map(x =>
-                D.CommandMenuHTML({
-                    type: "ButtonLine",
-                    contents: x,
-                    buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.purple, buttonTransform: "none"}
-                })
-            )
+            .map((x) => D.CommandMenuHTML({
+                type: "ButtonLine",
+                contents: x,
+                buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.purple, buttonTransform: "none"}
+            }))
             .value()
             .join("");
         const distSitesCode = _.chain(distSites)
-            .map(x => ({name: x, command: `!reply site@${x}`}))
+            .map((x) => ({name: x, command: `!reply site@${x}`}))
             .groupBy((x, i) => Math.floor(i / 3))
-            .map(x =>
-                D.CommandMenuHTML({
-                    type: "ButtonLine",
-                    contents: x,
-                    buttonStyles: {
-                        width: "30%",
-                        fontSize: "12px",
-                        color: C.COLORS.black,
-                        bgColor: C.COLORS.brightblue,
-                        buttonTransform: "none"
-                    }
-                })
-            )
+            .map((x) => D.CommandMenuHTML({
+                type: "ButtonLine",
+                contents: x,
+                buttonStyles: {
+                    width: "30%",
+                    fontSize: "12px",
+                    color: C.COLORS.black,
+                    bgColor: C.COLORS.brightblue,
+                    buttonTransform: "none"
+                }
+            }))
             .value()
             .join("");
         const namedSitesCode = _.chain(namedSites)
-            .map(x => ({name: STATE.REF.customLocs[x].shortName || x, command: `!reply site@${x}`}))
+            .map((x) => ({name: STATE.REF.customLocs[x].shortName || x, command: `!reply site@${x}`}))
             .groupBy((x, i) => Math.floor(i / 2))
-            .map(x =>
-                D.CommandMenuHTML({
-                    type: "ButtonLine",
-                    contents: x,
-                    buttonStyles: {
-                        width: "45%",
-                        fontSize: "12px",
-                        color: C.COLORS.black,
-                        bgColor: C.COLORS.brightgold,
-                        buttonTransform: "none"
-                    }
-                })
-            )
+            .map((x) => D.CommandMenuHTML({
+                type: "ButtonLine",
+                contents: x,
+                buttonStyles: {
+                    width: "45%",
+                    fontSize: "12px",
+                    color: C.COLORS.black,
+                    bgColor: C.COLORS.brightgold,
+                    buttonTransform: "none"
+                }
+            }))
             .value()
             .join("");
         // DB({distSitesCode: JSON.stringify(_.escape(distSitesCode))}, "getSiteMenuCode")
@@ -1352,8 +1374,9 @@ const Session = (() => {
             .replace(new RegExp("~~~distsitescode~~~", "gui"), distSitesCode);
     };
     const isLocCentered = () => {
-        const activeLocs = Object.keys(STATE.REF.curLocation).filter(x => x !== "subLocs" && STATE.REF.curLocation[x][0] !== "blank");
-        if (activeLocs.includes("DistrictCenter") && !activeLocs.includes("SiteLeft") && !activeLocs.includes("SiteRight")) return true;
+        const activeLocs = Object.keys(STATE.REF.curLocation).filter((x) => x !== "subLocs" && STATE.REF.curLocation[x][0] !== "blank");
+        if (activeLocs.includes("DistrictCenter") && !activeLocs.includes("SiteLeft") && !activeLocs.includes("SiteRight"))
+            return true;
         if (
             activeLocs.includes("DistrictLeft") ||
             activeLocs.includes("DistrictRight") ||
@@ -1363,15 +1386,14 @@ const Session = (() => {
             return false;
         return null;
     };
-    const getAllLocations = (isIncludingSubLocs = true) =>
-        D.KeyMapObj(
-            _.omit(
-                D.Clone(STATE.REF.curLocation),
-                (v, k) => (k === "subLocs" && (!isIncludingSubLocs || _.all(_.values(v), x => x === "blank"))) || v[0] === "blank"
-            ),
-            undefined,
-            (v, k) => (k === "subLocs" && _.reject(v, "blank")) || _.flatten([v]).shift()
-        );
+    const getAllLocations = (isIncludingSubLocs = true) => D.KeyMapObj(
+        _.omit(
+            D.Clone(STATE.REF.curLocation),
+            (v, k) => (k === "subLocs" && (!isIncludingSubLocs || _.all(_.values(v), (x) => x === "blank"))) || v[0] === "blank"
+        ),
+        undefined,
+        (v, k) => (k === "subLocs" && _.reject(v, "blank")) || _.flatten([v]).shift()
+    );
     const getActiveLocations = (focusOverride, isIncludingSubLocs = true) => {
         const activeLocs = getAllLocations(isIncludingSubLocs);
         focusOverride = focusOverride || STATE.REF.sceneFocus;
@@ -1392,13 +1414,13 @@ const Session = (() => {
             }
         return {};
     };
-    const getActivePositions = focusOverride => Object.keys(getActiveLocations(focusOverride, false));
+    const getActivePositions = (focusOverride) => Object.keys(getActiveLocations(focusOverride, false));
     const getActiveDistrict = () => {
-        const [activePos] = getActivePositions().filter(x => x.includes("District"));
+        const [activePos] = getActivePositions().filter((x) => x.includes("District"));
         return (activePos && STATE.REF.curLocation[activePos] && STATE.REF.curLocation[activePos][0]) || false;
     };
     const getActiveSite = (isReturningSiteName = false) => {
-        const [activePos] = getActivePositions().filter(x => x.startsWith("Site"));
+        const [activePos] = getActivePositions().filter((x) => x.startsWith("Site"));
         return (
             (activePos &&
                 STATE.REF.curLocation[activePos] &&
@@ -1406,12 +1428,12 @@ const Session = (() => {
             false
         );
     };
-    const getPosOfLocation = locRef => _.findKey(getAllLocations(false), v => v && locRef && D.LCase(v) === D.LCase(locRef));
+    const getPosOfLocation = (locRef) => _.findKey(getAllLocations(false), (v) => v && locRef && D.LCase(v) === D.LCase(locRef));
     const getSubLocs = () => {};
     const isOutside = () => {
-        const sceneLocs = _.compact(getActivePositions().map(x => STATE.REF.curLocation[x][0]));
+        const sceneLocs = _.compact(getActivePositions().map((x) => STATE.REF.curLocation[x][0]));
         // D.Poke(D.JS(sceneLocs))
-        return sceneLocs.filter(x => !C.LOCATIONS[x].outside).length === 0;
+        return sceneLocs.filter((x) => !C.LOCATIONS[x].outside).length === 0;
     };
     const setDistrictImg = (locRef, distRef) => {
         const locKey = D.LCase(locRef).charAt(0);
@@ -1491,8 +1513,8 @@ const Session = (() => {
     const setGenericSiteDetails = (siteRes, siteSong, siteAspect) => {
         const [siteRef, siteName] = getActiveSite(true);
         const [locRef] = getActivePositions()
-            .filter(x => x.includes("Site"))
-            .map(x => x.replace(/Site/gu, ""));
+            .filter((x) => x.includes("Site"))
+            .map((x) => x.replace(/Site/gu, ""));
         const siteData = STATE.REF.customLocs[siteName];
         DB({siteData, activePositions: getActivePositions(), locRef, siteRef, siteName}, "setGenericSiteDetails");
         if (
@@ -1556,7 +1578,8 @@ const Session = (() => {
         }
 
         // THIRD: If SiteCenter is blank, then blank all of the sub-locations.
-        if (newLocData.SiteCenter[0] === "blank") newLocData.subLocs = _.clone(BLANKLOCRECORD.subLocs);
+        if (newLocData.SiteCenter[0] === "blank")
+            newLocData.subLocs = _.clone(BLANKLOCRECORD.subLocs);
 
         // FOURTH: Check site settings against custom locations to fill in any blanks, then set any necessary data in custom locations.
         reportStrings.push(
@@ -1578,7 +1601,8 @@ const Session = (() => {
                     (customLocRef && customLocRef.subLocs) || {},
                     newLocData.subLocs || {}
                 );
-            else newLocData.subLocs = Object.assign({}, BLANKLOCRECORD.subLocs);
+            else
+                newLocData.subLocs = Object.assign({}, BLANKLOCRECORD.subLocs);
             reportStrings.push(`... SitePos: ${sitePos}, SiteData: ${D.JS(siteData)}, SubLocs: ${D.JS(newLocData.subLocs)}`);
 
             if (siteName) {
@@ -1588,9 +1612,11 @@ const Session = (() => {
                 STATE.REF.customLocs[siteName].site = siteRef;
                 STATE.REF.customLocs[siteName].siteName = siteName;
             }
-            if (sitePos === "SiteCenter" && Object.values(newLocData.subLocs || {}).some(x => x !== "blank"))
-                if (customLocRef) customLocRef.subLocs = D.Clone(newLocData.subLocs);
-                else if (siteName) STATE.REF.customLocs[siteName].subLocs = D.Clone(newLocData.subLocs);
+            if (sitePos === "SiteCenter" && Object.values(newLocData.subLocs || {}).some((x) => x !== "blank"))
+                if (customLocRef)
+                    customLocRef.subLocs = D.Clone(newLocData.subLocs);
+                else if (siteName)
+                    STATE.REF.customLocs[siteName].subLocs = D.Clone(newLocData.subLocs);
                 else
                     STATE.REF.customLocs[siteRef] = {
                         district: newLocData[sitePos.replace(/Site/gu, "District")],
@@ -1615,18 +1641,22 @@ const Session = (() => {
         // SECOND, extract only the changing cards to be displayed:
         const locDataDelta = _.pick(
             newLocData,
-            Object.keys(newLocData).filter(x => x !== "subLocs" && (isForcing || !_.isEqual(newLocData[x], curLocData[x])))
+            Object.keys(newLocData).filter((x) => x !== "subLocs" && (isForcing || !_.isEqual(newLocData[x], curLocData[x])))
         );
         for (const [subLocPos, subLocName] of Object.entries(newLocData.subLocs || {}))
-            if (isForcing || !curLocData.subLocs || curLocData.subLocs[subLocPos] !== subLocName) locDataDelta[`SubLoc${subLocPos}`] = subLocName;
+            if (isForcing || !curLocData.subLocs || curLocData.subLocs[subLocPos] !== subLocName)
+                locDataDelta[`SubLoc${subLocPos}`] = subLocName;
         reportStrings.push(`Loc Data Delta: ${D.JS(locDataDelta)}`);
         reportStrings.push(`New STATE.REF Record: ${D.JS(STATE.REF.locationRecord[Session.Mode])}`);
         DB(`<h3>Set Location Processing:</h3>${D.JS(reportStrings.join("<br>"))}`, "setLocation");
         for (const [locPos, locData] of Object.entries(locDataDelta)) {
             const locSrc = VAL({string: locData}) ? locData : locData[0];
-            if (locPos.includes("Site")) setSiteImg(locPos.replace(/Site/gu, ""), locSrc, locData[1] || false);
-            else if (locPos.includes("District")) setDistrictImg(locPos.replace(/District/gu, ""), locSrc);
-            else if (locPos.includes("SubLoc")) setSubLocImg(locPos.replace(/SubLoc/gu, ""), locSrc);
+            if (locPos.includes("Site"))
+                setSiteImg(locPos.replace(/Site/gu, ""), locSrc, locData[1] || false);
+            else if (locPos.includes("District"))
+                setDistrictImg(locPos.replace(/District/gu, ""), locSrc);
+            else if (locPos.includes("SubLoc"))
+                setSubLocImg(locPos.replace(/SubLoc/gu, ""), locSrc);
         }
         // cleanLocationRegistry()
         setSceneFocus(sceneFocus);
@@ -1634,7 +1664,7 @@ const Session = (() => {
     const distCommandMenu = () => {
         DB({["Into District PENDINGLOCCOMMAND:"]: PENDINGLOCCOMMAND}, "distCommandMenu");
         PENDINGLOCCOMMAND.workingIndex = PENDINGLOCCOMMAND.Districts.length;
-        D.CommandMenu((PENDINGLOCCOMMAND.workingIndex === 1 && MENUHTML.DistrictMenuSecond) || MENUHTML.DistrictMenuFirst, commandString => {
+        D.CommandMenu((PENDINGLOCCOMMAND.workingIndex === 1 && MENUHTML.DistrictMenuSecond) || MENUHTML.DistrictMenuFirst, (commandString) => {
             if (commandString === "reset") {
                 PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND);
                 Media.Notify("panel", "● Resetting pending location data.");
@@ -1689,7 +1719,7 @@ const Session = (() => {
         DB({["Into Site PENDINGLOCCOMMAND"]: PENDINGLOCCOMMAND}, "siteCommandMenu");
         const siteMenuCode = getSiteMenuCode(PENDINGLOCCOMMAND.Districts[PENDINGLOCCOMMAND.workingIndex], PENDINGLOCCOMMAND.workingIndex === 1);
         DB({siteMenuCode: JSON.stringify(siteMenuCode)}, "siteCommandMenu");
-        D.CommandMenu(siteMenuCode, commandString => {
+        D.CommandMenu(siteMenuCode, (commandString) => {
             const params = D.ParseToObj(commandString, "|", "@");
             const cmdIndex = PENDINGLOCCOMMAND.workingIndex;
             for (const [command, value] of Object.entries(params))
@@ -1767,7 +1797,8 @@ const Session = (() => {
                                         params.site = [STATE.REF.customLocs[params.site].site, params.site];
                                     else if (params.site in STATE.REF.customLocs && STATE.REF.customLocs[params.site].siteName)
                                         params.site = [params.site, STATE.REF.customLocs[params.site].siteName];
-                                    else params.site = [params.site];
+                                    else
+                                        params.site = [params.site];
                                 PENDINGLOCCOMMAND.Sites[cmdIndex] = params.site;
                                 Media.Notify(
                                     "panel",
@@ -1803,10 +1834,10 @@ const Session = (() => {
         const [siteName] = PENDINGLOCCOMMAND.Sites[PENDINGLOCCOMMAND.workingIndex];
         const genericSubLocs = ["blank"];
         const siteSubLocs = Object.keys(Media.IMAGES.SubLocTopLeft_1.srcs)
-            .filter(x => x.startsWith(siteName))
+            .filter((x) => x.startsWith(siteName))
             .sort();
         const anySubLocs = Object.keys(Media.IMAGES.SubLocTopLeft_1.srcs)
-            .filter(x => !x.includes("_"))
+            .filter((x) => !x.includes("_"))
             .sort();
         const subLocPanels = {};
         for (const subLocRef of Object.keys(BLANKLOCRECORD.subLocs))
@@ -1815,27 +1846,27 @@ const Session = (() => {
                     {type: "Header", contents: subLocRef},
                     ..._.compact([
                         ..._.chain(genericSubLocs)
-                            .map(x => ({name: x, command: `!reply ${subLocRef}@${x}`}))
+                            .map((x) => ({name: x, command: `!reply ${subLocRef}@${x}`}))
                             .groupBy((x, i) => Math.floor(i / 2))
-                            .map(x => ({
+                            .map((x) => ({
                                 type: "ButtonLine",
                                 contents: x,
                                 buttonStyles: {width: "49%", fontSize: "10px", bgColor: C.COLORS.midgold, buttonTransform: "none"}
                             }))
                             .value(),
                         ..._.chain(siteSubLocs)
-                            .map(x => ({name: x.replace(/[^_]+_/gu, ""), command: `!reply ${subLocRef}@${x}`}))
+                            .map((x) => ({name: x.replace(/[^_]+_/gu, ""), command: `!reply ${subLocRef}@${x}`}))
                             .groupBy((x, i) => Math.floor(i / 2))
-                            .map(x => ({
+                            .map((x) => ({
                                 type: "ButtonLine",
                                 contents: x,
                                 buttonStyles: {width: "49%", fontSize: "10px", bgColor: C.COLORS.purple, buttonTransform: "none"}
                             }))
                             .value(),
                         ..._.chain(anySubLocs)
-                            .map(x => ({name: x, command: `!reply ${subLocRef}@${x}`}))
+                            .map((x) => ({name: x, command: `!reply ${subLocRef}@${x}`}))
                             .groupBy((x, i) => Math.floor(i / 2))
-                            .map(x => ({
+                            .map((x) => ({
                                 type: "ButtonLine",
                                 contents: x,
                                 buttonStyles: {
@@ -1873,7 +1904,7 @@ const Session = (() => {
                         .mapObject((v, k) => (v ? {name: k, command: v[0], styles: v[1]} : 0))
                         .values()
                         .groupBy((x, i) => Math.floor(i / 3))
-                        .map(x => ({
+                        .map((x) => ({
                             type: "ButtonLine",
                             contents: x,
                             buttonStyles: {
@@ -1888,7 +1919,7 @@ const Session = (() => {
                         .value()
                 ]
             },
-            commandString => {
+            (commandString) => {
                 const params = D.ParseToObj(commandString, "|", "@");
                 DB({params}, "subLocCommandMenu");
                 if (commandString.includes("reset")) {
@@ -1922,7 +1953,8 @@ const Session = (() => {
             case 0: {
                 [locParams.DistrictCenter] = PENDINGLOCCOMMAND.Districts;
                 [locParams.SiteCenter] = PENDINGLOCCOMMAND.Sites;
-                if ("subLocs" in PENDINGLOCCOMMAND) locParams.subLocs = D.Clone(PENDINGLOCCOMMAND.subLocs);
+                if ("subLocs" in PENDINGLOCCOMMAND)
+                    locParams.subLocs = D.Clone(PENDINGLOCCOMMAND.subLocs);
                 break;
             }
             case 1: {
@@ -1948,7 +1980,7 @@ const Session = (() => {
                         .mapObject((v, k) => (v ? {name: k, command: v[0], styles: v[1]} : 0))
                         .values()
                         .groupBy((x, i) => Math.floor(i / 3))
-                        .map(x => ({
+                        .map((x) => ({
                             type: "ButtonLine",
                             contents: x,
                             buttonStyles: {
@@ -1962,21 +1994,23 @@ const Session = (() => {
                         .value()
                 ])
             },
-            commandString => {
+            (commandString) => {
                 const params = D.ParseToObj(commandString, "|", "@");
-                if ("focus" in params) setSceneFocus(params.focus);
+                if ("focus" in params)
+                    setSceneFocus(params.focus);
             }
         );
     };
     const setModeLocations = (mode, isForcing = false) => {
         setLocation(STATE.REF.locationRecord[mode], STATE.REF.sceneFocusRecord[mode], isForcing);
     };
-    const getCharsInLocation = locPos => {
+    const getCharsInLocation = (locPos) => {
         const charObjs = [];
-        for (const loc of getActivePositions(locPos)) charObjs.push(...Media.GetContainedChars(loc, {padding: 50}));
+        for (const loc of getActivePositions(locPos))
+            charObjs.push(...Media.GetContainedChars(loc, {padding: 50}));
         return _.uniq(charObjs);
     };
-    const isInScene = charRef => {
+    const isInScene = (charRef) => {
         const activeLocs = getActivePositions();
         const [charToken] = Media.GetTokens(charRef);
         const dbObj = {activeLocs, charToken, checks: {}};
@@ -1996,8 +2030,10 @@ const Session = (() => {
         const posRef = getPosOfLocation(locRef);
         const [charToken] = Media.GetTokens(charRef);
         if (VAL({string: posRef, token: charToken})) {
-            if (Media.IsInside(posRef, charToken, 0)) return true;
-            if (posRef.startsWith("Site")) return Media.IsInside(posRef.replace(/Site/gu, "District"), charToken, 0);
+            if (Media.IsInside(posRef, charToken, 0))
+                return true;
+            if (posRef.startsWith("Site"))
+                return Media.IsInside(posRef.replace(/Site/gu, "District"), charToken, 0);
         }
         return false;
     };
@@ -2010,12 +2046,15 @@ const Session = (() => {
         const playerID = D.GetPlayerID(playerRef);
         if (playerID) {
             getObj("player", playerID).set({showmacrobar: true});
-            let [macroObj] = (findObjs({_type: "macro", _playerid: playerID}) || []).filter(x => D.LCase(x.get("name")) === D.LCase(macroName));
-            if (macroObj) macroObj.set("action", macroAction);
+            let [macroObj] = (findObjs({_type: "macro", _playerid: playerID}) || []).filter((x) => D.LCase(x.get("name")) === D.LCase(macroName));
+            if (macroObj)
+                macroObj.set("action", macroAction);
             // D.Alert(`Macro Set: ${JSON.stringify(macroObj)}`)
-            else macroObj = createObj("macro", {name: macroName, action: macroAction, visibleto: playerID, playerid: D.GMID()});
+            else
+                macroObj = createObj("macro", {name: macroName, action: macroAction, visibleto: playerID, playerid: D.GMID()});
             // D.Alert(`Macro Created: ${JSON.stringify(macroObj)}`)
-            if (isActivating) sendChat("Storyteller", `#${macroName}`);
+            if (isActivating)
+                sendChat("Storyteller", `#${macroName}`);
         } else {
             D.Alert(`Invalid played ID (${D.JS(playerID)}) from playerRef '${D.JS(playerRef)}'`);
         }
@@ -2027,14 +2066,16 @@ const Session = (() => {
     // #endregion
 
     // #region Automatic Remorse Rolls
-    const remorseCheck = () => promptRemorseCheck(D.GetChars("registered").filter(x => D.GetStatVal(x, "stains")));
-    const promptRemorseCheck = charObjs => {
-        if (!charObjs || !charObjs.length) return true;
+    const remorseCheck = () => promptRemorseCheck(D.GetChars("registered").filter((x) => D.GetStatVal(x, "stains")));
+    const promptRemorseCheck = (charObjs) => {
+        if (!charObjs || !charObjs.length)
+            return true;
         const buttons = [];
-        for (const charObj of charObjs) buttons.push({name: D.GetName(charObj, true), command: `!roll quick remorse ${charObj.id}`});
+        for (const charObj of charObjs)
+            buttons.push({name: D.GetName(charObj, true), command: `!roll quick remorse ${charObj.id}`});
         D.CommandMenu({
             title: "Remorse Checks",
-            rows: Object.values(_.groupBy(buttons, (v, i) => i % 2)).map(x => ({type: "ButtonLine", contents: x}))
+            rows: Object.values(_.groupBy(buttons, (v, i) => i % 2)).map((x) => ({type: "ButtonLine", contents: x}))
         });
         return false;
     };
@@ -2070,7 +2111,7 @@ const Session = (() => {
         const promptData = STATE.REF.SpotlightPrompts;
         const chatCode = [];
         for (const [init, prompts] of Object.entries(promptData)) {
-            const thesePrompts = prompts.filter(x => !authorInit || x.author === authorInit);
+            const thesePrompts = prompts.filter((x) => !authorInit || x.author === authorInit);
             if (thesePrompts.length) {
                 chatCode.push(C.HTML.Header(`... ${D.GetName(init)}`, {textAlign: "left", padding: "0px 0px 0px 10px"}));
                 for (const thisPrompt of thesePrompts)
@@ -2181,14 +2222,14 @@ const Session = (() => {
                         // First, shuffle the prompts.
                         STATE.REF.SpotlightPrompts[initial] = _.shuffle(STATE.REF.SpotlightPrompts[initial]);
                         // 1) Grab a prompt that the player submitted to themselves.
-                        if (_.any(STATE.REF.SpotlightPrompts[initial], v => v.author === initial)) {
-                            promptData = D.PullOut(STATE.REF.SpotlightPrompts[initial], v => v.author === initial);
+                        if (_.any(STATE.REF.SpotlightPrompts[initial], (v) => v.author === initial)) {
+                            promptData = D.PullOut(STATE.REF.SpotlightPrompts[initial], (v) => v.author === initial);
                             promptData.isAwardingXP = false;
                             delete promptData.author;
                             DB({step: "Assigning Self-Prompt", promptData}, "assignSpotlightPrompt");
                         } else {
                             // 2) Grab a prompt that (A) has an author and (B) the author hasn't been chosen yet.
-                            promptData = D.PullOut(STATE.REF.SpotlightPrompts[initial], v => v.author && !STATE.REF.PromptAuthors.includes(v.author));
+                            promptData = D.PullOut(STATE.REF.SpotlightPrompts[initial], (v) => v.author && !STATE.REF.PromptAuthors.includes(v.author));
                             if (promptData) {
                                 promptData.isAwardingXP = true;
                                 STATE.REF.PromptAuthors.push(promptData.author);
@@ -2252,12 +2293,14 @@ const Session = (() => {
             } else if (!isSilent) {
                 const promptsOpenData = TimeTracker.GetPromptsOpenDate();
                 const timeElements = [];
-                if (promptsOpenData.delta.days) timeElements.push(`${promptsOpenData.delta.days} day${promptsOpenData.delta.days !== 1 ? "s" : ""}`);
+                if (promptsOpenData.delta.days)
+                    timeElements.push(`${promptsOpenData.delta.days} day${promptsOpenData.delta.days !== 1 ? "s" : ""}`);
                 if (promptsOpenData.delta.hours)
                     timeElements.push(`${promptsOpenData.delta.hours} hour${promptsOpenData.delta.hours !== 1 ? "s" : ""}`);
                 if (promptsOpenData.delta.mins)
                     timeElements.push(`${promptsOpenData.delta.mins} minute${promptsOpenData.delta.mins !== 1 ? "s" : ""}`);
-                if (timeElements.length >= 2) timeElements[timeElements.length - 1] = `and ${timeElements[timeElements.length - 1]}`;
+                if (timeElements.length >= 2)
+                    timeElements[timeElements.length - 1] = `and ${timeElements[timeElements.length - 1]}`;
                 const timeString = timeElements.join(", ").replace(/, and/gu, " and");
                 D.Chat(
                     charRef,
@@ -2291,8 +2334,9 @@ const Session = (() => {
     };
     const deleteSpotlightPrompt = (toCharRef, fromCharRef, promptID) => {
         const toCharInit = D.GetCharData(toCharRef).initial;
-        const removedPrompt = D.PullOut(Session.SpotlightPrompts[toCharInit], v => v.id === promptID);
-        if (removedPrompt) reviewSpotlightPrompts(fromCharRef, "You Now Have Active Prompts for...");
+        const removedPrompt = D.PullOut(Session.SpotlightPrompts[toCharInit], (v) => v.id === promptID);
+        if (removedPrompt)
+            reviewSpotlightPrompts(fromCharRef, "You Now Have Active Prompts for...");
         else
             D.Chat(
                 D.GetPlayerID(fromCharRef),
@@ -2335,7 +2379,7 @@ const Session = (() => {
                             fontSize: "14px"
                         }),
                         C.HTML.Header("The Spotlight Is Yours!"),
-                        C.HTML.Button("End Scene", `!endmonologue`, {
+                        C.HTML.Button("End Scene", "!endmonologue", {
                             width: "50%",
                             height: "20px",
                             margin: "2px 2px 0px -5px",
@@ -2355,7 +2399,7 @@ const Session = (() => {
                         C.HTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
                         C.HTML.Header(thisCharName),
                         C.HTML.Body("The Spotlight Is Yours!"),
-                        C.HTML.Button("End Scene", `!endmonologue`, {
+                        C.HTML.Button("End Scene", "!endmonologue", {
                             width: "50%",
                             height: "20px",
                             margin: "2px 2px 0px -5px",
@@ -2377,7 +2421,8 @@ const Session = (() => {
         if (lastPrompt && "author" in lastPrompt && lastPrompt.isAwardingXP)
             if (STATE.REF.isTestingActive)
                 D.Alert(`Would award 1 XP to ${D.GetName(lastPrompt.author)} if session active.`, "Full Test: Session.assignSpotlightPrompt()");
-            else Char.AwardXP(lastPrompt.author, 1, `Spotlight Prompt for ${D.GetName(STATE.REF.spotlightChar, true)}`);
+            else
+                Char.AwardXP(lastPrompt.author, 1, `Spotlight Prompt for ${D.GetName(STATE.REF.spotlightChar, true)}`);
 
         const numStains = D.Int(D.GetStatVal(STATE.REF.spotlightChar, "stains"));
         if (numStains) {
@@ -2416,7 +2461,7 @@ const Session = (() => {
         "SiteRight",
         "SiteCenter"
     ];
-    const setQuadFocus = locPos => {
+    const setQuadFocus = (locPos) => {
         locPos = locPos || STATE.REF.quadScene.focus || "Center";
         const enabledRefs = [];
         const locCalls = [];
@@ -2464,11 +2509,13 @@ const Session = (() => {
                 const siteName = STATE.REF.quadScene.locData[imgRef.replace(/Site/gu, "")];
                 for (const tokenObj of Media.GetContents(imgRef, {padding: 25}, {layer: "objects", _subtype: "token"}))
                     Media.ToggleToken(tokenObj, false);
-                if (siteName) locCalls.unshift(C.SITES[siteName].onExitCall);
+                if (siteName)
+                    locCalls.unshift(C.SITES[siteName].onExitCall);
             }
             Media.ToggleImg(imgRef, false, true);
         }
-        for (const locCall of _.compact(locCalls)) D.Call(locCall);
+        for (const locCall of _.compact(locCalls))
+            D.Call(locCall);
     };
     const setQuadLocations = (districtName, siteData, locPos) => {
         if (locPos === false) {
@@ -2538,7 +2585,7 @@ const Session = (() => {
         }
         for (const locCall of _.compact(locCalls)) D.Call(locCall);
     }; */
-    const setSceneFocus = locPos => {
+    const setSceneFocus = (locPos) => {
         locPos =
             (isLocCentered() === true && "c") ||
             (VAL({string: locPos}) && D.LCase(locPos).charAt(0)) ||
@@ -2549,7 +2596,7 @@ const Session = (() => {
         DB({locPos, ["state Scene Focus"]: STATE.REF.sceneFocus, activeLocs: getActivePositions()}, "setSceneFocus");
         const allLocations = getAllLocations();
         const activePositions = getActivePositions();
-        const inactivePositions = Object.keys(getAllLocations(false)).filter(x => !activePositions.includes(x));
+        const inactivePositions = Object.keys(getAllLocations(false)).filter((x) => !activePositions.includes(x));
         const tokenObjs = Media.GetTokens();
         if (activePositions.includes("DistrictCenter") || locPos === "c") {
             Media.ToggleImg("DisableLocLeft", false);
@@ -2558,7 +2605,8 @@ const Session = (() => {
             Media.ToggleImg("DisableSiteRight", false);
             for (const tokenObj of tokenObjs) {
                 Media.ToggleToken(tokenObj, true);
-                if (tokenObj.get("layer") !== "objects") tokenObj.set({layer: "objects"});
+                if (tokenObj.get("layer") !== "objects")
+                    tokenObj.set({layer: "objects"});
             }
         } else if (allLocations.DistrictLeft && allLocations.DistrictLeft === allLocations.DistrictRight) {
             Media.ToggleImg("DisableLocLeft", false);
@@ -2567,7 +2615,8 @@ const Session = (() => {
             Media.ToggleImg("DisableSiteRight", locPos === "l");
             for (const tokenObj of tokenObjs) {
                 Media.ToggleToken(tokenObj, true);
-                if (tokenObj.get("layer") !== "objects") tokenObj.set({layer: "objects"});
+                if (tokenObj.get("layer") !== "objects")
+                    tokenObj.set({layer: "objects"});
             }
         } else {
             Media.ToggleImg("DisableSiteLeft", false);
@@ -2575,15 +2624,15 @@ const Session = (() => {
             Media.ToggleImg("DisableLocLeft", locPos === "r");
             Media.ToggleImg("DisableLocRight", locPos === "l");
             for (const tokenObj of _.compact(
-                _.flatten(activePositions.map(x => Media.GetContents(x, {padding: 25}, {layer: "walls", _subtype: "token"})))
+                _.flatten(activePositions.map((x) => Media.GetContents(x, {padding: 25}, {layer: "walls", _subtype: "token"})))
             ))
                 Media.ToggleToken(tokenObj, true);
             for (const tokenObj of _.compact(
-                _.flatten(inactivePositions.map(x => Media.GetContents(x, {padding: 25}, {layer: "objects", _subtype: "token"})))
+                _.flatten(inactivePositions.map((x) => Media.GetContents(x, {padding: 25}, {layer: "objects", _subtype: "token"})))
             ))
                 Media.ToggleToken(tokenObj, false);
         }
-        const [sitePos] = activePositions.filter(x => x.startsWith("Site"));
+        const [sitePos] = activePositions.filter((x) => x.startsWith("Site"));
         const siteName = sitePos in STATE.REF.curLocation && STATE.REF.curLocation[sitePos][1];
         const pointerPos =
             (siteName && siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName].pointerPos) ||
@@ -2603,23 +2652,30 @@ const Session = (() => {
         const [curDistrict, curSite] = Object.values(getActiveLocations());
         const locCalls = [];
         if (prevDistrict !== curDistrict) {
-            if (prevDistrict) locCalls.unshift(C.DISTRICTS[prevDistrict].onExitCall);
-            if (curDistrict) locCalls.push(C.DISTRICTS[curDistrict].onEntryCall);
+            if (prevDistrict)
+                locCalls.unshift(C.DISTRICTS[prevDistrict].onExitCall);
+            if (curDistrict)
+                locCalls.push(C.DISTRICTS[curDistrict].onEntryCall);
         }
         if (prevSite !== curSite) {
-            if (prevSite) locCalls.unshift(C.SITES[prevSite].onExitCall);
-            if (curSite) locCalls.push(C.SITES[curSite].onEntryCall);
+            if (prevSite)
+                locCalls.unshift(C.SITES[prevSite].onExitCall);
+            if (curSite)
+                locCalls.push(C.SITES[curSite].onEntryCall);
         }
-        for (const locCall of _.compact(locCalls)) D.Call(locCall);
+        for (const locCall of _.compact(locCalls))
+            D.Call(locCall);
         STATE.REF.prevLocFocus = getActiveLocations();
         Soundscape.Sync();
     };
-    const addSceneAlarm = alarm => {
+    const addSceneAlarm = (alarm) => {
         STATE.REF.SceneAlarms.push(alarm);
     };
     const endScene = () => {
-        for (const charObj of Session.SceneChars) D.SetStat(charObj.id, "willpower_social_toggle", "go");
-        for (const sceneAlarm of STATE.REF.SceneAlarms) TimeTracker.Fire(sceneAlarm);
+        for (const charObj of Session.SceneChars)
+            D.SetStat(charObj.id, "willpower_social_toggle", "go");
+        for (const sceneAlarm of STATE.REF.SceneAlarms)
+            TimeTracker.Fire(sceneAlarm);
         STATE.REF.SceneAlarms = [];
         D.Alert("Social Willpower Damage partially refunded.", "Scene Ended");
     };
@@ -2638,7 +2694,7 @@ const Session = (() => {
         ChangeMode: changeMode,
         CharsIn: getCharsInLocation,
         ResetLocations: setModeLocations,
-        IsInScene: charRef => isInScene(charRef),
+        IsInScene: (charRef) => isInScene(charRef),
         IsInLocation: (charRef, locRef) => isInLocation(charRef, locRef),
         get SceneChars() {
             return getCharsInLocation(STATE.REF.sceneFocus);

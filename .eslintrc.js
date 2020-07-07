@@ -11,9 +11,9 @@ module.exports = {
         "plugin:react/recommended",
         "eslint-config-prettier",
         "airbnb",
-        "prettier",
-        "plugin:prettier/recommended",
-        "prettier/@typescript-eslint",
+        // "prettier",
+        // "plugin:prettier/recommended",
+        // "prettier/@typescript-eslint",
         "prettier/babel",
         "prettier/flowtype",
         "prettier/react",
@@ -29,7 +29,7 @@ module.exports = {
         ecmaFeatures: {
             jsx: false,
             impliedStrict: true
-        } //
+        }
     },
     rules: {
         "accessor-pairs": ["error"],
@@ -41,45 +41,44 @@ module.exports = {
         "block-scoped-var": "error",
         "class-methods-use-this": "warn",
         "consistent-return": "error",
+        "comma-dangle": ["error", "never"],
         curly: ["error", "multi", "consistent"],
         "default-case": "error",
         // "dot-location": ["error", "object"],
-        "dot-notation": ["error", {allowKeywords: false}],
+        "dot-notation": ["error", { allowKeywords: false }],
         eqeqeq: ["error", "always"],
-        // "indent": [
-        //     "error",
-        //     4,
-        //     {
-        //         "SwitchCase": 1,
-        //         // "VariableDeclarator": 1,
-        //         // "outerIIFEBody": 1,
-        //         // "MemberExpression": 1,
-        //         "FunctionDeclaration": {
-        //                                     parameters: "first",
-        //                                     // body: 1
-        //                                 },
-        //         "FunctionExpression": {
-        //                                     parameters: "first",
-        //                                     // body: 1
-        //                                 },
-        //         "CallExpression": {
-        //                                 arguments: "first"
-        //                             },
-        //         "ArrayExpression": "first",
-        //         "ObjectExpression": "first",
-        //         "ImportDeclaration": "first",
-        //         "flatTernaryExpressions": true,
-        //         // "ignoreComments": false
-        //     }
-        // ],
-        // "linebreak-style": [
-        //     "error",
-        //     "windows"
-        // ],
+        indent: [
+            "error",
+            4,
+            {
+                SwitchCase: 1,
+                // "VariableDeclarator": 1,
+                // "outerIIFEBody": 1,
+                // "MemberExpression": 1,
+                FunctionDeclaration: {
+                    parameters: "first"
+                    // body: 1
+                },
+                FunctionExpression: {
+                    parameters: "first"
+                    // body: 1
+                },
+                CallExpression: {
+                    arguments: "first"
+                },
+                ArrayExpression: "first",
+                ObjectExpression: "first",
+                ImportDeclaration: "first",
+                flatTernaryExpressions: true
+                // "ignoreComments": false
+            }
+        ],
+        "linebreak-style": ["error", "windows"],
         "lines-between-class-members": 0,
         "max-classes-per-file": 0,
+        "max-len": 0,
         "no-console": 0,
-        "no-constant-condition": ["error", {checkLoops: false}],
+        "no-constant-condition": ["error", { checkLoops: false }],
         "no-continue": 0,
         "no-debugger": "warn",
         "no-else-return": "off",
@@ -109,6 +108,7 @@ module.exports = {
         "no-plusplus": 0,
         "no-restricted-syntax": 0,
         "no-restricted-globals": 0,
+        "no-tabs": ["error", { allowIndentationTabs: true }],
         "no-template-curly-in-string": "warn",
         "no-underscore-dangle": 0,
         "no-unreachable": 0,
@@ -119,25 +119,22 @@ module.exports = {
         "no-useless-escape": 0,
         //"no-magic-numbers": ["warn", { "ignoreArrayIndexes": true, "ignore": [0, 1], "enforceConst": true } ],
         "no-void": 0,
-        // "one-var": ["error", "consecutive"],
-        "one-var": ["error", {var: "always", let: "consecutive", const: "never"}],
+        "nonblock-statement-body-position": ["error", "below"],
+        "object-curly-newline": 0,
+        "object-curly-spacing": ["error", "never"],
+        "one-var": ["error", { var: "always", let: "consecutive", const: "never" }],
+        "one-var-declaration-per-line": 0,
+        "operator-linebreak": ["error", "after"],
         "prefer-arrow-callback": "error",
-        "prefer-const": ["error", {destructuring: "all"}],
+        "prefer-const": ["error", { destructuring: "all" }],
         "prefer-destructuring": 0,
         "prefer-object-spread": 0,
-        "prettier/prettier": 0,
+        // "prettier/prettier": 0,
         // "prettier/prettier": "warn",
-        // "babel/quotes": [
-        //     "error",
-        //     "double",
-        //     { "avoidEscape": true, "allowTemplateLiterals": false }
-        // ],
-        radix: 0
-        // "semi": [
-        //     "error",
-        //     "always",
-        //     { "omitLastInOneLineBlock": true }
-        // ]
+        quotes: ["error", "double"],
+        "babel/quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: false }],
+        radix: 0,
+        semi: ["error", "always", { omitLastInOneLineBlock: true }]
     },
     reportUnusedDisableDirectives: true,
     globals: {
@@ -194,5 +191,5 @@ module.exports = {
         MarkStart: "readonly",
         MarkStop: "readonly"
     },
-    plugins: ["babel", "prettier"]
+    plugins: ["babel"] //plugins: ["babel", "prettier"]
 };

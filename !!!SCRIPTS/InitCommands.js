@@ -27,13 +27,16 @@ const InitCommands = (() => {
         Listener.Lock();
         setTimeout(() => {
             D.Flag("... Fixing TimeTracker ...");
-            if (TimeTracker && TimeTracker.Fix) TimeTracker.Fix();
+            if (TimeTracker && TimeTracker.Fix)
+                TimeTracker.Fix();
             setTimeout(() => {
                 D.Flag("... Fixing Soundscape ...");
-                if (Soundscape && Soundscape.Sync) Soundscape.Sync(true);
+                if (Soundscape && Soundscape.Sync)
+                    Soundscape.Sync(true);
                 setTimeout(() => {
                     D.Flag("... Fixing Character Displays ...");
-                    if (Char && Char.RefreshDisplays) Char.RefreshDisplays();
+                    if (Char && Char.RefreshDisplays)
+                        Char.RefreshDisplays();
                     setTimeout(() => {
                         D.Flag("Initialization Complete!");
                         Listener.Unlock();
