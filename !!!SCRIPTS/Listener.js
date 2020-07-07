@@ -169,6 +169,7 @@ const Listener = (() => {
                 "!clear": {script: Chat, gmOnly: true, singleCall: false},
                 "!find": {script: Chat, gmOnly: true, singleCall: false},
                 "!comp": {script: Complications, gmOnly: true, singleCall: true},
+                "!loc": {script: Locations, gmOnly: true, singleCall: true},
                 "!media": {script: Media, gmOnly: true, singleCall: false},
                 "!area": {script: Media, gmOnly: true, singleCall: false},
                 "!img": {script: Media, gmOnly: true, singleCall: false},

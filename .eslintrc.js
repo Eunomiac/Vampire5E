@@ -154,6 +154,7 @@ module.exports = {
         Handouts: "readonly",
         Roller: "readonly",
         Complications: "readonly",
+        Locations: "readonly",
         Session: "readonly",
         Player: "readonly",
         Fuzzy: "readonly",

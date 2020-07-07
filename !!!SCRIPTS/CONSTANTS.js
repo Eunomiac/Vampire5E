@@ -12,6 +12,7 @@ const SCRIPTS = [
     "Media",
     "Player",
     "Session",
+    "Locations",
     "TimeTracker",
     "DragPads",
     "Roller",
@@ -22,6 +23,7 @@ const SCRIPTS = [
     "Tester",
     "InitCommands"
 ];
+
 state = state || {};
 state[GAMENAME] = state[GAMENAME] || {};
 for (const scriptName of SCRIPTS) state[GAMENAME][scriptName] = state[GAMENAME][scriptName] || {};
