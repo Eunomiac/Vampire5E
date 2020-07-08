@@ -82,17 +82,19 @@ const Tester = (() => {
                     case "save": {
                         STATE.REF.SpotlightPromptsBackup = D.Clone(state.VAMPIRE.Session.SpotlightPrompts);
                         STATE.REF.SpotlightPromptsCharsBackup = D.KeyMapObj(D.Clone(state.VAMPIRE.Char.registry), null, (v) => _.pick(v, "spotlightPrompt"));
+                        STATE.REF.PromptAuthors = D.Clone(state.VAMPIRE.Session.PromptAuthors);
                         D.Alert(
                             D.JS({
                                 SpotlightPromptsBackup: STATE.REF.SpotlightPromptsBackup,
-                                SpotlightPromptsCharsBackup: STATE.REF.SpotlightPromptsCharsBackup
+                                SpotlightPromptsCharsBackup: STATE.REF.SpotlightPromptsCharsBackup,
+                                PromptAuthorsBackup: STATE.REF.PromptAuthors
                             }),
                             "!test prompt save"
                         );
                         break;
                     }
                     case "reset": {
-                        state.VAMPIRE.Session.PromptAuthors = [];
+                        state.VAMPIRE.Session.PromptAuthors = D.Clone(STATE.REF.PromptAuthors);
                         state.VAMPIRE.Session.SpotlightPrompts = D.Clone(STATE.REF.SpotlightPromptsBackup);
                         state.VAMPIRE.Char.registry = D.KeyMapObj(state.VAMPIRE.Char.registry, null, (v, k) => Object.assign(v, STATE.REF.SpotlightPromptsCharsBackup[k]));
                         D.Alert(

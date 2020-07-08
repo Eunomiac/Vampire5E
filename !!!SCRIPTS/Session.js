@@ -160,7 +160,6 @@ const Session = (() => {
                 (k, v) => v.initial,
                 () => []
             );
-        STATE.REF.PromptAuthors = [];
         STATE.REF.isPromptingGeneric = false;
 
         STATE.REF.SceneAlarms = STATE.REF.SceneAlarms || [];
@@ -821,9 +820,6 @@ const Session = (() => {
         }
         STATE.REF.SessionMonologues = _.shuffle(D.GetChars("registered").map((x) => D.GetCharData(x).name));
         STATE.REF.spotlightChar = false;
-        STATE.REF.PromptAuthors = [];
-        for (const quad of Object.keys(Char.REGISTRY))
-            Char.REGISTRY[quad].spotlightPrompt = false;
         changeMode("Active", true, [
             [
                 D.Chat,
@@ -2196,24 +2192,29 @@ const Session = (() => {
         const {initial, quadrant, spotlightPrompt} = D.GetCharData(charRef);
         DB({initial, quadrant, spotlightPrompt}, "assignSpotlightPrompt");
         if (initial) {
+            // FIRST: Look for prompts already assigned, and tell the player IF not silent.
+            if (spotlightPrompt && !isSilent) {
+                D.Chat(
+                    D.GetPlayerID(charRef),
+                    C.HTML.Block([
+                        C.HTML.Header(`Your Prompt for Session ${D.NumToText(STATE.REF.SessionNum, true)} Is:`),
+                        C.HTML.Body(spotlightPrompt.prompt, {
+                            fontSize: "12px",
+                            fontFamily: "Voltaire",
+                            lineHeight: "14px",
+                            textAlign: "left",
+                            padding: "3px",
+                            margin: "0px"
+                        })
+                    ])
+                );
+                if (!(Session.IsSessionActive || TimeTracker.ArePromptsOpen()))
+                    return false;
+            }
+            // Everything else depends on prompts being open or the session being active.
             if (Session.IsSessionActive || TimeTracker.ArePromptsOpen()) {
                 // FIRST: Look for prompts already assigned.
                 if (spotlightPrompt) {
-                    if (!isSilent)
-                        D.Chat(
-                            D.GetPlayerID(charRef),
-                            C.HTML.Block([
-                                C.HTML.Header(`Your Prompt for Session ${D.NumToText(STATE.REF.SessionNum, true)} Is:`),
-                                C.HTML.Body(spotlightPrompt.prompt, {
-                                    fontSize: "12px",
-                                    fontFamily: "Voltaire",
-                                    lineHeight: "14px",
-                                    textAlign: "left",
-                                    padding: "3px",
-                                    margin: "0px"
-                                })
-                            ])
-                        );
                     DB({step: "Prompt Exists, Returning it", spotlightPrompt}, "assignSpotlightPrompt");
                     return spotlightPrompt;
                 } else {

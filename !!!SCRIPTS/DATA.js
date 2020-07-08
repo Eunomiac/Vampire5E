@@ -459,6 +459,7 @@ const D = (() => {
     // #endregion
 
     // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
+
     const jStr = (data, isVerbose = false) => {
         /* Parses a value of any type via JSON.stringify, and then further styles it for display either
                 in Roll20 chat, in the API console log, or both. */
@@ -480,6 +481,21 @@ const D = (() => {
                 }
             };
             const replacer = (k, v) => {
+                /* THE REPLACER FUNCTION:
+                    The replacer parameter can be either a function or an array.
+
+                    As a function, it takes two parameters: the key and the value being stringified.
+                    The object in which the key was found is provided as the replacer's this parameter.
+
+                    Initially, the replacer function is called with an empty string as key representing the object being stringified.
+                    It is then called for each property on the object or array being stringified.
+
+                    It should return the value that should be added to the JSON string, as follows:
+
+                        If you return a Number, String, Boolean, or null, the stringified version of that value is used as the property's value.
+                        If you return a Function, Symbol, or undefined, the property is not included in the output.
+                        If you return any other object, the object is recursively stringified, calling the replacer function on each property.
+                */
                 let returnVal = v;
                 if (v instanceof Date) {
                     returnVal = `@@NAMESTART${typeColor("date")}@@${TimeTracker.FormatDate(new Date(v), true)}@@NAMEEND@@`;
