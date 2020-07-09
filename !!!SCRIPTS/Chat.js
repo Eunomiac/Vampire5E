@@ -178,13 +178,41 @@ const Chat = (() => {
                     case "pos":
                     case "position":
                         if (D.GetSelected(msg)) {
-                            let [left, top] = [args.shift(), args.shift()];
-                            left = D.Int(left) || null;
-                            top = D.Int(top) || null;
+                            let [left, top] = args,
+                                [deltaLeft, deltaTop] = [0, 0];
+                            if (D.LCase(left) === "x")
+                                left = null;
+                            if (D.LCase(left) === "c")
+                                left = C.SANDBOX.left;
+                            if (D.LCase(left).startsWith("+")) {
+                                deltaLeft = D.Round(D.LCase(left).replace(/\D/gu, ""), 2);
+                                left = null;
+                            }
+                            if (D.LCase(left).startsWith("-")) {
+                                deltaLeft = -D.Round(D.LCase(left).replace(/\D/gu, ""), 2);
+                                left = null;
+                            }
+                            if (D.LCase(top) === "x")
+                                top = null;
+                            if (D.LCase(top) === "c")
+                                top = C.SANDBOX.top;
+                            if (D.LCase(top).startsWith("+")) {
+                                deltaTop = D.Round(D.LCase(top).replace(/\D/gu, ""), 2);
+                                top = null;
+                            }
+                            if (D.LCase(top).startsWith("-")) {
+                                deltaTop = -D.Round(D.LCase(top).replace(/\D/gu, ""), 2);
+                                top = null;
+                            }
+                            DB({args, top, left, deltaTop, deltaLeft}, "setPosition");
                             for (const selObj of D.GetSelected(msg)) {
-                                if (left)
+                                if (deltaLeft)
+                                    left = D.Float(selObj.get("left")) + deltaLeft;
+                                if (deltaTop)
+                                    top = D.Float(selObj.get("top")) + deltaTop;
+                                if (left !== null)
                                     selObj.set({left});
-                                if (top)
+                                if (top !== null)
                                     selObj.set({top});
                             }
                         }
@@ -193,15 +221,45 @@ const Chat = (() => {
                     case "dims":
                     case "dimensions": {
                         if (D.GetSelected(msg)) {
-                            let [width, height] = [args.shift(), args.shift()].map((x) => (x === "x" ? x : D.Int(x) || null));
+                            let [width, height] = args;
+                            // let [deltaWidth, deltaHeight] = [0, 0];
+                            if (D.LCase(width) === "x")
+                                width = null;
+                            if (D.LCase(width) === "f")
+                                width = C.SANDBOX.width;
+                            // if (D.LCase(width).startsWith("+")) {
+                            //     width = null;
+                            //     deltaWidth = D.Round(D.LCase(width).replace(/\D/gu, ""), 2);
+                            // }
+                            // if (D.LCase(width).startsWith("-")) {
+                            //     width = null;
+                            //     deltaWidth = -D.Round(D.LCase(width).replace(/\D/gu, ""), 2);
+                            // }
+                            if (D.LCase(height) === "x")
+                                height = null;
+                            if (D.LCase(height) === "f")
+                                height = C.SANDBOX.height;
+                            // if (D.LCase(height).startsWith("+")) {
+                            //     height = null;
+                            //     deltaHeight = D.Round(D.LCase(height).replace(/\D/gu, ""), 2);
+                            // }
+                            // if (D.LCase(height).startsWith("-")) {
+                            //     height = null;
+                            //     deltaHeight = -D.Round(D.LCase(height).replace(/\D/gu, ""), 2);
+                            // }
+                            DB({height, width}, "setDimensions");
                             for (const selObj of D.GetSelected(msg)) {
-                                if (width === "x" && height)
+                                if (width === null && height !== null)
                                     width = (selObj.get("width") * height) / selObj.get("height");
-                                else if (height === "x" && width)
+                                if (height === null && width !== null)
                                     height = (selObj.get("height") * width) / selObj.get("width");
-                                if (width)
+                                // if (deltaWidth)
+                                //     width = D.Float(selObj.get("width")) + deltaWidth;
+                                // if (deltaHeight)
+                                //     height = D.Float(selObj.get("height")) + deltaHeight;
+                                if (width !== null)
                                     selObj.set({width});
-                                if (height)
+                                if (height !== null)
                                     selObj.set({height});
                             }
                         }
@@ -426,29 +484,24 @@ const Chat = (() => {
         if (!obj)
             return false;
         const posInfo = [
-            "<div style='display: block; width: 100%; height: 150px; margin: 0px; padding: 0px; text-align: center; text-align-last: center; font-size: 8px;'>",
-            `<div style="display: block; margin: 0px; padding: 0px; width: 100%; height: 20px; text-align:center; text-align-last: center; font-weight: bold; line-height: 20px;">${D.Round(
-                obj.get("top") - 0.5 * obj.get("height"),
-                2
-            )}</div>`,
+            "<div style='display: block; width: 100%; height: auto; margin: 0px; padding: 0px; text-align: center; text-align-last: center; font-size: 12px; font-family: \"Century Gothic\";'>",
+            `<div style="display: block; margin: 0px; padding: 0px; width: 100%; height: 20px; text-align:center; text-align-last: center; font-weight: bold; line-height: 20px;">${D.Round(obj.get("top") - 0.5 * obj.get("height"), 2)}</div>`,
             "<div style='display: block; margin: 0px; padding: 0px; width: 100%; height: auto;'>",
-            `<div style="display: inline-block; margin: 0px; padding: 0px; width: 25%; height: 110px; line-height: 110px; text-align: center; text-align-last: center; font-weight: bold;">${D.Round(
-                obj.get("left") - 0.5 * obj.get("width"),
-                2
-            )}</div>`,
-            `<div style="display: inline-block; margin: 0px; padding: 0px; width: 49%; background-color: #FFFFCC; border: 1px dotted black; text-align: center; text-align-last: center; vertical-align: middle; padding-top: 40px; padding-bottom: 40px;"><b>${D.Round(
-                obj.get("left"),
-                2
-            )}</b>, <b>${D.Round(obj.get("top"), 2)}</b><br>(<b>${D.Round(obj.get("width"), 2)}</b> x <b>${D.Round(obj.get("height"), 2)}</b>)</div>`,
-            `<div style="display: inline-block; margin: 0px; padding: 0px; width: 25%; height: 110px; line-height: 110px; text-align: center; text-align-last: center; font-weight: bold;">${D.Round(
-                obj.get("left") + 0.5 * obj.get("width"),
-                2
-            )}</div>`,
+            `<div style="display: inline-block; margin: 0px; padding: 0px; width: 25%; height: 110px; line-height: 110px; text-align: center; text-align-last: center; font-weight: bold;">${D.Round(obj.get("left") - 0.5 * obj.get("width"), 2)}</div>`,
+            `<div style="display: inline-block; margin: 0px; padding: 0px; width: 49%; background-color: #FFFFCC; border: 1px dotted black; text-align: center; text-align-last: center; vertical-align: middle; padding-top: 40px; padding-bottom: 40px;"><b>${D.Round(obj.get("left"), 2)}</b>, <b>${D.Round(obj.get("top"), 2)}</b><br>(<b>${D.Round(obj.get("width"), 2)}</b> x <b>${D.Round(obj.get("height"), 2)}</b>)</div>`,
+            `<div style="display: inline-block; margin: 0px; padding: 0px; width: 25%; height: 110px; line-height: 110px; text-align: center; text-align-last: center; font-weight: bold;">${D.Round(obj.get("left") + 0.5 * obj.get("width"), 2)}</div>`,
             "</div>",
-            `<div style="display: block; margin: 0px; padding: 0px; width: 100%; height: 20px; text-align:center; text-align-last: center; font-weight: bold; line-height: 20px;">${D.Round(
-                obj.get("top") + 0.5 * obj.get("height"),
-                2
-            )}</div>`,
+            `<div style="display: block; margin: 0px; padding: 0px; width: 100%; height: 20px; text-align:center; text-align-last: center; font-weight: bold; line-height: 20px;">${D.Round(obj.get("top") + 0.5 * obj.get("height"), 2)}</div>`,
+            "</div>",
+            "<div style='font-size: 0px;font-family: \"Century Gothic\";'>",
+            `<div style="display: block; margin: 0px; padding: 0px; width: 100%; height: 20px; text-align:left; text-align-last: left;  line-height: 20px;font-size: 12px;font-family: Voltaire;border-bottom: 1px solid black;background-color: rgba(0,0,0,0.2);border-top: 1px solid black;">!set pos &lt;left (${D.Int(obj.get("left"))})&gt; &lt;top ((${D.Int(obj.get("top"))}))&gt;</div>`,
+            "<div style=\"display: inline-block; width: 48%;vertical-align: top;font-size: 10px;border-right: 1px solid black;padding: 2px;\"><b>&nbsp;\"X\":</b> Keep existing.<br><b>\"+#\":</b> Move right / down.<br></div>",
+            "<div style=\"display: inline-block; width: 48%;vertical-align: top;font-size: 10px;padding: 2px;\"><b>&nbsp;\"C\":</b> Center.<br><b>\"-#\":</b> Move left / up.<br></div>",
+            "</div>",
+            "<div style='font-size: 0px;font-family: \"Century Gothic\";'>",
+            `<div style="display: block; margin: 0px; padding: 0px; width: 100%; height: 20px; text-align:left; text-align-last: left; line-height: 20px;font-size: 12px;font-family: Voltaire;border-bottom: 1px solid black;background-color: rgba(0,0,0,0.2);border-top: 1px solid black;">!set dim &lt;width ((${D.Int(obj.get("width"))}))&gt; &lt;height((${D.Int(obj.get("height"))}))&gt;</div>`,
+            "<div style=\"display: inline-block; width: 48%;vertical-align: top;font-size: 10px;border-right: 1px solid black;padding: 2px;\"><b>&nbsp;\"X\":</b> Keep existing ratio.<br></div>",
+            "<div style=\"display: inline-block; width: 48%;vertical-align: top;font-size: 10px;padding: 2px;\"><b>&nbsp;\"F\":</b> Max Size.<br></div>",
             "</div>"
         ];
         D.Alert(posInfo.join(""), `${obj.get("name") || ""} Position Data `);

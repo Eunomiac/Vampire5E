@@ -90,6 +90,7 @@ const Listener = (() => {
     const regHandlers = () => {
         on("chat:message", handleMessage);
         on("change:attribute:current", (attrObj, prevData) => {
+            let wasScriptFound = false;
             /* DB({
                     ["CHANGE:ATTR:CURRENT"]: Object.assign({}, attrObj),
                     ["... from"]: prevData,
@@ -103,12 +104,15 @@ const Listener = (() => {
                     .replace(/^(.*_){3}/gu, "");
                 for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRCHANGE)
                     for (const attrKey of attrKeys)
-                        if (call.includes(attrKey))
-                            return scriptData.script.OnAttrChange(call, attrObj, prevData.current);
+                        if (call.includes(attrKey)) {
+                            scriptData.script.OnAttrChange(call, attrObj, prevData.current);
+                            wasScriptFound = true;
+                        }
             }
-            return false;
+            return wasScriptFound;
         });
         on("add:attribute", (attrObj) => {
+            let wasScriptFound = false;
             // DB({["ADD:ATTR"]: Object.assign({}, attrObj)}, "Listen")
             const call = attrObj
                 .get("name")
@@ -116,11 +120,14 @@ const Listener = (() => {
                 .replace(/^(.*_){3}/gu, "");
             for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRADD)
                 for (const attrKey of attrKeys)
-                    if (call.includes(attrKey))
-                        return scriptData.script.OnAttrAdd(call, attrObj);
-            return false;
+                    if (call.includes(attrKey)) {
+                        scriptData.script.OnAttrAdd(call, attrObj);
+                        wasScriptFound = true;
+                    }
+            return wasScriptFound;
         });
         on("destroy:attribute", (attrObj) => {
+            let wasScriptFound = false;
             // DB({["DESTROY:ATTR"]: Object.assign({}, attrObj)}, "Listen")
             const call = attrObj
                 .get("name")
@@ -128,38 +135,53 @@ const Listener = (() => {
                 .replace(/^(.*_){3}/gu, "");
             for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRDESTROY)
                 for (const attrKey of attrKeys)
-                    if (call.includes(attrKey))
-                        return scriptData.script.OnAttrDestroy(call, attrObj);
-            return false;
+                    if (call.includes(attrKey)) {
+                        scriptData.script.OnAttrDestroy(call, attrObj);
+                        wasScriptFound = true;
+                    }
+            return wasScriptFound;
         });
         on("add:graphic", (imgObj) => {
-            for (const scriptData of SCRIPTCALLS.IMGADD)
-                return scriptData.script.OnGraphicAdd(imgObj);
-            return false;
+            let wasScriptFound = false;
+            for (const scriptData of SCRIPTCALLS.IMGADD) {
+                scriptData.script.OnGraphicAdd(imgObj);
+                wasScriptFound = true;
+            }
+            return wasScriptFound;
         });
         on("change:graphic", (imgObj, prevData) => {
-            for (const scriptData of SCRIPTCALLS.IMGCHANGE)
-                return scriptData.script.OnGraphicChange(imgObj, prevData);
-            return false;
+            let wasScriptFound = false;
+            for (const scriptData of SCRIPTCALLS.IMGCHANGE) {
+                scriptData.script.OnGraphicChange(imgObj, prevData);
+                wasScriptFound = true;
+            }
+            return wasScriptFound;
         });
         on("change:campaign:playerpageid", () => {
-            for (const scriptData of SCRIPTCALLS.PAGECHANGE)
-                return scriptData.script.OnPageChange();
-            return false;
+            let wasScriptFound = false;
+            for (const scriptData of SCRIPTCALLS.PAGECHANGE) {
+                scriptData.script.OnPageChange();
+                wasScriptFound = true;
+            }
+            return wasScriptFound;
         });
         on("change:jukeboxtrack", (trackObj, prevData) => {
+            let wasScriptFound = false;
             DB({trackObj, prevData}, "OnTrackChange");
-            /*
-                for (const scriptData of SCRIPTCALLS.TRACKCHANGE)
-                    return scriptData.script.OnTrackChange(trackObj, prevData)
-                return false
-                */
+            for (const scriptData of SCRIPTCALLS.TRACKCHANGE) {
+                scriptData.script.OnTrackChange(trackObj, prevData);
+                wasScriptFound = true;
+            }
+            return wasScriptFound;
         });
         on("add:character", (charObj) => {
+            let wasScriptFound = false;
             DB({charObj}, "OnCharAdd");
-            for (const scriptData of SCRIPTCALLS.CHARADD)
-                return scriptData.script.OnCharAdd(charObj);
-            return false;
+            for (const scriptData of SCRIPTCALLS.CHARADD) {
+                scriptData.script.OnCharAdd(charObj);
+                wasScriptFound = true;
+            }
+            return wasScriptFound;
         });
     };
     // #endregion
@@ -223,7 +245,12 @@ const Listener = (() => {
         );
         SCRIPTCALLS.ATTRADD = _.reject([[["desire", "projectstake", "triggertimelinesort"], {script: Char}]], (v) => v[1].script === {});
         SCRIPTCALLS.ATTRDESTROY = _.reject([[["desire"], {script: Char}]], (v) => v[1].script === {});
-        SCRIPTCALLS.IMGCHANGE = _.reject([{script: DragPads}], (v) => v.script === {});
+        SCRIPTCALLS.IMGCHANGE = _.reject(
+            [
+                {script: DragPads},
+                {script: Media}
+            ], (v) => v.script === {}
+        );
         SCRIPTCALLS.IMGADD = _.reject([{script: Media}], (v) => v.script === {});
         SCRIPTCALLS.PAGECHANGE = _.reject([{script: Session}], (v) => v.script === {});
         SCRIPTCALLS.TRACKCHANGE = _.reject([{script: Soundscape}], (v) => v.script === {});

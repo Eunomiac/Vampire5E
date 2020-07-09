@@ -1134,7 +1134,7 @@ const D = (() => {
                                 lineHeight: "25px",
                                 padding: "0px 5px",
                                 margin: "0px",
-                                fontFamily: "'copperplate gothic'",
+                                fontFamily: "Voltaire",
                                 fontVariant: "small-caps",
                                 fontWeight: "normal",
                                 bgColor: C.COLORS.darkgrey,

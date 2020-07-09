@@ -57,7 +57,7 @@ const airbagHTML = {
             "width: 90%;",
             "line-height: 23px;",
             "margin: 0px 5%;",
-            "font-family: 'copperplate gothic';",
+            "font-family: 'Voltaire';",
             "font-variant: small-caps;",
             "font-size: 16px;",
             "text-align: center;",
