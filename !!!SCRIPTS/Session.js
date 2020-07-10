@@ -194,6 +194,7 @@ const Session = (() => {
                 switch (D.LCase((call = args.shift()))) {
                     case "toggle": {
                         if (STATE.REF.quadScene.isActive) {
+                            fireOnExit(getActiveSite());
                             Media.ToggleImg("DistrictCenter", true);
                             Media.ToggleImg("SiteCenter", true);
                             Media.ToggleImg("SiteLeft", false);
@@ -228,6 +229,8 @@ const Session = (() => {
                             Media.SetTextData("clockStatusNotice", {top: 316});
                             Media.SetTextData("TimeTracker", {top: 350});
                             STATE.REF.quadScene.isActive = false;
+                            Media.SetImg("DistrictCenter", "DupontByTheCastle");
+                            Media.SetImg("SiteCenter", "CLGrounds");
                             setLocation({DistrictCenter: ["DupontByTheCastle"], SiteCenter: ["CLGrounds"]});
                         } else {
                             Media.ToggleImg("DistrictCenter", false);
@@ -245,26 +248,18 @@ const Session = (() => {
                             Media.ToggleImg("SiteTopCenterTint", false);
                             Media.ToggleImg("SiteTopLeftTint", false);
                             Media.ToggleImg("SiteTopRightTint", false);
-                            Media.ToggleImg("SiteFocusHub", false);
                             Media.ToggleImg("DisableLocLeft", false);
                             Media.ToggleImg("DisableLocRight", false);
                             Media.ToggleImg("DisableSiteBottomAll", false);
                             Media.ToggleImg("DisableSiteLeft", false);
                             Media.ToggleImg("DisableSiteRight", false);
-                            // Media.SetImg("SiteCenter", "CLVestibule");
-                            // Media.SetImg("SiteLeft", "CLGrandGallery");
-                            // Media.SetImg("SiteRight", "CLDrawingRoom");
-                            // Media.SetImg("SiteMidCenter", "CLGreatHall");
-                            // Media.SetImg("SiteTopCenter", "CLBalcony");
-                            // Media.SetImg("SiteTopLeft", "CLLibrary");
-                            // Media.SetImg("SiteTopRight", "CLTerrace");
-                            Media.SetImg("SiteCenter", "CLGrounds"); // For Testing
-                            Media.SetImg("SiteLeft", "CLGallery"); // For Testing
-                            Media.SetImg("SiteRight", "Elysium"); // For Testing
-                            Media.SetImg("SiteMidCenter", "CLBallroom"); // For Testing
-                            Media.SetImg("SiteTopCenter", "CLThroneRoom"); // For Testing
-                            Media.SetImg("SiteTopLeft", "TremereChantry"); // For Testing
-                            Media.SetImg("SiteTopRight", "CLSittingRoom"); // For Testing
+                            Media.SetImg("SiteCenter", "CLVestibule");
+                            Media.SetImg("SiteLeft", "CLGallery");
+                            Media.SetImg("SiteRight", "CLDrawingRoom");
+                            Media.SetImg("SiteMidCenter", "CLGreatHall");
+                            Media.SetImg("SiteTopCenter", "CLOverlook");
+                            Media.SetImg("SiteTopLeft", "CLLibrary");
+                            Media.SetImg("SiteTopRight", "CLTerrace");
                             Media.SetImgData("SiteCenter", {width: 352, height: 258});
                             Media.SetImgData("SiteLeft", {top: 740, left: 520, width: 317, height: 233});
                             Media.SetImgData("SiteRight", {top: 740, left: 1070, width: 317, height: 233});
@@ -278,29 +273,25 @@ const Session = (() => {
                             Media.SetTextData("clockStatusNotice", {top: 290});
                             Media.SetTextData("TimeTracker", {top: 265});
                             STATE.REF.quadScene.isActive = true;
+                            if (D.LCase(args[0]) in HUBFOCUS) {
+                                Media.SetImg("SiteFocusHub", HUBFOCUS[D.LCase(args[0])], true);
+                            } else {
+                                Media.SetImg("SiteFocusHub", "blank");
+                                Media.ToggleImg("SiteFocusHub", false);
+                            }
                         }
                         break;
                     }
                     case "focus": {
-                        const hubRefs = {
-                            tl: "TopLeft",
-                            tc: "TopCenter",
-                            tr: "TopRight",
-                            c: "MidCenter",
-                            mc: "MidCenter",
-                            l: "Left",
-                            bc: "Center",
-                            r: "Right"
-                        };
                         const [curFocus] = getActiveSite();
-                        if (D.LCase(args[0]) in hubRefs) {
-                            Media.SetImg("SiteFocusHub", hubRefs[D.LCase(args[0])], true);
+                        if (D.LCase(args[0]) in HUBFOCUS) {
+                            Media.SetImg("SiteFocusHub", HUBFOCUS[D.LCase(args[0])], true);
                         } else {
                             Media.SetImg("SiteFocusHub", "blank");
                             Media.ToggleImg("SiteFocusHub", false);
                         }
                         const [newFocus] = getActiveSite();
-                        D.Alert(`CurFocus: ${D.JSL(curFocus)}, New Focus: ${D.JSL(newFocus)}`, "Session Set Focus");
+                        // D.Alert(`CurFocus: ${D.JSL(curFocus)}, New Focus: ${D.JSL(newFocus)}`, "Session Set Focus");
                         if (curFocus && curFocus !== newFocus)
                             fireOnExit(curFocus);
                         if (newFocus && newFocus !== curFocus)
@@ -326,7 +317,7 @@ const Session = (() => {
                             }
                             default: {
                                 STATE.REF.locationRecord.Active = D.Clone(STATE.REF.curLocation);
-                                STATE.REF.locationRecord.Active = STATE.REF.sceneFocus;
+                                STATE.REF.sceneFocusRecord.Active = STATE.REF.sceneFocus;
                                 break;
                             }
                         }
@@ -338,7 +329,7 @@ const Session = (() => {
                     case "all": {
                         STATE.REF.dateRecord = null;
                         STATE.REF.locationRecord.Active = D.Clone(STATE.REF.curLocation);
-                        STATE.REF.locationRecord.Active = STATE.REF.sceneFocus;
+                        STATE.REF.sceneFocusRecord.Active = STATE.REF.sceneFocus;
                         logTokens("Active");
                         break;
                     }
@@ -829,6 +820,16 @@ const Session = (() => {
         STATE.REF.curLocation = _.omit(STATE.REF.curLocation, (v, k) => !posNames.includes(k));
     };
     const MENUHTML = {};
+    const HUBFOCUS = {
+        tl: "TopLeft",
+        tc: "TopCenter",
+        tr: "TopRight",
+        c: "MidCenter",
+        mc: "MidCenter",
+        l: "Left",
+        bc: "Center",
+        r: "Right"
+    };
     // #endregion
 
     // #region Getting & Setting Session Data

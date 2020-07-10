@@ -2515,7 +2515,7 @@ const Media = (() => {
         const traceID = TRACEON("setTokenSrc", [charRef, srcName]);
         srcName = srcName === "" ? "base" : srcName;
         const [tokenObj] = getTokenObjs(charRef);
-        DB({tokenObj, tokenObjID: tokenObj.id, srcName, "isToken?": VAL({tokenObj}), "isReg?": isRegToken(tokenObj)}, "setTokenSrc");
+        DB({tokenObj, tokenObjID: tokenObj && tokenObj.id, srcName, "isToken?": VAL({tokenObj}), "isReg?": isRegToken(tokenObj)}, "setTokenSrc");
         if (VAL({tokenObj}) && isRegToken(tokenObj)) {
             const prevTokenAuras = getActiveTokenAuras(charRef);
             const tokenName = tokenObj.get("name");
