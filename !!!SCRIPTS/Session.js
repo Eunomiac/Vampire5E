@@ -194,50 +194,117 @@ const Session = (() => {
                 switch (D.LCase((call = args.shift()))) {
                     case "toggle": {
                         if (STATE.REF.quadScene.isActive) {
-                            setQuadLocations("DupontByTheCastle", false, false);
-                            Media.ToggleTokens("npc", false);
-                            Media.ToggleTokens("pc", true);
-                            Char.SendHome("registered");
+                            Media.ToggleImg("DistrictCenter", true);
+                            Media.ToggleImg("SiteCenter", true);
+                            Media.ToggleImg("SiteLeft", false);
+                            Media.ToggleImg("SiteRight", false);
+                            Media.ToggleImg("SiteMidCenter", false);
+                            Media.ToggleImg("SiteTopCenter", false);
+                            Media.ToggleImg("SiteTopLeft", false);
+                            Media.ToggleImg("SiteTopRight", false);
+                            Media.ToggleImg("SiteCenterTint", false);
+                            Media.ToggleImg("SiteLeftTint", false);
+                            Media.ToggleImg("SiteRightTint", false);
+                            Media.ToggleImg("SiteMidCenterTint", false);
+                            Media.ToggleImg("SiteTopCenterTint", false);
+                            Media.ToggleImg("SiteTopLeftTint", false);
+                            Media.ToggleImg("SiteTopRightTint", false);
+                            Media.ToggleImg("SiteFocusHub", false);
+                            Media.ToggleImg("DisableLocLeft", false);
+                            Media.ToggleImg("DisableLocRight", false);
+                            Media.ToggleImg("DisableSiteBottomAll", false);
+                            Media.ToggleImg("DisableSiteLeft", false);
+                            Media.ToggleImg("DisableSiteRight", false);
+                            Media.SetImgData("SiteCenter", {width: 440, height: 325});
+                            Media.SetImgData("SiteLeft", {top: 876, left: 595, width: 400, height: 295});
+                            Media.SetImgData("SiteRight", {top: 876, left: 995, width: 400, height: 295});
+                            Media.SetImgData("SiteCenterTint", {width: 441, height: 326});
+                            Media.SetImgData("SiteLeftTint", {top: 876, left: 595, width: 401, height: 296});
+                            Media.SetImgData("SiteRightTint", {top: 876, left: 995, width: 401, height: 296});
+                            Media.SetImgData("SignalLightBotLeft", {top: 759});
+                            Media.SetImgData("SignalLightBotRight", {top: 759});
+                            Media.SetTextData("testSessionNotice", {top: 300});
+                            Media.SetTextData("playerPageAlertMessage", {top: 275});
+                            Media.SetTextData("clockStatusNotice", {top: 316});
+                            Media.SetTextData("TimeTracker", {top: 350});
+                            STATE.REF.quadScene.isActive = false;
+                            setLocation({DistrictCenter: ["DupontByTheCastle"], SiteCenter: ["CLGrounds"]});
                         } else {
-                            setQuadLocations(
-                                "DupontByTheCastle",
-                                {
-                                    TopLeft: "CLThroneRoom",
-                                    TopRight: "CLSittingRoom",
-                                    Left: "CLGallery",
-                                    Right: "CLBallroom",
-                                    Center: "CLGrounds"
-                                },
-                                "Center"
-                            );
-                            Media.ToggleTokens("Attendant", true);
-                            Media.ToggleTokens("Agnes Bellanger", true);
-                            Media.ToggleTokens("registered", true);
-                            for (const [charRef, areaRef] of Object.entries({
-                                L: "CLE3",
-                                R: "CLE2",
-                                A: "CLE5",
-                                N: "CLE1",
-                                B: "CLE4"
-                            }))
-                                Media.SetArea(charRef, areaRef);
+                            Media.ToggleImg("DistrictCenter", false);
+                            Media.ToggleImg("SiteCenter", true);
+                            Media.ToggleImg("SiteLeft", true);
+                            Media.ToggleImg("SiteRight", true);
+                            Media.ToggleImg("SiteMidCenter", true);
+                            Media.ToggleImg("SiteTopCenter", true);
+                            Media.ToggleImg("SiteTopLeft", true);
+                            Media.ToggleImg("SiteTopRight", true);
+                            Media.ToggleImg("SiteCenterTint", false);
+                            Media.ToggleImg("SiteLeftTint", false);
+                            Media.ToggleImg("SiteRightTint", false);
+                            Media.ToggleImg("SiteMidCenterTint", false);
+                            Media.ToggleImg("SiteTopCenterTint", false);
+                            Media.ToggleImg("SiteTopLeftTint", false);
+                            Media.ToggleImg("SiteTopRightTint", false);
+                            Media.ToggleImg("SiteFocusHub", false);
+                            Media.ToggleImg("DisableLocLeft", false);
+                            Media.ToggleImg("DisableLocRight", false);
+                            Media.ToggleImg("DisableSiteBottomAll", false);
+                            Media.ToggleImg("DisableSiteLeft", false);
+                            Media.ToggleImg("DisableSiteRight", false);
+                            // Media.SetImg("SiteCenter", "CLVestibule");
+                            // Media.SetImg("SiteLeft", "CLGrandGallery");
+                            // Media.SetImg("SiteRight", "CLDrawingRoom");
+                            // Media.SetImg("SiteMidCenter", "CLGreatHall");
+                            // Media.SetImg("SiteTopCenter", "CLBalcony");
+                            // Media.SetImg("SiteTopLeft", "CLLibrary");
+                            // Media.SetImg("SiteTopRight", "CLTerrace");
+                            Media.SetImg("SiteCenter", "CLGrounds"); // For Testing
+                            Media.SetImg("SiteLeft", "CLGallery"); // For Testing
+                            Media.SetImg("SiteRight", "Elysium"); // For Testing
+                            Media.SetImg("SiteMidCenter", "CLBallroom"); // For Testing
+                            Media.SetImg("SiteTopCenter", "CLThroneRoom"); // For Testing
+                            Media.SetImg("SiteTopLeft", "TremereChantry"); // For Testing
+                            Media.SetImg("SiteTopRight", "CLSittingRoom"); // For Testing
+                            Media.SetImgData("SiteCenter", {width: 352, height: 258});
+                            Media.SetImgData("SiteLeft", {top: 740, left: 520, width: 317, height: 233});
+                            Media.SetImgData("SiteRight", {top: 740, left: 1070, width: 317, height: 233});
+                            Media.SetImgData("SiteCenterTint", {width: 353, height: 259});
+                            Media.SetImgData("SiteLeftTint", {top: 740, left: 520, width: 318, height: 234});
+                            Media.SetImgData("SiteRightTint", {top: 740, left: 1070, width: 318, height: 234});
+                            Media.SetImgData("SignalLightBotLeft", {top: 900});
+                            Media.SetImgData("SignalLightBotRight", {top: 900});
+                            Media.SetTextData("testSessionNotice", {top: 200});
+                            Media.SetTextData("playerPageAlertMessage", {top: 225});
+                            Media.SetTextData("clockStatusNotice", {top: 290});
+                            Media.SetTextData("TimeTracker", {top: 265});
+                            STATE.REF.quadScene.isActive = true;
                         }
                         break;
                     }
-                    case "locs": {
-                        const focus = args.filter((x) => !x.includes(":")).pop();
-                        const params = D.ParseParams(args);
-                        setQuadLocations("DupontByTheCastle", params, focus || STATE.REF.quadScene.focus || "Center");
-                        break;
-                    }
                     case "focus": {
-                        setQuadLocations("DupontByTheCastle", null, "All");
-                        Media.ToggleTokens("registered", true);
-                        Media.ToggleTokens("Attendant", false);
-                        const casaLomaLocations = ["CL1", "CL2", "CL3", "CL4", "CL5"];
-                        const pcTokenRefs = Object.values(Char.REGISTRY).map((x) => x.id);
-                        for (let i = 0; i < 5; i++)
-                            Media.SetArea(pcTokenRefs[i], casaLomaLocations[i]);
+                        const hubRefs = {
+                            tl: "TopLeft",
+                            tc: "TopCenter",
+                            tr: "TopRight",
+                            c: "MidCenter",
+                            mc: "MidCenter",
+                            l: "Left",
+                            bc: "Center",
+                            r: "Right"
+                        };
+                        const [curFocus] = getActiveSite();
+                        if (D.LCase(args[0]) in hubRefs) {
+                            Media.SetImg("SiteFocusHub", hubRefs[D.LCase(args[0])], true);
+                        } else {
+                            Media.SetImg("SiteFocusHub", "blank");
+                            Media.ToggleImg("SiteFocusHub", false);
+                        }
+                        const [newFocus] = getActiveSite();
+                        D.Alert(`CurFocus: ${D.JSL(curFocus)}, New Focus: ${D.JSL(newFocus)}`, "Session Set Focus");
+                        if (curFocus && curFocus !== newFocus)
+                            fireOnExit(curFocus);
+                        if (newFocus && newFocus !== curFocus)
+                            fireOnEntry(newFocus);
                         break;
                     }
                     // no default
@@ -1416,6 +1483,14 @@ const Session = (() => {
         return (activePos && STATE.REF.curLocation[activePos] && STATE.REF.curLocation[activePos][0]) || false;
     };
     const getActiveSite = (isReturningSiteName = false) => {
+        if (STATE.REF.quadScene.isActive) {
+            const activePos = Media.GetImgSrc("SiteFocusHub");
+            if (activePos === "blank")
+                return ["blank"];
+            const activeSiteRef = `Site${activePos}`;
+            const activeSiteName = Media.GetImgSrc(activeSiteRef);
+            return [activeSiteName];
+        }
         const [activePos] = getActivePositions().filter((x) => x.startsWith("Site"));
         return (
             (activePos &&
@@ -2002,11 +2077,15 @@ const Session = (() => {
     };
     const getCharsInLocation = (locPos) => {
         const charObjs = [];
+        if (STATE.REF.quadScene.isActive)
+            return Media.GetContainedChars("Horizon", {padding: 50});
         for (const loc of getActivePositions(locPos))
             charObjs.push(...Media.GetContainedChars(loc, {padding: 50}));
         return _.uniq(charObjs);
     };
     const isInScene = (charRef) => {
+        if (STATE.REF.quadScene.isActive)
+            return true;
         const activeLocs = getActivePositions();
         const [charToken] = Media.GetTokens(charRef);
         const dbObj = {activeLocs, charToken, checks: {}};
@@ -2449,143 +2528,18 @@ const Session = (() => {
     // #endregion
 
     // #region Starting & Ending Scenes, Logging Characters to Scene
-    const quadImgRefs = [
-        "DisableSiteTopAll",
-        "DisableSiteBottomAll",
-        "DisableSiteTopLeft",
-        "DisableSiteTopRight",
-        "DisableSiteRight",
-        "DisableSiteLeft",
-        "SiteTopLeft",
-        "SiteTopRight",
-        "SiteLeft",
-        "SiteRight",
-        "SiteCenter"
-    ];
-    const setQuadFocus = (locPos) => {
-        locPos = locPos || STATE.REF.quadScene.focus || "Center";
-        const enabledRefs = [];
-        const locCalls = [];
-        switch (locPos) {
-            case "All": {
-                enabledRefs.push(...["SiteTopLeft", "SiteTopRight", "SiteLeft", "SiteRight"]);
-                break;
-            }
-            case "Center": {
-                enabledRefs.push(...["SiteCenter", "DisableSiteTopAll", "DisableSiteBottomAll"]);
-                break;
-            }
-            case "Left": {
-                enabledRefs.push(...["SiteLeft", "DisableSiteTopAll", "DisableSiteRight"]);
-                break;
-            }
-            case "Right": {
-                enabledRefs.push(...["SiteRight", "DisableSiteTopAll", "DisableSiteLeft"]);
-                break;
-            }
-            case "TopLeft": {
-                enabledRefs.push(...["SiteTopLeft", "DisableSiteTopRight", "DisableSiteBottomAll"]);
-                break;
-            }
-            case "TopRight": {
-                enabledRefs.push(...["SiteTopRight", "DisableSiteTopLeft", "DisableSiteBottomAll"]);
-                break;
-            }
-            // no default
-        }
-        for (const imgRef of enabledRefs) {
-            if (imgRef.startsWith("Site")) {
-                const siteName = STATE.REF.quadScene.locData[imgRef.replace(/Site/gu, "")];
-                if (siteName) {
-                    Media.SetImg(imgRef, siteName, true, true);
-                    for (const tokenObj of Media.GetContents(imgRef, {padding: 25}, {layer: "walls", _subtype: "token"}))
-                        Media.ToggleToken(tokenObj, true);
-                    locCalls.push(C.SITES[siteName].onEntryCall);
-                }
-            }
-            Media.ToggleImg(imgRef, true, true);
-        }
-        for (const imgRef of _.without(quadImgRefs, ...enabledRefs)) {
-            if (imgRef.startsWith("Site")) {
-                const siteName = STATE.REF.quadScene.locData[imgRef.replace(/Site/gu, "")];
-                for (const tokenObj of Media.GetContents(imgRef, {padding: 25}, {layer: "objects", _subtype: "token"}))
-                    Media.ToggleToken(tokenObj, false);
-                if (siteName)
-                    locCalls.unshift(C.SITES[siteName].onExitCall);
-            }
-            Media.ToggleImg(imgRef, false, true);
-        }
-        for (const locCall of _.compact(locCalls))
-            D.Call(locCall);
+    const fireOnExit = (locRef) => {
+        if (locRef in C.SITES && C.SITES[locRef].onExitCall)
+            D.Call(C.SITES[locRef].onExitCall);
+        else if (locRef in C.DISTRICTS && C.DISTRICTS[locRef].onExitCall)
+            D.Call(C.DISTRICTS[locRef].onExitCall);
     };
-    const setQuadLocations = (districtName, siteData, locPos) => {
-        if (locPos === false) {
-            // Disable Quad Mode, restoring location cards to normal size and position.
-            STATE.REF.quadScene = {
-                isActive: false,
-                locData: {},
-                focus: false
-            };
-            Media.SetTextData("TimeTracker", {top: 350});
-            Media.SetImgData(
-                "DistrictCenter",
-                {
-                    top: 600,
-                    height: 455,
-                    width: 625
-                },
-                true
-            );
-            Media.SetImgData("SiteCenter", {top: 876, width: 440, height: 325}, true);
-            Media.SetImgData("SiteLeft", {top: 876}, true);
-            Media.SetImgData("DisableSiteLeft", {top: 876}, true);
-            Media.SetImgData("SiteRight", {top: 876}, true);
-            Media.SetImgData("DisableSiteRight", {top: 876}, true);
-            setQuadFocus("OFF");
-            setLocation({DistrictCenter: [districtName], SiteCenter: ["blank"]}, "c", true);
-        } else {
-            // Enable and set location data; if locPos is undefined, use current or Center.
-            setLocation({DistrictCenter: [districtName], SiteCenter: ["blank"]}, "c", true);
-            STATE.REF.quadScene = {
-                isActive: true,
-                locData: D.Clone(siteData),
-                focus: locPos || STATE.REF.quadScene.focus || "Center"
-            };
-            Media.SetTextData("TimeTracker", {top: 275});
-            Media.SetImgData(
-                "DistrictCenter",
-                {
-                    top: 500,
-                    height: 419,
-                    width: 575
-                },
-                true
-            );
-            Media.SetImgData("SiteCenter", {top: 980, width: 500, height: 369}, true);
-            Media.SetImgData("SiteLeft", {top: 815}, true);
-            Media.SetImgData("DisableSiteLeft", {top: 815}, true);
-            Media.SetImgData("SiteRight", {top: 815}, true);
-            Media.SetImgData("DisableSiteRight", {top: 815}, true);
-            setQuadFocus(locPos);
-        }
+    const fireOnEntry = (locRef) => {
+        if (locRef in C.SITES && C.SITES[locRef].onEntryCall)
+            D.Call(C.SITES[locRef].onEntryCall);
+        else if (locRef in C.DISTRICTS && C.DISTRICTS[locRef].onEntryCall)
+            D.Call(C.DISTRICTS[locRef].onEntryCall);
     };
-
-    /*
-        setLocation({DistrictCenter: ["DupontByTheCastle"], SiteCenter: ["blank"]}, "c", true);
-        const locCalls = [];
-        for (const quad of ["TopLeft", "TopRight", "Left", "Right"]) {
-            const siteName = siteData[quad] || Media.GetImgSrc(`Site${quad}`);
-            if (locPos) Media.SetImg(`Site${quad}`, siteName, true);
-            else if (["TopLeft", "TopRight"].includes(quad)) Media.ToggleImg(`Site${quad}`, false);
-            if (["TopLeft", "TopRight"].includes(quad) && locPos && quad !== locPos) Media.ToggleImg(`Site${quad}`, false);
-            else Media.ToggleImg(`Site${quad}`, true);
-            Media.ToggleImg(`DisableSite${quad}`, locPos && quad !== locPos);
-            if (siteName in C.SITES)
-                if (quad === locPos) locCalls.push(C.SITES[siteName].onEntryCall);
-                else locCalls.unshift(C.SITES[siteName].onExitCall);
-        }
-        for (const locCall of _.compact(locCalls)) D.Call(locCall);
-    }; */
     const setSceneFocus = (locPos) => {
         locPos =
             (isLocCentered() === true && "c") ||
