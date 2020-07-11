@@ -40,6 +40,11 @@ const Chat = (() => {
             [objsToKill, returnVals, theseArgs] = [[], [], []],
             [objType, objID, pattern] = ["", "", ""];
         switch (call) {
+            case "!state": {
+                if (!getStateData(args, true))
+                    sendHelpMsg();
+                break;
+            }
             case "!get": {
                 switch (D.LCase((call = args.shift()))) {
                     case "text": {
@@ -520,7 +525,7 @@ const Chat = (() => {
         return true;
     };
     const getStateData = (namespace, returnVals) => {
-        let [stateInfo, isVerbose] = [state, false];
+        let [stateInfo, lastKey, isVerbose] = [state, "state", false];
         // if (namespace[0] !== C.GAMENAME)
         //  namespace.unshift(C.GAMENAME)
         if (namespace[0] === "full") {
@@ -537,9 +542,13 @@ const Chat = (() => {
                 );
 
         const title = `state.${namespace.join(".")}`;
-        const commandPrefix = `!get state ${namespace.join(" ")} `;
-        while (namespace && namespace.length)
-            stateInfo = stateInfo[namespace.shift()];
+        const commandPrefixes = [`!get statekeys ${namespace.join(" ")} `, `!get state ${namespace.join(" ")} `];
+        while (namespace && namespace.length) {
+            lastKey = namespace.shift();
+            stateInfo = stateInfo[lastKey];
+        }
+        if (!VAL({jsobj: stateInfo}))
+            stateInfo = {[lastKey]: stateInfo};
         if (returnVals) {
             const returnInfo = {};
             _.each(stateInfo, (data, key) => {
@@ -554,23 +563,21 @@ const Chat = (() => {
                 }
             });
             if (returnVals === true)
-                D.Alert(
-                    D.JS(
-                        Object.keys(stateInfo)
-                            .map(
-                                (x) => `<a style="display: block; color: black; padding: 0px; line-height: 16px; border: none; background-color: transparent;" href="${commandPrefix} ${x}">${x}</a>`
-                            )
-                            .join("")
-                    ),
-                    title
-                );
+                D.Alert(Object.keys(stateInfo).map((x, i) => `<div style="display: block; margin: 0px 0px; width: 100%; background-color: ${i % 2 === 0 ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.1)"};">
+<div style="display: inline-block; height: 10px; margin-right: 2px; line-height: 12px; width: 30px; background-color: rgba(0, 0, 255, 0.3); border: 1px solid blue; text-align: center; text-align-last: center;">
+<a style="display: inline-block; width: 100%; color: black; padding: 0px; border: none; background-color: transparent;" href="${commandPrefixes[0]} ${x}">KEYS</a>
+</div>
+<div style="display: inline-block; height: 10px; margin-right: 6px; line-height: 12px; width: 30px; background-color: rgba(255, 0, 0, 0.3); border: 1px solid red; text-align: center; text-align-last: center;">
+<a style="display: inline-block; width: 100%; color: black; padding: 0px; border: none; background-color: transparent;" href="${commandPrefixes[1]} ${x}">FULL</a>
+</div>
+<div style="display: inline-block; width: 189px; font-weight: bold; background-color: transparent; height: 14px; line-height: 14px;">${x}</div>
+</div>`).join(""), title);
             else
                 D.Show(returnInfo, title); // D.Alert(D.JS(returnInfo, isVerbose), title);
         } else {
             stateInfo = D.KeyMapObj(stateInfo, undefined, (v, k) => (ALERTBLACKLIST.includes(k) && "<b><u>(HIDDEN)</u></b>") || v);
             D.Show(stateInfo, title);
         }
-
         return true;
     };
     const clearStateData = (namespace) => {

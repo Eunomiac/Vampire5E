@@ -198,6 +198,7 @@ const Listener = (() => {
                 "!dpad": {script: DragPads, gmOnly: true, singleCall: true},
                 "!fuzzy": {script: Fuzzy, gmOnly: true, singleCall: true},
                 "!handouts": {script: Handouts, gmOnly: true, singleCall: true},
+                "!state": {script: Chat, gmOnly: true, singleCall: false},
                 "!get": {script: Chat, gmOnly: true, singleCall: false},
                 "!set": {script: Chat, gmOnly: true, singleCall: false},
                 "!clear": {script: Chat, gmOnly: true, singleCall: false},

@@ -55,6 +55,62 @@ const Tester = (() => {
     const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
+            case "timesync": {
+                if (args[0] === "reset") {
+                    STATE.REF.timeSync = false;
+                    args.shift();
+                }
+                if (STATE.REF.timeSync) {
+                    const MINCONVERTER = 1 / (60 * 1000);
+                    const {startGameDate, startRealDate, secsPerMin} = STATE.REF.timeSync;
+                    const [curGameDate, curRealDate] = [new Date(TimeTracker.CurrentDate), new Date()];
+                    curRealDate.setUTCHours(curRealDate.getUTCHours() - 4);
+                    const [deltaGameTime, deltaRealTime] = [
+                        (curGameDate - startGameDate),
+                        (curRealDate - startRealDate)
+                    ];
+                    const multiplier = 60 / secsPerMin;
+                    const validDeltaGameTime = deltaRealTime * multiplier;
+                    const validGameDate = new Date(startGameDate.getTime() + validDeltaGameTime);
+                    D.Alert([
+                        "<h4>Ending Time Sync Test</h4>",
+                        `<b>Game Time:</b> ${TimeTracker.FormatTime(startGameDate)} - ${TimeTracker.FormatTime(curGameDate)}<br>`,
+                        `<b>Real Time:</b> ${TimeTracker.FormatTime(startRealDate)} - ${TimeTracker.FormatTime(curRealDate)}<br>`,
+                        `<b>Secs Per Min:</b> ${secsPerMin}<br>`,
+                        `<b>Game Delta Mins:</b> ${D.Float(deltaGameTime * MINCONVERTER, 3)}<br>`,
+                        `<b>Real Delta Mins:</b> ${D.Float(deltaRealTime * MINCONVERTER, 3)}<br>`,
+                        `<b>Valid Game Delta Mins:</b> ${D.Float(validDeltaGameTime * MINCONVERTER, 3)}<br>`,
+                        `<b>Valid Game Time:</b> ${TimeTracker.FormatTime(validGameDate)}<br>`,
+                        `<b>Real Multiplier:</b> ${D.Float(deltaGameTime / deltaRealTime, 4)}<br>`,
+                        `<b>Valid Multiplier:</b> ${(multiplier)}<br>`
+                    ].join(""), "!test timesync");
+                    STATE.REF.timeSync = false;
+                } else {
+                    const secsPerMin = D.Int(args[0]) || 60;
+                    const curRealDate = new Date();
+                    curRealDate.setUTCHours(curRealDate.getUTCHours() - 4);
+                    const curDate = new Date(TimeTracker.CurrentDate);
+                    curDate.setUTCHours(curRealDate.getUTCHours());
+                    curDate.setUTCMinutes(curRealDate.getUTCMinutes());
+                    STATE.REF.timeSync = {startGameDate: new Date(curDate), startRealDate: new Date(curRealDate), secsPerMin};
+                    TimeTracker.CurrentDate = curDate;
+                    TimeTracker.ToggleClock(true, secsPerMin);
+                    TimeTracker.Fix();
+                    D.Alert([
+                        "<h4>Starting Time Sync Test</h4>",
+                        `<b>Start Time:</b> ${TimeTracker.FormatTime(curDate)}<br>`,
+                        `<b>Secs Per Min:</b> ${secsPerMin}<br>`
+                    ].join(""), "!test timesync");
+                }
+                switch (D.LCase(call = args.shift())) {
+                    case "case1": {
+                        break;
+                    }
+                    // no default
+                }
+
+                break;
+            }
             case "prompt": {
                 switch (D.LCase((call = args.shift()))) {
                     case "get": {

@@ -1640,6 +1640,11 @@ const D = (() => {
                 _.each(valArray, (v) => {
                     let errorCheck = null;
                     switch (cat.toLowerCase()) {
+                        case "jsobject": case "jsobj":
+                            if (v === null ||
+                                !((typeof v === "function") || (typeof v === "object")))
+                                errorLines.push(`Invalid JavaScript object (=${v === null ? "NULL" : typeof v}): ${jStrL(v)}`);
+                            break;
                         case "object":
                         case "obj": // If v has a "get" and an "id" property.
                             if (!(v && v.get && v.id))

@@ -57,6 +57,9 @@ const TimeTracker = (() => {
         STATE.REF.weatherData = STATE.REF.weatherData || RAWWEATHERDATA;
         // STATE.REF.weatherData = RAWWEATHERDATA
 
+        STATE.REF.lastRealTime = null;
+        STATE.REF.isSyncingToRealTime = true;
+
         STATE.REF.Alarms = STATE.REF.Alarms || [];
 
         if (!STATE.REF.dateObj) {
@@ -214,6 +217,11 @@ const TimeTracker = (() => {
                                 )}`,
                                 "!time set alarm"
                             );
+                        break;
+                    }
+                    case "sync": {
+                        STATE.REF.isSyncingToRealTime = args[0] === "true";
+                        D.Flag(`Now ${STATE.REF.isSyncingToRealTime ? "" : "<u><b>NOT</b></u> "}Syncing to Real Time.`);
                         break;
                     }
                     case "promptsopen": {
@@ -934,12 +942,13 @@ const TimeTracker = (() => {
     };
     const formatTimeString = (date) => {
         const funcID = ONSTACK();
-        if (date.getUTCHours() === 0 || date.getUTCHours() === 12)
-            return OFFSTACK(funcID) && `12:${date.getUTCMinutes()} ${date.getUTCHours() === 0 ? "A.M." : "P.M."}`;
-        else if (date.getUTCHours() > 12)
-            return OFFSTACK(funcID) && `${date.getUTCHours() - 12}:${date.getUTCMinutes()} P.M.`;
+        const [hours, minutes] = [date.getUTCHours(), date.getUTCMinutes()];
+        if (hours === 0 || hours === 12)
+            return OFFSTACK(funcID) && `12:${minutes < 10 ? "0" : ""}${minutes} ${hours === 0 ? "A.M." : "P.M."}`;
+        else if (hours > 12)
+            return OFFSTACK(funcID) && `${hours - 12}:${minutes < 10 ? "0" : ""}${minutes} P.M.`;
         else
-            return OFFSTACK(funcID) && `${date.getUTCHours()}:${date.getUTCMinutes()} A.M.`;
+            return OFFSTACK(funcID) && `${hours}:${minutes < 10 ? "0" : ""}${minutes} A.M.`;
     };
     const formatDateString = (date, isIncludingTime = false) => {
         const funcID = ONSTACK();
@@ -1199,19 +1208,26 @@ const TimeTracker = (() => {
         STATE.REF.secsPerMin = secsPerMin || STATE.REF.secsPerMin;
 
         if (activeState) {
-            if (STATE.REF.TweenTarget) {
+            if (STATE.REF.TweenTarget)
                 tweenClock(STATE.REF.TweenTarget);
-            } else {
-                clearInterval(timeTimer);
-                timeTimer = setInterval(tickClock, D.Int(STATE.REF.secsPerMin) * 1000);
-            }
+            else
+                setNextClockTick();
         } else {
             isTickingClock = false;
             isFastTweeningClock = false;
-            clearInterval(timeTimer);
+            clearClockTickTimer();
         }
         updateClockNotice();
         OFFSTACK(funcID);
+    };
+    const setNextClockTick = () => {
+        clearClockTickTimer();
+        timeTimer = setInterval(tickClock, D.Int(STATE.REF.secsPerMin) * 1000);
+    };
+    const clearClockTickTimer = () => {
+        clearInterval(timeTimer);
+        timeTimer = null;
+        STATE.REF.lastRealTime = null;
     };
     const updateClockObj = () => {
         const funcID = ONSTACK();
@@ -1287,7 +1303,7 @@ const TimeTracker = (() => {
         };
         if (STATE.REF.TweenStart && STATE.REF.TweenTarget) {
             isTweeningClock = true;
-            clearInterval(timeTimer);
+            clearClockTickTimer();
             timeTimer = setInterval(easeFunction, CLOCKSPEED);
             DB(
                 {
@@ -1319,8 +1335,7 @@ const TimeTracker = (() => {
     };
     const pauseClockTween = () => {
         isTweeningClock = false;
-        clearInterval(timeTimer);
-        timeTimer = null;
+        clearClockTickTimer();
         STATE.REF.currentDate = STATE.REF.dateObj.getTime();
         DB({currentDate: formatDateString(STATE.REF.currentDate, true), isUpdatingWeather: isUpdatingWeather()}, "pauseClockTween");
         if (isUpdatingWeather())
@@ -1363,13 +1378,32 @@ const TimeTracker = (() => {
         const funcID = ONSTACK();
         if (isTickingClock) {
             const lastHour = STATE.REF.dateObj.getUTCHours();
-            STATE.REF.dateObj.setUTCMinutes(STATE.REF.dateObj.getUTCMinutes() + 1);
+            if (STATE.REF.isSyncingToRealTime) {
+                let deltaTime;
+                const curRealTime = new Date().getTime();
+                if (STATE.REF.lastRealTime) {                    
+                    const realDeltaTime = curRealTime - STATE.REF.lastRealTime;
+                    // SANITY CHECK: IF realDeltaTime is more than five minutes, assume something went wrong.
+                    if (realDeltaTime > (5 * 60 * 1000)) {
+                        D.Flag(`Error Syncing to Real Time: +${realDeltaTime / (1000 * 60)} mins!`);
+                        return OFFSTACK(funcID) && tickClock();
+                    }
+                    const speedMultiplier = 60 / STATE.REF.secsPerMin;
+                    deltaTime = realDeltaTime * speedMultiplier;
+                } else {
+                    deltaTime = 1 * 60 * 1000;
+                }
+                STATE.REF.lastRealTime = curRealTime;
+                STATE.REF.dateObj.setTime(STATE.REF.dateObj.getTime() + deltaTime);
+            } else {
+                STATE.REF.dateObj.setUTCMinutes(STATE.REF.dateObj.getUTCMinutes() + 1);
+            }
             updateClockObj();
             if (STATE.REF.dateObj.getUTCHours() !== lastHour)
                 setWeather();
             setHorizon();
         }
-        OFFSTACK(funcID);
+        return OFFSTACK(funcID);
     };
     const checkTimer = () => {
         if (timeTimer && timeTimer._idleTimeout >= 0 && !timeTimer._destroyed)
@@ -2563,6 +2597,9 @@ const TimeTracker = (() => {
         if (Session.IsSessionActive && (!Session.IsTesting || Session.IsFullTest)) {
             isCountdownRunning = false;
             isTickingClock = true;
+        } else if (Session.IsFullTest) {
+            isCountdownRunning = true;
+            isTickingClock = true;
         } else {
             isCountdownRunning = true;
             isTickingClock = false;
@@ -2570,7 +2607,7 @@ const TimeTracker = (() => {
         updateClockObj();
         setHorizon(setWeather());
         syncCountdown();
-        toggleClock(Session.IsSessionActive && (!Session.IsTesting || Session.IsFullTest), 60);
+        toggleClock(isTickingClock, STATE.REF.secsPerMin || 60);
         Char.RefreshDisplays();
         OFFSTACK(funcID);
     };
@@ -2582,8 +2619,8 @@ const TimeTracker = (() => {
         Fix: fixTimeStatus,
 
         ALARMFUNCS,
-        ToggleClock: (v) => {
-            toggleClock(v, 60);
+        ToggleClock: (v, secsPerMin = 60) => {
+            toggleClock(v, secsPerMin);
         },
         Pause: pauseClockTween,
         Resume: continueClockTween,

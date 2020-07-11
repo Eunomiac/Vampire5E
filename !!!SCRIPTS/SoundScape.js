@@ -29,6 +29,8 @@ const Soundscape = (() => {
         STATE.REF.isSoundscapeActive = VAL({bool: STATE.REF.isSoundscapeActive}) ? STATE.REF.isSoundscapeActive : true;
         STATE.REF.activeSounds = STATE.REF.activeSounds || [];
         STATE.REF.VOLUME = STATE.REF.VOLUME || D.Clone(C.SOUNDVOLUME);
+        STATE.REF.playSoundLog = STATE.REF.playSoundLog || [];
+        STATE.REF.playSoundLog.push("~~~ NEW INITIALIZATION ~~~");
 
         syncSoundscape(true);
     };
@@ -119,7 +121,9 @@ const Soundscape = (() => {
                 break;
             }
             case "reset": {
-                if (args[0]) {
+                if (args[0] === "log") {
+                    STATE.REF.playSoundLog = [];
+                } else if (args[0]) {
                     stopSound(args[0]);
                     playSound(args[0]);
                 } else {
@@ -495,34 +499,56 @@ const Soundscape = (() => {
     // #region CONTROLLERS: Playing & Stopping Sounds, Playing Next Sound
     const playSound = (soundRef, masterSound) => {
         // Initializes any playlist as if playing it for the first time. To preserve sequences, use playNextSound()
-        if (STATE.REF.isSoundscapeActive) {
+        if (STATE.REF.isSoundscapeActive) {            
             const soundKey = getSoundKey(soundRef);
-            DB(
-                {
-                    soundRef,
-                    masterSound,
-                    volume: getVolume(soundKey),
-                    realVolume: (getTrackObj(soundKey) || {get: () => false}).get("volume")
-                },
-                "playSound"
-            );
+            // DB(
+            //     {
+            //         soundRef,
+            //         masterSound,
+            //         volume: getVolume(soundKey),
+            //         realVolume: (getTrackObj(soundKey) || {get: () => false}).get("volume")
+            //     },
+            //     "playSound"
+            // );
+            if (STATE.REF.playSoundLog.length > 100)
+                STATE.REF.playSoundLog.shift();
+            const logIndex = STATE.REF.playSoundLog.length;
+            STATE.REF.playSoundLog.push({"~~PARAMS~~": {soundRef, masterSound, soundKey}});
+            STATE.REF.playSoundLog[logIndex].timeStamp = `${new Date().toLocaleDateString("en-US")} ${new Date().toLocaleTimeString("en-US")}`;
             if (isPlaylist(soundKey)) {
+                STATE.REF.playSoundLog[logIndex].soundType = "PLAYLIST";
                 const playlistData = getPlaylistData(soundKey);
                 const {trackKeys} = playlistData;
+                STATE.REF.playSoundLog[logIndex].playlistData = {fullData: playlistData};
                 if (!playlistData.trackSequence.length) {
-                    if (playlistData.playModes.isRandom)
+                    STATE.REF.playSoundLog[logIndex].playlistData.trackSequenceLength = "ZERO";
+                    if (playlistData.currentTracks.length === playlistData.trackKeys.length)
+                        playlistData.currentTracks = [];
+                    if (playlistData.playModes.isRandom) {
+                        STATE.REF.playSoundLog[logIndex].playlistData.playMode = "RANDOM";
                         playlistData.trackSequence = _.shuffle(trackKeys).filter((x) => !playlistData.currentTracks.includes(x));
-                    else
+                    } else {
+                        STATE.REF.playSoundLog[logIndex].playlistData.playMode = "NOT RANDOM";
                         playlistData.trackSequence = D.Clone(trackKeys).filter((x) => !playlistData.currentTracks.includes(x));
+                    }
+                    STATE.REF.playSoundLog[logIndex].playlistData.newTrackSequence = playlistData.trackSequence;
+                    STATE.REF.playSoundLog[logIndex]["###-RETURN-### !!!RECURRING ONCE!!!"] = {soundRef: playlistData.name, masterSound};
                     return playSound(playlistData.name, masterSound);
                 }
-                if (playlistData.playModes.isTogether)
+                if (playlistData.playModes.isTogether) {
+                    STATE.REF.playSoundLog[logIndex].playlistData.playMode = "TOGETHER";
+                    STATE.REF.playSoundLog[logIndex]["!!!RECURRING ALL!!!"] = playlistData.trackKeys.map((x) => ({soundRef: x, masterSound: playlistData.name}));
                     playlistData.trackKeys.map((x) => playSound(x, playlistData.name));
-                else
+                } else {
+                    STATE.REF.playSoundLog[logIndex].playlistData.playMode = "NOT TOGETHER";
+                    STATE.REF.playSoundLog[logIndex].playlistData["!!!RECURRING ONCE - PUSH TO currentTracks!!!"] = {soundRef: playlistData.trackSequence[0], masterSound: playlistData.name};
                     playlistData.currentTracks.push(playSound(playlistData.trackSequence.shift(), playlistData.name));
-                playlistData.isPlaying = true;
+                }
+                playlistData.isPlaying = true;                
+                STATE.REF.playSoundLog[logIndex]["###-RETURN-### true"] = true;
                 return true;
             } else if (isTrack(soundKey)) {
+                STATE.REF.playSoundLog[logIndex].soundType = "TRACK";
                 // RE: PLAYING, LOOP, SOFTSTOP:
                 //      'softstop' MUST be false for track to play at all.
                 //      'softstop' will be set to TRUE when track finishes playing UNLESS 'loop' is set true.
@@ -538,6 +564,7 @@ const Soundscape = (() => {
                 trackData.masterPlaylist = masterSound || false;
                 getTrackObj(soundKey).set({playing: true, softstop: false, volume: getVolume(soundKey)});
                 STATE.REF.activeSounds = _.uniq([...STATE.REF.activeSounds, masterSound || soundKey]);
+                STATE.REF.playSoundLog[logIndex]["###-RETURN-### soundKey"] = soundKey;
                 return soundKey;
             }
         }
