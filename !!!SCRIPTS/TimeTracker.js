@@ -1381,7 +1381,7 @@ const TimeTracker = (() => {
             if (STATE.REF.isSyncingToRealTime) {
                 let deltaTime;
                 const curRealTime = new Date().getTime();
-                if (STATE.REF.lastRealTime) {                    
+                if (STATE.REF.lastRealTime) {
                     const realDeltaTime = curRealTime - STATE.REF.lastRealTime;
                     // SANITY CHECK: IF realDeltaTime is more than five minutes, assume something went wrong.
                     if (realDeltaTime > (5 * 60 * 1000)) {

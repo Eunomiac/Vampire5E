@@ -228,6 +228,8 @@ const Session = (() => {
                             Media.SetTextData("playerPageAlertMessage", {top: 275});
                             Media.SetTextData("clockStatusNotice", {top: 316});
                             Media.SetTextData("TimeTracker", {top: 350});
+                            Media.ToggleText("HubAspectsNotice", false);
+                            Media.ToggleText("HubAspectsTitle", false);
                             STATE.REF.quadScene.isActive = false;
                             Media.SetImg("DistrictCenter", "DupontByTheCastle");
                             Media.SetImg("SiteCenter", "CLGrounds");
@@ -272,6 +274,8 @@ const Session = (() => {
                             Media.SetTextData("playerPageAlertMessage", {top: 225});
                             Media.SetTextData("clockStatusNotice", {top: 290});
                             Media.SetTextData("TimeTracker", {top: 265});
+                            Media.ToggleText("HubAspectsNotice", true);
+                            Media.ToggleText("HubAspectsTitle", true);
                             STATE.REF.quadScene.isActive = true;
                             if (D.LCase(args[0]) in HUBFOCUS) {
                                 Media.SetImg("SiteFocusHub", HUBFOCUS[D.LCase(args[0])], true);
@@ -279,6 +283,11 @@ const Session = (() => {
                                 Media.SetImg("SiteFocusHub", "blank");
                                 Media.ToggleImg("SiteFocusHub", false);
                             }
+                            // D.Call("!sound inc casaloma 5");
+                            Soundscape.Sync();
+                            // D.Call("!sound inc casaloma 5");
+                            C.SITES.CLGreatHall.onEntryCall = "!sound inc casaloma 20 10 20 6 7";
+                            C.SITES.CLGreatHall.onExitCall = "!sound inc casaloma 1.5";
                         }
                         break;
                     }
@@ -296,6 +305,7 @@ const Session = (() => {
                             fireOnExit(curFocus);
                         if (newFocus && newFocus !== curFocus)
                             fireOnEntry(newFocus);
+                        Soundscape.Sync();
                         break;
                     }
                     // no default
@@ -763,9 +773,7 @@ const Session = (() => {
                 if (STATE.REF.LastMode !== "Complications")
                     D.Chat(
                         "all",
-                        C.HTML.Block([C.HTML.Title("Session Downtime"), C.HTML.Header("Session Status: Downtime"), C.HTML.Body("Clock Stopped.")]),
-                        null,
-                        D.RandomString(3)
+                        C.HTML.Block([C.HTML.Title("Session Downtime"), C.HTML.Header("Session Status: Downtime"), C.HTML.Body("Clock Stopped.")])
                     );
             },
             Daylighter: () => {},
@@ -849,25 +857,25 @@ const Session = (() => {
 
     // #region Starting/Ending Sessions
     const startSession = () => {
-        const sessionScribe = STATE.REF.isTestingActive && !STATE.REF.isFullTest ? STATE.REF.SessionScribes[0] : STATE.REF.SessionScribes.shift();
+        STATE.REF.SessionScribe = STATE.REF.isTestingActive && !STATE.REF.isFullTest ? STATE.REF.SessionScribes[0] : STATE.REF.SessionScribes.shift();
         if (STATE.REF.isTestingActive && !STATE.REF.isFullTest)
             STATE.REF.dateRecord = TimeTracker.CurrentDate.getTime();
         else
             STATE.REF.dateRecord = null;
         if (STATE.REF.SessionScribes.length === 0) {
             DB(
-                `Scribe: ${sessionScribe}, SessionScribes: ${D.JSL(STATE.REF.SessionScribes)}
-                    PICK: ${D.JS(_.pick(Char.REGISTRY, (v) => v.playerName !== sessionScribe))}
+                `Scribe: ${STATE.REF.SessionScribe}, SessionScribes: ${D.JSL(STATE.REF.SessionScribes)}
+                    PICK: ${D.JS(_.pick(Char.REGISTRY, (v) => v.playerName !== STATE.REF.SessionScribe))}
                     PLUCK: ${D.JS(
         _.pluck(
-            _.pick(Char.REGISTRY, (v) => v.playerName !== sessionScribe),
+            _.pick(Char.REGISTRY, (v) => v.playerName !== STATE.REF.SessionScribe),
             "playerName"
         )
     )}
                     WITHOUT: ${D.JS(
         _.without(
             _.pluck(
-                _.pick(Char.REGISTRY, (v) => v.playerName !== sessionScribe),
+                _.pick(Char.REGISTRY, (v) => v.playerName !== STATE.REF.SessionScribe),
                 "playerName"
             ),
             "Storyteller"
@@ -878,13 +886,13 @@ const Session = (() => {
             const otherScribes = _.shuffle(
                 _.without(
                     _.pluck(
-                        _.pick(Char.REGISTRY, (v) => v.playerName !== sessionScribe),
+                        _.pick(Char.REGISTRY, (v) => v.playerName !== STATE.REF.SessionScribe),
                         "playerName"
                     ),
                     "Storyteller"
                 )
             );
-            STATE.REF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]));
+            STATE.REF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, STATE.REF.SessionScribe]));
         }
         STATE.REF.SessionMonologues = _.shuffle(D.GetChars("registered").map((x) => D.GetCharData(x).name));
         STATE.REF.spotlightChar = false;
@@ -898,7 +906,7 @@ const Session = (() => {
                         C.HTML.Body("Initializing Session...", {margin: "0px 0px 10px 0px"}),
                         C.HTML.Header(`Welcome to Session ${D.NumToText(STATE.REF.SessionNum, true)}!`),
                         C.HTML.Body("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
-                        C.HTML.Header(`Session Scribe: ${sessionScribe || "(None Set)"}`),
+                        C.HTML.Header(`Session Scribe: ${STATE.REF.SessionScribe || "(None Set)"}`),
                         C.HTML.Body(
                             "(Click <a style = \"color: white; font-weight: normal; background-color: rgba(255,0,0,0.5);\" href=\"https://docs.google.com/document/d/1GsGGDdYTVeHVHgGe9zrztEIN4Qmtpb2xZA8I-_WBnDM/edit?usp=sharing\" target=\"_blank\">&nbsp;here&nbsp;</a> to open the template in a new tab,<br>then create a copy to use for this session.)",
                             {fontSize: "14px", lineHeight: "14px"}
@@ -932,13 +940,18 @@ const Session = (() => {
                     ]
                 ]
             ]);
+            for (const char of D.GetChars("registered"))
+                if (STATE.REF.isTestingActive) {
+                    if (STATE.REF.SessionScribe === D.GetName(D.GetPlayer(char)))
+                        D.Alert(`Would award 1 XP to ${D.JS(char)} ("Session Scribe") if session active.`, "Test: Session.endSession()");
+                    D.Alert(`Would award ${isDoingMonologues ? "1" : "2"} XP to ${D.JS(char)} ("Session XP award.") if session active.`, "Test: Session.endSession()");
+                } else {
+                    if (STATE.REF.SessionScribe === D.GetName(D.GetPlayer(char)))
+                        Char.AwardXP(char, 1, "Session Scribe.");
+                    Char.AwardXP(char, isDoingMonologues ? 1 : 2, "Session XP award.");
+                }
             if (!STATE.REF.isTestingActive || STATE.REF.isFullTest) {
                 STATE.REF.dateRecord = null;
-                for (const char of D.GetChars("registered"))
-                    if (STATE.REF.isTestingActive)
-                        D.Alert(`Would award 1 XP to ${D.JS(char)} if session active.`, "Full Test: Session.endSession()");
-                    else
-                        Char.AwardXP(char, 1, "Session XP award.");
                 STATE.REF.SessionNum++;
             } else if (STATE.REF.dateRecord) {
                 TimeTracker.CurrentDate = STATE.REF.dateRecord;
@@ -2178,7 +2191,10 @@ const Session = (() => {
                     C.HTML.Header("Thank You for Your Contribution!", C.STYLES.whiteMarble.header)
                 ],
                 C.STYLES.whiteMarble.block
-            )
+            ),
+            undefined,
+            false,
+            true
         );
         DB({toCharRef, toCharInit, fromCharRef, promptText, STATEREF: D.JS(STATE.REF.SpotlightPrompts[toCharInit])}, "submitSpotlightPrompt");
     };
@@ -2240,7 +2256,10 @@ const Session = (() => {
                         }
                     ),
                     ...chatCode
-                ])
+                ]),
+                undefined,
+                false,
+                true
             );
         else
             D.Chat(
@@ -2265,7 +2284,10 @@ const Session = (() => {
                         padding: "3px",
                         margin: "0px"
                     })
-                ])
+                ]),
+                undefined,
+                false,
+                true
             );
     };
     const assignSpotlightPrompt = (charRef, isSilent = false) => {
@@ -2286,7 +2308,10 @@ const Session = (() => {
                             padding: "3px",
                             margin: "0px"
                         })
-                    ])
+                    ]),
+                    undefined,
+                    false,
+                    true
                 );
                 if (!(Session.IsSessionActive || TimeTracker.ArePromptsOpen()))
                     return false;
@@ -2344,7 +2369,10 @@ const Session = (() => {
                                         padding: "3px",
                                         margin: "0px"
                                     })
-                                ])
+                                ]),
+                                undefined,
+                                false,
+                                true
                             );
                         isSilent = true;
                     }
@@ -2367,7 +2395,10 @@ const Session = (() => {
                                         margin: "0px"
                                     }
                                 )
-                            ])
+                            ]),
+                            undefined,
+                            false,
+                            true
                         );
                     }
                 }
@@ -2403,7 +2434,10 @@ const Session = (() => {
                             padding: "3px",
                             margin: "0px"
                         })
-                    ])
+                    ]),
+                    undefined,
+                    false,
+                    true
                 );
             }
             DB(
@@ -2437,7 +2471,10 @@ const Session = (() => {
                             margin: "0px"
                         }
                     )
-                ])
+                ]),
+                undefined,
+                false,
+                true
             );
     };
     const startSessionMonologue = () => {
@@ -2703,6 +2740,9 @@ const Session = (() => {
 
         get SpotlightPrompts() {
             return STATE.REF.SpotlightPrompts;
+        },
+        get IsCasaLomaActive() {
+            return STATE.REF.quadScene.isActive;
         },
 
         SetMacro: setMacro,

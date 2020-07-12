@@ -55,6 +55,14 @@ const Tester = (() => {
     const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
+            case "jukeboxfolder": {
+                D.Show(JSON.parse(Campaign().get("_jukeboxfolder")));
+                break;
+            }
+            case "trackobjs": {
+                D.Alert(findObjs({_type: "jukeboxtrack"}).map((x) => `<b>${x.id}:</b> ${x.get("title")}`).join("<br>"), "!test trackobjs");
+                break;
+            }
             case "timesync": {
                 if (args[0] === "reset") {
                     STATE.REF.timeSync = false;

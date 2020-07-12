@@ -1313,7 +1313,7 @@ const Complications = (() => {
     const cardAlert = (spot, message, preTitle, postTitle) => {
         const cardName = getCardName(spot, true);
         const title = `${preTitle || ""}${cardName}${postTitle || ""}`;
-        D.Chat("all", C.HTML.Block([C.HTML.Header(title), C.HTML.Body(message)].join("")), undefined, D.RandomString(3));
+        D.Chat("all", C.HTML.Block([C.HTML.Header(title), C.HTML.Body(message)].join("")), undefined, false, true);
     };
     const getCardStats = () => {
         const cardData = {
@@ -1868,7 +1868,10 @@ const Complications = (() => {
                                 ].join("<br>")
                             )
                         ].join("")
-                    )
+                    ),
+                    undefined,
+                    false,
+                    true
                 ],
                 "Comp",
                 2
@@ -1888,7 +1891,6 @@ const Complications = (() => {
                     messageLines.push(C.HTML.Body(message.slice(1), {color: C.COLORS.green}));
                 else
                     messageLines.push(C.HTML.Body(message));
-
             D.Chat(
                 charRef,
                 C.HTML.Block([

@@ -588,6 +588,7 @@ const DragPads = (() => {
             // DB({img: imgData.name, padPosData, padRegistrySTART: D.JSX(PADREGISTRY[imgData.padID]), graphicRegistrySTART: D.JSX(GRAPHICREGISTRY[imgData.id]), pads: D.JS(pads)}, "syncPads");
             STATE.REF.arePadsActive = false;
             Object.assign(PADREGISTRY[imgData.padID], padPosData);
+            Object.assign(PADREGISTRY[imgData.partnerID], padPosData);
             Object.assign(GRAPHICREGISTRY[imgData.id].pad, padPosData);
             Object.assign(GRAPHICREGISTRY[imgData.id].partnerPad, padPosData);
             pads.forEach((x) => x.set(padPosData));

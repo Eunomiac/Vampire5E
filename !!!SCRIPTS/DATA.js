@@ -394,9 +394,7 @@ const D = (() => {
                                 fontSize: "10px",
                                 fontWeight: "normal"
                             })
-                        ),
-                        undefined,
-                        D.RandomString(3)
+                        )
                     );
                 ISRUNNINGQUEUE[queueName] = false;
                 FunctionQueue[queueName] = [];
@@ -428,9 +426,7 @@ const D = (() => {
                                     fontWeight: "normal"
                                 }
                             )
-                        ),
-                        undefined,
-                        D.RandomString(3)
+                        )
                     );
                 FunctionQueue[queueName][current][0].apply(undefined, [].concat(args, each));
             }
@@ -460,7 +456,7 @@ const D = (() => {
 
     // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
 
-    const jStr = (data, isVerbose = false) => {
+    const jStr = (data, isVerbose = false, isAlwaysBreakingLines = false) => {
         /* Parses a value of any type via JSON.stringify, and then further styles it for display either
                 in Roll20 chat, in the API console log, or both. */
         try {
@@ -519,7 +515,7 @@ const D = (() => {
                 } else if (_.isFunction(v)) {
                     returnVal = "<b>&lt;FUNCTION&gt;</b>";
                 } else if (_.isArray(v)) {
-                    if (v.map((x) => replacer(k, x)).join(",&nbsp;").length < 150) {
+                    if (!isAlwaysBreakingLines && v.map((x) => replacer(k, x)).join(",&nbsp;").length < 150) {
                         returnVal = `<b>[</b> ${v.map((x) => replacer(k, x)).join(",&nbsp;")} <b>]</b>`.replace(/\[\s+\]/gu, "<b>[]</b>");
                     } else {
                         const arrayDelver = (array) => {
@@ -534,7 +530,7 @@ const D = (() => {
                     const stringifyTest = `<b>{</b> ${Object.values(kvpMap(v, null, (val, key) => `${key}: ${replacer(k, val)}`)).join(
                         ", "
                     )} <b>}</b>`.replace(/\{\s+\}/gu, "<b>{}</b>");
-                    if (stringifyTest.length < 150) {
+                    if (!isAlwaysBreakingLines && stringifyTest.length < 150) {
                         returnVal = stringifyTest;
                     } else {
                         const listDelver = (list) => {
@@ -1052,7 +1048,7 @@ const D = (() => {
     const sendAPICommand = (command) => {
         sendChat(getName(getGMID()), command);
     };
-    const sendChatMessage = (who, message = "", title, isPureCode = false) => {
+    const sendChatMessage = (who, message = "", title, isPureCode = false, isPublicDuringTesting = false) => {
         /* Whispers chat message to player given: display name OR player ID.
                 If no Title, message is sent without formatting. */
         const player = getPlayer(who) || who;
@@ -1165,7 +1161,7 @@ const D = (() => {
             message;
         // sendChat(from, `/direct <pre>${JSON.stringify(html)}</pre>`)
         if (who === "all" || player === "all" || !player) {
-            if (Session.IsTesting && !Session.IsFullTest)
+            if (!isPublicDuringTesting && Session.IsTesting && !Session.IsFullTest)
                 sendChat(
                     randomString(3),
                     `/w Storyteller ${html}<div style="display: block;height: 10px;max-height: 10px;position: relative;z-index: 999;text-align: right;width: 100%;margin-top: -10px;margin-bottom: -7px;background-color: transparent;padding: 0px;font-size: 0px;"><span style="font-size: 10px; display:inline-block; line-height: 10px; background-color: darkgreen;color: white;max-height: 10px;width: auto;">(TO ALL)</span></div>`
@@ -2972,6 +2968,9 @@ const D = (() => {
         GetDebugWatchList: getWatchList,
         get WatchList() {
             return STATE.REF.WATCHLIST;
+        },
+        get BlackList() {
+            return STATE.REF.BLACKLIST;
         },
         Log: logDebugAlert,
         ThrowError: throwError,

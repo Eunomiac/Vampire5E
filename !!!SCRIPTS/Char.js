@@ -1676,42 +1676,42 @@ const Char = (() => {
         displayResources();
     };
     const displayResources = () => {
-        if (_.flatten(_.values(STATE.REF.weeklyResources)).length === 0) {
-            Media.ToggleImg("weeklyResourcesHeader", false);
-            Media.ToggleText("Weekly_Char_Col1", false);
-            Media.ToggleText("Weekly_Char_Col2", false);
-            Media.ToggleText("Weekly_Char_Col3", false);
-        } else {
-            Media.ToggleImg("weeklyResourcesHeader", true);
-            Media.ToggleText("Weekly_Char_Col1", true);
-            Media.ToggleText("Weekly_Char_Col2", true);
-            Media.ToggleText("Weekly_Char_Col3", true);
-            /* STATE.REF.weeklyResources = {
-                    N: [
-                        ["Herd (Bookies)", 0, 6],
-                        ["Herd (Clinic)", 0, 4]
-                    ]
-                } */
-            const columns = {
-                Col1: [],
-                Col2: [],
-                Col3: []
-            };
-            for (const init of _.sortBy(Object.keys(STATE.REF.weeklyResources))) {
-                const data = _.sortBy(STATE.REF.weeklyResources[init], (x) => x[0]);
-                columns.Col1.push(`[${init}]`, ...new Array(data.length - 1).fill(""));
-                columns.Col2.push(...data.map((x) => x[0]));
-                columns.Col3.push(
-                    ...data.map((x) => `${"●".repeat(x[2] - x[1] - (x[3] || 0))}${"○".repeat(x[1] || 0)}${"◊".repeat(x[3] || 0)}`.replace(/^(\S{5})/gu, "$1  "))
-                );
-            }
-            for (const [col, lines] of Object.entries(columns))
-                Media.SetText(`Weekly_Char_${col}`, lines.join("\n"));
-        }
-        /* Media.SetImgData("stakedAdvantagesHeader", {top: Media.GetImgData("weeklyResourcesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height + Media.GetTextHeight("weeklyResources") + 20}, true)
-            Media.SetTextData("stakedCoterieAdvantages", {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height})
-            Media.SetTextData("stakedAdvantages", {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height})
-            displayStakes() */
+        // if (_.flatten(_.values(STATE.REF.weeklyResources)).length === 0) {
+        //     Media.ToggleImg("weeklyResourcesHeader", false);
+        //     Media.ToggleText("Weekly_Char_Col1", false);
+        //     Media.ToggleText("Weekly_Char_Col2", false);
+        //     Media.ToggleText("Weekly_Char_Col3", false);
+        // } else {
+        //     Media.ToggleImg("weeklyResourcesHeader", true);
+        //     Media.ToggleText("Weekly_Char_Col1", true);
+        //     Media.ToggleText("Weekly_Char_Col2", true);
+        //     Media.ToggleText("Weekly_Char_Col3", true);
+        //     /* STATE.REF.weeklyResources = {
+        //             N: [
+        //                 ["Herd (Bookies)", 0, 6],
+        //                 ["Herd (Clinic)", 0, 4]
+        //             ]
+        //         } */
+        //     const columns = {
+        //         Col1: [],
+        //         Col2: [],
+        //         Col3: []
+        //     };
+        //     for (const init of _.sortBy(Object.keys(STATE.REF.weeklyResources))) {
+        //         const data = _.sortBy(STATE.REF.weeklyResources[init], (x) => x[0]);
+        //         columns.Col1.push(`[${init}]`, ...new Array(data.length - 1).fill(""));
+        //         columns.Col2.push(...data.map((x) => x[0]));
+        //         columns.Col3.push(
+        //             ...data.map((x) => `${"●".repeat(x[2] - x[1] - (x[3] || 0))}${"○".repeat(x[1] || 0)}${"◊".repeat(x[3] || 0)}`.replace(/^(\S{5})/gu, "$1  "))
+        //         );
+        //     }
+        //     for (const [col, lines] of Object.entries(columns))
+        //         Media.SetText(`Weekly_Char_${col}`, lines.join("\n"));
+        // }
+        // /* Media.SetImgData("stakedAdvantagesHeader", {top: Media.GetImgData("weeklyResourcesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height + Media.GetTextHeight("weeklyResources") + 20}, true)
+        //     Media.SetTextData("stakedCoterieAdvantages", {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height})
+        //     Media.SetTextData("stakedAdvantages", {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height})
+        //     displayStakes() */
     };
     const sortCoterieStakes = (charRef) => {
         const charObj = D.GetChar(charRef);
@@ -1945,8 +1945,8 @@ const Char = (() => {
         );
     };
     const updateHunger = (charRef) => {
-        DB({charRef}, "updateHunger");
         charRef = charRef || "registered";
+        DB({charRef}, "updateHunger");
         for (const char of D.GetChars(charRef)) {
             const charData = D.GetCharData(char);
             const quad = charData.quadrant;

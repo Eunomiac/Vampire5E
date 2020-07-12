@@ -137,7 +137,7 @@ const Player = (() => {
                     return THROW(`ERRORED returning '${D.JSL(fType)}' for '${D.JSL(mvcItems)}' of '${D.JSL(mvc)}'`, "MVC", errObj);
                 }
         }
-        D.Chat(playerID, C.HTML.MVC.fullBox(results.join("")), " ");
+        D.Chat(playerID, C.HTML.MVC.fullBox(results.join("")), undefined, false, true);
         return true;
     };
     // #endregion

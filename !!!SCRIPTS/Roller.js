@@ -67,26 +67,26 @@ const Roller = (() => {
     const onChatCallAlert = (callTerms, who) => {
         if (callTerms[1] === "dice")
             if (isLocked)
-                D.Chat(who, "Roller Locked: Please Wait...", "none");
+                D.Chat(who, "Roller Locked: Please Wait...", "none", false, true);
             else
                 switch (callTerms[2]) {
                     case "frenzyinit":
-                        D.Chat(who, "Resist Frenzy: Waiting on Difficulty...", "none");
+                        D.Chat(who, "Resist Frenzy: Waiting on Difficulty...", "none", false, true);
                         break;
                     case "frenzy":
-                        D.Chat(who, "Resist Frenzy: ROLLING...", "none");
+                        D.Chat(who, "Resist Frenzy: ROLLING...", "none", false, true);
                         break;
                     case "rouse":
                     case "rouseobv":
                     case "rouse2":
                     case "rouse2obv":
-                        D.Chat(who, "Rouse Check: ROLLING...", "none");
+                        D.Chat(who, "Rouse Check: ROLLING...", "none", false, true);
                         break;
                     case "check":
-                        D.Chat(who, "Simple Check: ROLLING...", "none");
+                        D.Chat(who, "Simple Check: ROLLING...", "none", false, true);
                         break;
                     default:
-                        D.Chat(who, "ROLLING...", "none");
+                        D.Chat(who, "ROLLING...", "none", false, true);
                         break;
                 }
     };
@@ -2398,7 +2398,7 @@ const Roller = (() => {
                     tFull.traitData.humanity.display = "Human Potential";
                     tFull.traitData.humanity.value = Math.max(0, 10 - tFull.traitData.humanity.value - D.Int(D.GetStatVal(charObj.id, "stains")));
                 } else if (!tFull.traitData[trt].display) {
-                    D.Chat(charObj, `Error determining NAME of trait '${D.JS(trt)}'.`, "ERROR: Dice Roller");
+                    D.Chat(charObj, `Error determining NAME of trait '${D.JS(trt)}'.`, "ERROR: Dice Roller", false, true);
                 }
             }
         });
@@ -2603,7 +2603,7 @@ const Roller = (() => {
                 break;
         }
         if (rollData.traits.length === 0 && rollData.dicePool <= 0) {
-            D.Chat(D.GetChar(rollData.charID), "You have no dice to roll!", "ERROR: Dice Roller");
+            D.Chat(D.GetChar(rollData.charID), "You have no dice to roll!", "ERROR: Dice Roller", false, true);
 
             return false;
         }
@@ -3718,11 +3718,11 @@ const Roller = (() => {
         }
 
         if (isLogging)
-            D.Chat("all", logString, undefined);
+            D.Chat("all", logString, undefined, false, true);
         if (rollFlags.isHidingResult || rollFlags.isHidingOutcome || rollFlags.isHidingDicePool || rollFlags.isHidingDifficulty) {
-            D.Chat("Storyteller", stString, undefined);
+            D.Chat("Storyteller", stString);
             if (rollData.playerID && rollData.playerID !== D.GMID())
-                D.Chat(rollData.playerID, playerNPCString, undefined);
+                D.Chat(rollData.playerID, playerNPCString, undefined, false, true);
         }
 
         lockRoller(false);
@@ -4135,7 +4135,7 @@ const Roller = (() => {
                 textShadow: `0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}`
             });
         }
-        D.Chat((isPublic && "all") || charRef, C.HTML.Block([C.HTML.Header(header), body].join("")));
+        D.Chat((isPublic && "all") || charRef, C.HTML.Block([C.HTML.Header(header), body].join("")), undefined, false, true);
         TRACEOFF(traceID);
     };
     // #endregion
@@ -4207,16 +4207,12 @@ const Roller = (() => {
             if (rollData.isSilent)
                 D.Chat(
                     "Storyteller",
-                    `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}<span style="width: 100%; text-align: center; text-align-last: center;">(SECRET ROLL)</span></div></div>`,
-                    undefined,
-                    D.RandomString(3)
+                    `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}<span style="width: 100%; text-align: center; text-align-last: center;">(SECRET ROLL)</span></div></div>`
                 );
             else if (rollData.playerID)
                 D.Chat(
                     rollData.playerID,
-                    `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`,
-                    null,
-                    D.RandomString(3)
+                    `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`
                 );
         });
         D.Chat(
@@ -4226,9 +4222,7 @@ const Roller = (() => {
                 (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling") +
                 (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${
                 rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""
-            }</div>${blocks.join("")}</div></div>`,
-            undefined,
-            D.RandomString(3)
+            }</div>${blocks.join("")}</div></div>`
         );
         TRACEOFF(traceID);
     };
@@ -4495,7 +4489,10 @@ const Roller = (() => {
                 C.HTML.Title(_.map([resonance[0], resonance[1]], (v) => v.toUpperCase()).join(" ")),
                 C.HTML.Header(resDetails),
                 C.HTML.Body(resIntLine, {lineHeight: "20px"})
-            ])
+            ]),
+            undefined,
+            false,
+            true
         );
         TRACEOFF(traceID);
     };

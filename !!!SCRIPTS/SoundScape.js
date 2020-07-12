@@ -28,11 +28,11 @@ const Soundscape = (() => {
         STATE.REF.playlistregistry = STATE.REF.playlistregistry || {};
         STATE.REF.isSoundscapeActive = VAL({bool: STATE.REF.isSoundscapeActive}) ? STATE.REF.isSoundscapeActive : true;
         STATE.REF.activeSounds = STATE.REF.activeSounds || [];
-        STATE.REF.VOLUME = STATE.REF.VOLUME || D.Clone(C.SOUNDVOLUME);
+        STATE.REF.VOLUME = Object.assign({}, C.SOUNDVOLUME, STATE.REF.VOLUME || {});
         STATE.REF.playSoundLog = STATE.REF.playSoundLog || [];
         STATE.REF.playSoundLog.push("~~~ NEW INITIALIZATION ~~~");
 
-        syncSoundscape(true);
+        // syncSoundscape(true);
     };
     // #endregion
 
@@ -59,36 +59,87 @@ const Soundscape = (() => {
                 break;
             case "inc":
             case "increase": {
-                if (args[0]) {
+                if (args[0] === "casaloma") {
+                    CASALOMASOUNDS.CLGreatHall.activeSounds.ScoreCasaLoma = D.Float(args[1], 2);
+                    C.SITES.CLGreatHall.onEntryCall = null;
+                    syncSoundscape();
+                    if (args[4]) {
+                        const delayTimeArg = D.Float(args[2] || 10, 2);
+                        const numStepsArg = D.Float(args[3] || 5, 2);
+                        const targetVol = D.Float(args[4] || 4, 3);
+                        const durationArg = D.Float(args[5] || 5, 2);
+                        const fadeOut = (soundRef, duration, delayTime, numSteps = 5, targetVolume = 0) => {
+                            duration = duration < 60 ? duration * 1000 : duration;
+                            delayTime = delayTime < 60 ? delayTime * 1000 : delayTime;
+                            const trackObj = getTrackObj(soundRef);
+                            const startVolume = trackObj.get("volume");
+                            const stepTime = D.Float(duration / numSteps, 3);
+                            const deltaVol = D.Float((targetVolume - startVolume) / numSteps, 4);
+                            let intervalTimer;
+                            setTimeout(() => {
+                                DB({"Timeout Started": [
+                                    `Starting Volume Decrease from ${startVolume} to ${targetVolume}`,
+                                    `Delay: ${delayTime}, Duration: ${duration}`,
+                                    `StepTime: ${stepTime}, DeltaVol: ${deltaVol}`
+                                ]}, "fadeOut");
+                                intervalTimer = setInterval(() => {
+                                    const curVol = trackObj.get("volume");
+                                    const newVol = D.Float(Math.max(targetVolume, curVol + deltaVol), 3);
+                                    trackObj.set({volume: newVol});
+                                    DB({step: newVol, target: targetVolume, realVol: trackObj.get("volume")}, "fadeOut");
+                                    if (newVol === targetVolume) {
+                                        clearInterval(intervalTimer);
+                                        intervalTimer = null;
+                                    }
+                                }, stepTime);
+                            }, delayTime);
+                        };
+                        fadeOut("ScoreCasaLoma", durationArg, delayTimeArg, numStepsArg, targetVol);
+                        CASALOMASOUNDS.CLGreatHall.activeSounds.ScoreCasaLoma = 1;
+                        CASALOMASOUNDS.CLVestibule.activeSounds.ScoreCasaLoma = 0.5;
+                    }
+                } else if (args[0]) {
                     const baseVolume = STATE.REF.VOLUME[args[0]] || STATE.REF.VOLUME.base;
                     const newVolume = Math.min(baseVolume + 10, baseVolume * 2);
-                    setVolume(args[0], newVolume);
+                    setVolumeData(args[0], newVolume);
                     D.Alert(`Volume of <b>${D.JS(args[0])}</b>: ${baseVolume} >>> ${newVolume}`, "Increase Volume");
                 }
                 break;
             }
             case "dec":
             case "decrease": {
-                if (args[0]) {
+                if (args[0] === "casaloma") {
+                    CASALOMASOUNDS.CLGreatHall.activeSounds.ScoreCasaLoma = D.Float(args[1]) || 1.5;
+                    syncSoundscape();
+                } else if (args[0]) {
                     const baseVolume = STATE.REF.VOLUME[args[0]] || STATE.REF.VOLUME.base;
                     const newVolume = Math.max(baseVolume - 10, baseVolume / 2);
-                    setVolume(args[0], newVolume);
+                    setVolumeData(args[0], newVolume);
                     D.Alert(`Volume of <b>${D.JS(args[0])}</b>: ${baseVolume} >>> ${newVolume}`, "Decrease Volume");
                 }
                 break;
             }
             case "get": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "tracks": {
+                        D.Alert([
+                            "<h3>Tracks Playing:</h3>",
+                            getPlayingTrackObjs().map((x) => D.JS(x, true)).join("<br>")
+                        ]);
+                        break;
+                    }
                     case "volume":
                         break;
                     // no default
                 }
+                if (call !== "volume")
+                    break;
             }
             // falls through
             case "set": {
                 switch (D.LCase((call = args.shift()))) {
                     case "volume":
-                        setVolume(...args);
+                        setVolumeData(...args);
                         break;
                     case "mult": {
                         switch (D.LCase((call = args.shift()))) {
@@ -107,22 +158,14 @@ const Soundscape = (() => {
                     }
                     // no default
                 }
-                D.Alert(
-                    [
-                        "<h3>VOLUME SETTINGS</h3>",
-                        D.JS(STATE.REF.VOLUME, true),
-                        "<h3>PLAYING TRACKS</h3>",
-                        getPlayingTrackObjs()
-                            .map((x) => `<b>${x.get("title")}:</b> ${x.get("volume")}`)
-                            .join("<br>")
-                    ].join(""),
-                    "Current Volume"
-                );
+                sendVolumeAlert();
                 break;
             }
             case "reset": {
                 if (args[0] === "log") {
                     STATE.REF.playSoundLog = [];
+                } else if (args[0] === "volume") {
+                    STATE.REF.VOLUME = D.Clone(C.SOUNDVOLUME);
                 } else if (args[0]) {
                     stopSound(args[0]);
                     playSound(args[0]);
@@ -166,6 +209,64 @@ const Soundscape = (() => {
             STATE.REF.playlistregistry = D.Clone(v);
         }
     };
+    const CASALOMASOUNDS = {
+        blank: {
+            activeSounds: {
+                ScoreCasaLoma: 0.5, // Volume multipliers ON TOP of normal ones.
+                SoftIndoor: 1
+            },
+            isOutside: false
+        },
+        CLVestibule: {
+            activeSounds: {
+                SoftIndoor: 1
+            },
+            isOutside: false
+        },
+        CLGreatHall: {
+            activeSounds: {
+                ScoreCasaLoma: 1.5 // Volume multipliers ON TOP of normal ones.
+            },
+            isOutside: false
+        },
+        CLGallery: {
+            activeSounds: {
+                ScoreCasaLoma: 0.5, // Volume multipliers ON TOP of normal ones.
+                SoftIndoor: 1,
+                TinkleAmbient: 1
+            },
+            isOutside: false
+        },
+        CLDrawingRoom: {
+            activeSounds: {
+                ScoreCasaLoma: 0.25, // Volume multipliers ON TOP of normal ones.
+                FastClock: 1
+                // Fireplace: 1
+            },
+            isOutside: false
+        },
+        CLOverlook: {
+            activeSounds: {
+                ScoreCasaLoma: 0.5 // Volume multipliers ON TOP of normal ones.
+            },
+            isOutside: false
+        },
+        CLLibrary: {
+            activeSounds: {
+                ScoreCasaLoma: 0.25,
+                Fireplace: 1
+            },
+            isOutside: false
+        },
+        CLTerrace: {
+            activeSounds: {
+                ScoreCasaLoma: 0.25, // Volume multipliers ON TOP of normal ones.
+                EerieForest: 1,
+                LowWindAmbient: 1
+            },
+            isOutside: true
+        }
+    };
     // #endregion
 
     // #region INITIALIZATION: Importing Sounds
@@ -175,77 +276,81 @@ const Soundscape = (() => {
         const trackObjs = _.uniq(findObjs({_type: "jukeboxtrack"}));
         for (const trackObj of trackObjs)
             regTrack(trackObj);
-        const jukeboxData = JSON.parse(Campaign().get("_jukeboxfolder")).map((x) => {
-            const xData = D.KeyMapObj(
-                x,
-                (k) => {
-                    switch (k) {
-                        case "i":
-                            return "trackKeys";
-                        case "n":
-                            return "name";
-                        case "s":
-                            return "playModes";
-                        default:
-                            return k;
+        const jukeboxData = _.compact(JSON.parse(Campaign().get("_jukeboxfolder")).map((x) => {
+            if (VAL({list: x})) {
+                const xData = D.KeyMapObj(
+                    x,
+                    (k) => {
+                        switch (k) {
+                            case "i":
+                                return "trackKeys";
+                            case "n":
+                                return "name";
+                            case "s":
+                                return "playModes";
+                            default:
+                                return k;
+                        }
+                    },
+                    (v, k) => {
+                        switch (k) {
+                            case "i":
+                                return v.map((xx) => parseKeyFromTitle(xx));
+                            case "s":
+                                return {
+                                    isLooping: ["s", "b"].includes(v),
+                                    isRandom: ["s", "o"].includes(v),
+                                    isTogether: v === "a",
+                                    isPlayingAll: ["s", "b"].includes(v)
+                                };
+                            default:
+                                return v;
+                        }
                     }
-                },
-                (v, k) => {
-                    switch (k) {
-                        case "i":
-                            return v.map((xx) => parseKeyFromTitle(xx));
-                        case "s":
-                            return {
-                                isLooping: ["s", "b"].includes(v),
-                                isRandom: ["s", "o"].includes(v),
-                                isTogether: v === "a",
-                                isPlayingAll: ["s", "b"].includes(v)
-                            };
-                        default:
-                            return v;
+                );
+                DB({xData}, "importFromJukebox");
+                switch ((xData.name.match(/\[([^\]]*)\]$/u) || []).pop()) {
+                    case "LoopEach": {
+                        xData.playModes = {
+                            isLooping: true,
+                            isRandom: false,
+                            isTogether: false,
+                            isPlayingAll: false
+                        };
+                        break;
                     }
+                    case "Sequence": {
+                        xData.playModes = {
+                            isLooping: false,
+                            isRandom: false,
+                            isTogether: false,
+                            isPlayingAll: true
+                        };
+                        break;
+                    }
+                    case "RandomOnce": {
+                        xData.playModes = {
+                            isLooping: true,
+                            isRandom: true,
+                            isTogether: false,
+                            isPlayingAll: false
+                        };
+                        break;
+                    }
+                    case "ShuffleOnce": {
+                        xData.playModes = {
+                            isLooping: false,
+                            isRandom: true,
+                            isTogether: false,
+                            isPlayingAll: true
+                        };
+                    }
+                    // no default
                 }
-            );
-            switch ((xData.name.match(/\[([^\]]*)\]$/u) || []).pop()) {
-                case "LoopEach": {
-                    xData.playModes = {
-                        isLooping: true,
-                        isRandom: false,
-                        isTogether: false,
-                        isPlayingAll: false
-                    };
-                    break;
-                }
-                case "Sequence": {
-                    xData.playModes = {
-                        isLooping: false,
-                        isRandom: false,
-                        isTogether: false,
-                        isPlayingAll: true
-                    };
-                    break;
-                }
-                case "RandomOnce": {
-                    xData.playModes = {
-                        isLooping: true,
-                        isRandom: true,
-                        isTogether: false,
-                        isPlayingAll: false
-                    };
-                    break;
-                }
-                case "ShuffleOnce": {
-                    xData.playModes = {
-                        isLooping: false,
-                        isRandom: true,
-                        isTogether: false,
-                        isPlayingAll: true
-                    };
-                }
-                // no default
+                return xData;
             }
-            return xData;
-        });
+            return false;
+        }));
         for (const playlistData of jukeboxData)
             regPlaylist(parseKeyFromTitle(playlistData.name), playlistData.trackKeys, playlistData.playModes);
     };
@@ -253,11 +358,13 @@ const Soundscape = (() => {
 
     // #region GETTERS: Track & Playlist Data
     const parseKeyFromTitle = (trackRef) => {
+        const origTrackRef = trackRef;
         trackRef =
             (D.IsID(trackRef) && (getObj("jukeboxtrack", trackRef) || {get: () => false}).get("title")) ||
             (VAL({obj: trackRef}) && trackRef.get("title")) ||
             (VAL({string: trackRef}) && trackRef) ||
             false;
+        DB({origTrackRef, trackRef}, "parseKeyFromTitle");
         return VAL({string: trackRef}) && trackRef.replace(/\s*[([{].*[)\]}]\s*/gu, "").replace(/[^A-Za-z0-9]*/gu, "");
     };
     const getSoundKey = (soundRef) => {
@@ -291,7 +398,7 @@ const Soundscape = (() => {
             if (isGettingAllTracks)
                 return OFFSTACK(funcID) && getSoundData(soundRef).trackKeys;
             else
-                return OFFSTACK(funcID) && getSoundData(soundRef).currentTracks[0];
+                return OFFSTACK(funcID) && getSoundData(soundRef).currentTracks[0]; // OK for only one UNLESS "isTogether"
         return OFFSTACK(funcID) && false;
     };
     const getPlaylistKey = (soundRef) => {
@@ -300,7 +407,7 @@ const Soundscape = (() => {
             const trackKey = getTrackKey(soundRef);
             return (
                 OFFSTACK(funcID) &&
-                ((Object.values(REGISTRY.Playlists).find((x) => x.currentTracks.includes(trackKey)) || {name: false}).name ||
+                ((Object.values(REGISTRY.Playlists).find((x) => x.trackKeys.includes(trackKey)) || {name: false}).name ||
                     getTrackData(trackKey).playlists[0] ||
                     false)
             );
@@ -312,25 +419,77 @@ const Soundscape = (() => {
     const getTrackData = (soundRef) => getSoundData(getTrackKey(soundRef));
     const getPlaylistData = (soundRef) => getSoundData(getPlaylistKey(soundRef));
     const getTrackObj = (soundRef) => getObj("jukeboxtrack", (getTrackData(soundRef) || {id: false}).id);
-    const getVolume = (soundRef) => {
+    const getVolumeData = (soundRef, isIgnoringLocation = false) => {
         const trackKey = getTrackKey(soundRef);
         const playlistKey = getPlaylistKey(soundRef);
-        const volumeMults = [STATE.REF.VOLUME.MasterVolumeMult];
-        const baseVolume = STATE.REF.VOLUME[trackKey] || STATE.REF.VOLUME[playlistKey] || STATE.REF.VOLUME.base;
-        if (Session.Mode === "Inactive")
-            return D.Int(volumeMults.filter((x) => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume));
-        if (!Session.IsOutside)
-            volumeMults.push(
-                STATE.REF.VOLUME.MULTS.Inside[trackKey] || STATE.REF.VOLUME.MULTS.Inside[playlistKey] || STATE.REF.VOLUME.MULTS.Inside.base
-            );
-        else if (TimeTracker.IsRaining)
-            volumeMults.push(
-                STATE.REF.VOLUME.MULTS.Raining[trackKey] ||
-                    STATE.REF.VOLUME.MULTS.Raining[playlistKey] ||
-                    STATE.REF.VOLUME.MULTS.Raining.base
-            );
-        // DB({trackKey, playlistKey, volumeMults, baseVolume, reduction: D.Int(volumeMults.reduce((tot, x) => tot * x, baseVolume))}, "getVolume")
-        return D.Int(volumeMults.filter((x) => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume));
+        const returnData = {
+            playlist: playlistKey,
+            track: trackKey,
+            volume: {}
+        };
+        let baseVolKey = "startVol";
+        if (trackKey in STATE.REF.VOLUME)
+            baseVolKey += "-T";
+        else if (playlistKey in STATE.REF.VOLUME)
+            baseVolKey += "-L";
+        else
+            baseVolKey += "-B";
+        returnData.volume[baseVolKey] = STATE.REF.VOLUME[trackKey] || STATE.REF.VOLUME[playlistKey] || STATE.REF.VOLUME.base;
+
+        const volumeMults = {
+            M: STATE.REF.VOLUME.MasterVolumeMult,
+            Cust: STATE.REF.volumeMults[trackKey] || STATE.REF.volumeMults[playlistKey] || 1
+        };
+        if (!isIgnoringLocation) {
+            let indoorMultKey = (STATE.REF.outsideOverride === null && !Session.IsOutside && "in") ||
+                                (STATE.REF.outsideOverride === false && "inO");
+            if (indoorMultKey) {
+                if (trackKey in STATE.REF.VOLUME.MULTS.Inside)
+                    indoorMultKey += "-T";
+                else if (playlistKey in STATE.REF.VOLUME.MULTS.Inside)
+                    indoorMultKey += "-L";
+                else
+                    indoorMultKey += "-B";
+                volumeMults[indoorMultKey] = STATE.REF.VOLUME.MULTS.Inside[trackKey] || STATE.REF.VOLUME.MULTS.Inside[playlistKey] || STATE.REF.VOLUME.MULTS.Inside.base;
+            } else if (TimeTracker.IsRaining) {
+                let rainMultKey = "rain";
+                if (trackKey in STATE.REF.VOLUME.MULTS.Raining)
+                    rainMultKey += "-T";
+                else if (trackKey in STATE.REF.VOLUME.MULTS.Raining)
+                    rainMultKey += "-L";
+                else
+                    rainMultKey += "-B";
+                volumeMults[rainMultKey] = STATE.REF.VOLUME.MULTS.Raining[trackKey] || STATE.REF.VOLUME.MULTS.Raining[playlistKey] || STATE.REF.VOLUME.MULTS.Raining.base;
+            }
+        }
+        returnData.volume.mults = volumeMults;
+        returnData.volume.finalVol = D.Float(Object.values(volumeMults).filter((x) => VAL({number: x})).reduce((tot, x) => tot * x, returnData.volume[baseVolKey]), 5);
+        return returnData;
+    };
+    const getVolume = (soundRef) => {
+        const volumeData = getVolumeData(soundRef, Session.Mode === "Inactive");
+        DB({volumeData, finalVol: volumeData.volume.finalVol}, "getVolume");
+        return volumeData.volume.finalVol;
+        // const trackKey = getTrackKey(soundRef);
+        // const playlistKey = getPlaylistKey(soundRef);
+        // const volumeMult = STATE.REF.volumeMults[trackKey] || STATE.REF.volumeMults[playlistKey] || 1;
+        // const volumeMults = [STATE.REF.VOLUME.MasterVolumeMult, volumeMult];
+        // const baseVolume = STATE.REF.VOLUME[trackKey] || STATE.REF.VOLUME[playlistKey] || STATE.REF.VOLUME.base;
+        // const isOutside = STATE.REF.outsideOverride === null ? Session.IsOutside : STATE.REF.outsideOverride;
+        // if (Session.Mode === "Inactive")
+        //     return D.Int(volumeMults.filter((x) => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume));
+        // if (!isOutside)
+        //     volumeMults.push(
+        //         STATE.REF.VOLUME.MULTS.Inside[trackKey] || STATE.REF.VOLUME.MULTS.Inside[playlistKey] || STATE.REF.VOLUME.MULTS.Inside.base
+        //     );
+        // else if (TimeTracker.IsRaining)
+        //     volumeMults.push(
+        //         STATE.REF.VOLUME.MULTS.Raining[trackKey] ||
+        //             STATE.REF.VOLUME.MULTS.Raining[playlistKey] ||
+        //             STATE.REF.VOLUME.MULTS.Raining.base
+        //     );
+        // DB({trackKey, playlistKey, volumeMults, baseVolume, reduction: D.Int(volumeMults.reduce((tot, x) => tot * x, baseVolume))}, "getVolume");
+        // return D.Int(volumeMults.filter((x) => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume));
     };
     const isTrackObjPlaying = (trackObj) => VAL({obj: trackObj}) && trackObj.get("playing") && !trackObj.get("softstop");
     const isTrackObjLooping = (trackObj) => isTrackObjPlaying(trackObj) && trackObj.get("looping");
@@ -338,12 +497,11 @@ const Soundscape = (() => {
     // getPlayingPlaylists = () => Object.keys(REGISTRY.Playlists).filter(x => REGISTRY.Playlists[x].isPlaying),
     // getPlayingTracks = (isExcludingPlaylists = false) => Object.values(REGISTRY.Tracks).filter(x => x.isPlaying && (!isExcludingPlaylists || !x.masterPlaylist)).map(x => x.name),
     const getScore = () => STATE.REF.scoreOverride || C.SOUNDSCORES[Session.Mode][0];
-    const getWeatherSounds = () => {
+    const getWeatherSounds = (isForcingOutside = false) => {
         const funcID = ONSTACK();
         const weatherCode = TimeTracker.WeatherCode;
         const weatherSounds = [];
-
-        if (Session.Mode === "Inactive" || !Session.IsOutside)
+        if (Session.Mode === "Inactive" || (!Session.IsOutside && !isForcingOutside))
             return OFFSTACK(funcID) && [];
 
         // RAIN:
@@ -393,6 +551,54 @@ const Soundscape = (() => {
         if (locSounds.District && locSounds.District !== "(NONE)" && Session.IsOutside)
             return OFFSTACK(funcID) && locSounds.District;
         return OFFSTACK(funcID) && false;
+    };
+    const sendVolumeAlert = () => {
+        const trackObjs = getPlayingTrackObjs();
+        const volSettingsKeys = [];
+        const playingVolumeData = [];
+        for (const trackObj of getPlayingTrackObjs()) {
+            const volumeData = getVolumeData(trackObj, Session.Mode === "Inactive");
+            volSettingsKeys.push(volumeData.playlist, volumeData.track);
+            DB({volumeData}, "getVolumeData");
+            const startKey = Object.keys(volumeData.volume).find((x) => x.startsWith("startVol"));
+            const [startMainKey, startSubKey] = startKey.split("-");
+            const volLine = [`<b>[<u>${volumeData.volume[startKey]}</u>]</b> (${startSubKey})`];
+            const multLine = [];
+            for (const [multKey, mult] of Object.entries(volumeData.volume.mults))
+                multLine.push(`${mult} (${multKey})`);
+            volLine.push(multLine.join(" × "));
+            volLine.push(`<b>[<u>${volumeData.volume.finalVol}</u> ?= <u>${trackObj.get("volume")}</u>]</b>`);
+            playingVolumeData.push(`<h5>${volumeData.playlist}: ${volumeData.track}</h5>`);
+            playingVolumeData.push(`${volLine.join(" ► ")}<br>`);
+        }
+        const volumeSettingsData = _.pick(STATE.REF.VOLUME, "base", "MasterVolumeMult", "MULTS", ...volSettingsKeys);
+        if (playingVolumeData.join("").includes("(in"))
+            volumeSettingsData.MULTS.Inside = _.pick(volumeSettingsData.MULTS.Inside, "base", ...volSettingsKeys);
+        else
+            volumeSettingsData.MULTS = _.omit(volumeSettingsData.MULTS, "Inside");
+        if (playingVolumeData.join("").includes("(rain"))
+            volumeSettingsData.MULTS.Raining = _.pick(volumeSettingsData.MULTS.Raining, "base", ...volSettingsKeys);
+        else
+            volumeSettingsData.MULTS = _.omit(volumeSettingsData.MULTS, "Raining");
+        if (_.isEmpty(volumeSettingsData.MULTS))
+            delete volumeSettingsData.MULTS;
+        D.Alert(
+            [
+                "<h3>VOLUME SETTINGS</h3>",
+                D.JS(volumeSettingsData, true, true),
+                "<h3>PLAYING TRACK VOLUME</h3>",
+                playingVolumeData.join(""),
+                "<h3>SYNTAX</h3>",
+                "<b>!sound inc (track/list)</b><br>",
+                "<b>!sound dec (track/list)</b><br>",
+                "<b>!sound set volume base (baseVolume)</b><br>",
+                "<b>!sound set volume (track/list) (volume)</b><br>",
+                "<b>!sound set mult master (masterMult)</b><br>",
+                "<b>!sound set mult rain (track/list) (rainMult)</b><br>",
+                "<b>!sound set mult indoor (track/list) (indoorMult)</b>"
+            ].join(""),
+            "Current Volume"
+        );
     };
     // #endregion
 
@@ -460,13 +666,23 @@ const Soundscape = (() => {
                 playlistData.trackKeys.map((x) => setPlayModes(x, {isLooping: true}));
         }
     };
-    const setVolume = (soundRef, volume) => {
+    const updateVolume = (soundRef) => {
+        const volume = getVolume(soundRef);
+        const trackObjs = [];
+        if (isPlaylist(soundRef))
+            trackObjs.push(...getPlaylistData(soundRef).trackKeys.map((x) => getTrackObj(x)));
+        else if (isTrack(soundRef))
+            trackObjs.push(getTrackObj(soundRef));
+        for (const trackObj of trackObjs)
+            trackObj.set({volume});
+    };
+    const setVolumeData = (soundRef, volume) => {
         if (soundRef === "base") {
-            STATE.REF.VOLUME.base = D.Int(volume);
+            STATE.REF.VOLUME.base = D.Float(volume, 3);
         } else {
             const soundKey = getSoundKey(soundRef);
             if (soundKey)
-                STATE.REF.VOLUME[soundKey] = D.Int(volume);
+                STATE.REF.VOLUME[soundKey] = D.Float(volume, 3);
         }
         syncSoundscape();
     };
@@ -499,7 +715,7 @@ const Soundscape = (() => {
     // #region CONTROLLERS: Playing & Stopping Sounds, Playing Next Sound
     const playSound = (soundRef, masterSound) => {
         // Initializes any playlist as if playing it for the first time. To preserve sequences, use playNextSound()
-        if (STATE.REF.isSoundscapeActive) {            
+        if (STATE.REF.isSoundscapeActive) {
             const soundKey = getSoundKey(soundRef);
             // DB(
             //     {
@@ -522,14 +738,14 @@ const Soundscape = (() => {
                 STATE.REF.playSoundLog[logIndex].playlistData = {fullData: playlistData};
                 if (!playlistData.trackSequence.length) {
                     STATE.REF.playSoundLog[logIndex].playlistData.trackSequenceLength = "ZERO";
-                    if (playlistData.currentTracks.length === playlistData.trackKeys.length)
-                        playlistData.currentTracks = [];
+                    // if (playlistData.cur rentTracks.length === playlistData.trackKeys.length)
+                    //     playlistData.cur rentTracks = [];
                     if (playlistData.playModes.isRandom) {
                         STATE.REF.playSoundLog[logIndex].playlistData.playMode = "RANDOM";
-                        playlistData.trackSequence = _.shuffle(trackKeys).filter((x) => !playlistData.currentTracks.includes(x));
+                        playlistData.trackSequence = _.shuffle(trackKeys).filter((x) => !playlistData.currentTracks.includes(x)); // OK for only one UNLESS "isTogether"
                     } else {
                         STATE.REF.playSoundLog[logIndex].playlistData.playMode = "NOT RANDOM";
-                        playlistData.trackSequence = D.Clone(trackKeys).filter((x) => !playlistData.currentTracks.includes(x));
+                        playlistData.trackSequence = D.Clone(trackKeys).filter((x) => !playlistData.currentTracks.includes(x)); // OK for only one UNLESS "isTogether"
                     }
                     STATE.REF.playSoundLog[logIndex].playlistData.newTrackSequence = playlistData.trackSequence;
                     STATE.REF.playSoundLog[logIndex]["###-RETURN-### !!!RECURRING ONCE!!!"] = {soundRef: playlistData.name, masterSound};
@@ -542,9 +758,10 @@ const Soundscape = (() => {
                 } else {
                     STATE.REF.playSoundLog[logIndex].playlistData.playMode = "NOT TOGETHER";
                     STATE.REF.playSoundLog[logIndex].playlistData["!!!RECURRING ONCE - PUSH TO currentTracks!!!"] = {soundRef: playlistData.trackSequence[0], masterSound: playlistData.name};
-                    playlistData.currentTracks.push(playSound(playlistData.trackSequence.shift(), playlistData.name));
+                    playlistData.currentTracks = [playSound(playlistData.trackSequence.shift(), playlistData.name)];
+                    // playlistData.cur rentTracks.push(playSound(playlistData.trackSequence.shift(), playlistData.name));
                 }
-                playlistData.isPlaying = true;                
+                playlistData.isPlaying = true;
                 STATE.REF.playSoundLog[logIndex]["###-RETURN-### true"] = true;
                 return true;
             } else if (isTrack(soundKey)) {
@@ -604,19 +821,37 @@ const Soundscape = (() => {
             [...Object.keys(REGISTRY.Playlists), ...Object.keys(REGISTRY.Tracks)].map((x) => stopSound(x));
             STATE.REF.activeSounds = [];
         }
-        const activeSounds = _.compact([getScore(), getLocationSounds(), ...getWeatherSounds()]);
+        let activeSounds;
+        if (Session.IsCasaLomaActive) {
+            const [activeSite] = Session.Site;
+            activeSounds = Object.keys(CASALOMASOUNDS[activeSite].activeSounds);
+            STATE.REF.outsideOverride = CASALOMASOUNDS[activeSite].isOutside;
+            STATE.REF.volumeMults = CASALOMASOUNDS[activeSite].activeSounds;
+            if (STATE.REF.outsideOverride)
+                activeSounds.push(...getWeatherSounds(true));
+            activeSounds = _.compact(activeSounds);
+        } else {
+            STATE.REF.outsideOverride = null;
+            STATE.REF.volumeMults = {};
+            activeSounds = _.compact([getScore(), getLocationSounds(), ...getWeatherSounds()]);
+        }
         const soundsToStop = STATE.REF.activeSounds.filter((x) => !activeSounds.includes(x));
         const soundsToPlay = activeSounds.filter((x) => !STATE.REF.activeSounds.includes(x));
         const soundsToCheck = activeSounds.filter((x) => STATE.REF.activeSounds.includes(x));
-        DB({activeSounds, soundsToStop, soundsToPlay, soundsToCheck}, "syncSoundscape");
+        // DB({CasaLoma: Session.IsCasaLomaActive, outsideOverride: STATE.REF.outsideOverride, activeSounds, volumeMults: STATE.REF.volumeMults, soundsToStop, soundsToPlay, soundsToCheck}, "syncSoundscape");
         soundsToStop.map((x) => stopSound(x));
         soundsToPlay.map((x) => playSound(x));
+        const volumeChanges = [];
         for (const soundKey of soundsToCheck) {
-            const trackObj = getTrackObj(soundKey);
-            const trackVolume = getVolume(soundKey);
-            if (trackObj && D.Int(trackObj.get("volume")) !== trackVolume)
-                trackObj.set({volume: trackVolume});
+            updateVolume(soundKey);
+            // const trackObj = getTrackObj(soundKey);
+            // const newVolume = getVolume(soundKey);
+            // trackObj.set({volume: getVolume(soundKey)});
+            volumeChanges.push({soundKey, trackObj: getTrackKey(soundKey), realVolume: getTrackObj(soundKey).get("volume")});
         }
+        if (D.WatchList.includes("syncWatch"))
+            sendVolumeAlert();
+        DB({volumeChanges: D.JS(volumeChanges.map((x) => D.JS(x))), CasaLoma: Session.IsCasaLomaActive, outsideOverride: STATE.REF.outsideOverride, activeSounds, volumeMults: STATE.REF.volumeMults, soundsToStop, soundsToPlay, soundsToCheck}, "syncSoundscape");
     };
     const startSoundscape = (isResetting = false) => {
         STATE.REF.isSoundscapeActive = true;

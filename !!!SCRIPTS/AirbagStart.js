@@ -42,7 +42,7 @@ const airLog = (logMsg, chatMsg, dbMsg) => {
 
 // HTML Styles for Reporting
 const airbagHTML = {
-    ChatBox: content => `<div style="${[
+    ChatBox: content => `<div style='${[
             "display: block;",
             "width: auto;",
             "padding: 5px 5px;",
@@ -50,14 +50,14 @@ const airbagHTML = {
             "border: 3px outset rgb(255, 0, 0);",
             "background-color: rgb(120, 0, 0);",
             "position: relative;"
-        ].join(" ")}">${content}</div>`,
-    TitleBox: content => `<div style="${[
+        ].join(" ")}'>${content}</div>`,
+    TitleBox: content => `<div style='${[
             "display: block;",
             "height: auto;",
             "width: 90%;",
             "line-height: 23px;",
             "margin: 0px 5%;",
-            "font-family: 'Voltaire';",
+            "font-family: Voltaire;",
             "font-variant: small-caps;",
             "font-size: 16px;",
             "text-align: center;",
@@ -65,8 +65,8 @@ const airbagHTML = {
             "background-color: rgb(80, 80, 80);",
             "color: rgb(255, 255, 255);",
             "position: relative;"
-        ].join(" ")}">${content}</div>`,
-    StackBox: content => `<div style="${[
+        ].join(" ")}'>${content}</div>`,
+    StackBox: content => `<div style='${[
             "display: block;",
             "width: auto;",
             "padding: 5px 0px 5px 3px;",
@@ -76,8 +76,8 @@ const airbagHTML = {
             "border: 2px solid rgb(0,0,0);",
             "line-height: 14px;",
             "position: relative;"
-        ].join(" ")}">${content}</div>`,
-    MessageBox: content => `<div style="${[
+        ].join(" ")}'>${content}</div>`,
+    MessageBox: content => `<div style='${[
             "display: block;",
             "width: auto;",
             "padding: 5px 0px 5px 3px;",
@@ -90,7 +90,7 @@ const airbagHTML = {
             "line-height: 14px;",
             "color: black;",
             "position: relative;"
-        ].join(" ")}">${content}</div>`
+        ].join(" ")}'>${content}</div>`
 }
 
 // ===========================================================================
@@ -105,14 +105,14 @@ let scriptRanges = [],
 const GetScriptLine = (traceable, markMode) => {
     const match = (traceable && traceable.stack || "").match(/apiscript.js:(\d+)/g) || ["", ""];
     if (markMode) {
-        return parseInt(match[1].split(':')[1]) || 0;
+        return parseInt(match[1].split(":")[1]) || 0;
     }
-    return parseInt(match[0].split(':')[1]) || 0;
+    return parseInt(match[0].split(":")[1]) || 0;
 };
 
 // The last range entry that was added
 let lastStart = {
-    Name: 'AirbagStart',
+    Name: "AirbagStart",
     StartLine: GetScriptLine(airIndex, false),
     StopLine: -1
 };
@@ -147,20 +147,20 @@ const printScriptRanges = () => {
         const msg = range.StopLine > 0
             ? `[${range.StartLine}, ${range.StopLine}]` 
             : `[${range.StartLine}, ???]`;
-        log('Airbag Handling ' + range.Name + ': ' + msg);
+        log("Airbag Handling " + range.Name + ": " + msg);
     });
 };
 
 // Converts a global line number to a local one
 const ConvertGlobalLineToLocal = (gline) => {
     let prevRange = {
-        Name: 'PREV_RANGE',
+        Name: "PREV_RANGE",
         StartLine: -1,
         StopLine: -1
     };
     for(var i = 0; i < scriptRanges.length; i++) {
         let curRange = scriptRanges[i];
-        log(`[${i}] Converting Global Line ${gline} to Local: searching in '${prevRange.Name}' after line ${prevRange.StartLine}`)
+        log(`[${i}] Converting Global Line ${gline} to Local: searching in "${prevRange.Name}" after line ${prevRange.StartLine}`)
         // Checking equals in both directions because of minification
         if (gline >= prevRange.StartLine && gline <= curRange.StartLine) {
             if (prevRange.StartLine === prevRange.StopLine) {
@@ -184,7 +184,7 @@ const ConvertGlobalLineToLocal = (gline) => {
                     Line: localLine
                 };
             } else {
-                //log(`Global[${gline}] => UNKNOWN SCRIPT between ${prevRange.Name} and ${curRange.Name} at 'local' line ${localLine}`);
+                //log(`Global[${gline}] => UNKNOWN SCRIPT between ${prevRange.Name} and ${curRange.Name} at "local" line ${localLine}`);
                 return {
                     Name: prevRange.Name,
                     Line: localLine
@@ -194,7 +194,7 @@ const ConvertGlobalLineToLocal = (gline) => {
         prevRange = curRange;
     }
     return {
-        Name: 'Unknown Script',
+        Name: "Unknown Script",
         Line: -1
     };
 };
@@ -245,16 +245,16 @@ const airDelayHandler = (func, params) => {
 };
 
 // Airbag codebase reboot command handler
-on('chat:message', (msg) => {
-    if (msg.type !== 'api') return;
-    if (msg.content !== '!airbag') return;
+on("chat:message", (msg) => {
+    if (msg.type !== "api") return;
+    if (msg.content !== "!airbag") return;
     codebase();
 });
 
 
 // Halt codebase()'s operations, cancel async tasks, and alert user
 const handleCrash = (obj) => {
-    log('Handling Crash...');
+    log("Handling Crash...");
     const {src, stackLines, filteredStackLines} = processStack(obj) || {src: false, stackLines: false, filteredStackLines: false}
     if (src === false)
         return false
@@ -273,11 +273,11 @@ const handleCrash = (obj) => {
         airbagHTML.StackBox(filteredStackLines.join("\n")).
             replace(/\n/gu, "<br>").
             replace(/<br>@@/gu, "").
-            replace(/<br>at\b/gu, "<br><i><span style=\"color: rgb(150, 150, 150); display: inline-block; width: auto; \"> @ </span></i>").
-            replace(/[^\s\(]+underscore\.js:(\d*?):/gu, "<span style=\"color: rgb(0,0,255);\">_</span>@@<span style=\"color: rgb(0,0,255);\">$1</span>@@").
-            replace(/[^\s\(]+firebase-node\.js:(\d*?):/gu, "<span style=\"color: rgb(0,195,0);\">firebase</span>@@<span style=\"color: rgb(0,195,0);\">$1</span>@@").
+            replace(/<br>at\b/gu, "<br><i><span style='color: rgb(150, 150, 150); display: inline-block; width: auto;'> @ </span></i>").
+            replace(/[^\s\(]+underscore\.js:(\d*?):/gu, "<span style='color: rgb(0,0,255);'>_</span>@@<span style='color: rgb(0,0,255);'>$1</span>@@").
+            replace(/[^\s\(]+firebase-node\.js:(\d*?):/gu, "<span style='color: rgb(0,195,0);'>firebase</span>@@<span style='color: rgb(0,195,0);'>$1</span>@@").
             replace(/\/home\/node\/d20-api-server\/api\.js/gu, "API").
-            replace(/(\(?)([^:\.\s]*?):(\d*?):/gu, "$1<b><span style=\"color: rgb(255,0,0)\">$2</span>:<span style=\"color: rgb(255,0,0)\">$3</span></b>:").
+            replace(/(\(?)([^:\.\s]*?):(\d*?):/gu, "$1<b><span style='color: rgb(255,0,0);'>$2</span>:<span style='color: rgb(255,0,0);'>$3</span></b>:").
             replace(/@@/gu, ":").
             replace(/relative;">\s*?<br>/gu, "relative;\">"),
         airbagHTML.TitleBox("[ REBOOT API ](!airbag)")
@@ -362,7 +362,7 @@ let codebase = (errorMsg) => {
         // Airbag registers for the events on behalf of the script calling on() if
         // it hasn't already registered to this type.
         if (!onRegisteredTypes[type]) {
-            log('Airbag is Registering on ' + type + ' for the first time.');
+            log("Airbag is Registering on " + type + " for the first time.");
             onRegisteredTypes[type] = true;
             let handler = getAirbagOnHandler(type);
             airOn(type, handler);
@@ -387,6 +387,6 @@ let codebase = (errorMsg) => {
     };
 
     try {
-        MarkStop('AirbagStart');
+        MarkStop("AirbagStart");
 /* eslint-enable */
 // */
