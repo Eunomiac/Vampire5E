@@ -77,7 +77,7 @@
         Mercurial: ["Alchemy", "Protean"]
     };
     const baneText = {
-        "0": null,
+        0: null,
         Ghoul:
             "While your master's Blood courses through your veins, you do not age, and you heal wounds twice as quickly as mortals (unless caused by fire).  You do not have a Beast and do not suffer Hunger: when required to make a Rouse Check, you instead suffer one point of Aggravated Health damage.",
         Brujah:
@@ -448,28 +448,28 @@
         [
             "Masquerade",
             "~ THE FIRST TRADITION ~",
-            '"Thou shall not reveal thy true nature to those not of the Blood.',
-            'Doing so forfeits your claim to the Blood."'
+            "\"Thou shall not reveal thy true nature to those not of the Blood.",
+            "Doing so forfeits your claim to the Blood.\""
         ],
-        ["Domain", "~ THE SECOND TRADITION ~", '"All others owe thee respect while in thy domain.', 'None may challenge thy word while in it."'],
-        ["Progeny", "~ THE THIRD TRADITION ~", '"Thou shall only Sire another with the permission of thine Eldest."'],
+        ["Domain", "~ THE SECOND TRADITION ~", "\"All others owe thee respect while in thy domain.", "None may challenge thy word while in it.\""],
+        ["Progeny", "~ THE THIRD TRADITION ~", "\"Thou shall only Sire another with the permission of thine Eldest.\""],
         [
             "Accounting",
             "~ THE FOURTH TRADITION ~",
-            '"Those thou create are thine own children.',
-            'Until thy Progeny shall be Released, their sins are thine to endure."'
+            "\"Those thou create are thine own children.",
+            "Until thy Progeny shall be Released, their sins are thine to endure.\""
         ],
         [
             "Hospitality",
             "~ THE FIFTH TRADITION ~",
-            '"When thou comest to a foreign city, thou shall present thyself to the Eldest who ruleth there.',
-            'Without the word of acceptance, thou art nothing."'
+            "\"When thou comest to a foreign city, thou shall present thyself to the Eldest who ruleth there.",
+            "Without the word of acceptance, thou art nothing.\""
         ],
         [
             "Destruction",
             "~ THE SIXTH TRADITION ~",
-            '"The right to destroy another of thy kind belongeth only to thine Eldest.',
-            'Only the Eldest among thee shall call the Blood Hunt."'
+            "\"The right to destroy another of thy kind belongeth only to thine Eldest.",
+            "Only the Eldest among thee shall call the Blood Hunt.\""
         ],
         [
             "The Prince",
@@ -541,13 +541,13 @@
         ],
         [
             "Resonance & Dyscrasias",
-            'Strong emotions can give a mortal\'s blood "resonance". Drinking strongly-resonant blood empowers the use of associated disciplines; the',
-            'strongest resonances (called "dyscrasias") confer even greater rewards. It is possible to influence resonances in mortals, cultivating',
+            "Strong emotions can give a mortal's blood \"resonance\". Drinking strongly-resonant blood empowers the use of associated disciplines; the",
+            "strongest resonances (called \"dyscrasias\") confer even greater rewards. It is possible to influence resonances in mortals, cultivating",
             "their blood to your tastes.  With a Project, you can change a resonance entirely, and even confer a dyscrasia upon the blood."
         ],
         [
             "The Blood Hunt",
-            'If the prince calls a Blood Hunt (or the more-formal "Lexitalionis") against a',
+            "If the prince calls a Blood Hunt (or the more-formal \"Lexitalionis\") against a",
             "vampire, all Kindred in the city are given permission to kill and even diablerize the convicted.",
             "It is one of the few times diablerie is sanctioned by the Camarilla."
         ],
@@ -616,9 +616,9 @@
         ],
         [
             "Clan Tzimisce: The Clan of Shapers",
-            'Clan Tzimisce ("zih-ME-see") of the Sabbat descends from an Antediluvian known only as "the Eldest", childe of Enoch the Wise, childe',
+            "Clan Tzimisce (\"zih-ME-see\") of the Sabbat descends from an Antediluvian known only as \"the Eldest\", childe of Enoch the Wise, childe",
             "of Caine the First.  Scholars, sorcerers and flesh-shapers, the Tzimisce are alien and inscrutable, proudly renouncing",
-            'their humanity to focus on transcending the limitations of the vampiric state, by following their "Path of Metamorphosis".'
+            "their humanity to focus on transcending the limitations of the vampiric state, by following their \"Path of Metamorphosis\"."
         ],
         [
             "The Banu Haqim: The Clan of the Hunt",
@@ -645,7 +645,7 @@
         ],
         [
             "Jyhad",
-            'The Jyhad is said to be the "eternal struggle" for dominance between ancient methuselahs and the surviving Antediluvians.',
+            "The Jyhad is said to be the \"eternal struggle\" for dominance between ancient methuselahs and the surviving Antediluvians.",
             "Believers claim it is a subtle and insidious conflict, one that is fought in the everynight interactions of",
             "younger vampires, most of whom are entirely unaware they are being controlled and used as pawns."
         ],
@@ -697,18 +697,18 @@
         [
             "The Blush of Life",
             "With effort, Kindred can force their hearts to beat and their cheeks to flush for a time, assuming the appearance of a living mortal.",
-            'Called "the Blush of Life", it is an imperfect disguise that grows ever more difficult to achieve as one loses touch with humanity.'
+            "Called \"the Blush of Life\", it is an imperfect disguise that grows ever more difficult to achieve as one loses touch with humanity."
         ],
         [
             "Mechanic: Memoriam",
-            'If you want to assert that you did something in the past, you can call for a "Memoriam".',
+            "If you want to assert that you did something in the past, you can call for a \"Memoriam\".",
             "During Memoriam, we play out a quick flashback scene to see how things really turned out.",
             "If you are successful, you retroactively gain the benefits of your past efforts in the present."
         ],
         [
             "The Prophecy of Gehenna",
-            '"You will know these last times by the Time of Thin Blood, which will mark vampires that cannot beget.',
-            'You will know them by the Clanless, who will come to rule."',
+            "\"You will know these last times by the Time of Thin Blood, which will mark vampires that cannot beget.",
+            "You will know them by the Clanless, who will come to rule.\"",
             "                                                    — The Book of Nod"
         ],
         [
@@ -804,7 +804,7 @@
         [
             "Clan Rivalries: Nosferatu & Toreador",
             "Throughout history, Clan Toreador has been behind a cavalcade of subtle machinations against Clan Nosferatu, ostracizing them from",
-            '"polite" Kindred society and resigning them to the slums and sewers. For most clans, these acts would be unforgivable, but the',
+            "\"polite\" Kindred society and resigning them to the slums and sewers. For most clans, these acts would be unforgivable, but the",
             "Nosferatu are subtle and indisposed to grudges. Nevertheless, the Toreador know to expect a very steep price to secure Nosferatu services."
         ],
         [
@@ -816,12 +816,12 @@
         [
             "Prestation",
             "Prestation describes the system of exchanging favors among the Kindred.  Since debts do not expire and eternity is a very long",
-            'time, prestation carries great weight among immortals of all sects.  Though favors (or "boons" as they are known) are usually tracked',
+            "time, prestation carries great weight among immortals of all sects.  Though favors (or \"boons\" as they are known) are usually tracked",
             "informally, a Kindred who renegs on such a debt is quickly identified, and risks social ostracism — or worse."
         ],
         [
             "Mechanic: Projects",
-            'Any long-term goal that you have for your character should be tracked as a "Project".  To start a Project, describe the goal you ',
+            "Any long-term goal that you have for your character should be tracked as a \"Project\".  To start a Project, describe the goal you ",
             "wish to accomplish, and we'll go from there.  Be warned: Your adversaries are running their own Projects, and may interfere with yours.",
             "There are systems for discovering Projects, interfering with Projects, and even stealing a Project and reaping its benefits."
         ],
@@ -879,7 +879,7 @@
         domaincontrolleft: ["district", "level", "details"],
         domaincontrolright: ["district", "level", "details"]
     };
-    const DOMAINCONTROLJSON = `{"Annex": ["+1 to Remorse Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"], "BayStFinancial": ["+1 Resources", "+2 Resources", "+4 Resources"], "Bennington": ["+1 Willpower", "+2 Willpower", "+3 Willpower"], "Cabbagetown": ["-1 Humanity", "-2 Humanity", "-3 Humanity"], "CentreIsland": ["+2 Haven", "+4 Haven", "+6 Haven"], "Chinatown": ["Language ●", "Language ●, ●", "Language ●, ●, ●, ●"], "CityStreets": ["+1 to Travel Rolls", "+2 to Travel Rolls", "+2 to Travel Rolls & Free Reroll"], "Corktown": ["+1 Influence (Crime)", "+2 Influence (Crime)", "+4 Influence (Crime)"], "Danforth": ["+1 to Insight Rolls", "+2 to Insight Rolls", "+2 to Insight Rolls & Free Reroll"], "DeerPark": ["Retainer (Animal) ●●", "Retainer (Animal) ●●, ●●", "Retainer (Animal) ●●, ●●, ●●●●"], "Discovery": ["+1 to Research Rolls", "+2 to Research Rolls", "+4 to Research Rolls"], "DistilleryDist": ["+1 to Acquisition Rolls", "+2 to Acquisition Rolls", "+2 to Acquisition Rolls & Free Reroll"], "DupontByTheCastle": ["+1 to Etiquette Rolls", "+2 to Etiquette Rolls", "+2 to Etiquette Rolls & Free Reroll"], "GayVillage": ["+1 Herd", "+2 Herd", "+4 Herd"], "HarbordVillage": ["+1 Lien", "+2 Lien", "+4 Lien"], "Humewood": ["Phys. Attributes: -1 XP", "Phys. Attributes: -2 XP", "Phys. Attributes: -4 XP"], "LakeOntario": ["+1 to Survival Rolls", "+2 to Survival Rolls", "+2 to Survival Rolls & Free Reroll"], "LibertyVillage": ["+1 to Resolve Rolls", "+2 to Resolve Rolls", "+3 to Resolve Rolls"], "LittleItaly": ["+1 to Hunting Rolls", "+2 to Hunting Rolls", "+1 Hunger Slaked"], "LittlePortugal": ["+1 Blood Potency", "+2 Blood Potency", "+3 Blood Potency"], "PATH": ["+1 to Streetwise Rolls", "+2 to Streetwise Rolls", "+4 to Streetwise Rolls"], "RegentPark": ["Social Attributes: -1 XP", "Social Attributes: -2 XP", "Social Attributes: -4 XP"], "Riverdale": ["Formula ●", "Formula ●, ●●", "Formula ●, ●●, ●●●"], "Rosedale": ["+1 Portillion", "+2 Portillion", "+4 Portillion"], "Sewers": ["+1 to Stealth Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"], "StJamesTown": ["+1 to Remorse Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"], "Summerhill": ["Contactt (Street) ●", "Contactt (Street) ●, ●●", "Contact (Street) ●, ●●, ●●●"], "Waterfront": ["+1 Influence (Nightlife)", "+2 Influence (Nightlife)", "+4 Influence (Nightlife)"], "WestQueenWest": ["+1 to Remorse Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"], "Wychwood": ["Ceremony ●", "Ceremony ●, ●●", "Ceremony ●, ●●, ●●●"], "YongeHospital": ["+1 Health", "+2 Health", "+3 Health"], "YongeMuseum": ["Ritual ●", "Ritual ●, ●●", "Ritual ●, ●●, ●●●"], "YongeStreet": ["Mental Attributes: -1 XP", "Mental Attributes: -2 XP", "Mental Attributes: -4 XP"], "Yorkville": ["+1 to Composure Rolls", "+2 to Composure Rolls", "+2 to Composure Rolls & Free Reroll"]}`;
+    const DOMAINCONTROLJSON = "{\"Annex\": [\"+1 to Remorse Rolls\", \"+2 to Remorse Rolls\", \"+2 to Remorse Rolls & Free Reroll\"], \"BayStFinancial\": [\"+1 Resources\", \"+2 Resources\", \"+4 Resources\"], \"Bennington\": [\"+1 Willpower\", \"+2 Willpower\", \"+3 Willpower\"], \"Cabbagetown\": [\"-1 Humanity\", \"-2 Humanity\", \"-3 Humanity\"], \"CentreIsland\": [\"+2 Haven\", \"+4 Haven\", \"+6 Haven\"], \"Chinatown\": [\"Language ●\", \"Language ●, ●\", \"Language ●, ●, ●, ●\"], \"CityStreets\": [\"+1 to Travel Rolls\", \"+2 to Travel Rolls\", \"+2 to Travel Rolls & Free Reroll\"], \"Corktown\": [\"+1 Influence (Crime)\", \"+2 Influence (Crime)\", \"+4 Influence (Crime)\"], \"Danforth\": [\"+1 to Insight Rolls\", \"+2 to Insight Rolls\", \"+2 to Insight Rolls & Free Reroll\"], \"DeerPark\": [\"Retainer (Animal) ●●\", \"Retainer (Animal) ●●, ●●\", \"Retainer (Animal) ●●, ●●, ●●●●\"], \"Discovery\": [\"+1 to Research Rolls\", \"+2 to Research Rolls\", \"+4 to Research Rolls\"], \"DistilleryDist\": [\"+1 to Acquisition Rolls\", \"+2 to Acquisition Rolls\", \"+2 to Acquisition Rolls & Free Reroll\"], \"DupontByTheCastle\": [\"+1 to Etiquette Rolls\", \"+2 to Etiquette Rolls\", \"+2 to Etiquette Rolls & Free Reroll\"], \"GayVillage\": [\"+1 Herd\", \"+2 Herd\", \"+4 Herd\"], \"HarbordVillage\": [\"+1 Lien\", \"+2 Lien\", \"+4 Lien\"], \"Humewood\": [\"Phys. Attributes: -1 XP\", \"Phys. Attributes: -2 XP\", \"Phys. Attributes: -4 XP\"], \"LakeOntario\": [\"+1 to Survival Rolls\", \"+2 to Survival Rolls\", \"+2 to Survival Rolls & Free Reroll\"], \"LibertyVillage\": [\"+1 to Resolve Rolls\", \"+2 to Resolve Rolls\", \"+3 to Resolve Rolls\"], \"LittleItaly\": [\"+1 to Hunting Rolls\", \"+2 to Hunting Rolls\", \"+1 Hunger Slaked\"], \"LittlePortugal\": [\"+1 Blood Potency\", \"+2 Blood Potency\", \"+3 Blood Potency\"], \"PATH\": [\"+1 to Streetwise Rolls\", \"+2 to Streetwise Rolls\", \"+4 to Streetwise Rolls\"], \"RegentPark\": [\"Social Attributes: -1 XP\", \"Social Attributes: -2 XP\", \"Social Attributes: -4 XP\"], \"Riverdale\": [\"Formula ●\", \"Formula ●, ●●\", \"Formula ●, ●●, ●●●\"], \"Rosedale\": [\"+1 Portillion\", \"+2 Portillion\", \"+4 Portillion\"], \"Sewers\": [\"+1 to Stealth Rolls\", \"+2 to Remorse Rolls\", \"+2 to Remorse Rolls & Free Reroll\"], \"StJamesTown\": [\"+1 to Remorse Rolls\", \"+2 to Remorse Rolls\", \"+2 to Remorse Rolls & Free Reroll\"], \"Summerhill\": [\"Contactt (Street) ●\", \"Contactt (Street) ●, ●●\", \"Contact (Street) ●, ●●, ●●●\"], \"Waterfront\": [\"+1 Influence (Nightlife)\", \"+2 Influence (Nightlife)\", \"+4 Influence (Nightlife)\"], \"WestQueenWest\": [\"+1 to Remorse Rolls\", \"+2 to Remorse Rolls\", \"+2 to Remorse Rolls & Free Reroll\"], \"Wychwood\": [\"Ceremony ●\", \"Ceremony ●, ●●\", \"Ceremony ●, ●●, ●●●\"], \"YongeHospital\": [\"+1 Health\", \"+2 Health\", \"+3 Health\"], \"YongeMuseum\": [\"Ritual ●\", \"Ritual ●, ●●\", \"Ritual ●, ●●, ●●●\"], \"YongeStreet\": [\"Mental Attributes: -1 XP\", \"Mental Attributes: -2 XP\", \"Mental Attributes: -4 XP\"], \"Yorkville\": [\"+1 to Composure Rolls\", \"+2 to Composure Rolls\", \"+2 to Composure Rolls & Free Reroll\"]}";
     const DOMAINCONTROL = JSON.parse(DOMAINCONTROLJSON);
     const XPREPREFS = {
         spentxp: [
@@ -946,11 +946,9 @@
     // #endregion
 
     // #region Derivative Stats
-    const BASICATTRS = _.map(_.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS]), v => v.toLowerCase());
-    const BASICFLAGS = _.map(_.omit(BASICATTRS, TRACKERS), v => `${v}_flag`);
-    const ALLATTRS = _.map([...ROLLFLAGS.all, ...BASICATTRS, ...BASICFLAGS, ..._.map(DISCENUMS, v => `${v}_name`)], v =>
-        v.replace(/\s/gu, "_").toLowerCase()
-    );
+    const BASICATTRS = _.map(_.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS]), (v) => v.toLowerCase());
+    const BASICFLAGS = _.map(_.omit(BASICATTRS, TRACKERS), (v) => `${v}_flag`);
+    const ALLATTRS = _.map([...ROLLFLAGS.all, ...BASICATTRS, ...BASICFLAGS, ..._.map(DISCENUMS, (v) => `${v}_name`)], (v) => v.replace(/\s/gu, "_").toLowerCase());
     const ATTRDISPNAMES = _.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS]);
     // #endregion
 
@@ -961,21 +959,23 @@
     const log = (msg, titles, isWarn, isLoud) => {
         if (isDebugging && !LOGOPTIONS.isMuted) {
             const logTitle = LOGOPTIONS.silent ? `  ([${_.compact([titles]).join(":")}])` : `[${_.compact([titles]).join(":")}]`;
-            if (isDebug && (isLoud || !LOGOPTIONS.silent)) console[isWarn ? "warn" : "log"]([logTitle, msg].join(" "));
+            if (isDebug && (isLoud || !LOGOPTIONS.silent))
+                console[isWarn ? "warn" : "log"]([logTitle, msg].join(" "));
         }
     };
-    const isBlacklisted = (attr = "") => _.filter(ATTRBLACKLIST, bannedAttr => attr.toLowerCase().includes(bannedAttr.toLowerCase())) > 0;
+    const isBlacklisted = (attr = "") => _.filter(ATTRBLACKLIST, (bannedAttr) => attr.toLowerCase().includes(bannedAttr.toLowerCase())) > 0;
     // trimAttr(attr):  Removes "_flag", "_type" or "_name" suffix from a given attribute.  Returns trimmed attribute.
-    const trimAttr = attr => (_.isString(attr) ? attr.replace(/(_flag|_type|_name)/gu, "") : JSON.stringify(attr));
+    const trimAttr = (attr) => (_.isString(attr) ? attr.replace(/(_flag|_type|_name)/gu, "") : JSON.stringify(attr));
     const isIn = (needle, haystack) => {
-        if (!_.isString(needle)) return false;
-        if (_.isString(haystack)) return haystack.search(new RegExp(needle, "iu")) > -1 && haystack;
+        if (!_.isString(needle))
+            return false;
+        if (_.isString(haystack))
+            return haystack.search(new RegExp(needle, "iu")) > -1 && haystack;
         const [ndl, hay] = [`\\b${needle}\\b`, haystack];
         const hayArray = (_.isArray(hay) && _.flatten(hay)) || (_.isObject(hay) && _.keys(hay)) || [hay];
         const index = _.findIndex(
             hayArray,
-            v =>
-                v.match(new RegExp(ndl, "iu")) !== null ||
+            (v) => v.match(new RegExp(ndl, "iu")) !== null ||
                 v.match(new RegExp(ndl.replace(/_/gu, " "), "iu")) !== null ||
                 v.match(new RegExp(ndl.replace(/\s/gu, "_"), "iu")) !== null ||
                 v.match(new RegExp(ndl.replace(/(\w)(?=[A-Z])/gu, "$1 "), "iu")) !== null ||
@@ -984,25 +984,25 @@
         );
         return index >= 0 && hayArray[index];
     };
-    const realName = (attr, ATTRS = {}) =>
-        isIn(trimAttr(attr), ATTRDISPNAMES) ||
+    const realName = (attr, ATTRS = {}) => isIn(trimAttr(attr), ATTRDISPNAMES) ||
         isIn(ATTRS[`${trimAttr(attr)}_name`], ATTRDISPNAMES) ||
         ATTRS[`${trimAttr(attr)}_name`] ||
         trimAttr(attr);
     // getTriggers (attrs, prefix, gN, sections	): Returns "on:..." event listener string for simple attributes (in attrs) or repeating sections (in sections). RETURNS string
     const getTriggers = (attrs, prefix = "", repSecs) => {
         const triggerStrings = [];
-        if (attrs) triggerStrings.push(_.map(attrs, v => `change:${prefix}${v}`).join(" "));
+        if (attrs)
+            triggerStrings.push(_.map(attrs, (v) => `change:${prefix}${v}`).join(" "));
         if (repSecs && _.isArray(repSecs))
             triggerStrings.push(
-                _.map(repSecs, v => `change:_reporder_repeating_${prefix}${v} change:repeating_${prefix}${v} remove:repeating_${prefix}${v}`).join(
+                _.map(repSecs, (v) => `change:_reporder_repeating_${prefix}${v} change:repeating_${prefix}${v} remove:repeating_${prefix}${v}`).join(
                     " "
                 )
             );
         else if (repSecs && _.isObject(repSecs))
-            _.each(_.keys(repSecs), k => {
+            _.each(_.keys(repSecs), (k) => {
                 triggerStrings.push(`change:_reporder_repeating_${prefix}${k} remove:repeating_${prefix}${k}`);
-                _.each(repSecs[k], v => {
+                _.each(repSecs[k], (v) => {
                     triggerStrings.push(`change:repeating_${prefix}${k}:${v}`);
                 });
             });
@@ -1010,7 +1010,7 @@
         return _.compact(triggerStrings).join(" ");
     };
     // parseRepAttr: Given repeating attr, returns array: [sectionName, rowID, statName]
-    const parseRepAttr = repAttr => [
+    const parseRepAttr = (repAttr) => [
         repAttr.split("_")[1],
         repAttr.split("_")[2],
         repAttr
@@ -1019,51 +1019,56 @@
             .join("_")
     ];
     // nFuncs(ATTRS): Provides lookup & conversion functions (pV, pI, pF) for standard ATTRS object.
-    const nFuncs = attrs => {
-        return [v => attrs[v], v => parseInt(attrs[v]), v => parseFloat(attrs[v])];
-    };
+    const nFuncs = (attrs) => [(v) => attrs[v], (v) => parseInt(attrs[v]), (v) => parseFloat(attrs[v])];
     // pFuncs(repStatName, ATTRS): Provides prefix and repeating row parsing functions (p, pV, pI).  RETURNS [prefix, p, pV, pI] OR [prefix, p] if no ATTRS value given.
     const pFuncs = (repStat, attrs) => {
         const repRowSplit = repStat.split("_").slice(0, 3);
         if (attrs)
             return [
                 repRowSplit.join("_"),
-                v => `${repRowSplit.join("_")}_${v || ""}`,
-                v => attrs[`${repRowSplit.join("_")}_${v}`],
-                v => parseInt(attrs[`${repRowSplit.join("_")}_${v}`] || 0)
+                (v) => `${repRowSplit.join("_")}_${v || ""}`,
+                (v) => attrs[`${repRowSplit.join("_")}_${v}`],
+                (v) => parseInt(attrs[`${repRowSplit.join("_")}_${v}`] || 0)
             ];
-        else return [repRowSplit.join("_"), v => `${repRowSplit.join("_")}_${v}`];
+        else
+            return [repRowSplit.join("_"), (v) => `${repRowSplit.join("_")}_${v}`];
     };
     const sFuncs = (sec, attrs) => {
         if (attrs)
             return [
                 `repeating_${sec}`,
-                v => `repeating_${sec}_${v}`,
-                v => attrs[`repeating_${sec}_${v}`],
-                v => parseInt(attrs[`repeating_${sec}_${v}`] || 0)
+                (v) => `repeating_${sec}_${v}`,
+                (v) => attrs[`repeating_${sec}_${v}`],
+                (v) => parseInt(attrs[`repeating_${sec}_${v}`] || 0)
             ];
-        else return [`repeating_${sec}`, v => `repeating_${sec}_${v}`];
+        else
+            return [`repeating_${sec}`, (v) => `repeating_${sec}_${v}`];
     };
-    const simpleRepAttrs = ATTRS => {
+    const simpleRepAttrs = (ATTRS) => {
         const newAttrs = {};
         if (_.isString(ATTRS)) {
             if (ATTRS.includes("repeating"))
-                if (parseRepAttr(ATTRS)[2] && parseRepAttr(ATTRS)[2].length > 1) return `♦${getRowID(ATTRS).slice(5, 10)}_${parseRepAttr(ATTRS)[2]}♦`;
-                else return `♦${parseRepAttr(ATTRS)[1]}♦`;
-            else return ATTRS;
+                if (parseRepAttr(ATTRS)[2] && parseRepAttr(ATTRS)[2].length > 1)
+                    return `♦${getRowID(ATTRS).slice(5, 10)}_${parseRepAttr(ATTRS)[2]}♦`;
+                else
+                    return `♦${parseRepAttr(ATTRS)[1]}♦`;
+            else
+                return ATTRS;
         } else {
             for (const attr of _.keys(ATTRS))
                 if (attr.includes("repeating"))
                     if (parseRepAttr(attr)[2] && parseRepAttr(attr)[2].length > 1)
                         newAttrs[`♦${getRowID(attr).slice(5, 10)}_${parseRepAttr(attr)[2]}♦`] = ATTRS[attr];
-                    else newAttrs[`♦${parseRepAttr(attr)[1]}♦`] = ATTRS[attr];
-                else newAttrs[attr] = ATTRS[attr];
+                    else
+                        newAttrs[`♦${parseRepAttr(attr)[1]}♦`] = ATTRS[attr];
+                else
+                    newAttrs[attr] = ATTRS[attr];
 
             return newAttrs;
         }
     };
-    const getRowID = stat => parseRepAttr(stat)[1];
-    const parseEInfo = eInfo => {
+    const getRowID = (stat) => parseRepAttr(stat)[1];
+    const parseEInfo = (eInfo) => {
         if (eInfo.sourceType.toUpperCase() === "API") {
             APIROWID = getRowID(eInfo.sourceAttribute);
             return `API: ${simpleRepAttrs(eInfo.sourceAttribute)} (Row ID: ${APIROWID})`;
@@ -1080,17 +1085,22 @@
         const done = (empty, ...args) => {
             const end = () => {
                 const newArgs = args ? [].concat(empty, args) : [empty];
-                if (cback) cback(...newArgs);
+                if (cback)
+                    cback(...newArgs);
             };
             end();
         };
         const each = (empty, ...args) => {
-            if (++current >= tasks.length || empty) done(empty, args);
-            else tasks[current].apply(undefined, [].concat(args, each));
+            if (++current >= tasks.length || empty)
+                done(empty, args);
+            else
+                tasks[current].apply(undefined, [].concat(args, each));
         };
 
-        if (tasks.length) tasks[0](each);
-        else done(null);
+        if (tasks.length)
+            tasks[0](each);
+        else
+            done(null);
     };
     const $set = (attrList, cback) => {
         setAttrs(attrList, {}, () => {
@@ -1098,19 +1108,20 @@
             cback(null);
         });
     };
-    const $getRepAttrs = (repInfo = {}) => cback => {
+    const $getRepAttrs = (repInfo = {}) => (cback) => {
         const [attrArray, $funcs] = [[], []];
         if (_.isString(repInfo)) {
-            _.each(_.compact(repInfo.split(",")), v => {
-                if (v.includes("repeating")) attrArray.push(v);
+            _.each(_.compact(repInfo.split(",")), (v) => {
+                if (v.includes("repeating"))
+                    attrArray.push(v);
             });
             cback(null, attrArray);
         } else {
-            _.each(_.keys(repInfo), sec => {
-                $funcs.push(cbk => {
-                    getSectionIDs(sec, idArray => {
-                        _.each(idArray, repID => {
-                            _.each(repInfo[sec], stat => {
+            _.each(_.keys(repInfo), (sec) => {
+                $funcs.push((cbk) => {
+                    getSectionIDs(sec, (idArray) => {
+                        _.each(idArray, (repID) => {
+                            _.each(repInfo[sec], (stat) => {
                                 attrArray.push(`repeating_${sec}_${repID}_${stat}`);
                             });
                         });
@@ -1124,21 +1135,25 @@
     // #endregion
 
     // #region UTILITY: Date & Time Handling
-    const parseDString = str => {
-        if (!str || !str.match) return str;
-        if (!str.match(/\D/gu)) return new Date(parseInt(str));
+    const parseDString = (str) => {
+        if (!str || !str.match)
+            return str;
+        if (!str.match(/\D/gu))
+            return new Date(parseInt(str));
         if (_.isString(str) && str !== "") {
             let [month, day, year] = _.compact(
                 str.match(
                     /([\d]+)[^\w\d]*?([\d]+)[^\w\d]*?([\d]+)|(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*[^\w\d]*?([\d]+){1,2}\w*?[^\w\d]*?(\d+)/imuy
                 )
             ).slice(1);
-            if (!month || !day || !year) return str;
+            if (!month || !day || !year)
+                return str;
             if (!["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(month.toLowerCase()) && month > 12)
                 [day, month] = [month, day];
             if (!["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(month.toLowerCase()))
                 month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"][month - 1];
-            if (`${year}`.length < 3) year = parseInt(year) + 2000;
+            if (`${year}`.length < 3)
+                year = parseInt(year) + 2000;
             day = parseInt(day);
             return new Date([
                 year,
@@ -1148,40 +1163,40 @@
         }
         return str;
     };
-    const isValidDString = str => {
+    const isValidDString = (str) => {
         const dateTest = parseDString(str);
         return Boolean(str && dateTest && Object.prototype.toString.call(dateTest) === "[object Date]" && !isNaN(dateTest));
     };
-    const formatDString = date =>
-        `${
-            ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]
-        } ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
-    const getProgress = (todaysDate, startDate, endDate) =>
-        Math.min(
-            1,
-            Math.max(
-                0,
-                (parseDString(todaysDate).getTime() - parseDString(startDate).getTime()) /
+    const formatDString = (date) => `${
+        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]
+    } ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+    const getProgress = (todaysDate, startDate, endDate) => Math.min(
+        1,
+        Math.max(
+            0,
+            (parseDString(todaysDate).getTime() - parseDString(startDate).getTime()) /
                     (parseDString(endDate).getTime() - parseDString(startDate).getTime())
-            )
-        );
+        )
+    );
 
     // #endregion
 
     // #region ACTIVATION: Sheetworker Toggle
-    on("change:sheetworkertoggle", eInfo => {
+    on("change:sheetworkertoggle", (eInfo) => {
         log("Toggling Sheetworker...");
         if (eInfo.sourceType !== "sheetworker") {
             ISOFFLINE = !ISOFFLINE;
             log(`Sheetworker: ${JSON.stringify(ISOFFLINE)}`);
-            if (ISOFFLINE) setAttrs({sheetworkertoggle: "1"});
-            else setAttrs({sheetworkertoggle: "0"});
+            if (ISOFFLINE)
+                setAttrs({sheetworkertoggle: "1"});
+            else
+                setAttrs({sheetworkertoggle: "0"});
         }
     });
     // #endregion
 
     // #region UPDATE: Clan, Discipline, Resonance, DOB/DOE, Marquee Rotating, Desires
-    const $checkRituals = () => cback => {
+    const $checkRituals = () => (cback) => {
         const attrList = {};
         const $funcs = [
             $getRepAttrs({
@@ -1190,7 +1205,7 @@
                 discRight: ["disc_name"]
             }),
             (attrArray, cBack) => {
-                getAttrs([...["disc1_name", "disc2_name", "disc3_name"], ...attrArray], ATTRS => {
+                getAttrs([...["disc1_name", "disc2_name", "disc3_name"], ...attrArray], (ATTRS) => {
                     attrList.ceremonies_toggle = _.values(ATTRS).includes("Oblivion") ? 1 : 0;
                     attrList.rituals_toggle = _.values(ATTRS).includes("Blood Sorcery") ? 1 : 0;
                     attrList.formulae_toggle = _.values(ATTRS).includes("Alchemy") ? 1 : 0;
@@ -1204,8 +1219,8 @@
     const doClans = () => {
         const attrList = {};
         const $funcs = [
-            cBack => {
-                getAttrs(["clan", "bloodline", "blood_potency", "bloodline_toggle"], ATTRS => {
+            (cBack) => {
+                getAttrs(["clan", "bloodline", "blood_potency", "bloodline_toggle"], (ATTRS) => {
                     const bloodlineActive = typeof baneText[ATTRS.clan] !== "string";
                     attrList.bloodline_toggle = bloodlineActive ? 1 : 0;
                     const bText =
@@ -1236,14 +1251,16 @@
         ];
         run$($funcs);
     };
-    const doDiscPowers = stat => {
-        if (isBlacklisted(stat)) return;
+    const doDiscPowers = (stat) => {
+        if (isBlacklisted(stat))
+            return;
         const attrList = {};
         const $funcs = [
-            cback => {
-                getAttrs([stat], ATTRS => {
+            (cback) => {
+                getAttrs([stat], (ATTRS) => {
                     log(`[DODISCS ATTRS = ${JSON.stringify(ATTRS)}]`);
-                    if (stat.endsWith("disc") || stat.startsWith("disc")) attrList[`${stat}power_toggle`] = ATTRS[stat];
+                    if (stat.endsWith("disc") || stat.startsWith("disc"))
+                        attrList[`${stat}power_toggle`] = ATTRS[stat];
                     cback(null, attrList);
                 });
             },
@@ -1255,8 +1272,8 @@
     const doResonance = () => {
         const attrList = {};
         const $funcs = [
-            cback => {
-                getAttrs(["resonance"], ATTRS => {
+            (cback) => {
+                getAttrs(["resonance"], (ATTRS) => {
                     log(`Resonance Attrs: ${JSON.stringify(ATTRS)}`);
                     attrList.res_discs = ATTRS.resonance === "None" ? " " : `(${_.compact(RESDISCS[ATTRS.resonance]).join(", ")})`;
                     cback(null, attrList);
@@ -1269,8 +1286,8 @@
     const doDOBDOE = () => {
         const attrList = {};
         const $funcs = [
-            cback => {
-                getAttrs(["char_dob", "char_doe"], ATTRS => {
+            (cback) => {
+                getAttrs(["char_dob", "char_doe"], (ATTRS) => {
                     attrList.char_dobdoe = `${ATTRS.char_dob} — ${ATTRS.char_doe}`;
                     cback(null, attrList);
                 });
@@ -1282,15 +1299,16 @@
     const doMarquee = () => {
         const attrList = {};
         const $funcs = [
-            cback => {
-                getAttrs(["marquee_tracker"], ATTRS => {
+            (cback) => {
+                getAttrs(["marquee_tracker"], (ATTRS) => {
                     let mTracker = (ATTRS.marquee_tracker || "").split(","),
                         [thisMarquee, tIndex] = [[], null];
                     if (mTracker.length < 10) {
                         const newShuffle = _.shuffle(_.difference(_.keys(marqueeTips), mTracker));
                         mTracker = _.compact([..._.shuffle(mTracker.concat(newShuffle.slice(0, 10))), ...mTracker.concat(newShuffle.slice(10))]);
                     }
-                    do tIndex = parseInt(mTracker.shift());
+                    do
+                        tIndex = parseInt(mTracker.shift());
                     while (tIndex === null);
                     thisMarquee = marqueeTips[tIndex];
                     attrList.marquee_tracker = mTracker.join(",");
@@ -1306,8 +1324,9 @@
     };
 
     on("change:clan change:bloodline", doClans);
-    on(getTriggers(DISCENUMS, "", _.keys(DISCREPREFS)), eInfo => {
-        if (!isBlacklisted(eInfo.sourceAttribute)) doDiscPowers(eInfo.sourceAttribute);
+    on(getTriggers(DISCENUMS, "", _.keys(DISCREPREFS)), (eInfo) => {
+        if (!isBlacklisted(eInfo.sourceAttribute))
+            doDiscPowers(eInfo.sourceAttribute);
     });
     on("change:resonance", doResonance);
     on("change:char_dob change:char_doe", doDOBDOE);
@@ -1315,20 +1334,20 @@
     // #endregion
 
     // #region UPDATE: Trackers (Health, Willpower, Blood Potency, Humanity)
-    const $binCheck = tracker => {
-        const p = v => `${tracker.toLowerCase()}_${v}`;
+    const $binCheck = (tracker) => {
+        const p = (v) => `${tracker.toLowerCase()}_${v}`;
         const dmgBins = [[], [], []];
         const attrList = {};
         let attrs = [];
         switch (tracker.toLowerCase()) {
             case "health":
-                attrs = [..._.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "max", "sdmg", "admg"], v => `health_${v}`), "incap"];
+                attrs = [..._.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "max", "sdmg", "admg"], (v) => `health_${v}`), "incap"];
                 break;
             case "willpower":
                 attrs = [
                     ..._.map(
                         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "max", "sdmg", "admg", "sdmg_social", "admg_social", "sdmg_socialtotal", "admg_socialtotal"],
-                        v => `willpower_${v}`
+                        (v) => `willpower_${v}`
                     ),
                     "incap"
                 ];
@@ -1339,10 +1358,10 @@
                 return false;
         }
 
-        return cback => {
-            getAttrs(attrs, ATTRS => {
-                const pV = v => ATTRS[p(v)];
-                const pI = v => parseInt(pV(v)) || 0;
+        return (cback) => {
+            getAttrs(attrs, (ATTRS) => {
+                const pV = (v) => ATTRS[p(v)];
+                const pI = (v) => parseInt(pV(v)) || 0;
                 // Activate Boxes Based on Max Stats
                 const boxList = _.pick(ATTRS, (v, k) => {
                     const num = parseInt(k.split("_")[1]);
@@ -1417,9 +1436,10 @@
 
                 // Apply Tracker Damage to Boxes
                 let binNum = 0;
-                _.each(dmgBins, bin => {
-                    _.each(bin, box => {
-                        if (parseInt(ATTRS[box]) !== binNum) attrList[box] = binNum;
+                _.each(dmgBins, (bin) => {
+                    _.each(bin, (box) => {
+                        if (parseInt(ATTRS[box]) !== binNum)
+                            attrList[box] = binNum;
                     });
                     binNum++;
                 });
@@ -1455,29 +1475,29 @@
                 break;
             case "blood potency full":
             case "blood potency": {
-                $funcs.push(cbk => {
-                    getAttrs(["clan", "blood_potency"], ATTRS => {
+                $funcs.push((cbk) => {
+                    getAttrs(["clan", "blood_potency"], (ATTRS) => {
                         _.each(bpDependants[ATTRS.blood_potency], (v, k) => {
                             attrList[k] = v;
                         });
                         attrList.bp_surgetext =
-                            attrList.bp_surge === 0
-                                ? "None"
-                                : `+${attrList.bp_surge === 1 ? `${attrList.bp_surge} Die` : `${attrList.bp_surge} Dice`}`;
+                            attrList.bp_surge === 0 ?
+                                "None" :
+                                `+${attrList.bp_surge === 1 ? `${attrList.bp_surge} Die` : `${attrList.bp_surge} Dice`}`;
                         attrList.bp_mendtext = attrList.bp_mend === 0 ? "None" : `${attrList.bp_mend} Superficial`;
                         attrList.bp_discbonustext =
-                            attrList.bp_discbonus === 0
-                                ? "None"
-                                : `+${attrList.bp_discbonus === 1 ? `${attrList.bp_discbonus} Die` : `${attrList.bp_discbonus} Dice`}${
-                                      [
-                                          ";  Never Rouse x2.",
-                                          ";  Rouse x2 for Level 1.",
-                                          ";  Rouse x2 for Levels 1 & 2.",
-                                          ";  Rouse x2 for Levels 1, 2, 3.",
-                                          ";  Rouse x2 for Levels 1 - 4.",
-                                          ";  Rouse x2 for All Levels."
-                                      ][attrList.bp_rousereroll]
-                                  }`;
+                            attrList.bp_discbonus === 0 ?
+                                "None" :
+                                `+${attrList.bp_discbonus === 1 ? `${attrList.bp_discbonus} Die` : `${attrList.bp_discbonus} Dice`}${
+                                    [
+                                        ";  Never Rouse x2.",
+                                        ";  Rouse x2 for Level 1.",
+                                        ";  Rouse x2 for Levels 1 & 2.",
+                                        ";  Rouse x2 for Levels 1, 2, 3.",
+                                        ";  Rouse x2 for Levels 1 - 4.",
+                                        ";  Rouse x2 for All Levels."
+                                    ][attrList.bp_rousereroll]
+                                }`;
                         attrList.bp_slakebag = attrList.bp_slakeanimal;
                         attrList.bp_slaketext = `Animals & bagged blood slake ${
                             {0: "no", 0.5: "half", 1: "full"}[attrList.bp_slakeanimal]
@@ -1490,11 +1510,11 @@
                 break;
             }
             case "humanity":
-                $funcs.push(cbk => {
+                $funcs.push((cbk) => {
                     if (eInfo.sourceType !== "sheetworker") {
-                        const attrArray = _.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`);
+                        const attrArray = _.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], (v) => `humanity_${v}`);
                         const humArray = new Array(10);
-                        getAttrs(["stains", "humanity", "incap"], ATTRS => {
+                        getAttrs(["stains", "humanity", "incap"], (ATTRS) => {
                             const humanity = Math.min(10, Math.max(0, parseInt(ATTRS.humanity)));
                             const stains = Math.min(10, Math.max(0, parseInt(ATTRS.stains)));
                             attrList.humanity_impair_toggle = 0;
@@ -1505,9 +1525,10 @@
                             log(`... humArray: ${JSON.stringify(humArray)}`);
                             log(`... attrArray: ${JSON.stringify(attrArray)}`);
                             log(`... attrArray[4]: ${JSON.stringify(attrArray[4])}`);
-                            for (let i = 0; i < humArray.length; i++) attrList[attrArray[i]] = humArray[i];
+                            for (let i = 0; i < humArray.length; i++)
+                                attrList[attrArray[i]] = humArray[i];
 
-                            attrList.stains = humArray.filter(v => v === 3).length;
+                            attrList.stains = humArray.filter((v) => v === 3).length;
                             log(`... attrList: ${JSON.stringify(attrList)}`);
                             // humanity, hum_details, hum_posbullets_toggle, hum_posbullets, neutralbullets, negbullets
                             log(`... humText: ${JSON.stringify(humanityText.mainText)}`);
@@ -1523,7 +1544,8 @@
 
                             if (attrList.humanity_impair_toggle === 1)
                                 attrList.incap = _.compact(_.uniq(_.union((ATTRS.incap || "").split(","), ["Humanity"]))).join(",");
-                            else attrList.incap = _.compact(_.uniq(_.difference((ATTRS.incap || "").split(","), ["Humanity"]))).join(",");
+                            else
+                                attrList.incap = _.compact(_.uniq(_.difference((ATTRS.incap || "").split(","), ["Humanity"]))).join(",");
 
                             log(`... attrList: ${JSON.stringify(attrList)}`);
 
@@ -1533,11 +1555,11 @@
                 });
                 break;
             case "stains":
-                $funcs.push(cbk => {
+                $funcs.push((cbk) => {
                     if (eInfo.sourceType !== "sheetworker") {
-                        const attrArray = _.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`);
+                        const attrArray = _.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], (v) => `humanity_${v}`);
                         const humArray = new Array(10);
-                        getAttrs(["humanity", "stains", "incap"], ATTRS => {
+                        getAttrs(["humanity", "stains", "incap"], (ATTRS) => {
                             const humanity = Math.min(10, Math.max(0, parseInt(ATTRS.humanity)));
                             const stains = Math.min(10, Math.max(0, parseInt(ATTRS.stains)));
                             attrList.humanity_impair_toggle = 0;
@@ -1553,12 +1575,14 @@
                                 humArray.fill(3, 10 - stains);
                             }
                             log(`... humArray: ${JSON.stringify(humArray)}`);
-                            for (let i = 0; i < humArray.length; i++) attrList[attrArray[i]] = humArray[i];
+                            for (let i = 0; i < humArray.length; i++)
+                                attrList[attrArray[i]] = humArray[i];
 
                             log(`... attrList: ${JSON.stringify(attrList)}`);
                             if (attrList.humanity_impair_toggle === 1)
                                 attrList.incap = _.compact(_.uniq(_.union((ATTRS.incap || "").split(","), ["Humanity"]))).join(",");
-                            else attrList.incap = _.compact(_.uniq(_.difference((ATTRS.incap || "").split(","), ["Humanity"]))).join(",");
+                            else
+                                attrList.incap = _.compact(_.uniq(_.difference((ATTRS.incap || "").split(","), ["Humanity"]))).join(",");
                             cbk(null, attrList);
                         });
                     }
@@ -1572,22 +1596,22 @@
         $funcs.push($doRolls(eInfo.sourceAttribute));
         run$($funcs, cback ? () => cback(null) : undefined);
     };
-    const $doTracker = (tracker, eInfo) => cback => doTracker(tracker, eInfo, cback);
+    const $doTracker = (tracker, eInfo) => (cback) => doTracker(tracker, eInfo, cback);
     const doTrackerMax = (tracker, eInfo) => {
         const attrList = {};
         const $funcs = [];
         switch (tracker.toLowerCase()) {
             case "health":
-                $funcs.push(cback => {
-                    getAttrs(["stamina", "bonus_health"], ATTRS => {
+                $funcs.push((cback) => {
+                    getAttrs(["stamina", "bonus_health"], (ATTRS) => {
                         attrList.health_max = Math.min(15, Math.max(1, _.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num)) + 3));
                         cback(null, attrList);
                     });
                 });
                 break;
             case "willpower":
-                $funcs.push(cback => {
-                    getAttrs(["composure", "resolve", "bonus_willpower"], ATTRS => {
+                $funcs.push((cback) => {
+                    getAttrs(["composure", "resolve", "bonus_willpower"], (ATTRS) => {
                         attrList.willpower_max = Math.min(
                             10,
                             Math.max(
@@ -1601,8 +1625,8 @@
                 break;
             case "blood potency full":
             case "blood potency":
-                $funcs.push(cback => {
-                    getAttrs(["generation", "bonus_bp", "blood_potency"], ATTRS => {
+                $funcs.push((cback) => {
+                    getAttrs(["generation", "bonus_bp", "blood_potency"], (ATTRS) => {
                         const genData =
                             (_.isNaN(parseInt(ATTRS.generation)) && {blood_potency_max: 0, blood_potency: 0}) || genDepts[parseInt(ATTRS.generation)];
                         attrList.blood_potency_max = Math.min(10, Math.max(0, genData.blood_potency_max + parseInt(ATTRS.bonus_bp)));
@@ -1624,11 +1648,11 @@
 
         run$($funcs);
     };
-    const healSocialWP = cback => {
+    const healSocialWP = (cback) => {
         const attrList = {};
         const $funcs = [
-            cbk => {
-                getAttrs(["willpower_sdmg_socialtotal", "willpower_admg_socialtotal", "willpower_social_toggle"], ATTRS => {
+            (cbk) => {
+                getAttrs(["willpower_sdmg_socialtotal", "willpower_admg_socialtotal", "willpower_social_toggle"], (ATTRS) => {
                     attrList.willpower_sdmg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_sdmg_socialtotal) || 0);
                     attrList.willpower_admg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_admg_socialtotal) || 0);
                     attrList.willpower_sdmg_socialtotal = 0;
@@ -1652,37 +1676,41 @@
     on("change:generation change:bonus_bp", () => {
         doTrackerMax("Blood Potency Full");
     });
-    on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "sdmg", "admg"], "health_"), eInfo => {
-        if (eInfo.sourceType !== "api" || ["health_sdmg", "health_admg"].includes(eInfo.sourceAttribute)) doTracker("Health", eInfo);
+    on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "sdmg", "admg"], "health_"), (eInfo) => {
+        if (eInfo.sourceType !== "api" || ["health_sdmg", "health_admg"].includes(eInfo.sourceAttribute))
+            doTracker("Health", eInfo);
     });
-    on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg", "sdmg_social", "admg_social"], "willpower_"), eInfo => {
+    on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg", "sdmg_social", "admg_social"], "willpower_"), (eInfo) => {
         if (
             eInfo.sourceType !== "api" ||
             ["willpower_sdmg", "willpower_admg", "willpower_sdmg_social", "willpower_admg_social"].includes(eInfo.sourceAttribute)
         )
             doTracker("Willpower", eInfo);
     });
-    on("change:blood_potency", eInfo => {
+    on("change:blood_potency", (eInfo) => {
         doTracker("Blood Potency", eInfo);
         doClans();
     });
-    on("change:humanity", eInfo => {
-        if (!ISOFFLINE && eInfo.sourceType !== "sheetworker") doTracker("Humanity", eInfo);
+    on("change:humanity", (eInfo) => {
+        if (!ISOFFLINE && eInfo.sourceType !== "sheetworker")
+            doTracker("Humanity", eInfo);
     });
-    on("change:stains", eInfo => {
-        if (!ISOFFLINE && eInfo.sourceType !== "sheetworker") doTracker("Stains", eInfo);
+    on("change:stains", (eInfo) => {
+        if (!ISOFFLINE && eInfo.sourceType !== "sheetworker")
+            doTracker("Stains", eInfo);
     });
-    on("change:willpower_social_toggle", eInfo => {
-        if (!ISOFFLINE && eInfo.sourceType !== "sheetworker") healSocialWP();
+    on("change:willpower_social_toggle", (eInfo) => {
+        if (!ISOFFLINE && eInfo.sourceType !== "sheetworker")
+            healSocialWP();
     });
     // #endregion
 
     // #region UPDATE: Projects
 
     // Updating project end date when date values are changed.
-    const doProjectDates = callback => {
+    const doProjectDates = (callback) => {
         const attrList = {};
-        const attrArray = _.map(["projectstartdate", "projectincnum", "projectincunit"], v => `repeating_project_${v}`);
+        const attrArray = _.map(["projectstartdate", "projectincnum", "projectincunit"], (v) => `repeating_project_${v}`);
         const funcName = "doProjectDates";
         const getEndDate = (start, incUnit, incNum) => {
             const end = new Date(start);
@@ -1704,7 +1732,7 @@
             }
         };
         log("", `████ ${funcName.toUpperCase()} CALLED ████`);
-        getAttrs([...attrArray, "date_today"], ATTRS => {
+        getAttrs([...attrArray, "date_today"], (ATTRS) => {
             // const [, p, pV, pI] = pFuncs(_.keys(ATTRS)[0], ATTRS),
             const [, p, pV, pI] = sFuncs("project", ATTRS);
             const curDate = new Date(parseDString(ATTRS.date_today));
@@ -1719,44 +1747,49 @@
             }
             if (!curDate || pI("projectincnum") === 0 || !["hours", "days", "weeks", "months", "years"].includes(pV("projectincunit")))
                 attrList[p("projectenddate")] = "";
-            else attrList[p("projectenddate")] = formatDString(getEndDate(startDate, pV("projectincunit"), pI("projectincnum")));
+            else
+                attrList[p("projectenddate")] = formatDString(getEndDate(startDate, pV("projectincunit"), pI("projectincnum")));
             setAttrs(attrList, {}, () => {
                 log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
-                if (callback) callback(null);
+                if (callback)
+                    callback(null);
             });
         });
     };
     // Updating launch roll difficulty display upon change to scope or difficulty.
-    const doProjectDiff = callback => {
+    const doProjectDiff = (callback) => {
         const attrList = {};
         const attrArray = _.map(
-            ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1, 2, 3], v => [`projectteamwork${v}`]))],
-            v => `repeating_project_${v}`
+            ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1, 2, 3], (v) => [`projectteamwork${v}`]))],
+            (v) => `repeating_project_${v}`
         );
         const funcName = "DoProjectDiff";
         log("", `████ ${funcName.toUpperCase()} CALLED ████`);
-        getAttrs(attrArray, ATTRS => {
+        getAttrs(attrArray, (ATTRS) => {
             const [, p, , pI] = sFuncs("project", ATTRS);
             let teamwork = [0, 0];
             log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
             _.each(
-                _.map([1, 2, 3], v => `projectteamwork${v}`),
-                stat => {
+                _.map([1, 2, 3], (v) => `projectteamwork${v}`),
+                (stat) => {
                     teamwork += pI(stat);
                 }
             );
             attrList[p("projectforcedstakemod")] = teamwork;
-            if (attrList[p("projectforcedstakemod")] > 0) attrList[p("projectforcedstakemodline")] = `+${attrList[p("projectforcedstakemod")]}`;
-            else attrList[p("projectforcedstakemodline")] = "";
+            if (attrList[p("projectforcedstakemod")] > 0)
+                attrList[p("projectforcedstakemodline")] = `+${attrList[p("projectforcedstakemod")]}`;
+            else
+                attrList[p("projectforcedstakemodline")] = "";
             attrList[p("projectlaunchdiff")] = pI("projectscope") + 2 + pI("projectlaunchdiffmod");
             setAttrs(attrList, {}, () => {
                 log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
-                if (callback) callback(null);
+                if (callback)
+                    callback(null);
             });
         });
     };
     // Check whether to display Launch Project button.
-    const doProjectLaunchCheck = callback => {
+    const doProjectLaunchCheck = (callback) => {
         const attrList = {};
         const attrArray = _.map(
             [
@@ -1768,13 +1801,13 @@
                 "projectlaunchresults",
                 "projectenddate"
             ],
-            v => `repeating_project_${v}`
+            (v) => `repeating_project_${v}`
         );
         const funcName = "DoProjectLaunchCheck";
         log("", `████ ${funcName.toUpperCase()} CALLED ████`);
-        getAttrs(attrArray, ATTRS => {
+        getAttrs(attrArray, (ATTRS) => {
             const [, p, pV, pI] = sFuncs("project", ATTRS);
-            const traits = _.map(["projectlaunchtrait1", "projectlaunchtrait2"], v => ({name: pV(`${v}_name`), value: pI(v)}));
+            const traits = _.map(["projectlaunchtrait1", "projectlaunchtrait2"], (v) => ({name: pV(`${v}_name`), value: pI(v)}));
             const launchTrtCheck = [];
             log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
             if (pV("projectenddate") === "") {
@@ -1788,26 +1821,31 @@
             ) {
                 attrList[p("projectlaunchroll_toggle")] = 2;
             } else {
-                _.each(traits, trt => {
-                    if (trt.name && trt.name !== "") launchTrtCheck.push(trt.value > 0);
-                    else if (trt.value > 0) launchTrtCheck.push(false);
+                _.each(traits, (trt) => {
+                    if (trt.name && trt.name !== "")
+                        launchTrtCheck.push(trt.value > 0);
+                    else if (trt.value > 0)
+                        launchTrtCheck.push(false);
                 });
-                if (launchTrtCheck.includes(true) && !launchTrtCheck.includes(false)) attrList[p("projectlaunchroll_toggle")] = 1;
-                else attrList[p("projectlaunchroll_toggle")] = 0;
+                if (launchTrtCheck.includes(true) && !launchTrtCheck.includes(false))
+                    attrList[p("projectlaunchroll_toggle")] = 1;
+                else
+                    attrList[p("projectlaunchroll_toggle")] = 0;
             }
             setAttrs(attrList, {}, () => {
                 log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
-                if (callback) callback(null);
+                if (callback)
+                    callback(null);
             });
         });
     };
     // Updates the project counter when the time changes.
-    const doProjectCounter = callback => {
+    const doProjectCounter = (callback) => {
         const [attrList, attrArray] = [{}, []];
         const funcName = "DoProjectCounter";
         log("", `████ ${funcName.toUpperCase()} CALLED ████`);
-        getSectionIDs("project", idArray => {
-            _.each(idArray, repID => {
+        getSectionIDs("project", (idArray) => {
+            _.each(idArray, (repID) => {
                 _.each(
                     [
                         "projectlaunchroll_toggle",
@@ -1821,23 +1859,23 @@
                         "projectlaunchroll_toggle",
                         "projectlaunchresults"
                     ],
-                    stat => {
+                    (stat) => {
                         attrArray.push(`repeating_project_${repID}_${stat}`);
                     }
                 );
             }); // const
-            getAttrs([...attrArray, "date_today"], ATTRS => {
-                const ids = _.uniq(_.map(attrArray, v => parseRepAttr(v)[1]));
+            getAttrs([...attrArray, "date_today"], (ATTRS) => {
+                const ids = _.uniq(_.map(attrArray, (v) => parseRepAttr(v)[1]));
                 // log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
                 // log(`Retrieved IDs: ${JSON.stringify(simpleRepAttrs(ids))}`, funcName)
-                _.each(ids, rowID => {
+                _.each(ids, (rowID) => {
                     const [, p, pV, pI] = pFuncs(`repeating_project_${rowID}`, ATTRS);
                     let counterPos = 11;
                     // log(`p-Test: p("projectinccounter) = ${JSON.stringify(p("projectinccounter"))}`, funcName)
                     const stakeRemaining =
                         Math.max(0, pI("projecttotalstake")) -
                         _.reduce(
-                            _.map([1, 2, 3], v => pI(`projectstake${v}`)),
+                            _.map([1, 2, 3], (v) => pI(`projectstake${v}`)),
                             (memo, num) => parseInt(memo) + parseInt(num)
                         );
                     if (
@@ -1849,26 +1887,30 @@
                     )
                         counterPos =
                             10 - Math.floor(10 * getProgress(new Date(parseInt(ATTRS.date_today)), pV("projectstartdate"), pV("projectenddate")));
-                    if (counterPos === 0 && pI("projectlaunchroll_toggle") !== 3) attrList[p("projectlaunchroll_toggle")] = 3;
-                    else if (counterPos !== 0 && pI("projectlaunchroll_toggle") === 3) attrList[p("projectlaunchroll_toggle")] = 2;
-                    if (counterPos !== pI("projectinccounter")) attrList[p("projectinccounter")] = counterPos;
+                    if (counterPos === 0 && pI("projectlaunchroll_toggle") !== 3)
+                        attrList[p("projectlaunchroll_toggle")] = 3;
+                    else if (counterPos !== 0 && pI("projectlaunchroll_toggle") === 3)
+                        attrList[p("projectlaunchroll_toggle")] = 2;
+                    if (counterPos !== pI("projectinccounter"))
+                        attrList[p("projectinccounter")] = counterPos;
                 });
                 setAttrs(attrList, {}, () => {
                     log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
-                    if (_.isFunction(callback)) callback(null);
+                    if (_.isFunction(callback))
+                        callback(null);
                 });
             });
         });
     };
-    const doProjectStake = callback => {
+    const doProjectStake = (callback) => {
         const attrList = {};
         const attrArray = _.map(
-            ["projectlaunchresults", ..._.map([1, 2, 3, 4, 5, 6], v => `projectstake${v}`), "projecttotalstake"],
-            v => `repeating_project_${v}`
+            ["projectlaunchresults", ..._.map([1, 2, 3, 4, 5, 6], (v) => `projectstake${v}`), "projecttotalstake"],
+            (v) => `repeating_project_${v}`
         );
         const funcName = "DoProjectStake";
         log("", `████ ${funcName.toUpperCase()} CALLED ████`);
-        getAttrs(attrArray, ATTRS => {
+        getAttrs(attrArray, (ATTRS) => {
             const [, p, pV, pI] = sFuncs("project", ATTRS);
             log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
             let stakeRemaining = 0;
@@ -1880,14 +1922,15 @@
                 stakeRemaining =
                     Math.max(0, pI("projecttotalstake")) -
                     _.reduce(
-                        _.map([1, 2, 3, 4, 5, 6], v => pI(`projectstake${v}`)),
+                        _.map([1, 2, 3, 4, 5, 6], (v) => pI(`projectstake${v}`)),
                         (memo, num) => parseInt(memo) + parseInt(num)
                     );
                 if (stakeRemaining > 0)
                     attrList[p("projectlaunchresultsmargin")] = `Stake ${pV("projecttotalstake")} Dot${
                         pI("projecttotalstake") > 1 ? "s" : ""
                     } (${stakeRemaining} to go)`;
-                else attrList[p("projectlaunchresultsmargin")] = `${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} Staked`;
+                else
+                    attrList[p("projectlaunchresultsmargin")] = `${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} Staked`;
             }
 
             setAttrs(attrList, {}, () => {
@@ -1896,189 +1939,184 @@
             });
         });
     };
-    const doProjectLaunchParams = eInfo => {
-        return callback => {
-            const attrList = {};
-            const attrArray = _.map(
+    const doProjectLaunchParams = (eInfo) => (callback) => {
+        const attrList = {};
+        const attrArray = _.map(
+            [
+                "projectlaunchdiff",
+                "projectforcedstakemod",
+                ..._.map([1, 2, 3], (v) => `projectteamwork${v}`),
+                "projectlaunchmod",
+                "projectlaunchdiffmod",
+                "projectlaunchtrait1_name",
+                "projectlaunchtrait1",
+                "projectlaunchtrait2_name",
+                "projectlaunchtrait2"
+            ],
+            (v) => `repeating_project_${v}`
+        );
+        const funcName = "DoProjectLaunchParams";
+        log("", `████ ${funcName.toUpperCase()} CALLED ████`);
+        log(`Attr Array: ${JSON.stringify(attrArray)}`, funcName);
+        getAttrs(attrArray, (ATTRS) => {
+            const [, p, pV, pI] = sFuncs("project", ATTRS);
+            const traits = _.map(["projectlaunchtrait1", "projectlaunchtrait2"], (v) => ({name: pV(`${v}_name`), value: pI(v)}));
+            let traitString = "";
+            log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
+            if ((traits[0].name !== "" && traits[0].value > 0) || (traits[1].name !== "" && traits[1].value > 0)) {
+                traitString = [_.values(traits[0]).join(":"), _.values(traits[1]).join(":")].join(",");
+                attrList[p("projectlaunchrollparams")] = `@{character_name}|${traitString}|${pI("projectlaunchdiff")}|${pI("projectlaunchmod") +
+                        pI("projectforcedstakemod")}|${pI("projectlaunchdiffmod")}|${getRowID(eInfo.sourceAttribute)}`;
+            }
+            setAttrs(attrList, {}, () => {
+                log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
+                if (callback)
+                    callback(null);
+            });
+        });
+    };
+    const doObjectiveRecord = (rowID) => (callback) => {
+        const attrList = {};
+        const attrArray = [
+            "triggertimelinesort",
+            ..._.map(["objectivedate", "projectgoal", "projectdetails", "projectscope_name"], (v) => `repeating_project_${rowID}_${v}`)
+        ];
+        const newRowID = generateRowID();
+        const funcName = "doObjectiveRecord";
+        log("", `████ ${funcName.toUpperCase()} CALLED ████`);
+        getAttrs(attrArray, (ATTRS) => {
+            const [, p, pV] = pFuncs(_.keys(ATTRS)[1], ATTRS);
+            const [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`);
+            log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
+            log(`pV("objectivedate") = ${JSON.stringify(pV("objectivedate"))}`);
+            log(`p("objectivedate") = ${JSON.stringify(p("objectivedate"))}`);
+            log(`All Attrs: ${JSON.stringify(ATTRS)}`);
+            attrList[np("tlstartdate")] = pV("objectivedate");
+            attrList[np("tlenddate")] = "";
+            attrList[np("tldetails")] = pV("projectdetails");
+            attrList[np("tlcategory")] = "OBJECTIVE";
+            attrList[np("tldotdisplay")] = "";
+            attrList[np("tltitle")] = pV("projectscope_name");
+            attrList[np("tlsummary")] = pV("projectgoal");
+            attrList[np("tlsortby")] = parseDString(pV("objectivedate")).getTime();
+            attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes";
+            setAttrs(attrList, {}, () => {
+                log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
+                if (callback)
+                    callback(null);
+            });
+        });
+    };
+    const doProjectRecord = (rowID) => (callback) => {
+        const attrList = {};
+        const attrArray = [
+            "triggertimelinesort",
+            ..._.map(
                 [
-                    "projectlaunchdiff",
-                    "projectforcedstakemod",
-                    ..._.map([1, 2, 3], v => `projectteamwork${v}`),
-                    "projectlaunchmod",
-                    "projectlaunchdiffmod",
+                    "projectstartdate",
+                    "projectenddate",
+                    "projectgoal",
+                    "projectscope",
+                    "projectdetails",
+                    "projectlaunchresults",
+                    "projectscope_name",
                     "projectlaunchtrait1_name",
                     "projectlaunchtrait1",
                     "projectlaunchtrait2_name",
                     "projectlaunchtrait2"
                 ],
-                v => `repeating_project_${v}`
-            );
-            const funcName = "DoProjectLaunchParams";
-            log("", `████ ${funcName.toUpperCase()} CALLED ████`);
-            log(`Attr Array: ${JSON.stringify(attrArray)}`, funcName);
-            getAttrs(attrArray, ATTRS => {
-                const [, p, pV, pI] = sFuncs("project", ATTRS);
-                const traits = _.map(["projectlaunchtrait1", "projectlaunchtrait2"], v => ({name: pV(`${v}_name`), value: pI(v)}));
-                let traitString = "";
-                log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
-                if ((traits[0].name !== "" && traits[0].value > 0) || (traits[1].name !== "" && traits[1].value > 0)) {
-                    traitString = [_.values(traits[0]).join(":"), _.values(traits[1]).join(":")].join(",");
-                    attrList[p("projectlaunchrollparams")] = `@{character_name}|${traitString}|${pI("projectlaunchdiff")}|${pI("projectlaunchmod") +
-                        pI("projectforcedstakemod")}|${pI("projectlaunchdiffmod")}|${getRowID(eInfo.sourceAttribute)}`;
-                }
-                setAttrs(attrList, {}, () => {
-                    log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
-                    if (callback) callback(null);
-                });
+                (v) => `repeating_project_${rowID}_${v}`
+            )
+        ];
+        const newRowID = generateRowID();
+        const funcName = "doProjectRecord";
+        log("", `████ ${funcName.toUpperCase()} CALLED ████`);
+        getAttrs(attrArray, (ATTRS) => {
+            const [, , pV, pI] = pFuncs(_.keys(ATTRS)[1], ATTRS);
+            const [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`);
+            log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
+            attrList[np("tlstartdate")] = pV("projectstartdate");
+            attrList[np("tlenddate")] = `— ${pV("projectenddate")}`;
+            attrList[np("tldetails")] = pV("projectdetails");
+            attrList[np("tlcategory")] = "PROJECT";
+            attrList[np("tldotdisplay")] = pI("projectscope") > 0 ? "●".repeat(pI("projectscope")) : "Ꝋ";
+            attrList[np("tltitle")] = pV("projectscope_name");
+            attrList[np("tlsummary")] = pV("projectgoal");
+            attrList[np("tlsortby")] = parseDString(pV("projectenddate")).getTime();
+            attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes";
+            setAttrs(attrList, {}, () => {
+                log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
+                if (callback)
+                    callback(null);
             });
-        };
+        });
     };
-    const doObjectiveRecord = rowID => {
-        return callback => {
-            const attrList = {};
-            const attrArray = [
-                "triggertimelinesort",
-                ..._.map(["objectivedate", "projectgoal", "projectdetails", "projectscope_name"], v => `repeating_project_${rowID}_${v}`)
-            ];
-            const newRowID = generateRowID();
-            const funcName = "doObjectiveRecord";
-            log("", `████ ${funcName.toUpperCase()} CALLED ████`);
-            getAttrs(attrArray, ATTRS => {
-                const [, p, pV] = pFuncs(_.keys(ATTRS)[1], ATTRS);
-                const [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`);
-                log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
-                log(`pV("objectivedate") = ${JSON.stringify(pV("objectivedate"))}`);
-                log(`p("objectivedate") = ${JSON.stringify(p("objectivedate"))}`);
-                log(`All Attrs: ${JSON.stringify(ATTRS)}`);
-                attrList[np("tlstartdate")] = pV("objectivedate");
-                attrList[np("tlenddate")] = "";
-                attrList[np("tldetails")] = pV("projectdetails");
-                attrList[np("tlcategory")] = "OBJECTIVE";
-                attrList[np("tldotdisplay")] = "";
-                attrList[np("tltitle")] = pV("projectscope_name");
-                attrList[np("tlsummary")] = pV("projectgoal");
-                attrList[np("tlsortby")] = parseDString(pV("objectivedate")).getTime();
-                attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes";
-                setAttrs(attrList, {}, () => {
-                    log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
-                    if (callback) callback(null);
-                });
+    const doMemoriamRecord = (rowID) => (callback) => {
+        const attrList = {};
+        const attrArray = [
+            "triggertimelinesort",
+            ..._.map(
+                ["memoriamdate", "projectgoal", "projectdetails", "projectscope_name", "memoriamdiff", "memoriamresult"],
+                (v) => `repeating_project_${rowID}_${v}`
+            )
+        ];
+        const newRowID = generateRowID();
+        const funcName = "doMemoriamRecord";
+        log("", `████ ${funcName.toUpperCase()} CALLED ████`);
+        getAttrs(attrArray, (ATTRS) => {
+            const [, , pV, pI] = pFuncs(_.keys(ATTRS)[1], ATTRS);
+            const [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`);
+            log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
+            attrList[np("tlstartdate")] = pV("memoriamdate");
+            attrList[np("tlenddate")] = "";
+            attrList[np("tldetails")] = pV("projectdetails");
+            attrList[np("tlcategory")] = "MEMORIAM";
+            attrList[np("tldotdisplay")] = pI("memoriamdiff") > 0 ? "●".repeat(pI("memoriamdiff")) : "Ꝋ";
+            attrList[np("tltitle")] = pV("projectscope_name");
+            attrList[np("tlsummary")] = pV("projectgoal");
+            attrList[np("tlsortby")] = parseDString(pV("memoriamdate")).getTime();
+            attrList[np("tlthirdline")] = pV("memoriamresult");
+            attrList[np("tlthirdline_toggle")] = 1;
+            attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes";
+            setAttrs(attrList, {}, () => {
+                log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
+                if (callback)
+                    callback(null);
             });
-        };
+        });
     };
-    const doProjectRecord = rowID => {
-        return callback => {
-            const attrList = {};
-            const attrArray = [
-                "triggertimelinesort",
-                ..._.map(
-                    [
-                        "projectstartdate",
-                        "projectenddate",
-                        "projectgoal",
-                        "projectscope",
-                        "projectdetails",
-                        "projectlaunchresults",
-                        "projectscope_name",
-                        "projectlaunchtrait1_name",
-                        "projectlaunchtrait1",
-                        "projectlaunchtrait2_name",
-                        "projectlaunchtrait2"
-                    ],
-                    v => `repeating_project_${rowID}_${v}`
-                )
-            ];
-            const newRowID = generateRowID();
-            const funcName = "doProjectRecord";
-            log("", `████ ${funcName.toUpperCase()} CALLED ████`);
-            getAttrs(attrArray, ATTRS => {
-                const [, , pV, pI] = pFuncs(_.keys(ATTRS)[1], ATTRS);
-                const [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`);
-                log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
-                attrList[np("tlstartdate")] = pV("projectstartdate");
-                attrList[np("tlenddate")] = `— ${pV("projectenddate")}`;
-                attrList[np("tldetails")] = pV("projectdetails");
-                attrList[np("tlcategory")] = "PROJECT";
-                attrList[np("tldotdisplay")] = pI("projectscope") > 0 ? "●".repeat(pI("projectscope")) : "Ꝋ";
-                attrList[np("tltitle")] = pV("projectscope_name");
-                attrList[np("tlsummary")] = pV("projectgoal");
-                attrList[np("tlsortby")] = parseDString(pV("projectenddate")).getTime();
-                attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes";
-                setAttrs(attrList, {}, () => {
-                    log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
-                    if (callback) callback(null);
-                });
+    const doEventRecord = (rowID) => (callback) => {
+        const attrList = {};
+        const attrArray = [
+            "triggertimelinesort",
+            ..._.map(["eventdate", "projectgoal", "projectdetails", "projectscope_name"], (v) => `repeating_project_${rowID}_${v}`)
+        ];
+        const newRowID = generateRowID();
+        const funcName = "doEventRecord";
+        log("", `████ ${funcName.toUpperCase()} CALLED ████`);
+        getAttrs(attrArray, (ATTRS) => {
+            const [, , pV] = pFuncs(_.keys(ATTRS)[1], ATTRS);
+            const [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`);
+            log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
+            attrList[np("tlstartdate")] = pV("eventdate");
+            attrList[np("tlenddate")] = "";
+            attrList[np("tldetails")] = pV("projectdetails");
+            attrList[np("tlcategory")] = "EVENT";
+            attrList[np("tldotdisplay")] = "";
+            attrList[np("tltitle")] = pV("projectscope_name");
+            attrList[np("tlsummary")] = pV("projectgoal");
+            attrList[np("tlsortby")] = parseDString(pV("eventdate")).getTime();
+            attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes";
+            setAttrs(attrList, {}, () => {
+                log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
+                if (callback)
+                    callback(null);
             });
-        };
-    };
-    const doMemoriamRecord = rowID => {
-        return callback => {
-            const attrList = {};
-            const attrArray = [
-                "triggertimelinesort",
-                ..._.map(
-                    ["memoriamdate", "projectgoal", "projectdetails", "projectscope_name", "memoriamdiff", "memoriamresult"],
-                    v => `repeating_project_${rowID}_${v}`
-                )
-            ];
-            const newRowID = generateRowID();
-            const funcName = "doMemoriamRecord";
-            log("", `████ ${funcName.toUpperCase()} CALLED ████`);
-            getAttrs(attrArray, ATTRS => {
-                const [, , pV, pI] = pFuncs(_.keys(ATTRS)[1], ATTRS);
-                const [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`);
-                log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
-                attrList[np("tlstartdate")] = pV("memoriamdate");
-                attrList[np("tlenddate")] = "";
-                attrList[np("tldetails")] = pV("projectdetails");
-                attrList[np("tlcategory")] = "MEMORIAM";
-                attrList[np("tldotdisplay")] = pI("memoriamdiff") > 0 ? "●".repeat(pI("memoriamdiff")) : "Ꝋ";
-                attrList[np("tltitle")] = pV("projectscope_name");
-                attrList[np("tlsummary")] = pV("projectgoal");
-                attrList[np("tlsortby")] = parseDString(pV("memoriamdate")).getTime();
-                attrList[np("tlthirdline")] = pV("memoriamresult");
-                attrList[np("tlthirdline_toggle")] = 1;
-                attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes";
-                setAttrs(attrList, {}, () => {
-                    log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
-                    if (callback) callback(null);
-                });
-            });
-        };
-    };
-    const doEventRecord = rowID => {
-        return callback => {
-            const attrList = {};
-            const attrArray = [
-                "triggertimelinesort",
-                ..._.map(["eventdate", "projectgoal", "projectdetails", "projectscope_name"], v => `repeating_project_${rowID}_${v}`)
-            ];
-            const newRowID = generateRowID();
-            const funcName = "doEventRecord";
-            log("", `████ ${funcName.toUpperCase()} CALLED ████`);
-            getAttrs(attrArray, ATTRS => {
-                const [, , pV] = pFuncs(_.keys(ATTRS)[1], ATTRS);
-                const [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`);
-                log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
-                attrList[np("tlstartdate")] = pV("eventdate");
-                attrList[np("tlenddate")] = "";
-                attrList[np("tldetails")] = pV("projectdetails");
-                attrList[np("tlcategory")] = "EVENT";
-                attrList[np("tldotdisplay")] = "";
-                attrList[np("tltitle")] = pV("projectscope_name");
-                attrList[np("tlsummary")] = pV("projectgoal");
-                attrList[np("tlsortby")] = parseDString(pV("eventdate")).getTime();
-                attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes";
-                setAttrs(attrList, {}, () => {
-                    log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
-                    if (callback) callback(null);
-                });
-            });
-        };
+        });
     };
 
     on("change:date_today", doProjectCounter);
-    on(getTriggers(null, "", {project: ["projectstartdate", "projectincnum", "projectincunit"]}), eInfo => {
+    on(getTriggers(null, "", {project: ["projectstartdate", "projectincnum", "projectincunit"]}), (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]");
             log(`(Dates, LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT");
@@ -2089,9 +2127,9 @@
     });
     on(
         getTriggers(null, "", {
-            project: ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1, 2, 3], v => [`projectteamwork${v}`]))]
+            project: ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1, 2, 3], (v) => [`projectteamwork${v}`]))]
         }),
-        eInfo => {
+        (eInfo) => {
             if (eInfo.sourceType !== "sheetworker") {
                 console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]");
                 log(`(Diff, LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT");
@@ -2103,7 +2141,7 @@
     );
     on(
         getTriggers(null, "", {project: ["projectlaunchtrait1", "projectlaunchtrait1_name", "projectlaunchtrait2", "projectlaunchtrait2_name"]}),
-        eInfo => {
+        (eInfo) => {
             if (eInfo.sourceType !== "sheetworker") {
                 console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]");
                 log(`(LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT");
@@ -2113,7 +2151,7 @@
             }
         }
     );
-    on(getTriggers(null, "", {project: ["projectlaunchresults"]}), eInfo => {
+    on(getTriggers(null, "", {project: ["projectlaunchresults"]}), (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]");
             log(`(Diff, LCheck, LParams, Stake, Counter) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT");
@@ -2122,7 +2160,7 @@
             });
         }
     });
-    on(getTriggers(null, "", {project: _.flatten(_.map([1, 2, 3, 4, 5, 6], v => [`projectstake${v}`, `projectstake${v}_name`]))}), eInfo => {
+    on(getTriggers(null, "", {project: _.flatten(_.map([1, 2, 3, 4, 5, 6], (v) => [`projectstake${v}`, `projectstake${v}_name`]))}), (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]");
             log(`(Stake) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT");
@@ -2133,7 +2171,7 @@
     });
     on(
         "change:repeating_project:schemetypeobj_toggle change:repeating_project:schemetypeproj_toggle change:repeating_project:schemetypemem_toggle change:repeating_project:schemetypeevent_toggle",
-        eInfo => {
+        (eInfo) => {
             log("", `████ CHANGE DETECTED: SCHEMETYPE_TOGGLE ████<br>${JSON.stringify(eInfo)}`);
             setAttrs({
                 repeating_project_schemetype: eInfo.newValue,
@@ -2146,7 +2184,7 @@
         }
     );
 
-    on("change:repeating_project:objectivedate", eInfo => {
+    on("change:repeating_project:objectivedate", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
             log("", `████ CHANGE DETECTED: OBJECTIVEDATE ████<br>${JSON.stringify(eInfo)}`);
             if (isValidDString(eInfo.newValue)) {
@@ -2159,10 +2197,10 @@
         }
     });
 
-    on("change:repeating_project:memoriamdate change:repeating_project:memoriamresult", eInfo => {
+    on("change:repeating_project:memoriamdate change:repeating_project:memoriamresult", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
             log("", "████ CHANGE DETECTED: MEMORIAMDATE/RESULT ████");
-            getAttrs(["repeating_project_memoriamresult", "repeating_project_memoriamdate"], ATTRS => {
+            getAttrs(["repeating_project_memoriamresult", "repeating_project_memoriamdate"], (ATTRS) => {
                 log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`);
                 if (
                     isValidDString(ATTRS.repeating_project_memoriamdate) &&
@@ -2178,10 +2216,10 @@
         }
     });
 
-    on("change:repeating_project:memoriamdiff", eInfo => {
+    on("change:repeating_project:memoriamdiff", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
             log("", "████ CHANGE DETECTED: MEMORIAMDIFF ████");
-            getAttrs(["repeating_project_memoriamdiff"], ATTRS => {
+            getAttrs(["repeating_project_memoriamdiff"], (ATTRS) => {
                 log(`Retrieved Attributes: ${JSON.stringify(ATTRS)}`);
                 const attrList = {
                     repeating_project_memoriamrewards:
@@ -2199,7 +2237,7 @@
         }
     });
 
-    on("change:repeating_project:eventdate", eInfo => {
+    on("change:repeating_project:eventdate", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
             log("", "████ CHANGE DETECTED: EVENTDATE ████");
             if (isValidDString(eInfo.newValue)) {
@@ -2215,25 +2253,25 @@
 
     // #region UPDATE: Timeline
 
-    on("change:repeating_project:archiveproject", eInfo => {
+    on("change:repeating_project:archiveproject", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker")
             doProjectRecord(getRowID(eInfo.sourceAttribute))(() => {
                 removeRepeatingRow(`repeating_project_${getRowID(eInfo.sourceAttribute)}`);
             });
     });
-    on("change:repeating_project:archiveobjective", eInfo => {
+    on("change:repeating_project:archiveobjective", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker")
             doObjectiveRecord(getRowID(eInfo.sourceAttribute))(() => {
                 removeRepeatingRow(`repeating_project_${getRowID(eInfo.sourceAttribute)}`);
             });
     });
-    on("change:repeating_project:archivememoriam", eInfo => {
+    on("change:repeating_project:archivememoriam", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker")
             doMemoriamRecord(getRowID(eInfo.sourceAttribute))(() => {
                 removeRepeatingRow(`repeating_project_${getRowID(eInfo.sourceAttribute)}`);
             });
     });
-    on("change:repeating_project:archiveevent", eInfo => {
+    on("change:repeating_project:archiveevent", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker")
             doEventRecord(getRowID(eInfo.sourceAttribute))(() => {
                 removeRepeatingRow(`repeating_project_${getRowID(eInfo.sourceAttribute)}`);
@@ -2243,34 +2281,34 @@
     // #endregion
 
     // #region UPDATE: Experience
-    const doEXP = callback => {
+    const doEXP = (callback) => {
         const attrList = {};
         const attrArray = {earnedxp: [], earnedxpright: [], spentxp: []};
         const funcName = "doEXP";
         log("", `████ ${funcName.toUpperCase()} CALLED ████`);
-        getSectionIDs("earnedxp", idArray => {
-            _.each(idArray, repID => {
-                _.each(["xp_award"], stat => {
+        getSectionIDs("earnedxp", (idArray) => {
+            _.each(idArray, (repID) => {
+                _.each(["xp_award"], (stat) => {
                     attrArray.earnedxp.push(`repeating_earnedxp_${repID}_${stat}`);
                 });
             });
-            getSectionIDs("earnedxpright", rightIDs => {
-                _.each(rightIDs, repID => {
-                    _.each(["xp_award"], stat => {
+            getSectionIDs("earnedxpright", (rightIDs) => {
+                _.each(rightIDs, (repID) => {
+                    _.each(["xp_award"], (stat) => {
                         attrArray.earnedxpright.push(`repeating_earnedxpright_${repID}_${stat}`);
                     });
                 });
-                getSectionIDs("spentxp", spentIDs => {
-                    _.each(spentIDs, repID => {
-                        _.each(XPREPREFS.spentxp, stat => {
+                getSectionIDs("spentxp", (spentIDs) => {
+                    _.each(spentIDs, (repID) => {
+                        _.each(XPREPREFS.spentxp, (stat) => {
                             attrArray.spentxp.push(`repeating_spentxp_${repID}_${stat}`);
                         });
                     });
-                    getAttrs([..._.flatten(_.values(attrArray)), "xp_earnedtotal"], ATTRS => {
+                    getAttrs([..._.flatten(_.values(attrArray)), "xp_earnedtotal"], (ATTRS) => {
                         const ids = {
-                            earnedxp: _.uniq(_.map(attrArray.earnedxp, v => parseRepAttr(v)[1])),
-                            earnedxpright: _.uniq(_.map(attrArray.earnedxpright, v => parseRepAttr(v)[1])),
-                            spentxp: _.uniq(_.map(attrArray.spentxp, v => parseRepAttr(v)[1]))
+                            earnedxp: _.uniq(_.map(attrArray.earnedxp, (v) => parseRepAttr(v)[1])),
+                            earnedxpright: _.uniq(_.map(attrArray.earnedxpright, (v) => parseRepAttr(v)[1])),
+                            spentxp: _.uniq(_.map(attrArray.spentxp, (v) => parseRepAttr(v)[1]))
                         };
                         log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
                         log(`Retrieved IDs (earnedxp): ${JSON.stringify(simpleRepAttrs(ids.earnedxp))}`, funcName);
@@ -2283,7 +2321,7 @@
                         ATTRS.xp_earnedtotal = attrList.xp_earnedtotal;
                         log(`Earned Total: ${JSON.stringify(attrList.xp_earnedtotal)}`, funcName);
                         let spentTotal = 0;
-                        _.each(ids.spentxp, rowID => {
+                        _.each(ids.spentxp, (rowID) => {
                             const [, p, pV, pI] = pFuncs(`repeating_spentxp_${rowID}_dummyStat`, ATTRS);
                             const cat = pV("xp_category");
                             const colRef = XPPARAMS[cat] ? XPPARAMS[cat].colToggles : null;
@@ -2299,21 +2337,27 @@
                                             if (cat === "Advantage") {
                                                 delta = (pI("xp_new") - pI("xp_initial")) * XPPARAMS[cat].cost;
                                             } else {
-                                                for (let i = pI("xp_initial"); i < pI("xp_new"); i++) delta += (i + 1) * XPPARAMS[cat].cost;
+                                                for (let i = pI("xp_initial"); i < pI("xp_new"); i++)
+                                                    delta += (i + 1) * XPPARAMS[cat].cost;
                                             }
-                                        else delta = pI("xp_new") * XPPARAMS[cat].cost;
+                                        else
+                                            delta = pI("xp_new") * XPPARAMS[cat].cost;
 
                                         attrList[p("xp_cost")] = Math.max(0, delta);
                                     } else {
                                         attrList[p("xp_cost")] = Math.max(0, XPPARAMS[cat].cost);
                                     }
-                                    if (pV("xp_spent_toggle") === "on" && attrList[p("xp_cost")] > 0) spentTotal += attrList[p("xp_cost")] || 0;
-                                    if (attrList[p("xp_cost")] === 0) attrList[p("xp_cost")] = "";
+                                    if (pV("xp_spent_toggle") === "on" && attrList[p("xp_cost")] > 0)
+                                        spentTotal += attrList[p("xp_cost")] || 0;
+                                    if (attrList[p("xp_cost")] === 0)
+                                        attrList[p("xp_cost")] = "";
                                 }
 
-                            _.each(["xp_trait_toggle", "xp_initial_toggle", "xp_new_toggle"], v => {
-                                if (colRef && colRef.includes(v) && pI(v) === 0) attrList[p(v)] = 1;
-                                else if (colRef && !colRef.includes(v) && pI(v) === 1) attrList[p(v)] = 0;
+                            _.each(["xp_trait_toggle", "xp_initial_toggle", "xp_new_toggle"], (v) => {
+                                if (colRef && colRef.includes(v) && pI(v) === 0)
+                                    attrList[p(v)] = 1;
+                                else if (colRef && !colRef.includes(v) && pI(v) === 1)
+                                    attrList[p(v)] = 0;
                             });
                             attrList[p("xp_arrow_toggle")] = Number(
                                 colRef && colRef.includes("xp_initial_toggle") && colRef.includes("xp_new_toggle")
@@ -2324,7 +2368,8 @@
                         }`;
                         setAttrs(attrList, {}, () => {
                             log(`Setting Attributes: ${JSON.stringify(attrList)}`, funcName);
-                            if (_.isFunction(callback)) callback(null);
+                            if (_.isFunction(callback))
+                                callback(null);
                         });
                     });
                 });
@@ -2333,7 +2378,7 @@
     };
 
     // change:xpsorttrigger change:_reporder_repeating_spentxp change:repeating_spentxp remove:repeating_spentxp ... plus earnedxp and earnedxpright
-    on(getTriggers(["xpsorttrigger"], "", _.keys(XPREPREFS)), eInfo => {
+    on(getTriggers(["xpsorttrigger"], "", _.keys(XPREPREFS)), (eInfo) => {
         log("", "████ doEXP Triggered ████");
         log(`TRIGGER STRING: '${getTriggers(null, "", _.keys(XPREPREFS))}'`, "doEXP");
         log(`EINFO: '${JSON.stringify(eInfo)}'`, "doEXP");
@@ -2347,14 +2392,14 @@
         const $funcs = [
             $getRepAttrs(Object.assign(DISCREPREFS, ADVREPREFS)),
             (attrs, cBack) => {
-                getAttrs(["repstats"], ATTRS => {
+                getAttrs(["repstats"], (ATTRS) => {
                     if (
                         !_.isEqual(
                             _.compact(ATTRS.repstats.split(",")),
-                            _.reject(attrs, v => v.includes("_details"))
+                            _.reject(attrs, (v) => v.includes("_details"))
                         )
                     )
-                        attrList.repstats = _.reject(attrs, v => v.includes("_details")).join(",");
+                        attrList.repstats = _.reject(attrs, (v) => v.includes("_details")).join(",");
                     cBack(null, attrList);
                 });
             },
@@ -2363,22 +2408,20 @@
         run$($funcs);
     };
 
-    const $doRolls = (targetAttr, opts = {}) => cback => doRolls(targetAttr, opts, cback);
+    const $doRolls = (targetAttr, opts = {}) => (cback) => doRolls(targetAttr, opts, cback);
     const doRolls = (targetAttr, opts = {}) => {
         const [repAttrs, attrList] = [[], {}];
         const repStatData = Object.assign({}, DISCREPREFS, ADVREPREFS);
         const repSecs = Object.keys(repStatData);
-        const getRepAttrs = repSec => {
+        const getRepAttrs = (repSec) => {
             if (repSec)
-                getSectionIDs(repSec, rowIDs => {
+                getSectionIDs(repSec, (rowIDs) => {
                     repAttrs.push(
-                        ...rowIDs.map(rowID =>
-                            _.flatten(
-                                repStatData[repSec]
-                                    .filter(repStat => !repStat.endsWith("_details"))
-                                    .map(repStat => `repeating_${repSec}_${rowID}_${repStat}`)
-                            )
-                        )
+                        ...rowIDs.map((rowID) => _.flatten(
+                            repStatData[repSec]
+                                .filter((repStat) => !repStat.endsWith("_details"))
+                                .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
+                        ))
                     );
                     log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
                             
@@ -2386,33 +2429,40 @@
                     getRepAttrs(repSecs.shift());
                 });
             else
-                getAttrs([...ALLATTRS, ..._.flatten(repAttrs)], ATTRS => {
+                getAttrs([...ALLATTRS, ..._.flatten(repAttrs)], (ATTRS) => {
                     log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
                     const [rArray, prevRArray, clearAttrs] = [[], [], {}];
                     const stat = isIn(targetAttr, ROLLFLAGS.all) || trimAttr(isIn(targetAttr, ATTRS));
-                    const checkType = attr => {
+                    const checkType = (attr) => {
                         // Returns type of stat sent in as parameter.
                         const name = realName(attr, ATTRS);
-                        if (isIn(name, _.values(ATTRIBUTES))) return "attribute";
-                        else if (isIn(name, _.values(SKILLS))) return "skill";
-                        else if (isIn("advantage", attr)) return "advantage";
-                        else if (isIn(name, DISCIPLINES)) return "discipline";
-                        else if (isIn(name, TRACKERS)) return "tracker";
+                        if (isIn(name, _.values(ATTRIBUTES)))
+                            return "attribute";
+                        else if (isIn(name, _.values(SKILLS)))
+                            return "skill";
+                        else if (isIn("advantage", attr))
+                            return "advantage";
+                        else if (isIn(name, DISCIPLINES))
+                            return "discipline";
+                        else if (isIn(name, TRACKERS))
+                            return "tracker";
 
                         log(`CkType(${JSON.stringify(attr)}): Can't Determine Type`);
 
                         return false;
                     };
-                    const checkFlag = attr => {
+                    const checkFlag = (attr) => {
                         const flagName = isIn(`${trimAttr(attr)}_flag`, ATTRS);
-                        if (flagName && parseInt(ATTRS[flagName]) === 1) return parseInt(ATTRS[flagName]);
+                        if (flagName && parseInt(ATTRS[flagName]) === 1)
+                            return parseInt(ATTRS[flagName]);
 
                         return false;
                     };
-                    const validateFlags = flagArray => {
+                    const validateFlags = (flagArray) => {
                         // Flags must be submitted in an ordered stack, with the oldest flag at the top.
                         const checkAction = (oldFlag, newFlag) => {
-                            if (checkType(newFlag) && checkType(oldFlag)) return FLAGACTIONS[checkType(newFlag)][checkType(oldFlag)];
+                            if (checkType(newFlag) && checkType(oldFlag))
+                                return FLAGACTIONS[checkType(newFlag)][checkType(oldFlag)];
 
                             return false;
                         };
@@ -2437,7 +2487,8 @@
                                 flagArray.shift();
                             /* falls through */
                             case 3:
-                                if (_.map(THREEROLLTRAITS, v => v.toLowerCase()).includes(realName(flagArray[2], ATTRS).toLowerCase())) break;
+                                if (_.map(THREEROLLTRAITS, (v) => v.toLowerCase()).includes(realName(flagArray[2], ATTRS).toLowerCase()))
+                                    break;
                                 switch (checkAction(...flagArray.slice(1))) {
                                     case "append":
                                         flagArray.shift();
@@ -2464,7 +2515,7 @@
                                 break;
                         }
                     };
-                    const checkEffects = rollArray => {
+                    const checkEffects = (rollArray) => {
                         const topDisplayStrings = [];
                         const lastTopDisplayStrings = [];
                         const effectChecks = _.compact((ATTRS.effectchecks || "").split("|"));
@@ -2472,14 +2523,17 @@
                             topDisplayStrings.push(`Blood Surge (+${bpDependants[parseInt(ATTRS.blood_potency)].bp_surge})`);
                             lastTopDisplayStrings.push("Rouse Check Is Automatic");
                         }
-                        if (parseInt(ATTRS.applyspecialty) === 1) topDisplayStrings.push("Specialty (+1)");
-                        if (parseInt(ATTRS.applyresonance) === 1) topDisplayStrings.push("Resonant (+1)");
-                        if (parseInt(ATTRS.humanity) + parseInt(ATTRS.stains) > 10) topDisplayStrings.push("Inhuman (-2)");
-                        if (parseInt(ATTRS.health) === 0 && _.any(rollArray, v => isIn(v, [...ATTRIBUTES.physical, ...SKILLS.physical])))
+                        if (parseInt(ATTRS.applyspecialty) === 1)
+                            topDisplayStrings.push("Specialty (+1)");
+                        if (parseInt(ATTRS.applyresonance) === 1)
+                            topDisplayStrings.push("Resonant (+1)");
+                        if (parseInt(ATTRS.humanity) + parseInt(ATTRS.stains) > 10)
+                            topDisplayStrings.push("Inhuman (-2)");
+                        if (parseInt(ATTRS.health) === 0 && _.any(rollArray, (v) => isIn(v, [...ATTRIBUTES.physical, ...SKILLS.physical])))
                             topDisplayStrings.push("Injured (-2)");
                         if (
                             parseInt(ATTRS.willpower) === 0 &&
-                            _.any(rollArray, v => isIn(v, [...ATTRIBUTES.social, ...SKILLS.social, ...ATTRIBUTES.mental, ...SKILLS.mental]))
+                            _.any(rollArray, (v) => isIn(v, [...ATTRIBUTES.social, ...SKILLS.social, ...ATTRIBUTES.mental, ...SKILLS.mental]))
                         )
                             topDisplayStrings.push("Exhausted (-2)");
                         for (const effectCheck of effectChecks) {
@@ -2490,15 +2544,17 @@
                                     if (
                                         !isIn(
                                             andTrait,
-                                            rollArray.map(v => realName(v, ATTRS))
+                                            rollArray.map((v) => realName(v, ATTRS))
                                         )
                                     ) {
                                         isDisplaying = false;
                                         break;
                                     }
-                            if (isDisplaying) topDisplayStrings.push(displayString);
+                            if (isDisplaying)
+                                topDisplayStrings.push(displayString);
                         }
-                        if (lastTopDisplayStrings.length) topDisplayStrings.push(...lastTopDisplayStrings);
+                        if (lastTopDisplayStrings.length)
+                            topDisplayStrings.push(...lastTopDisplayStrings);
                         return `${_.uniq(topDisplayStrings).join(", ")}.`;
                     };
                     prevRArray.push(..._.compact((ATTRS.rollarray || "").split(",")));
@@ -2508,11 +2564,12 @@
                     if (opts.reset) {
                         /* If this function was triggered when a flag was turned on, add it to
 										prevRArray so it can be turned off, too: */
-                        if (targetAttr.includes("_flag") && checkFlag(stat) === 1) prevRArray.push(stat);
-                        _.each(ROLLFLAGS.str, v => {
+                        if (targetAttr.includes("_flag") && checkFlag(stat) === 1)
+                            prevRArray.push(stat);
+                        _.each(ROLLFLAGS.str, (v) => {
                             [attrList[v], ATTRS[v]] = ["", ""];
                         });
-                        _.each([...ROLLFLAGS.num, ..._.map(prevRArray, v => `${v}_flag`)], v => {
+                        _.each([...ROLLFLAGS.num, ..._.map(prevRArray, (v) => `${v}_flag`)], (v) => {
                             [attrList[v], ATTRS[v]] = [0, 0];
                         });
                         attrList.rollpooldisplay = "Simple Roll or Check";
@@ -2523,11 +2580,13 @@
 										First, remove the selected stat from prevRArray to avoid duplicates: */
                         rArray.push(..._.without(prevRArray, stat));
                         //     ... then add it back if the flag was toggled ON:
-                        if (checkFlag(stat) === 1) rArray.push(stat);
+                        if (checkFlag(stat) === 1)
+                            rArray.push(stat);
                         // Next, reset the various roll parameters to default, which is zero EXCEPT for difficulty, which is 3:
                         for (const val of ROLLFLAGS.num) {
                             const defaultVal = val === "rolldiff" ? 3 : 0;
-                            if (parseInt(ATTRS[val]) !== defaultVal) [ATTRS[val], attrList[val]] = [defaultVal, defaultVal];
+                            if (parseInt(ATTRS[val]) !== defaultVal)
+                                [ATTRS[val], attrList[val]] = [defaultVal, defaultVal];
                         }
                     } else {
                         // Otherwise, just copy the previously selected traits over to the new rArray
@@ -2536,7 +2595,9 @@
                     log(`>>> RARRAY INITIAL: ${JSON.stringify(rArray)} (${stat} Flag Toggled)`);
 
                     // Remove duplicates from rArray, starting with the oldest:
-                    for (const [, val] of [...rArray].entries()) if (rArray.filter(v => val === v).length > 1) rArray.splice(rArray.indexOf(val), 1);
+                    for (const [, val] of [...rArray].entries())
+                        if (rArray.filter((v) => val === v).length > 1)
+                            rArray.splice(rArray.indexOf(val), 1);
 
                     // Now, validate the rArray, determining what traits to deselect (if any) based on player selection
                     validateFlags(rArray);
@@ -2546,8 +2607,9 @@
                     attrList.rollarray = rArray.join(",");
                     // Now unflag any traits that WERE flagged, but aren't anymore.
                     log(`>>> PRUNING UNFLAGGED STATS: (PREVARRAY: ${JSON.stringify(prevRArray)} vs. RARRAY: ${JSON.stringify(rArray)})`);
-                    _.each(_.without(prevRArray, ...rArray), v => {
-                        if (checkFlag(v) === 1) clearAttrs[`${v}_flag`] = 0;
+                    _.each(_.without(prevRArray, ...rArray), (v) => {
+                        if (checkFlag(v) === 1)
+                            clearAttrs[`${v}_flag`] = 0;
                     });
                     log(`... CLEARING: ${_.keys(clearAttrs)}`);
                     setAttrs(clearAttrs, {
@@ -2556,7 +2618,7 @@
 
                     // Order the rArray as ATTRIBUTES, SKILLS, then OTHERS.
                     rArray.sort((...args) => {
-                        const [v1, v2] = _.map(args, v => ["attribute", "skill", "discipline", "advantage", "tracker"].indexOf(checkType(v)));
+                        const [v1, v2] = _.map(args, (v) => ["attribute", "skill", "discipline", "advantage", "tracker"].indexOf(checkType(v)));
 
                         return v1 - v2;
                     });
@@ -2567,11 +2629,12 @@
                             (parseInt(ATTRS.rollmod) > 0 && ` of ${Math.abs(parseInt(ATTRS.rollmod))} Dice`) ||
                             ""}`;
                     } else {
-                        attrList.rollpooldisplay = rArray.map(v => realName(v, ATTRS)).join(" + ");
+                        attrList.rollpooldisplay = rArray.map((v) => realName(v, ATTRS)).join(" + ");
                         if (parseInt(ATTRS.rollmod) !== 0)
                             attrList.rollpooldisplay += ` ${parseInt(ATTRS.rollmod) < 0 ? "-" : "+"} ${Math.abs(parseInt(ATTRS.rollmod))}`;
                     }
-                    if (parseInt(ATTRS.rolldiff) !== 0) attrList.rollpooldisplay += ` vs. ${parseInt(ATTRS.rolldiff)}`;
+                    if (parseInt(ATTRS.rolldiff) !== 0)
+                        attrList.rollpooldisplay += ` vs. ${parseInt(ATTRS.rolldiff)}`;
                     log(`>>> ROLL DISPLAY: ${JSON.stringify(attrList.rollpooldisplay)}`);
 
                     // Clear any result messages from the bottom display:
@@ -2590,10 +2653,11 @@
         getRepAttrs(repSecs.shift());
     };
 
-    on(`sheet:opened ${getTriggers(null, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)])}`, eInfo => {
-        if (eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute)) doRollRepRefs();
+    on(`sheet:opened ${getTriggers(null, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)])}`, (eInfo) => {
+        if (eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute))
+            doRollRepRefs();
     });
-    on(getTriggers(ALLATTRS, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)]), eInfo => {
+    on(getTriggers(ALLATTRS, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)]), (eInfo) => {
         if (!ISOFFLINE) {
             log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ STAT ROLLER TRIGGERED @@@`);
             if (eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute))
@@ -2609,17 +2673,15 @@
         const [repAttrs, attrList] = [[], {}];
         const repStatData = Object.assign({}, DOMCONREPREFS);
         const repSecs = Object.keys(repStatData);
-        const getRepAttrs = repSec => {
+        const getRepAttrs = (repSec) => {
             if (repSec)
-                getSectionIDs(repSec, rowIDs => {
+                getSectionIDs(repSec, (rowIDs) => {
                     repAttrs.push(
-                        ...rowIDs.map(rowID =>
-                            _.flatten(
-                                repStatData[repSec]
-                                    .filter(repStat => !repStat.endsWith("_details"))
-                                    .map(repStat => `repeating_${repSec}_${rowID}_${repStat}`)
-                            )
-                        )
+                        ...rowIDs.map((rowID) => _.flatten(
+                            repStatData[repSec]
+                                .filter((repStat) => !repStat.endsWith("_details"))
+                                .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
+                        ))
                     );
                     log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
                     
@@ -2627,7 +2689,7 @@
                     getRepAttrs(repSecs.shift());
                 });
             else
-                getAttrs(["domaincontrolbenefits", ..._.flatten(repAttrs)], ATTRS => {
+                getAttrs(["domaincontrolbenefits", ..._.flatten(repAttrs)], (ATTRS) => {
                     log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
                     const filteredAttrs = _.pick(ATTRS, (v, k) => k.includes("level"));
                     const domainBenefits = [];
@@ -2635,10 +2697,13 @@
                         const [, p, pV, pI] = pFuncs(levelTrait, ATTRS);
                         const district = pV("district");
                         const level = pI("level") - 1;
-                        if (district && level <= 3) domainBenefits.push(DOMAINCONTROL[district][level] || false);
+                        if (district && level <= 3)
+                            domainBenefits.push(DOMAINCONTROL[district][level] || false);
                     }
-                    if (_.compact(domainBenefits).length) attrList.domaincontrolbenefits = _.compact(domainBenefits).join(", ");
-                    else attrList.domaincontrolbenefits = " ";
+                    if (_.compact(domainBenefits).length)
+                        attrList.domaincontrolbenefits = _.compact(domainBenefits).join(", ");
+                    else
+                        attrList.domaincontrolbenefits = " ";
                     setAttrs(attrList);
                 });
         };
@@ -2648,17 +2713,15 @@
         const [repAttrs, attrList] = [[], {}];
         const repStatData = Object.assign({}, DISCREPREFS, ADVREPREFS, DOMCONREPREFS);
         const repSecs = Object.keys(repStatData);
-        const getRepAttrs = repSec => {
+        const getRepAttrs = (repSec) => {
             if (repSec)
-                getSectionIDs(repSec, rowIDs => {
+                getSectionIDs(repSec, (rowIDs) => {
                     repAttrs.push(
-                        ...rowIDs.map(rowID =>
-                            _.flatten(
-                                repStatData[repSec]
-                                    .filter(repStat => !repStat.endsWith("_details"))
-                                    .map(repStat => `repeating_${repSec}_${rowID}_${repStat}`)
-                            )
-                        )
+                        ...rowIDs.map((rowID) => _.flatten(
+                            repStatData[repSec]
+                                .filter((repStat) => !repStat.endsWith("_details"))
+                                .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
+                        ))
                     );
                     log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
                             
@@ -2666,9 +2729,10 @@
                     getRepAttrs(repSecs.shift());
                 });
             else
-                getAttrs(["stateffects", "prevstateffects", ...ALLATTRS, ..._.flatten(repAttrs)], ATTRS => {
+                getAttrs(["stateffects", "prevstateffects", ...ALLATTRS, ..._.flatten(repAttrs)], (ATTRS) => {
                     log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
-                    if (ATTRS.stateffects === ATTRS.prevstateffects) return;
+                    if (ATTRS.stateffects === ATTRS.prevstateffects)
+                        return;
                     const [pV, pI, pF] = nFuncs(ATTRS);
                     const statEffects = pV("stateffects").split("|");
                     const prevStatEffects = pV("prevstateffects").split("|");
@@ -2734,7 +2798,8 @@
                                 reportLines.push(`... traitAdditions: ${JSON.stringify(traitAdditions)}`);
                             }
                             const msgLocKey = `${msgLoc}_stateffect`;
-                            if (msgLocKey in messageLines) messageLines[msgLocKey].push(message);
+                            if (msgLocKey in messageLines)
+                                messageLines[msgLocKey].push(message);
                         }
                         reportLines.push(`... Message Lines: ${JSON.stringify(messageLines, null, 4)}`);
                         reportLines.push(" ");
@@ -2751,7 +2816,8 @@
                         ATTRS[trait] = attrList[trait];
                         reportLines.push(`... Added ${trait}: ${attrList[trait]}`);
                     }
-                    for (const [loc, lines] of Object.entries(messageLines)) attrList[loc] = lines.join(", ");
+                    for (const [loc, lines] of Object.entries(messageLines))
+                        attrList[loc] = lines.join(", ");
                     attrList.prevstateffects = ATTRS.stateffects;
                     reportLines.push(" ");
                     reportLines.push("********** ALL DONE! ***************");
@@ -2762,10 +2828,10 @@
         };
         getRepAttrs(repSecs.shift());
     };
-    on("sheet:opened change:stateffects", eInfo => {
+    on("sheet:opened change:stateffects", (eInfo) => {
         doStatEffects();
     });
-    on(getTriggers(["stateffects"], "", [..._.keys(DOMCONREPREFS)]), eInfo => {
+    on(getTriggers(["stateffects"], "", [..._.keys(DOMCONREPREFS)]), (eInfo) => {
         doDomainControl();
     });
     // #endregion
@@ -2778,7 +2844,7 @@
     // #endregion
 
     // #region On-Sheet-Opened Triggers (To Be Done Every Time Sheet Is Opened)
-    on("sheet:opened", eInfo => {
+    on("sheet:opened", (eInfo) => {
         doTracker("Health", eInfo);
         doTracker("Willpower", eInfo);
         log(`TRIGGER STRING: '${getTriggers(null, "", _.keys(XPREPREFS))}'`, "doEXP");

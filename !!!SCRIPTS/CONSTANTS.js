@@ -759,6 +759,467 @@ const C = (() => {
             paraEnd: (content) => D.JSH(`${content}</div>`)
         }
     };
+    const HTMLSTYLES = {
+        // Block ==> Title, Header, ButtonLine ==> ButtonHeader, Button(label, API command, options = {})
+        Block: (options = {}) => {
+            const params = {
+                color: options.color || COLORS.crimson,
+                bgGradient: options.bgGradient || null,
+                bgColor: options.bgColor || null,
+                bgImage: options.bgImage || BGIMAGES.blackMarble,
+                border: options.border || `4px outset ${options.color || COLORS.crimson}`,
+                margin: options.margin || "-35px 0px -7px -42px",
+                width: options.width || `${CHATWIDTH}px`,
+                padding: options.padding || "0px",
+                textAlign: options.textAlign || "center"
+            };
+            return `
+            .userscript-Block {
+                display: block;
+                margin: ${params.margin};
+                height: auto;
+                min-height: 25px;
+                min-width: ${CHATWIDTH}px;
+                font-size: 0px;
+                width: ${params.width};
+                ${(params.bgGradient && `background-image: linear-gradient(${params.bgGradient})`) ||
+                    (params.bgColor && `background-color: ${params.bgColor}`) ||
+                    `background: url('${params.bgImage}')`};
+                text-align: ${params.textAlign};
+                border: ${params.border};
+                padding: ${params.padding};
+                position: relative;
+            }`;
+        },
+        SubBlock: (options = {}) => {
+            const params = {
+                width: options.width || "100%",
+                border: options.border || "none"
+            };
+            return `
+            .SubBlock {
+                display: inline-block;
+                width: ${params.width};
+                font-size: 0px;
+                border: ${params.border};
+            }`;
+        },
+        Title: (options = {}) => {
+            const params = {
+                height: options.height || "45px",
+                color: options.color || COLORS.brightred,
+                margin: options.margin || "0px",
+                fontFamily: options.fontFamily || "sexsmith", // "'Pathway Gothic One', sexsmith",
+                fontSize: options.fontSize || "32px",
+                lineHeight: options.lineHeight || "45px",
+                bgColor: options.bgColor || "transparent",
+                border: options.border || "none"
+            };
+            return `
+            .userscript-Title {
+                display: block;
+                margin: ${params.margin};
+                font-weight: bold;
+                color: ${params.color};
+                background-color: ${params.bgColor};
+                text-align: center;
+                width: auto;
+                font-family: ${params.fontFamily};
+                font-size: ${params.fontSize};
+                height: ${params.height};
+                line-height: ${params.lineHeight};
+                border: ${params.border};
+            }`;
+        },
+        Header: (options = {}) => {
+            const params = {
+                height: options.height || "20px",
+                width: options.width || "auto",
+                color: options.color || COLORS.black,
+                bgColor: options.bgColor || COLORS.brightred,
+                margin: options.margin || "0px",
+                padding: options.padding || "0px",
+                fontSize: options.fontSize || "16px",
+                fontFamily: options.fontFamily || "Voltaire",
+                fontVariant: options.fontVariant || "none",
+                fontWeight: options.fontWeight || "bold",
+                border: options.border || `1px solid ${options.color || COLORS.brightred}`,
+                textShadow: options.textShadow || "none",
+                boxShadow: options.boxShadow || "none",
+                textAlign: options.textAlign || "center",
+                lineHeight: options.lineHeight || options.height || "20px"
+            };
+            return `
+            .userscript-Header {
+                display: block;
+                height: ${params.height};
+                line-height: ${params.lineHeight}; 
+                width: ${params.width};
+                margin: ${params.margin};
+                padding: ${params.padding};
+                box-sizing: border-box;
+                text-align: ${params.textAlign};
+                text-align-last: ${params.textAlign};
+                color: ${params.color};
+                font-family: ${params.fontFamily};
+                font-weight: ${params.fontWeight};
+                font-variant: ${params.fontVariant};
+                font-size: ${params.fontSize};
+                background-color: ${params.bgColor};
+                border: ${params.border};
+                text-shadow: ${params.textShadow};
+                box-shadow: ${params.boxShadow};
+            }`;
+        },
+        SubHeader: (options = {}) => {
+            const params = {
+                height: options.height || "20px",
+                width: options.width || "auto",
+                color: options.color || COLORS.brightred,
+                bgColor: options.bgColor || COLORS.fadedred,
+                margin: options.margin || "0px 0px 2px 0px",
+                padding: options.padding || "0px",
+                fontSize: options.fontSize || "14px",
+                fontFamily: options.fontFamily || "Voltaire",
+                fontVariant: options.fontVariant || "none",
+                fontWeight: options.fontWeight || "bold",
+                border: options.border || "none; border-top: 1px solid red; border-bottom: 1px solid red;",
+                textShadow:
+                    options.textShadow ||
+                    "-1px -1px 2px #000, -1px -1px 2px #000, -1px -1px 2px #000, 1px 1px 2px #000, 1px 1px 2px #000, 1px 1px 2px #000",
+                boxShadow: options.boxShadow || "none",
+                textAlign: options.textAlign || "center",
+                lineHeight: options.lineHeight || options.height || "20px"
+            };
+            return `
+            .userscript-SubHeader {
+                display: block;
+                height: ${params.height};
+                line-height: ${params.lineHeight}; 
+                width: ${params.width};
+                margin: ${params.margin};
+                padding: ${params.padding};
+                box-sizing: border-box;
+                text-align: ${params.textAlign};
+                text-align-last: ${params.textAlign};
+                color: ${params.color};
+                font-family: ${params.fontFamily};
+                font-weight: ${params.fontWeight};
+                font-variant: ${params.fontVariant};
+                font-size: ${params.fontSize};
+                background-color: ${params.bgColor};
+                border: ${params.border};
+                text-shadow: ${params.textShadow};
+                box-shadow: ${params.boxShadow};
+            }`;
+        },
+        Body: (options = {}) => {
+            const params = {
+                color: options.color || COLORS.brightred,
+                width: options.width || "auto",
+                height: options.height || "auto",
+                bgColor: options.bgColor || "none",
+                margin: options.margin || "4px 0px 4px 0px",
+                padding: options.padding || "0px",
+                fontFamily: options.fontFamily || "sexsmith",
+                fontSize: options.fontSize || "18px",
+                fontWeight: options.fontWeight || "bold",
+                textAlign: options.textAlign || "center",
+                textShadow: options.textShadow ||
+                    `0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}`,
+                border: options.border || "none",
+                boxShadow: options.boxShadow || "none",
+                lineHeight: options.lineHeight || options.fontSize || "22px"
+            };
+            return `
+            .userscript-Body {
+                display: block; 
+                height: ${params.height};
+                width: ${params.width}; 
+                line-height: ${params.lineHeight};
+                margin: ${params.margin};
+                padding: ${params.padding};
+                color: ${params.color};
+                background-color: ${params.bgColor};
+                font-size: ${params.fontSize};
+                text-align: ${params.textAlign};
+                font-family: ${params.fontFamily};
+                font-weight: ${params.fontWeight};
+                text-shadow: ${params.textShadow};
+                box-shadow: ${params.boxShadow};
+                border: ${params.border};
+            }`;
+        },
+        ClearBody: (content, options = {}) => {
+            const params = Object.assign(
+                {
+                    bgColor: "none",
+                    margin: "4px 0px 4px 2px",
+                    fontFamily: "Voltaire",
+                    fontSize: "16px",
+                    lineHeight: "18px",
+                    textAlign: "left",
+                    textShadow: "none"
+                },
+                options
+            );
+            return C.HTML.Body(content, params);
+        },
+        Column: (content, options = {}) => {
+            const params = {
+                height: options.height || "100%",
+                width: options.width || `${Math.floor(CHATWIDTH / 2)}px`,
+                margin: options.margin || "0px",
+                vertAlign: options.vertAlign || "top"
+            };
+            if (D.WatchList.includes("HTML-Column") && !options.isSilent)
+                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "Column", content: {options, params, content}})}`);
+            return D.JSH(`<div style="
+                    display: inline-block;
+                    height: ${params.height};
+                    width: ${params.width};
+                    margin: ${params.margin};
+                    font-size: 0px;
+                    vertical-align: ${params.vertAlign};
+                ">${_.flatten([content]).join("")}</div>`);
+        },
+        ButtonLine: (content, options = {}) => {
+            const params = Object.assign({height: "14px", width: "100%", margin: "5px 0px 5px 0px", textAlign: "center"}, options);
+            if (D.WatchList.includes("HTML-ButtonLine") && !options.isSilent)
+                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "ButtonLine", content: {options, params, content: D.JSC(content)}})}`);
+            content = _.flatten([content]).map((x) => x.replace(/a\s*style.*?height[^;]*;/gu, `a style="height: ${params.height};`));
+            if (D.WatchList.includes("HTML-ButtonLine") && !options.isSilent)
+                sendChat(
+                    "HTML",
+                    `/w Storyteller ${C.HTML.CodeBlock({
+                        header: "ButtonLine POST PROCESSING",
+                        content: {options, params, content: D.JSC(content)}
+                    })}`
+                );
+            return D.JSH(`<span style="  
+                    height: ${params.height};
+                    width: ${params.width};             
+                    display: block;
+                    text-align: ${params.textAlign};
+                    margin: ${params.margin};
+                ">${content.join("")}</span>`);
+        },
+        ButtonSubheader: (content, options = {}) => {
+            const params = Object.assign(
+                {
+                    height: "12px",
+                    width: `${Math.floor(CHATWIDTH * 0.15)}px`,
+                    fontFamily: "Voltaire",
+                    fontSize: "10px",
+                    bgColor: "transparent",
+                    color: COLORS.white,
+                    margin: "0px 2px 0px 0px",
+                    textAlign: "left",
+                    textIndent: "3px",
+                    padding: "0px 0px 0px 0px",
+                    lineHeight: "14px"
+                },
+                options
+            );
+            if (D.WatchList.includes("HTML-ButtonSubheader") && !options.isSilent)
+                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "ButtonSubHeader", content: {options, params, content}})}`);
+            return D.JSH(`<span style="
+                    height: ${params.height};
+                    width: ${params.width};                 
+                    display: inline-block;
+                    margin: ${params.margin};
+                    font-size: ${params.fontSize};
+                    font-family: ${params.fontFamily};
+                    line-height: ${params.lineHeight};
+                    color: ${params.color};
+                    overflow: hidden;
+                    background-color: ${params.bgColor};
+                    text-indent: ${params.textIndent};
+                    text-align: ${params.textAlign};
+                    text-align-last: ${params.textAlign};
+                    padding: ${params.padding};
+                ">${_.flatten([content]).join("")}</span>`);
+        },
+        Button: (name, command, options = {}) => {
+            const params = Object.assign(
+                {
+                    height: "100%",
+                    lineHeight: "16px",
+                    width: `${Math.floor(CHATWIDTH * 0.25) - 2 - 2 - 6}px`,
+                    fontFamily: "Voltaire",
+                    margin: "0px 2px 0px 0px",
+                    padding: "0px 0px 0px 0px",
+                    fontSize: "10px",
+                    bgColor: COLORS.brightred,
+                    color: COLORS.white,
+                    border: "1px solid white",
+                    fontWeight: "normal",
+                    textShadow: "none",
+                    buttonPadding: "3px",
+                    buttonTransform: "uppercase",
+                    boxShadow: "none"
+                },
+                options
+            );
+            if (D.WatchList.includes("HTML-Button") && !options.isSilent)
+                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "Button", content: {options, params, content: {name, command}}})}`);
+            return D.JSH(`<span style="   
+                    height: ${params.height};
+                    width: ${params.width};                 
+                    display: inline-block;
+                    margin: ${params.margin};
+                    padding: ${params.padding};
+                    border: ${params.border};
+                    font-size: 0px;
+                    overflow: hidden;
+                "><a style="
+                    height: 100%;
+                    width: 100%;
+                    display: inline-block;
+                    border: none;
+                    color: ${params.color};
+                    background-color: ${params.bgColor};
+                    font-size: ${params.fontSize};
+                    line-height: ${params.lineHeight};
+                    font-family: ${params.fontFamily};
+                    text-transform: ${params.buttonTransform};
+                    text-align: center;
+                    padding: 0px;
+                    font-weight: ${params.fontWeight};
+                    text-shadow: ${params.textShadow};
+                    box-shadow: ${params.boxShadow};
+                " href="${command}">${name}</a></span>`);
+        },
+        ButtonSpacer: (width, isSilent = false) => {
+            if (D.WatchList.includes("HTML-ButtonSpacer") && !isSilent)
+                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "ButtonSpacer", content: {width}})}`);
+            return D.JSH(`<span style="   
+                    height: 100%;
+                    width: ${width || `${Math.floor(CHATWIDTH * 0.05)}px`};                 
+                    display: inline-block;
+                    margin: 0px;
+                    padding: 0px;
+                    font-size: 0px;
+                "></span>`);
+        },
+        TrackerLine: (numClear, numSuper, numAgg, options = {}) => {
+            const params = {
+                height: options.height || "32px",
+                lineHeight: options.lineHeight || options.height || "32px",
+                margin: options.margin || "-8px 0px 7px 0px"
+            };
+            const boxes = {
+                clear: `<span style="
+                                    margin-right: 2px;
+                                    width: 18px;
+                                    text-align: center;
+                                    height: 24px;
+                                    vertical-align: middle;
+                                    color: ${C.COLORS.white};
+                                    display: inline-block;
+                                    font-size: 32px;
+                                    font-family: 'Arial';
+                                    text-shadow: none;
+                                ">■</span>`,
+                superficial: `<span style="
+                                    margin-right: 2px;
+                                    width: 18px;
+                                    text-align: center;
+                                    height: 24px;
+                                    vertical-align: middle;
+                                    color: ${C.COLORS.brightgrey};
+                                    display: inline-block;
+                                    font-size: 32px;
+                                    font-family: 'Arial';
+                                    text-shadow: none;
+                                ">■</span><span style="
+                                    margin-right: 4px;
+                                    width: 18px;
+                                    text-align: center;
+                                    height: 24px;
+                                    vertical-align: middle;
+                                    color: ${C.COLORS.darkgrey};
+                                    display: inline-block;
+                                    margin-left: -22px;
+                                    font-size: 60px;
+                                    font-family: 'Arial';
+                                    text-shadow: none;
+                                    margin-top: -14px;
+                                "><span style="
+                                    display: inline-block;
+                                    overflow: hidden;
+                                    height: 18px;
+                                    padding-bottom: 5px;
+                                    width: 23px;
+                                    font-size: 44px;
+                                    line-height: 10px;    
+                                ">⸝</span></span>`,
+                aggravated: `<span style="
+                                    margin-right: 2px;
+                                    width: 18px;
+                                    text-align: center;
+                                    height: 24px;
+                                    vertical-align: middle;
+                                    color: ${C.COLORS.darkred};
+                                    display: inline-block;
+                                    font-size: 32px;
+                                    font-family: 'Arial';
+                                    text-shadow: 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black;
+                                ">■</span><span style="
+                                    margin-right: 2px;
+                                    width: 18px;
+                                    text-align: center;
+                                    height: 24px;
+                                    vertical-align: middle;
+                                    color: ${C.COLORS.brightred};
+                                    display: inline-block;
+                                    margin-left: -20px;
+                                    font-size: 34px;
+                                    font-family: 'Arial';
+                                    margin-bottom: -8px;
+                                    text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black;
+                                ">×</span>`
+            };
+            if (D.WatchList.includes("HTML-TrackerLine") && !options.isSilent)
+                sendChat(
+                    "HTML",
+                    `/w Storyteller ${C.HTML.CodeBlock({header: "TrackerLine", content: {numClear, numSuper, numAgg, options, boxes}})}`
+                );
+            return D.JSH(`<div style="
+                            display: block;
+                            width: 100%;
+                            height: ${params.height};
+                            line-height: ${params.lineHeight || params.height};
+                            text-align: center;
+                            text-align-last: center;
+                            font-weight: bold;
+                            margin: ${params.margin};"> ${boxes.aggravated.repeat(numAgg) +
+                boxes.superficial.repeat(numSuper) +
+                boxes.clear.repeat(numClear)}</div>`);
+        },
+        CodeBlock: (content, options = {}) => {
+            /* if (VAL({list: content}))
+                    content = D.KeyMapObj(content, undefined, v => D.JS(v).replace(/<br\s*\/?>/gu, "@@BR@@").replace(/</gu, "&lt;").replace(/>/gu, "&gt;").replace(/@@BR@@/gu, "<br>")) */
+            const params = {
+                fontSize: options.fontSize || "9px"
+            };
+            return C.HTML.Block(
+                [
+                    "header" in content ? C.HTML.Header(content.header, {isSilent: true}) : null,
+                    D.JSH(`<pre style="
+                            display: block;
+                            font-size: ${params.fontSize};
+                            line-height: 1.2em;
+                            padding: 0px;
+                        ">${D.JS(content)}</pre>`)
+                ],
+                {
+                    textAlign: "left",
+                    isSilent: true
+                }
+            );
+        }
+    };
     const HANDOUTHTML = {
         EyesOnlyDoc: {
             Block: (content, options = {}) => {
@@ -846,6 +1307,27 @@ const C = (() => {
                         width: 100%;
                         margin: 0px 5px 5px -5px;
                     ">${content}</div>`)
+        },
+        TraitSummaryDoc: {
+            Table: (content) => D.JSH(`<table style="width: 600px; box-shadow: 7px 7px 7px rgba(0,0,0,0.5); border: 1px solid black; font-family: 'Carrois Gothic SC'; margin-left: -30px;"><tbody>${content}</tbody></table>`),
+            HeaderRow: (content, bgColor) => D.JSH(`<tr style="font-weight: bold; color: white; background-color: ${bgColor};">${content}</tr>`),
+            Row: (content, bgColor) => D.JSH(`<tr style="background-color: ${bgColor};">${content}</tr>`),
+            Cell: (content) => D.JSH(`<td style="line-height: 16px; padding: 0px 1px; white-space: nowrap; border: none; border-right: 1px solid black;">${content}</td>`),
+            SymbolSpan: (content) => D.JSH(`<span style="display: inline-block; vertical-align: top; font-size: 14px;">${content}</span>`),
+            SpecialtySpan: (content) => D.JSH(`<span style="display: inline-block; vertical-align: top; font-family: 'Economica'; font-size: 10px; padding-left: 3px; line-height: 8px; width: 70px; font-variant: small-caps; overflow-x: hidden; white-space: normal; text-shadow: 0px 0px 1px black;">${content}</span>`),
+            Symbols: {
+                DotFull: "<span style=\"display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top;\">●</span>",
+                DotEmpty: "<span style=\"display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top; color: rgba(125, 125, 125, 1);\">○</span>",
+                BoxAggro: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 0px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/3gqGRAd.png'); background-size: 100%;\"></span>",
+                BoxSuper: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 0px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/e7l3Cx8.png'); background-size: 100%;\"></span>",
+                BoxEmpty: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 0px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc;\"></span>",
+                BoxHumanity: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 0px; background-color: rgba(150, 150, 150, 0.4); background: url('https://i.imgur.com/9ZoSd0Z.jpg') no-repeat center; background-size: 120%; box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;\"></span>",
+                BoxStain: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 0px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; margin-top: 0px; background: url('https://i.imgur.com/IVia33U.jpg') no-repeat center; background-size: 110%;\"></span>",
+                BoxHumStain: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 0px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; margin-top: 0px; background: url('https://i.imgur.com/MmbObrq.jpg') no-repeat center; background-size: 110%;\"></span>",
+                DotBPFull: "<span display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top; background: rgba(150, 150, 150, 0.4); border: none; height: 9px; box-shadow: 1px 1px 2px black, 1px 1px 2px black; border-radius: 100%; margin: -1px 1px 1px 1px; background: url('https://imgsrv.roll20.net/?src=https%3A//i.imgur.com/U5ZW214.png') no-repeat center; background-size: 100%;></span>",
+                DotBPEmpty: `<span style="display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top;"
+                style="background: rgba(150, 150, 150, 0.4); border: none; height: 9px; box-shadow: -1px -1px 0px #000, 0px -1px 0px #999, 1px -1px 0px #aaa, 0px 0px 2px #000, 1px 0px 0px #fff, 0px 1px 0px #ccc, 1px 1px 0px #fff; border-radius: 100%; margin: 0px 1px 0px 1px;"></span>`
+            }
         },
         main: (content) => D.JSH(`<div style="
                 display: block;
@@ -3070,6 +3552,7 @@ const C = (() => {
         ROLLERHTML,
         CHATWIDTH,
         HTML,
+        HTMLSTYLES,
         STYLES,
 
         PIXELSPERSQUARE,

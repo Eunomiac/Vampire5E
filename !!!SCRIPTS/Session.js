@@ -274,8 +274,6 @@ const Session = (() => {
                             Media.SetTextData("playerPageAlertMessage", {top: 225});
                             Media.SetTextData("clockStatusNotice", {top: 290});
                             Media.SetTextData("TimeTracker", {top: 265});
-                            Media.ToggleText("HubAspectsNotice", true);
-                            Media.ToggleText("HubAspectsTitle", true);
                             STATE.REF.quadScene.isActive = true;
                             if (D.LCase(args[0]) in HUBFOCUS) {
                                 Media.SetImg("SiteFocusHub", HUBFOCUS[D.LCase(args[0])], true);
@@ -286,7 +284,7 @@ const Session = (() => {
                             // D.Call("!sound inc casaloma 5");
                             Soundscape.Sync();
                             // D.Call("!sound inc casaloma 5");
-                            C.SITES.CLGreatHall.onEntryCall = "!sound inc casaloma 20 10 20 6 7";
+                            C.SITES.CLGreatHall.onEntryCall = "!sound inc casaloma 10 10 20 6 7";
                             C.SITES.CLGreatHall.onExitCall = "!sound inc casaloma 1.5";
                         }
                         break;

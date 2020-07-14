@@ -62,6 +62,8 @@ const Soundscape = (() => {
                 if (args[0] === "casaloma") {
                     CASALOMASOUNDS.CLGreatHall.activeSounds.ScoreCasaLoma = D.Float(args[1], 2);
                     C.SITES.CLGreatHall.onEntryCall = null;
+                    Media.ToggleText("HubAspectsNotice", true);
+                    Media.ToggleText("HubAspectsTitle", true);
                     syncSoundscape();
                     if (args[4]) {
                         const delayTimeArg = D.Float(args[2] || 10, 2);

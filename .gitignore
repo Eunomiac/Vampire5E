@@ -259,3 +259,11 @@ ModelManifest.xml
 # Custom Files to UN-IGNORE
 !.vs/
 !.vscode/
+!!Roll20Styles/all.css
+!!Roll20Styles/app.css
+!!Roll20Styles/base.css
+!!Roll20Styles/css.css
+!!Roll20Styles/dialog-polyfill.css
+!!Roll20Styles/dialogBase.css
+!!Roll20Styles/settings.css
+!!Roll20Styles/videocontrols.css

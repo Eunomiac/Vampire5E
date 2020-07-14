@@ -55,6 +55,99 @@ const Tester = (() => {
     const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
+            case "stathandout": {
+                const TraitSummaryTest = () => {
+                    const html = C.HANDOUTHTML.TraitSummaryDoc;
+                    const colorScheme = {
+                        physical: [
+                            "rgba(255,234,230,1)",
+                            "rgba(255,219,211,1)",
+                            "rgba(255,203,192,1)",
+                            "rgba(107,19,0,1)"
+                        ],
+                        social: [
+                            "rgba(237,254,228,1)",
+                            "rgba(223,251,208,1)",
+                            "rgba(208,248,187,1)",
+                            "rgba(33,93,0,1)"
+                        ],
+                        mental: [
+                            "rgba(234,229,252,1)",
+                            "rgba(217,209,246,1)",
+                            "rgba(198,186,238,1)",
+                            "rgba(59,34,146,1)"
+                        ],
+                        disciplines: [
+                            "rgba(225,225,225,1)",
+                            "rgba(175,175,175,1)",
+                            "rgba(175,175,175,1)",
+                            "rgba(20,20,20,1)"
+                        ],
+                        trackers: [
+                            "rgba(225,225,225,1)",
+                            "rgba(175,175,175,1)",
+                            "rgba(175,175,175,1)",
+                            "rgba(20,20,20,1)"
+                        ]
+                    };
+                    const charObjs = D.GetChars("registered");
+                    // Initial Header
+                    const tableRows = [
+                        html.HeaderRow([
+                            html.Cell("ATTRIBUTES"),
+                            ...charObjs.map((x) => html.Cell(D.GetName(x, true)))
+                        ].join(""), C.COLORS.darkdarkgrey)
+                    ];
+                    // Attribute Lines
+                    for (const [attrCat, attributes] of Object.entries(C.ATTRIBUTES)) {
+                        const colors = colorScheme[attrCat].slice(0, 3);
+                        for (const attribute of attributes) {
+                            const rowCells = [html.Cell(attribute)];
+                            for (const charObj of charObjs) {
+                                const attrVal = D.GetStatVal(charObj, attribute);
+                                rowCells.push(html.Cell([
+                                    html.SymbolSpan([
+                                        html.Symbols.DotFull.repeat(attrVal),
+                                        html.Symbols.DotEmpty.repeat(5 - attrVal)
+                                    ].join("")),
+                                    html.SpecialtySpan(" ")
+                                ].join("")));
+                            }
+                            tableRows.push(html.Row(rowCells.join(""), colors.pop()));
+                        }
+                    }
+                    // Skill Lines
+                    for (const [skillCat, skills] of Object.entries(C.SKILLS)) {
+                        const colors = colorScheme[skillCat];
+                        tableRows.push(html.HeaderRow([
+                            html.Cell(`SKILLS: ${D.UCase(skillCat)}`),
+                            ...charObjs.map((x) => html.Cell(D.GetName(x, true)))
+                        ].join(""), colors.pop()));
+                        colors.shift();
+                        for (const skill of skills) {
+                            const rowCells = [html.Cell(skill)];
+                            for (const charObj of charObjs) {
+                                const skillVal = D.GetStatVal(charObj, skill.replace(/ /gu, "_"));
+                                const specVal = D.GetStatVal(charObj, `${skill}_spec`.replace(/ /gu, "_")).replace(/\s*?,\s*?/gu, "<br>");
+                                rowCells.push(html.Cell([
+                                    html.SymbolSpan([
+                                        html.Symbols.DotFull.repeat(skillVal),
+                                        html.Symbols.DotEmpty.repeat(5 - skillVal)
+                                    ].join("")),
+                                    html.SpecialtySpan(specVal)
+                                ].join("")));
+                            }
+                            tableRows.push(html.Row(rowCells.join(""), colors[0]));
+                            colors.unshift(colors.pop());
+                        }
+                    }
+                    // Assemble Full Table Code
+                    const fullCode = html.Table(tableRows.join(""));
+                    Handouts.Make("Character Stat Summary", null, fullCode);
+                };
+                TraitSummaryTest();
+                break;
+            }
             case "jukeboxfolder": {
                 D.Show(JSON.parse(Campaign().get("_jukeboxfolder")));
                 break;

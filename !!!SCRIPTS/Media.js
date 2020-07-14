@@ -2588,8 +2588,8 @@ const Media = (() => {
     };
     const getActiveTokenAuras = (charRef) => {
         const [tokenObj] = getTokenObjs(charRef);
-        const tokenName = tokenObj.get("name");
-        const tokenSrc = REGISTRY.TOKEN[tokenName].curSrc || "base";
+        const tokenName = tokenObj && tokenObj.get("name");
+        const tokenSrc = (tokenName && tokenName in REGISTRY.TOKEN) ? REGISTRY.TOKEN[tokenName].curSrc : "base";
         const splitTokenSrcs = D.Capitalize(tokenSrc).match(/[A-Z][a-z]*/gu);
         const tokenAuras = [];
         for (const srcName of splitTokenSrcs)
