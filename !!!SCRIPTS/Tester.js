@@ -8,11 +8,12 @@ const Tester = (() => {
         get REF() {
             return C.RO.OT[SCRIPTNAME];
         }
-    };
-    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
-    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
-    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
-    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
+    }; // sub5 = _.partial(subtract, 5);
+    // const VAL = _.partial(D.Validate, _, _, SCRIPTNAME, _);
+    const VAL = _.partial(D.Validate, _, _, SCRIPTNAME, _); // (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
+    const DB = _.throttle(_.partial(D.DBAlert, _, _, SCRIPTNAME), 1000, {trailing: true}); // (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
+    const LOG = _.partial(D.Log, _, _, SCRIPTNAME); // (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
+    const THROW = _.partial(D.ThrowError, _, _, SCRIPTNAME, _); // (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
 
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
@@ -21,32 +22,7 @@ const Tester = (() => {
     // #endregion
 
     // #region LOCAL INITIALIZATION
-    const initialize = () => {
-        const advNames = [
-            "Haven (Harbord Appt.)",
-            "Haven (Warding)",
-            "Haven (Surgery)",
-            "Domain (Portillion)",
-            "Status (Anarchs)",
-            "Mawla (Baroness)",
-            "Mawla (Scientists)",
-            "Dr. Netchurch",
-            "Dr. Netchurch",
-            "Dr Netchurch",
-            "Herd (Mobile Clinic)",
-            "Herd (Bookies)",
-            "Allies (Bookies)",
-            "Contacts (Ogden Stone)",
-            "Contacts (The Aristocrat)",
-            "Mask: John Pierce",
-            "Enemy (Underwood)",
-            "Addict (Painkillers)",
-            "Known Corpse",
-            "Adversary (Seneschal)"
-        ];
-        for (const adv of advNames)
-            fuz.add(adv);
-    };
+    const initialize = () => { };
 
     const fuz = Fuzzy.Fix();
     // #endregion
@@ -141,9 +117,121 @@ const Tester = (() => {
                             colors.unshift(colors.pop());
                         }
                     }
+                    // Disciplines
+                    const discColors = colorScheme.disciplines;
+                    tableRows.push(html.HeaderRow([
+                        html.Cell("DISCIPLINES:"),
+                        ...charObjs.map((x) => html.Cell(D.GetName(x, true)))
+                    ].join(""), discColors.pop()));
+                    discColors.pop();
+                    for (const disc of Object.keys(C.DISCIPLINES)) {
+                        const rowCells = [html.Cell(disc)];
+                        let areAllZero = true;
+                        for (const charObj of charObjs) {
+                            const skillVal = D.GetStatVal(charObj, disc.replace(/ /gu, "_"));
+                            if (skillVal > 0)
+                                areAllZero = false;
+                            rowCells.push(html.Cell([
+                                html.SymbolSpan([
+                                    html.Symbols.DotFull.repeat(skillVal),
+                                    html.Symbols.DotEmpty.repeat(5 - skillVal)
+                                ].join("")),
+                                html.SpecialtySpan(" ")
+                            ].join("")));
+                        }
+                        if (!areAllZero) {
+                            tableRows.push(html.Row(rowCells.join(""), discColors[0]));
+                            discColors.unshift(discColors.pop());
+                        }
+                    }
+
+                    // Trackers
+                    const trackerColors = colorScheme.trackers;
+                    tableRows.push(html.HeaderRow([
+                        html.Cell("TRACKERS:"),
+                        ...charObjs.map((x) => html.Cell(D.GetName(x, true)))
+                    ].join(""), trackerColors.pop()));
+                    trackerColors.pop();
+                    //      Health & Willpower
+                    for (const tracker of ["Health", "Willpower"]) {
+                        const rowCells = [html.Cell(tracker)];
+                        for (const charObj of charObjs) {
+                            const trackerLine = (new Array(17)).fill(false);
+                            let [aggDmg, supDmg, total] = [
+                                    D.GetStatVal(charObj, `${D.LCase(tracker)}_aggravated`),
+                                    D.GetStatVal(charObj, `${D.LCase(tracker)}_bashing`),
+                                    D.GetStatVal(charObj, `${D.LCase(tracker)}_max`)
+                                ],
+                                isTwoRows = false;
+                            for (let i = 0; i < trackerLine.length; i++)
+                                if (i === 5) {
+                                    trackerLine[i] = "&nbsp;";
+                                } else if (i === 11) {
+                                    trackerLine[i] = "<br>";
+                                    isTwoRows = true;
+                                } else if (aggDmg > 0) {
+                                    aggDmg--;
+                                    total--;
+                                    trackerLine[i] = html.Symbols.BoxAggro;
+                                } else if (supDmg > 0) {
+                                    supDmg--;
+                                    total--;
+                                    trackerLine[i] = html.Symbols.BoxSuper;
+                                } else if (total > 0) {
+                                    total--;
+                                    trackerLine[i] = html.Symbols.BoxEmpty;
+                                } else {
+                                    trackerLine.length = i;
+                                    break;
+                                }
+                            if (isTwoRows)
+                                trackerLine.forEach((x, i) => { trackerLine[i] = x.replace(/margin-top: 3px/gu, "margin-top: 2px;") });
+                            rowCells.push(html.TrackerCell([
+                                html.SymbolSpan(trackerLine.join("")).replace(/margin-top: 1px/gu, "margin-bottom: 2px;")
+                            ].join("")));
+                        }
+                        tableRows.push(html.Row(rowCells.join(""), trackerColors[0]));
+                        trackerColors.unshift(trackerColors.pop());
+                    }
+                    //      Blood Potency
+                    const rowCells = [html.Cell("Blood Potency")];
+                    for (const charObj of charObjs) {
+                        const [currentBP, maxBP] = [
+                            D.GetStatVal(charObj, "blood_potency"),
+                            D.GetStatVal(charObj, "blood_potency_max")
+                        ];
+                        rowCells.push(html.TrackerCell([
+                            html.SymbolSpan([
+                                html.Symbols.DotBPFull.repeat(currentBP),
+                                html.Symbols.DotBPEmpty.repeat(maxBP - currentBP)
+                            ].join(""))
+                        ].join("")));
+                    }
+                    tableRows.push(html.Row(rowCells.join(""), trackerColors[0]));
+                    trackerColors.unshift(trackerColors.pop());
+                    rowCells.length = 0;
+
+                    //      Humanity
+                    rowCells.push(html.Cell("Humanity"));
+                    for (const charObj of charObjs) {
+                        const [curHumanity, curStains] = [
+                            D.GetStatVal(charObj, "humanity"),
+                            D.GetStatVal(charObj, "stains")
+                        ];
+                        rowCells.push(html.TrackerCell([
+                            html.SymbolSpan([
+                                html.Symbols.BoxHumanity.repeat(curHumanity),
+                                html.Symbols.BoxHumStain.repeat(Math.max(0, curHumanity + curStains - 10)),
+                                html.Symbols.BoxEmpty.repeat(Math.max(0, 10 - curHumanity - curStains)),
+                                html.Symbols.BoxStain.repeat(curStains)
+                            ].join(""))
+                        ].join("")));
+                    }
+                    tableRows.push(html.Row(rowCells.join(""), trackerColors[0]));
+
                     // Assemble Full Table Code
                     const fullCode = html.Table(tableRows.join(""));
-                    Handouts.Make("Character Stat Summary", null, fullCode);
+                    Handouts.Set("Character Stat Summary", null, fullCode);
                 };
                 TraitSummaryTest();
                 break;

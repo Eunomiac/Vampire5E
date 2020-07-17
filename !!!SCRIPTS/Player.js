@@ -27,15 +27,6 @@ const Player = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const onChatCall = (call, args, objects, msg) => {
         switch (call) {
-            case "!gmcommand": {
-                const [, ...command] = msg.content.split(" ");
-                msg.content = command.join(" ");
-                msg.playerid = D.GMID();
-                msg.who = D.LCase(msg.who) === "api" ? msg.who : "Storyteller (GM)";
-                DB({msg}, "gmcommand");
-                Listener.SendRawCall(msg);
-                break;
-            }
             case "!endmonologue": {
                 Session.EndMonologue();
                 break;

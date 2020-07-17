@@ -153,9 +153,9 @@ const Session = (() => {
         STATE.REF.locationPointer = STATE.REF.locationPointer || {};
         STATE.REF.FavoriteSites = STATE.REF.FavoriteSites || [];
         STATE.REF.FavoriteDistricts = STATE.REF.FavoriteDistricts || [];
-        STATE.REF.SpotlightPrompts =
-            STATE.REF.SpotlightPrompts ||
-            D.KeyMapObj(
+        STATE.REF.SpotlightPrompts
+            = STATE.REF.SpotlightPrompts
+            || D.KeyMapObj(
                 D.Clone(Char.REGISTRY),
                 (k, v) => v.initial,
                 () => []
@@ -510,8 +510,8 @@ const Session = (() => {
                             pointerObj.set({layer: "objects"});
                             ISSETTINGPOINTER = true;
                             D.Alert(
-                                `Setting pointer position for <b>"${siteName ||
-                                    siteRef}"</b><br><br>Move the map indicator to the desired position, then type "!sess set pointer" again.`,
+                                `Setting pointer position for <b>"${siteName
+                                    || siteRef}"</b><br><br>Move the map indicator to the desired position, then type "!sess set pointer" again.`,
                                 "!sess set pointer"
                             );
                         }
@@ -522,10 +522,10 @@ const Session = (() => {
                         break;
                     case "customsitedist": {
                         const [siteRef, siteName] = getActiveSite(true);
-                        const customLocRef =
-                            (siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName]) ||
-                            (siteRef in STATE.REF.customLocs && STATE.REF.customLocs[siteRef]) ||
-                            false;
+                        const customLocRef
+                            = (siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName])
+                            || (siteRef in STATE.REF.customLocs && STATE.REF.customLocs[siteRef])
+                            || false;
                         if (customLocRef)
                             if (args.length) {
                                 if (args.join(" ") in C.DISTRICTS)
@@ -918,9 +918,9 @@ const Session = (() => {
     const endSession = (isDoingMonologues = true) => {
         DB({mode: Session.Mode, spotlightChar: STATE.REF.spotlightChar, monologues: D.JS(STATE.REF.SessionMonologues)}, "endSession");
         if (
-            (STATE.REF.isTestingActive && !STATE.REF.isFullTest) ||
-            (isDoingMonologues && startSessionMonologue()) ||
-            (!isDoingMonologues && remorseCheck())
+            (STATE.REF.isTestingActive && !STATE.REF.isFullTest)
+            || (isDoingMonologues && startSessionMonologue())
+            || (!isDoingMonologues && remorseCheck())
         ) {
             changeMode("Inactive", true, [
                 [
@@ -1453,10 +1453,10 @@ const Session = (() => {
         if (activeLocs.includes("DistrictCenter") && !activeLocs.includes("SiteLeft") && !activeLocs.includes("SiteRight"))
             return true;
         if (
-            activeLocs.includes("DistrictLeft") ||
-            activeLocs.includes("DistrictRight") ||
-            activeLocs.includes("SiteLeft") ||
-            activeLocs.includes("SiteRight")
+            activeLocs.includes("DistrictLeft")
+            || activeLocs.includes("DistrictRight")
+            || activeLocs.includes("SiteLeft")
+            || activeLocs.includes("SiteRight")
         )
             return false;
         return null;
@@ -1505,10 +1505,10 @@ const Session = (() => {
         }
         const [activePos] = getActivePositions().filter((x) => x.startsWith("Site"));
         return (
-            (activePos &&
-                STATE.REF.curLocation[activePos] &&
-                ((isReturningSiteName && STATE.REF.curLocation[activePos]) || STATE.REF.curLocation[activePos][0])) ||
-            false
+            (activePos
+                && STATE.REF.curLocation[activePos]
+                && ((isReturningSiteName && STATE.REF.curLocation[activePos]) || STATE.REF.curLocation[activePos][0]))
+            || false
         );
     };
     const getPosOfLocation = (locRef) => _.findKey(getAllLocations(false), (v) => v && locRef && D.LCase(v) === D.LCase(locRef));
@@ -1601,13 +1601,13 @@ const Session = (() => {
         const siteData = STATE.REF.customLocs[siteName];
         DB({siteData, activePositions: getActivePositions(), locRef, siteRef, siteName}, "setGenericSiteDetails");
         if (
-            !siteData ||
-            getActivePositions().length !== 2 ||
-            !locRef ||
-            !siteRef ||
-            !siteName ||
-            siteRef !== "GENERIC" ||
-            !["Left", "Right", "Center"].includes(locRef)
+            !siteData
+            || getActivePositions().length !== 2
+            || !locRef
+            || !siteRef
+            || !siteName
+            || siteRef !== "GENERIC"
+            || !["Left", "Right", "Center"].includes(locRef)
         ) {
             D.Alert("The ACTIVE Site must be GENERIC with a CUSTOM NAME set and STORED in STATE.REF.customLocs.", "setGenericSiteDetails");
         } else {
@@ -1652,8 +1652,8 @@ const Session = (() => {
             newLocData.SiteRight = ["blank"];
             sceneFocus = "c";
         } else if (
-            ("DistrictLeft" in locParams && !locParams.DistrictLeft.includes("blank")) ||
-            ("DistrictRight" in locParams && !locParams.DistrictRight.includes("blank"))
+            ("DistrictLeft" in locParams && !locParams.DistrictLeft.includes("blank"))
+            || ("DistrictRight" in locParams && !locParams.DistrictRight.includes("blank"))
         ) {
             newLocData.DistrictCenter = ["blank"];
             newLocData.SiteCenter = ["blank"];
@@ -1673,10 +1673,10 @@ const Session = (() => {
         )) {
             // Only interested in non-blank sites; We'll deal with sub-locations afterwards.
             const [siteRef, siteName] = siteData;
-            const customLocRef =
-                (siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName]) ||
-                (siteRef in STATE.REF.customLocs && STATE.REF.customLocs[siteRef]) ||
-                false;
+            const customLocRef
+                = (siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName])
+                || (siteRef in STATE.REF.customLocs && STATE.REF.customLocs[siteRef])
+                || false;
             if (sitePos === "SiteCenter")
                 newLocData.subLocs = Object.assign(
                     {},
@@ -1690,8 +1690,8 @@ const Session = (() => {
 
             if (siteName) {
                 STATE.REF.customLocs[siteName] = STATE.REF.customLocs[siteName] || {};
-                STATE.REF.customLocs[siteName].district =
-                    STATE.REF.customLocs[siteName].district || newLocData[sitePos.replace(/Site/gu, "District")][0];
+                STATE.REF.customLocs[siteName].district
+                    = STATE.REF.customLocs[siteName].district || newLocData[sitePos.replace(/Site/gu, "District")][0];
                 STATE.REF.customLocs[siteName].site = siteRef;
                 STATE.REF.customLocs[siteName].siteName = siteName;
             }
@@ -2219,8 +2219,8 @@ const Session = (() => {
                                     }),
                                     {width: (authorInit && "80%") || "100%"}
                                 ),
-                                (authorInit &&
-                                    C.HTML.Column(
+                                (authorInit
+                                    && C.HTML.Column(
                                         C.HTML.Button("Delete", `!prompt delete ${init} ${thisPrompt.id}`, {
                                             width: "100%",
                                             height: "20px",
@@ -2232,8 +2232,8 @@ const Session = (() => {
                                             boxShadow: "inset -1px -1px 2px #000 , -1px -1px 2px #000 , 1px 1px 2px #000 , 1px 1px 2px #000"
                                         }),
                                         {width: "20%", vertAlign: "initial"}
-                                    )) ||
-                                    false
+                                    ))
+                                    || false
                             ]),
                             {border: "none; border-bottom: 1px solid red;"}
                         )
@@ -2265,9 +2265,9 @@ const Session = (() => {
                 C.HTML.Block([
                     C.HTML.Title("Session Monologues"),
                     C.HTML.SubHeader(
-                        subheaderTextOverride ||
-                            (authorInit && "Your Spotlight Prompts Have All<br>Been Assigned to Their Players!") ||
-                            "All Spotlight Prompts Have Been Assigned!",
+                        subheaderTextOverride
+                            || (authorInit && "Your Spotlight Prompts Have All<br>Been Assigned to Their Players!")
+                            || "All Spotlight Prompts Have Been Assigned!",
                         {
                             height: "40px",
                             lineHeight: "20px",
@@ -2577,11 +2577,10 @@ const Session = (() => {
             D.Call(C.DISTRICTS[locRef].onEntryCall);
     };
     const setSceneFocus = (locPos) => {
-        locPos =
-            (isLocCentered() === true && "c") ||
-            (VAL({string: locPos}) && D.LCase(locPos).charAt(0)) ||
-            (isLocCentered() === false && ["r", "l", "c"].includes(STATE.REF.sceneFocus) && STATE.REF.sceneFocus) ||
-            "c";
+        locPos = (isLocCentered() === true && "c")
+            || (VAL({string: locPos}) && D.LCase(locPos).charAt(0))
+            || (isLocCentered() === false && ["r", "l", "c"].includes(STATE.REF.sceneFocus) && STATE.REF.sceneFocus)
+            || "c";
         STATE.REF.sceneFocus = locPos;
         STATE.REF.sceneFocusRecord[Session.Mode] = locPos;
         DB({locPos, ["state Scene Focus"]: STATE.REF.sceneFocus, activeLocs: getActivePositions()}, "setSceneFocus");
@@ -2625,11 +2624,11 @@ const Session = (() => {
         }
         const [sitePos] = activePositions.filter((x) => x.startsWith("Site"));
         const siteName = sitePos in STATE.REF.curLocation && STATE.REF.curLocation[sitePos][1];
-        const pointerPos =
-            (siteName && siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName].pointerPos) ||
-            (Session.Site in STATE.REF.customLocs && STATE.REF.customLocs[Session.Site].pointerPos) ||
-            (Session.Site in STATE.REF.locationPointer && STATE.REF.locationPointer[Session.Site].pointerPos) ||
-            false;
+        const pointerPos
+            = (siteName && siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName].pointerPos)
+            || (Session.Site in STATE.REF.customLocs && STATE.REF.customLocs[Session.Site].pointerPos)
+            || (Session.Site in STATE.REF.locationPointer && STATE.REF.locationPointer[Session.Site].pointerPos)
+            || false;
         if (VAL({list: pointerPos})) {
             Media.ToggleImg("MapIndicator_Base_1", true);
             Media.ToggleAnim("MapIndicator", true);

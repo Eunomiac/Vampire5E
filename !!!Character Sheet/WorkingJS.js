@@ -4,7 +4,7 @@
         ISOFFLINE = false;
     const isDebug = true;
     const LOGOPTIONS = {
-        isMuted: true
+        isMuted: false
     };
     const ATTRIBUTES = {
         physical: ["Strength", "Dexterity", "Stamina"],
@@ -20,7 +20,6 @@
         "Animalism",
         "Auspex",
         "Celerity",
-        "Chimerstry",
         "Dominate",
         "Fortitude",
         "Obfuscate",
@@ -75,6 +74,100 @@
         Sanguine: ["Blood Sorcery", "Presence"],
         Primal: ["Animalism", "Protean"],
         Mercurial: ["Alchemy", "Protean"]
+    };
+    const bloodlineToggle = {
+        Hecata: 1,
+        Ventrue: 2,
+        Tremere: 3,
+        Tzimisce: 4,
+        Ravnos: 5
+    };
+    const bloodlineText = {
+        Ventrue: {
+            Tinia: {
+                bloodline_detailstoggle: 2,
+                bloodline_title: "Descendant of Tinia, Who Ruled the Heavens",
+                bloodline_details: "You descend from a line of master politicians who revel in the fame and accolades that they achieve. Ventrue of your lineage are credited with many of Imperial Rome’s glories and are hailed as bold visionaries with a natural flair for intrigue and leadership. Detractors, however, describe Tinians as two-faced, manipulative, and more concerned with their own glory than that of whatever cause they profess to champion.",
+                bloodline_virtues: "Bold ♦ Innovative ♦ Subtle",
+                bloodline_vices: "Duplicitous ♦ Manipulative ♦ Selfish",
+                bloodline_exemplar: "Valerianus — Forged the Ventrue-Tremere alliance that brought the Warlocks into the Camarilla."
+            },
+            Tiamat: {
+                bloodline_detailstoggle: 2,
+                bloodline_title: "Descendant of Tiamat, Who Bound Drakonskyr",
+                bloodline_details: "You descend from a line known for achieving prestige solely through the display of immense personal power. Tiamatians are decisive, relentlessly driven, and prefer dealing with matters personally rather than delegating tasks to subordinates. Although sometimes regarded as cruel, corrupt, or inhumane, these same blue bloods are just as often considered tragic figures, quickly overcome by bad situations or a string of bad decisions.",
+                bloodline_virtues: "Decisive ♦ Domineering ♦ Fearless",
+                bloodline_vices: "Corrupt ♦ Cruel ♦ Hasty",
+                bloodline_exemplar: "Lucinde — Current Ventrue justicar, recently named 'Justicar for Unlife' in an unprecedented gesture of support from the Inner Council."
+            },
+            Artemis: {
+                bloodline_detailstoggle: 2,
+                bloodline_title: "Descendant of Artemis Orthia, the Thorn of Carthage",
+                bloodline_details: "You descend from a line of shrewd negotiators who do not often seek fame and glory for themselves, but rather prefer to build legacies that will outlast all others. Orthians are capable of putting aside personal differences to build relationships of convenience or common interest, and value the reputations and legacies of their ancestors above all else. However, that same dedication can also drive them to be notoriously stubborn and bullheaded, willing to take even the most extreme actions to avoid bringing dishonor upon their line.",
+                bloodline_virtues: "Honorable ♦ Objective ♦ Selfless",
+                bloodline_vices: "Inflexible ♦ Proud ♦ Stubborn",
+                bloodline_exemplar: "Democritus — First Ventrue justicar. Founder and current Consul-General of the Assembly of Colors, the preeminent diplomatic arm of Clan Ventrue."
+            },
+            Medon: {
+                bloodline_detailstoggle: 2,
+                bloodline_title: "Descendant of Medon, Aegean God-King",
+                bloodline_details: "You descend from a line renowned for its dedication, tenacity, and willingness to go any length to achieve their goals. Medonites rival the Brujah for the passion of their convictions, and most have domineering personalities and effortless confidence that others cannot deny. Detractors, however, describe this as overconfidence, and point to the tendency of these blue bloods to deal with their own matters and concerns before addressing those of others—sometimes disastrously too late.",
+                bloodline_virtues: "Confident ♦ Dedicated ♦ Passionate ♦ Tenacious",
+                bloodline_vices: "Arrogant ♦ Heedless ♦ Thoughtless",
+                bloodline_exemplar: "Maximillian Steele — Former prince of Toronto. Known as the \"Iron Prince\", he held Toronto for the Camarilla against Sabbat assaults from all directions."
+            },
+            Veddharta: {
+                bloodline_detailstoggle: 2,
+                bloodline_title: "Descendant of Veddharta, the Wise and Prosperous",
+                bloodline_details: "You descend from a line shrouded in mystery and renowned for its power, both personal and political. Veddhartites are known for being extremely dedicated to the causes in which they believe. This dedication takes the form of a quiet sort of intensity, however, and these Ventrue are noted for being very diplomatic in their dealings with others. However, these dealings are often conducted from an arm’s length, and Veddharta’s scions are slow to trust others and quick to keep their own council. This often leads other Kindred to view these members of this line with suspicion, believing them to harbor secrets.",
+                bloodline_virtues: "Diplomatic ♦ Relentless ♦ Subtle",
+                bloodline_vices: "Cold ♦ Distant ♦ Mistrustful ♦ Secretive",
+                bloodline_exemplar: "Anne Bowesley — Queen of London since World War 2."
+            },
+            "Nefer-meri-Isis": {
+                bloodline_detailstoggle: 2,
+                bloodline_title: "Descendant of Nefer-meri-Isis, Who Does Not Kneel",
+                bloodline_details: "You descend from a line of Ventrue willing and able to make difficult decisions, to succeed where others fail or lack the will to try. Ventrue of your lineage tend to be very social individuals, enjoying the opportunity to \"work a crowd,\" and are particularly adept at calming others and inspiring other emotions of their choice. Although confident to the point they rarely seek external confirmation of their achievements, these Ventrue can be considered polarizing, or even vain, because of their behavior or their opinions—which they share freely. These blue bloods can easily consume themselves with the affairs of others, leaving little time for planning for the future, leading some to expect shortsightedness from members of this line.",
+                bloodline_virtues: "Calm ♦ Confident ♦ Decisive ♦ Sociable",
+                bloodline_vices: "Obsessive ♦ Opinionated ♦ Shortsighted ♦ Vain",
+                bloodline_exemplar: "Aken Hoten — Former Egyptian pharaoh, said to be the closest of Ventrue's childer to his Antediluvian sire."
+            },
+            Mithras: {
+                bloodline_detailstoggle: 2,
+                bloodline_title: "Descendant of Mithras, War-God and Lord of Light",
+                bloodline_details: "You descend from a line renowned as soldiers, generals, and warriors without peer. In truth, however, Mithridati have a natural aptitude for any field that requires nerve, patience, and self-discipline. Although known for maintaining a stiff upper lip and not letting emotions influence their decisions, detractors deride these blue bloods as unfeeling cynics who care nothing for others, and only seek to maintain a respectable facade to conceal their own inner emptiness.",
+                bloodline_virtues: "Disciplined ♦ Objective ♦ Patient ♦ Stoic",
+                bloodline_vices: "Arrogant ♦ Cynical ♦ Jaded ♦ Selfish",
+                bloodline_exemplar: "Mithras — Former prince of London from the Roman Empire until World War II, now head of a blood cult that worships him as a god. By far the most active of Ventrue’s childer."
+            },
+            Ehrentraud: {
+                bloodline_detailstoggle: 2,
+                bloodline_title: "Descendant of Ehrentraud, the Iron Emperor",
+                bloodline_details: "You descend from a line regarded as commanding, stoic, and authoritarian, prone to oppressive and brutal styles of rulership.  Ehrentraui prefer straight and clear language over the delicate verbal fencing practiced by many of their clanmates, and bonds between members of the line are as strong as iron. Detractors, however, describe Ehrentraud’s scions as crude, unrefined, and brutish.",
+                bloodline_virtues: "Domineering ♦ Loyal ♦ Stoic",
+                bloodline_vices: "Brutal ♦ Tactless ♦ Unsubtle",
+                bloodline_exemplar: "Mylene 'the Puck' Hamelin — Current Ventrue primogen of Toronto."
+            },
+            Antonius: {
+                bloodline_detailstoggle: 2,
+                bloodline_title: "Descendant of Antonius, First of the Triumverate",
+                bloodline_details: "You descend from a line widely regarded as possessing a predisposition towards tactical thinking and administration. Antonians recognize how things work, and enjoy setting wheels in motion from a distance, only to see plans come to fruition in lands far away, or at times far in the future. Some of Antonius’ plans are supposedly still on course to see conclusion, despite his supposed final death over a thousand years ago.",
+                bloodline_virtues: "Focused ♦ Patient ♦ Stoic",
+                bloodline_vices: "Inflexible ♦ Obsessive ♦ Stubborn",
+                bloodline_exemplar: "Robert Kross — One of the Camarilla's first archons. Current owner of one of the largest Kindred financial empires in the world."
+            },
+            Alexander: {
+                bloodline_detailstoggle: 2,
+                bloodline_title: "Descendant of Alexander, Who Held the City of Lights",
+                bloodline_details: "You descend from a line renowned for impeccable poise, grace and unimpeachable conduct at all times. Gifted orators and charming socialites, Alexandrites often achieve fame for their honeyed words and skill at speech-craft.  Detractors argue that those same blue bloods, when put in stressful situations, are prone to emotional outbursts and irrational behavior, leading others to consider them arrogant or immature.",
+                bloodline_virtues: "Deliberate ♦ Graceful ♦ Poised",
+                bloodline_vices: "Arrogant ♦ Emotional ♦ Irrational",
+                bloodline_exemplar: "Xavier Whitchurch — Herald of the Elysium at Toronto's Casa Loma."
+            }
+        },
+        Tremere: {
+
+        }
     };
     const baneText = {
         0: null,
@@ -975,20 +1068,20 @@
         const hayArray = (_.isArray(hay) && _.flatten(hay)) || (_.isObject(hay) && _.keys(hay)) || [hay];
         const index = _.findIndex(
             hayArray,
-            (v) => v.match(new RegExp(ndl, "iu")) !== null ||
-                v.match(new RegExp(ndl.replace(/_/gu, " "), "iu")) !== null ||
-                v.match(new RegExp(ndl.replace(/\s/gu, "_"), "iu")) !== null ||
-                v.match(new RegExp(ndl.replace(/(\w)(?=[A-Z])/gu, "$1 "), "iu")) !== null ||
-                v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null ||
-                v.match(new RegExp(ndl.replace(/\s/gu), "iu")) !== null
+            (v) => v.match(new RegExp(ndl, "iu")) !== null
+                || v.match(new RegExp(ndl.replace(/_/gu, " "), "iu")) !== null
+                || v.match(new RegExp(ndl.replace(/\s/gu, "_"), "iu")) !== null
+                || v.match(new RegExp(ndl.replace(/(\w)(?=[A-Z])/gu, "$1 "), "iu")) !== null
+                || v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null
+                || v.match(new RegExp(ndl.replace(/\s/gu), "iu")) !== null
         );
         return index >= 0 && hayArray[index];
     };
-    const realName = (attr, ATTRS = {}) => isIn(trimAttr(attr), ATTRDISPNAMES) ||
-        isIn(ATTRS[`${trimAttr(attr)}_name`], ATTRDISPNAMES) ||
-        ATTRS[`${trimAttr(attr)}_name`] ||
-        trimAttr(attr);
-    // getTriggers (attrs, prefix, gN, sections	): Returns "on:..." event listener string for simple attributes (in attrs) or repeating sections (in sections). RETURNS string
+    const realName = (attr, ATTRS = {}) => isIn(trimAttr(attr), ATTRDISPNAMES)
+        || isIn(ATTRS[`${trimAttr(attr)}_name`], ATTRDISPNAMES)
+        || ATTRS[`${trimAttr(attr)}_name`]
+        || trimAttr(attr);
+    // getTriggers (attrs, prefix, gN, sections): Returns "on:..." event listener string for simple attributes (in attrs) or repeating sections (in sections). RETURNS string
     const getTriggers = (attrs, prefix = "", repSecs) => {
         const triggerStrings = [];
         if (attrs)
@@ -1174,8 +1267,8 @@
         1,
         Math.max(
             0,
-            (parseDString(todaysDate).getTime() - parseDString(startDate).getTime()) /
-                    (parseDString(endDate).getTime() - parseDString(startDate).getTime())
+            (parseDString(todaysDate).getTime() - parseDString(startDate).getTime())
+                    / (parseDString(endDate).getTime() - parseDString(startDate).getTime())
         )
     );
 
@@ -1220,19 +1313,33 @@
         const attrList = {};
         const $funcs = [
             (cBack) => {
-                getAttrs(["clan", "bloodline", "blood_potency", "bloodline_toggle"], (ATTRS) => {
-                    const bloodlineActive = typeof baneText[ATTRS.clan] !== "string";
-                    attrList.bloodline_toggle = bloodlineActive ? 1 : 0;
-                    const bText =
-                        (bloodlineActive && baneText[ATTRS.clan] && (baneText[ATTRS.clan][ATTRS.bloodline] || baneText[ATTRS.clan].base)) ||
-                        baneText[ATTRS.clan];
-                    if (bText) {
-                        attrList.bane_title = (bloodlineActive && `${ATTRS.bloodline} Bloodline Bane`) || `${ATTRS.clan} Clan Bane`;
-                        attrList.bane_text = bText.replace("Bane Severity", `Bane Severity (${bpDependants[ATTRS.blood_potency].bp_baneseverity})`);
+                getAttrs(["clan", "bloodline", "blood_potency", "bloodline_toggle", "bloodline_detailstoggle"], (ATTRS) => {
+                    log(`[DOCLANS ATTRS = ${JSON.stringify(ATTRS)}]`);
+                    // First, set bloodline toggle, if there is one:
+                    attrList.bloodline_toggle = bloodlineToggle[ATTRS.clan] || 0;
+
+                    // Bloodline Text Entries:
+                    if (attrList.bloodline_toggle)
+                        Object.assign(attrList, (bloodlineText[ATTRS.clan] || {})[ATTRS.bloodline] || {bloodline_detailstoggle: 0});
+                   
+                    log(`[DOCLANS ATTRLIST = ${JSON.stringify(attrList)}]`);
+
+                    // Clan/Bloodline Bane:
+                    if (typeof baneText[ATTRS.clan] !== "string") {
+                        attrList.bane_title = `${ATTRS.bloodline || ATTRS.clan} Bloodline Bane`;
+                        attrList.bane_text = (ATTRS.bloodline && (ATTRS.bloodline in baneText[ATTRS.clan]) && baneText[ATTRS.clan][ATTRS.bloodline]) || baneText[ATTRS.clan].base;
+                    } else {
+                        attrList.bane_title = `${ATTRS.clan} Clan Bane`;
+                        attrList.bane_text = baneText[ATTRS.clan];
                     }
-                    const cDiscs =
-                        (bloodlineActive && clanDiscs[ATTRS.clan] && (clanDiscs[ATTRS.clan][ATTRS.bloodline] || clanDiscs[ATTRS.clan].base)) ||
-                        clanDiscs[ATTRS.clan];
+                    attrList.bane_text = attrList.bane_text.replace("Bane Severity", `Bane Severity (${bpDependants[ATTRS.blood_potency].bp_baneseverity})`);
+
+                    // Clan/Bloodline Disciplines:
+                    const cDiscs = {};
+                    if (!Array.isArray(clanDiscs[ATTRS.clan]))
+                        Object.assign(cDiscs, (ATTRS.bloodline && ATTRS.bloodline in clanDiscs[ATTRS.clan]) ? clanDiscs[ATTRS.clan][ATTRS.bloodline] : clanDiscs[ATTRS.clan].base);
+                    else
+                        Object.assign(cDiscs, clanDiscs[ATTRS.clan]);
                     if (cDiscs)
                         for (let i = 1; i <= 3; i++)
                             if (cDiscs[i - 1] === "") {
@@ -1242,7 +1349,6 @@
                                 attrList[`disc${i}_toggle`] = 1;
                                 attrList[`disc${i}_name`] = cDiscs[i - 1];
                             }
-
                     cBack(null, attrList);
                 });
             },
@@ -1480,15 +1586,15 @@
                         _.each(bpDependants[ATTRS.blood_potency], (v, k) => {
                             attrList[k] = v;
                         });
-                        attrList.bp_surgetext =
-                            attrList.bp_surge === 0 ?
-                                "None" :
-                                `+${attrList.bp_surge === 1 ? `${attrList.bp_surge} Die` : `${attrList.bp_surge} Dice`}`;
+                        attrList.bp_surgetext
+                            = attrList.bp_surge === 0
+                                ? "None"
+                                : `+${attrList.bp_surge === 1 ? `${attrList.bp_surge} Die` : `${attrList.bp_surge} Dice`}`;
                         attrList.bp_mendtext = attrList.bp_mend === 0 ? "None" : `${attrList.bp_mend} Superficial`;
-                        attrList.bp_discbonustext =
-                            attrList.bp_discbonus === 0 ?
-                                "None" :
-                                `+${attrList.bp_discbonus === 1 ? `${attrList.bp_discbonus} Die` : `${attrList.bp_discbonus} Dice`}${
+                        attrList.bp_discbonustext
+                            = attrList.bp_discbonus === 0
+                                ? "None"
+                                : `+${attrList.bp_discbonus === 1 ? `${attrList.bp_discbonus} Die` : `${attrList.bp_discbonus} Dice`}${
                                     [
                                         ";  Never Rouse x2.",
                                         ";  Rouse x2 for Level 1.",
@@ -1627,8 +1733,8 @@
             case "blood potency":
                 $funcs.push((cback) => {
                     getAttrs(["generation", "bonus_bp", "blood_potency"], (ATTRS) => {
-                        const genData =
-                            (_.isNaN(parseInt(ATTRS.generation)) && {blood_potency_max: 0, blood_potency: 0}) || genDepts[parseInt(ATTRS.generation)];
+                        const genData
+                            = (_.isNaN(parseInt(ATTRS.generation)) && {blood_potency_max: 0, blood_potency: 0}) || genDepts[parseInt(ATTRS.generation)];
                         attrList.blood_potency_max = Math.min(10, Math.max(0, genData.blood_potency_max + parseInt(ATTRS.bonus_bp)));
                         const bp = parseInt(ATTRS.blood_potency);
                         if (tracker === "Blood Potency Full" && (bp < genData.blood_potency || bp > genData.blood_potency_max))
@@ -1682,8 +1788,8 @@
     });
     on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg", "sdmg_social", "admg_social"], "willpower_"), (eInfo) => {
         if (
-            eInfo.sourceType !== "api" ||
-            ["willpower_sdmg", "willpower_admg", "willpower_sdmg_social", "willpower_admg_social"].includes(eInfo.sourceAttribute)
+            eInfo.sourceType !== "api"
+            || ["willpower_sdmg", "willpower_admg", "willpower_sdmg_social", "willpower_admg_social"].includes(eInfo.sourceAttribute)
         )
             doTracker("Willpower", eInfo);
     });
@@ -1813,11 +1919,11 @@
             if (pV("projectenddate") === "") {
                 attrList[p("projectlaunchroll_toggle")] = 0;
             } else if (
-                pV("projectlaunchresults") &&
-                (pV("projectlaunchresults").includes("SUCCESS") ||
-                    pV("projectlaunchresults").includes("COMPLICATION") ||
-                    pV("projectlaunchresults").includes("CRITICAL") ||
-                    pV("projectlaunchresults").includes("TOTAL"))
+                pV("projectlaunchresults")
+                && (pV("projectlaunchresults").includes("SUCCESS")
+                    || pV("projectlaunchresults").includes("COMPLICATION")
+                    || pV("projectlaunchresults").includes("CRITICAL")
+                    || pV("projectlaunchresults").includes("TOTAL"))
             ) {
                 attrList[p("projectlaunchroll_toggle")] = 2;
             } else {
@@ -1872,21 +1978,21 @@
                     const [, p, pV, pI] = pFuncs(`repeating_project_${rowID}`, ATTRS);
                     let counterPos = 11;
                     // log(`p-Test: p("projectinccounter) = ${JSON.stringify(p("projectinccounter"))}`, funcName)
-                    const stakeRemaining =
-                        Math.max(0, pI("projecttotalstake")) -
-                        _.reduce(
+                    const stakeRemaining
+                        = Math.max(0, pI("projecttotalstake"))
+                        - _.reduce(
                             _.map([1, 2, 3], (v) => pI(`projectstake${v}`)),
                             (memo, num) => parseInt(memo) + parseInt(num)
                         );
                     if (
-                        stakeRemaining === 0 &&
-                        pV("projectlaunchresults") &&
-                        (pV("projectlaunchresults").includes("SUCCESS") ||
-                            pV("projectlaunchresults").includes("COMPLICATION") ||
-                            pV("projectlaunchresults").includes("CRITICAL"))
+                        stakeRemaining === 0
+                        && pV("projectlaunchresults")
+                        && (pV("projectlaunchresults").includes("SUCCESS")
+                            || pV("projectlaunchresults").includes("COMPLICATION")
+                            || pV("projectlaunchresults").includes("CRITICAL"))
                     )
-                        counterPos =
-                            10 - Math.floor(10 * getProgress(new Date(parseInt(ATTRS.date_today)), pV("projectstartdate"), pV("projectenddate")));
+                        counterPos
+                            = 10 - Math.floor(10 * getProgress(new Date(parseInt(ATTRS.date_today)), pV("projectstartdate"), pV("projectenddate")));
                     if (counterPos === 0 && pI("projectlaunchroll_toggle") !== 3)
                         attrList[p("projectlaunchroll_toggle")] = 3;
                     else if (counterPos !== 0 && pI("projectlaunchroll_toggle") === 3)
@@ -1915,13 +2021,13 @@
             log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
             let stakeRemaining = 0;
             if (
-                pV("projectlaunchresults") &&
-                (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("COMPLICATION"))
+                pV("projectlaunchresults")
+                && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("COMPLICATION"))
             ) {
                 attrList[p("projectstakes_toggle")] = 1;
-                stakeRemaining =
-                    Math.max(0, pI("projecttotalstake")) -
-                    _.reduce(
+                stakeRemaining
+                    = Math.max(0, pI("projecttotalstake"))
+                    - _.reduce(
                         _.map([1, 2, 3, 4, 5, 6], (v) => pI(`projectstake${v}`)),
                         (memo, num) => parseInt(memo) + parseInt(num)
                     );
@@ -1965,8 +2071,8 @@
             log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
             if ((traits[0].name !== "" && traits[0].value > 0) || (traits[1].name !== "" && traits[1].value > 0)) {
                 traitString = [_.values(traits[0]).join(":"), _.values(traits[1]).join(":")].join(",");
-                attrList[p("projectlaunchrollparams")] = `@{character_name}|${traitString}|${pI("projectlaunchdiff")}|${pI("projectlaunchmod") +
-                        pI("projectforcedstakemod")}|${pI("projectlaunchdiffmod")}|${getRowID(eInfo.sourceAttribute)}`;
+                attrList[p("projectlaunchrollparams")] = `@{character_name}|${traitString}|${pI("projectlaunchdiff")}|${pI("projectlaunchmod")
+                        + pI("projectforcedstakemod")}|${pI("projectlaunchdiffmod")}|${getRowID(eInfo.sourceAttribute)}`;
             }
             setAttrs(attrList, {}, () => {
                 log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
@@ -2203,8 +2309,8 @@
             getAttrs(["repeating_project_memoriamresult", "repeating_project_memoriamdate"], (ATTRS) => {
                 log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`);
                 if (
-                    isValidDString(ATTRS.repeating_project_memoriamdate) &&
-                    !_.isEmpty(((ATTRS.repeating_project_memoriamresult && ATTRS.repeating_project_memoriamresult) || "").toString().trim())
+                    isValidDString(ATTRS.repeating_project_memoriamdate)
+                    && !_.isEmpty(((ATTRS.repeating_project_memoriamresult && ATTRS.repeating_project_memoriamresult) || "").toString().trim())
                 ) {
                     log("", `Valid DString: ${ATTRS.repeating_project_memoriamdate} and Results: ${ATTRS.repeating_project_memoriamresult}`);
                     setAttrs({repeating_project_archivememoriam_toggle: 1});
@@ -2223,13 +2329,13 @@
                 log(`Retrieved Attributes: ${JSON.stringify(ATTRS)}`);
                 const attrList = {
                     repeating_project_memoriamrewards:
-                        (parseInt(ATTRS.repeating_project_memoriamdiff) === 0 && "(Set the difficulty to see which rewards you can choose from.)") ||
-                        (parseInt(ATTRS.repeating_project_memoriamdiff) === 1 &&
-                            "Answer One Minor Question   ♦   Gain One Expendable Background Dot   ♦   Gain a +2 Bonus to One Roll") ||
-                        (parseInt(ATTRS.repeating_project_memoriamdiff) === 2 &&
-                            "Answer One Major Question   ♦   Gain Two Expendable Background Dots   ♦   Gain a +4 Bonus to One Roll") ||
-                        (parseInt(ATTRS.repeating_project_memoriamdiff) === 3 &&
-                            "Answer One Epic Question   ♦   Gain Three Expendable Background Dot   ♦   Gain a Major Boon")
+                        (parseInt(ATTRS.repeating_project_memoriamdiff) === 0 && "(Set the difficulty to see which rewards you can choose from.)")
+                        || (parseInt(ATTRS.repeating_project_memoriamdiff) === 1
+                            && "Answer One Minor Question   ♦   Gain One Expendable Background Dot   ♦   Gain a +2 Bonus to One Roll")
+                        || (parseInt(ATTRS.repeating_project_memoriamdiff) === 2
+                            && "Answer One Major Question   ♦   Gain Two Expendable Background Dots   ♦   Gain a +4 Bonus to One Roll")
+                        || (parseInt(ATTRS.repeating_project_memoriamdiff) === 3
+                            && "Answer One Epic Question   ♦   Gain Three Expendable Background Dot   ♦   Gain a Major Boon")
                 };
                 log(`Setting Attrs: ${JSON.stringify(attrList)}`);
                 setAttrs(attrList);
@@ -2327,9 +2433,9 @@
                             const colRef = XPPARAMS[cat] ? XPPARAMS[cat].colToggles : null;
                             if (colRef)
                                 if (
-                                    (!colRef.includes("xp_trait_toggle") || pV("xp_trait") !== "") &&
-                                    (!colRef.includes("xp_initial_toggle") || pV("xp_initial") !== "") &&
-                                    (!colRef.includes("xp_new_toggle") || pV("xp_new") !== "")
+                                    (!colRef.includes("xp_trait_toggle") || pV("xp_trait") !== "")
+                                    && (!colRef.includes("xp_initial_toggle") || pV("xp_initial") !== "")
+                                    && (!colRef.includes("xp_new_toggle") || pV("xp_new") !== "")
                                 ) {
                                     if (colRef.includes("xp_new_toggle")) {
                                         let delta = 0;
@@ -2532,8 +2638,8 @@
                         if (parseInt(ATTRS.health) === 0 && _.any(rollArray, (v) => isIn(v, [...ATTRIBUTES.physical, ...SKILLS.physical])))
                             topDisplayStrings.push("Injured (-2)");
                         if (
-                            parseInt(ATTRS.willpower) === 0 &&
-                            _.any(rollArray, (v) => isIn(v, [...ATTRIBUTES.social, ...SKILLS.social, ...ATTRIBUTES.mental, ...SKILLS.mental]))
+                            parseInt(ATTRS.willpower) === 0
+                            && _.any(rollArray, (v) => isIn(v, [...ATTRIBUTES.social, ...SKILLS.social, ...ATTRIBUTES.mental, ...SKILLS.mental]))
                         )
                             topDisplayStrings.push("Exhausted (-2)");
                         for (const effectCheck of effectChecks) {
@@ -2625,9 +2731,9 @@
                     log(`>>> SORTED RARRAY: ${JSON.stringify(rArray)}`);
 
                     if (rArray.length === 0) {
-                        attrList.rollpooldisplay = `Simple Roll${(parseInt(ATTRS.rollmod) === 0 && parseInt(ATTRS.rolldiff) === 0 && " or Check") ||
-                            (parseInt(ATTRS.rollmod) > 0 && ` of ${Math.abs(parseInt(ATTRS.rollmod))} Dice`) ||
-                            ""}`;
+                        attrList.rollpooldisplay = `Simple Roll${(parseInt(ATTRS.rollmod) === 0 && parseInt(ATTRS.rolldiff) === 0 && " or Check")
+                            || (parseInt(ATTRS.rollmod) > 0 && ` of ${Math.abs(parseInt(ATTRS.rollmod))} Dice`)
+                            || ""}`;
                     } else {
                         attrList.rollpooldisplay = rArray.map((v) => realName(v, ATTRS)).join(" + ");
                         if (parseInt(ATTRS.rollmod) !== 0)

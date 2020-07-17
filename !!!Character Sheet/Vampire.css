@@ -880,6 +880,10 @@
 	.charsheet input.sheet-containerselector:not(:checked) + span {
 		display: none !important;
 	}
+	.charsheet div.sheet-dotline input.sheet-dot.sheet-nulldot,
+	.charsheet div.sheet-dotline input.sheet-dot.sheet-nulldot + span::before {
+		display: none !important;
+	}
 
 /* 		#endregion */
 /* 		#region Multi-Dot Lines & Multi-Box Lines */
@@ -1093,6 +1097,8 @@
 		text-shadow: -1px -1px 0px #000, -1px -1px 0px #222, -1px -1px 2px #333, 1px 1px 0px #777, 1px 1px 0px #777, 1px 1px 0px #666;
 	}
 
+
+
 	.charsheet input.sheet-hoverpopup + span + div div .sheet-header2 {
 		color: red !important;
 	}
@@ -1165,12 +1171,37 @@
 		border-bottom: 1px solid white;
 	}
 
-	.charsheet input.sheet-hoverpopup + span + div textarea.sheet-collapsibletitle + textarea.sheet-collapsiblebody {
+	.charsheet input.sheet-hoverpopup + span + div textarea.sheet-collapsibletitle ~ textarea.sheet-collapsiblebody {
 		height: calc(100% - 22px);
 
 		border-radius: unset;
 		border-bottom-left-radius: 12px;
 		border-bottom-right-radius: 12px;
+
+		width: calc(100% - 10px);
+	}
+
+	.charsheet div.sheet-toptitleblock input.sheet-hoverpopup + span + div div textarea {
+		width: calc(100% - 10px);
+	}
+
+	.charsheet div.sheet-toptitleblock input.sheet-hoverpopup + span + div textarea.sheet-collapsibletitle ~ textarea.sheet-collapsiblebody {
+		height: 120px;
+		/* margin-top: -10px; */
+		line-height: 16px;
+	}
+
+	.charsheet input.sheet-hoverpopup + span + div.sheet-coltight1 div textarea.sheet-lineagetraits {
+		width: calc(50% - 10px);
+		height: 20px;
+		padding: 0px 5px;
+		margin-top: -10px;
+		font-weight: bold;
+		font-size: 16px;
+	}
+	.charsheet input.sheet-hoverpopup + span + div.sheet-coltight1 div textarea.sheet-lineagetraits.sheet-right {
+		color: red !important;
+		text-shadow: -1px -1px 0px #000, -1px -1px 0px #200, -1px -1px 2px #300, 1px 1px 0px #700, 1px 1px 0px #700, 1px 1px 0px #600;
 	}
 
 	.charsheet input.sheet-hoverpopup + span + div.sheet-rightmost {
@@ -1931,7 +1962,7 @@
 
 	.charsheet div.sheet-toptitleblock div.sheet-titlesubheader select.sheet-titlesubheader {
 		font-size: 14px;
-		width: calc(100% - 40% - 15px) !important;
+		width: 100% !important; /* calc(100% - 40% - 15px) !important; */
 		text-align: right;
 		text-align-last: right;
 		padding-right: 17px;
@@ -1942,7 +1973,7 @@
 	}
 
 	.charsheet div.sheet-titleblock div.sheet-header2 {
-		margin-bottom: 10px;
+		/* margin-bottom: 10px; */
 	}
 
 	.charsheet div.sheet-toptitleblock span.sheet-titleheader {
@@ -1993,8 +2024,9 @@
 	}
 
 	.charsheet div.sheet-titleblock div.sheet-dotline {
-		height: 24px;
+		height: auto;
 		width: 100%;
+		margin-bottom: 10px;
 	}
 
 	.charsheet div.sheet-titleblock div.sheet-dotline input {

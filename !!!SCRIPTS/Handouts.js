@@ -23,6 +23,7 @@ const Handouts = (() => {
     const preInitialize = () => {
         STATE.REF.noteCounts = STATE.REF.noteCounts || {projects: 0, debug: 0};
         STATE.REF.categoryLogs = STATE.REF.categoryLogs || {projects: [], debug: []};
+        STATE.REF.categoryLogs.debug = [];
     };
     // #endregion
 
@@ -185,14 +186,8 @@ const Handouts = (() => {
         }
     };
     const delHandoutObjs = (titleRef, category) => {
-        const handoutObjs = findObjs({_type: "handout"}).filter(
-            (x) => (!category || STATE.REF.categoryLogs[category].includes(x.get("name"))) && D.LCase(x.get("name")).includes(D.LCase(titleRef))
-        );
-        for (const handout of handoutObjs) {
-            if (category && STATE.REF.categoryLogs[category].includes(handout.get("name")))
-                D.PullOut(STATE.REF.categoryLogs[category], (v) => v === handout.get("name"));
-            handout.remove();
-        }
+        const handoutObjs = findObjs({_type: "handout"}).filter((x) => (!category || STATE.REF.categoryLogs[category].includes(x.get("name"))) && D.LCase(x.get("name")).includes(D.LCase(titleRef)));
+        handoutObjs.forEach((x) => delHandoutObj(x.get("name"), category));
     };
     const delHandoutObj = (titleRef, category) => {
         const handoutObj = findObjs({_type: "handout", inplayerjournals: "", archived: false}).find((x) => D.LCase(x.get("name")).includes(D.LCase(titleRef)));

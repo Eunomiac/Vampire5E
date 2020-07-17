@@ -161,6 +161,7 @@ const C = (() => {
 
         purered: "rgba(255, 0, 0, 1)",
         palered: "rgba(255, 175, 175, 1)",
+        palepalered: "rgba(255, 200, 200, 1)",
         brightred: "rgba(255, 31, 34, 1)",
         lightred: "rgba(255, 60, 60, 1)",
         red: "rgba(209,0,3,1)",
@@ -181,6 +182,7 @@ const C = (() => {
         orange: "rgba(255,140,0,1)",
         orangered: "rgba(255,69,0,1)",
         lightorange: "rgba(255,165,0,1)",
+        paleorange: "rgba(255, 202, 138,1)",
 
         yellow: "rgba(255,255,0,1)",
         khaki: "rgba(240,230,140,1)",
@@ -188,18 +190,26 @@ const C = (() => {
 
         puregreen: "rgba(0, 255, 0, 1)",
         palegreen: "rgba(175, 255, 175, 1)",
+        palepalegreen: "rgba(200, 255, 200, 1)",
         brightgreen: "rgba(35, 255, 35, 1)",
         green: "rgba(0, 200, 0, 1)",
         darkgreen: "rgba(0, 125, 0, 1)",
 
+        palecyan: "rgba(161, 255, 255, 1)",
         cyan: "rgba(0, 255, 255, 1)",
         darkcyan: "rgba(0,150,150,1)",
 
         pureblue: "rgba(0,0,255,1)",
         paleblue: "rgba(175, 175, 255, 1)",
+        palepaleblue: "rgba(200, 200, 255, 1)",
         brightblue: "rgba(150, 150, 255, 1)",
         blue: "rgba(100, 100, 255, 1)",
         darkblue: "rgba(50, 50, 150, 1)",
+
+        magenta: "rgba(255,20,147,1)",
+        palemagenta: "rgba(255,105,180,1)",
+        palepalemagenta: "rgba(255,192,203,1)",
+        darkmagenta: "rgba(199,21,133,1)",
 
         palepurple: "rgba(255, 175, 255, 1)",
         brightpurple: "rgba(200, 100, 200, 1)",
@@ -252,9 +262,9 @@ const C = (() => {
                     min-width: ${CHATWIDTH}px;
                     font-size: 0px;
                     width: ${params.width};
-                    ${(params.bgGradient && `background-image: linear-gradient(${params.bgGradient})`) ||
-                        (params.bgColor && `background-color: ${params.bgColor}`) ||
-                        `background: url('${params.bgImage}')`};
+                    ${(params.bgGradient && `background-image: linear-gradient(${params.bgGradient})`)
+                        || (params.bgColor && `background-color: ${params.bgColor}`)
+                        || `background: url('${params.bgImage}')`};
                     text-align: ${params.textAlign};
                     border: ${params.border};
                     padding: ${params.padding};
@@ -358,8 +368,8 @@ const C = (() => {
                 fontWeight: options.fontWeight || "bold",
                 border: options.border || "none; border-top: 1px solid red; border-bottom: 1px solid red;",
                 textShadow:
-                    options.textShadow ||
-                    "-1px -1px 2px #000, -1px -1px 2px #000, -1px -1px 2px #000, 1px 1px 2px #000, 1px 1px 2px #000, 1px 1px 2px #000",
+                    options.textShadow
+                    || "-1px -1px 2px #000, -1px -1px 2px #000, -1px -1px 2px #000, 1px 1px 2px #000, 1px 1px 2px #000, 1px 1px 2px #000",
                 boxShadow: options.boxShadow || "none",
                 textAlign: options.textAlign || "center",
                 lineHeight: options.lineHeight || options.height || "20px"
@@ -400,8 +410,8 @@ const C = (() => {
                 fontWeight: options.fontWeight || "bold",
                 textAlign: options.textAlign || "center",
                 textShadow:
-                    options.textShadow ||
-                    `0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}`,
+                    options.textShadow
+                    || `0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}`,
                 border: options.border || "none",
                 boxShadow: options.boxShadow || "none",
                 lineHeight: options.lineHeight || options.fontSize || "22px"
@@ -669,9 +679,9 @@ const C = (() => {
                             text-align: center;
                             text-align-last: center;
                             font-weight: bold;
-                            margin: ${params.margin};"> ${boxes.aggravated.repeat(numAgg) +
-                boxes.superficial.repeat(numSuper) +
-                boxes.clear.repeat(numClear)}</div>`);
+                            margin: ${params.margin};"> ${boxes.aggravated.repeat(numAgg)
+                + boxes.superficial.repeat(numSuper)
+                + boxes.clear.repeat(numClear)}</div>`);
         },
         CodeBlock: (content, options = {}) => {
             /* if (VAL({list: content}))
@@ -782,9 +792,9 @@ const C = (() => {
                 min-width: ${CHATWIDTH}px;
                 font-size: 0px;
                 width: ${params.width};
-                ${(params.bgGradient && `background-image: linear-gradient(${params.bgGradient})`) ||
-                    (params.bgColor && `background-color: ${params.bgColor}`) ||
-                    `background: url('${params.bgImage}')`};
+                ${(params.bgGradient && `background-image: linear-gradient(${params.bgGradient})`)
+                    || (params.bgColor && `background-color: ${params.bgColor}`)
+                    || `background: url('${params.bgImage}')`};
                 text-align: ${params.textAlign};
                 border: ${params.border};
                 padding: ${params.padding};
@@ -885,8 +895,8 @@ const C = (() => {
                 fontWeight: options.fontWeight || "bold",
                 border: options.border || "none; border-top: 1px solid red; border-bottom: 1px solid red;",
                 textShadow:
-                    options.textShadow ||
-                    "-1px -1px 2px #000, -1px -1px 2px #000, -1px -1px 2px #000, 1px 1px 2px #000, 1px 1px 2px #000, 1px 1px 2px #000",
+                    options.textShadow
+                    || "-1px -1px 2px #000, -1px -1px 2px #000, -1px -1px 2px #000, 1px 1px 2px #000, 1px 1px 2px #000, 1px 1px 2px #000",
                 boxShadow: options.boxShadow || "none",
                 textAlign: options.textAlign || "center",
                 lineHeight: options.lineHeight || options.height || "20px"
@@ -925,8 +935,8 @@ const C = (() => {
                 fontSize: options.fontSize || "18px",
                 fontWeight: options.fontWeight || "bold",
                 textAlign: options.textAlign || "center",
-                textShadow: options.textShadow ||
-                    `0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}`,
+                textShadow: options.textShadow
+                    || `0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}`,
                 border: options.border || "none",
                 boxShadow: options.boxShadow || "none",
                 lineHeight: options.lineHeight || options.fontSize || "22px"
@@ -1193,9 +1203,9 @@ const C = (() => {
                             text-align: center;
                             text-align-last: center;
                             font-weight: bold;
-                            margin: ${params.margin};"> ${boxes.aggravated.repeat(numAgg) +
-                boxes.superficial.repeat(numSuper) +
-                boxes.clear.repeat(numClear)}</div>`);
+                            margin: ${params.margin};"> ${boxes.aggravated.repeat(numAgg)
+                + boxes.superficial.repeat(numSuper)
+                + boxes.clear.repeat(numClear)}</div>`);
         },
         CodeBlock: (content, options = {}) => {
             /* if (VAL({list: content}))
@@ -1309,24 +1319,24 @@ const C = (() => {
                     ">${content}</div>`)
         },
         TraitSummaryDoc: {
-            Table: (content) => D.JSH(`<table style="width: 600px; box-shadow: 7px 7px 7px rgba(0,0,0,0.5); border: 1px solid black; font-family: 'Carrois Gothic SC'; margin-left: -30px;"><tbody>${content}</tbody></table>`),
+            Table: (content) => D.JSH(`<table style="margin-bottom: 1500px; width: 600px; box-shadow: 7px 7px 7px rgba(0,0,0,0.5); border: 1px solid black; font-family: 'Carrois Gothic SC'; margin-left: -30px;"><tbody>${content}</tbody></table>`),
             HeaderRow: (content, bgColor) => D.JSH(`<tr style="font-weight: bold; color: white; background-color: ${bgColor};">${content}</tr>`),
             Row: (content, bgColor) => D.JSH(`<tr style="background-color: ${bgColor};">${content}</tr>`),
             Cell: (content) => D.JSH(`<td style="line-height: 16px; padding: 0px 1px; white-space: nowrap; border: none; border-right: 1px solid black;">${content}</td>`),
-            SymbolSpan: (content) => D.JSH(`<span style="display: inline-block; vertical-align: top; font-size: 14px;">${content}</span>`),
+            TrackerCell: (content) => D.JSH(`<td style="line-height: 12px; padding: 0px 2px; white-space: nowrap; border: none; border-right: 1px solid black; text-align: center; text-align-last: center; ">${content}</td>`),
+            SymbolSpan: (content) => D.JSH(`<span style="display: inline-block; vertical-align: top; font-size: 14px; margin-top: 1px;">${content}</span>`),
             SpecialtySpan: (content) => D.JSH(`<span style="display: inline-block; vertical-align: top; font-family: 'Economica'; font-size: 10px; padding-left: 3px; line-height: 8px; width: 70px; font-variant: small-caps; overflow-x: hidden; white-space: normal; text-shadow: 0px 0px 1px black;">${content}</span>`),
             Symbols: {
                 DotFull: "<span style=\"display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top;\">●</span>",
                 DotEmpty: "<span style=\"display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top; color: rgba(125, 125, 125, 1);\">○</span>",
-                BoxAggro: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 0px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/3gqGRAd.png'); background-size: 100%;\"></span>",
-                BoxSuper: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 0px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/e7l3Cx8.png'); background-size: 100%;\"></span>",
-                BoxEmpty: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 0px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc;\"></span>",
-                BoxHumanity: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 0px; background-color: rgba(150, 150, 150, 0.4); background: url('https://i.imgur.com/9ZoSd0Z.jpg') no-repeat center; background-size: 120%; box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;\"></span>",
-                BoxStain: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 0px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; margin-top: 0px; background: url('https://i.imgur.com/IVia33U.jpg') no-repeat center; background-size: 110%;\"></span>",
-                BoxHumStain: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 0px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; margin-top: 0px; background: url('https://i.imgur.com/MmbObrq.jpg') no-repeat center; background-size: 110%;\"></span>",
-                DotBPFull: "<span display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top; background: rgba(150, 150, 150, 0.4); border: none; height: 9px; box-shadow: 1px 1px 2px black, 1px 1px 2px black; border-radius: 100%; margin: -1px 1px 1px 1px; background: url('https://imgsrv.roll20.net/?src=https%3A//i.imgur.com/U5ZW214.png') no-repeat center; background-size: 100%;></span>",
-                DotBPEmpty: `<span style="display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top;"
-                style="background: rgba(150, 150, 150, 0.4); border: none; height: 9px; box-shadow: -1px -1px 0px #000, 0px -1px 0px #999, 1px -1px 0px #aaa, 0px 0px 2px #000, 1px 0px 0px #fff, 0px 1px 0px #ccc, 1px 1px 0px #fff; border-radius: 100%; margin: 0px 1px 0px 1px;"></span>`
+                BoxAggro: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/3gqGRAd.png'); background-size: 100%;\"></span>",
+                BoxSuper: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/e7l3Cx8.png'); background-size: 100%;\"></span>",
+                BoxEmpty: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc;\"></span>",
+                BoxHumanity: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); background: url('https://i.imgur.com/9ZoSd0Z.jpg') no-repeat center; background-size: 120%; box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;\"></span>",
+                BoxStain: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/IVia33U.jpg') no-repeat center; background-size: 110%;\"></span>",
+                BoxHumStain: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; margin-top: 3px; background: url('https://i.imgur.com/MmbObrq.jpg') no-repeat center; background-size: 110%;\"></span>",
+                DotBPFull: "<span style=\"display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top; background: rgba(150, 150, 150, 0.4); border: none; height: 9px; box-shadow: 1px 1px 2px black, 1px 1px 2px black; border-radius: 100%; margin: 2px 1px 1px 1px; background: url('https://imgsrv.roll20.net/?src=https%3A//i.imgur.com/U5ZW214.png') no-repeat center; background-size: 100%;\"></span>",
+                DotBPEmpty: "<span style=\"display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top; background: rgba(150, 150, 150, 0.4); border: none; height: 9px; box-shadow: -1px -1px 0px #000, 0px -1px 0px #999, 1px -1px 0px #aaa, 0px 0px 2px #000, 1px 0px 0px #fff, 0px 1px 0px #ccc, 1px 1px 0px #fff; border-radius: 100%; margin: 3px 1px 0px 1px;\"></span>"
             }
         },
         main: (content) => D.JSH(`<div style="

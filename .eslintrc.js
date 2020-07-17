@@ -124,7 +124,7 @@ module.exports = {
         "object-curly-spacing": ["error", "never"],
         "one-var": ["error", { var: "always", let: "consecutive", const: "never" }],
         "one-var-declaration-per-line": 0,
-        "operator-linebreak": ["error", "after"],
+        "operator-linebreak": ["error", "before"],
         "prefer-arrow-callback": "error",
         "prefer-const": ["error", { destructuring: "all" }],
         "prefer-destructuring": 0,

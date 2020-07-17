@@ -231,8 +231,8 @@ const D = (() => {
                                     case "listener": {
                                         STATE.REF.isReportingListener = !STATE.REF.isReportingListener;
                                         D.Alert(
-                                            (STATE.REF.isReportingListener && "Now reporting Listener events.") ||
-                                                "No longer reporting Listener events.",
+                                            (STATE.REF.isReportingListener && "Now reporting Listener events.")
+                                                || "No longer reporting Listener events.",
                                             "!data toggle report listener"
                                         );
                                         break;
@@ -456,6 +456,152 @@ const D = (() => {
 
     // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
 
+    const jStrTest = (data, isVerbose = false, isAlwaysBreakingLines = false) => {
+        const colorRef = {
+            REGIMG: C.COLORS.palegreen,
+            DRAGPAD: C.COLORS.palepalegreen,
+            REGTEXT: C.COLORS.paleblue,
+            TEXTSHADOW: C.COLORS.palepaleblue,
+            REGTOKEN: C.COLORS.paleorange,
+            REGANIM: C.COLORS.palered,
+            UNREGIMG: C.COLORS.darkgreen,
+            UNREGTEXT: C.COLORS.darkblue,
+            UNREGTOKEN: C.COLORS.orange,
+            UNREGANIM: C.COLORS.red,
+            CHAR: C.COLORS.brightgold,
+            PLAYER: C.COLORS.midgold,
+            DATE: C.COLORS.palecyan,
+            TRACK: C.COLORS.palemagenta,
+            other: C.COLORS.grey
+        };
+        const objectParser = (obj) => {
+            if (isVerbose) // If so, return simple stringified version of any Roll20 object.
+                return JSON.stringify(obj, null, 4);
+            else // If NOT, return color-coded tag for the object.
+                switch (obj.get("type")) {
+                    case "graphic": {
+                        const name = obj.get("name") || "Unnamed";
+                        if (name in Media.IMAGES)
+                            return `@@REGIMG-${name}-@@`;
+                        else if (name in Media.ANIM)
+                            return `@@REGANIM-${name}-@@`;
+                        else if (obj.get("represents"))
+                            if (name in Media.TOKENS)
+                                return `@@REGTOKEN-${name}-@@`;
+                            else
+                                return `@@UNREGTOKEN-${obj.id}-@@`;
+                        const masterImage = getObj("graphic", (_.findWhere(Media.GRAPHICS, {padID: obj.id}) || _.findWhere(Media.GRAPHICS, {partnerID: obj.id}) || {id: false}).id);
+                        if (masterImage)
+                            return objectParser(masterImage).replace(/^@@.*?-(.*)-@@$/gu, "@@DRAGPAD-$1-@@");
+                        return `@@UNREG${obj.get("imgsrc").includes(".webm") ? "ANIM" : "IMG"}-##LINK:"${obj.get("imgsrc")}"${obj.get("left")}, ${obj.get("top")} (${obj.get("width")} x ${obj.get("height")}: ${obj.get("layer")}##-@@`;
+                    }
+                    case "text": {
+                        if (obj.id in Media.TEXTIDS)
+                            return `@@REGTEXT-${Media.TEXTIDS[obj.id]}-@@`;
+                        const masterText = getObj("text", (_.findWhere(Media.TEXT, {shadowID: obj.id}) || {id: false}).id);
+                        if (masterText)
+                            return objectParser(masterText).replace(/^@@.*?-(.*)-@@$/gu, "@@TEXTSHADOW-$1-@@");
+                        return `@@UNREGTEXT-[${obj.get("layer")}] '${ellipsisText(obj.get("text"), 50)}'-@@`;
+                    }
+                    case "character": {
+                        return `@@CHAR-${name}-@@`;
+                    }
+                    case "player": {
+                        return `@@PLAYER-${obj.get("displayname")}-@@`;
+                    }
+                    case "jukeboxtrack": {
+                        return `@@TRACK-${obj.get("title")}-@@`;
+                    }
+                    default: {
+                        return `@@OTHER-${obj.get("name") || obj.id}-@@`;
+                    }
+                }
+        };
+        const replacer = (k, v) => {
+            /* REPLACER FUNCTION:
+                - Takes (key, val), where 'val' is the value being stringified.
+                    - the object in which the key is found becomes the 'this' parameter.
+                    - initially, replacer called with empty string as 'key' value.
+
+                - Should return value to be added to JSON string, as follows:
+                    - If you return a Number, String, Boolean, or null, the stringified version of that value is used as the property's value.
+                    - If you return a Function, Symbol, or undefined, the property is not included in the output.
+                    - If you return any other object, the object is recursively stringified, calling the replacer function on each property.
+            */
+            let returnVal = v;
+            // CHECK ONE: ROLL20 OBJECT.
+            if (typeof v === "object" && "get" in v && v.get("_type")) {
+                return objectParser(v);
+            } else if (v instanceof Date) {
+                return `@@DATE-${TimeTracker.FormatDate(new Date(v), true)}-@@`;
+                // } else if (!isVerbose && (k.slice(0, 3).toLowerCase() === "obj" || (v && (v.get || v._type)))) {
+                // const type = (v.get && v.get("_type")) || v._type || "O";
+                // let name = (v.get && v.get("name")) || v.name || "(Unnamed)";
+                // if (name === "(Unnamed)" && type === "text") {
+                //     const textString = v.get && v.get("text");
+                //     if (textString.length > 15)
+                //         name = `${textString.slice(0, 15)}...`;
+                //     else if (textString)
+                //         name = textString;
+                // }
+                // returnVal = `@@NAMESTART${typeColor(type)}@@${name}@@NAMEEND@@`;
+            } else if (_.isUndefined(v)) {
+                returnVal = "<b>&lt;UNDEFINED&gt;</b>";
+            } else if (_.isNull(v)) {
+                returnVal = "<b>NULL</b>";
+            } else if (_.isNaN(v)) {
+                returnVal = "<b>&lt;NaN&gt;</b>";
+            } else if (_.isFunction(v)) {
+                returnVal = "<b>&lt;FUNCTION&gt;</b>";
+            } else if (_.isArray(v)) {
+                if (!isAlwaysBreakingLines && v.map((x) => replacer(k, x)).join(",&nbsp;").length < 150) {
+                    returnVal = `<b>[</b> ${v.map((x) => replacer(k, x)).join(",&nbsp;")} <b>]</b>`.replace(/\[\s+\]/gu, "<b>[]</b>");
+                } else {
+                    const arrayDelver = (array) => {
+                        const returns = [];
+                        for (const val of array)
+                            returns.push(`<div style="display: block; margin-left: 7px;">${replacer(k, val)},</div>`);
+                        return `<b>[</b><div style="display: block; margin-left: 7px;">${returns.join("").slice(0, -7)}</div></div><b>]</b>`;
+                    };
+                    returnVal = arrayDelver(v);
+                }
+            } else if (_.isObject(v)) {
+                const stringifyTest = `<b>{</b> ${Object.values(kvpMap(v, null, (val, key) => `${key}: ${replacer(k, val)}`)).join(
+                    ", "
+                )} <b>}</b>`.replace(/\{\s+\}/gu, "<b>{}</b>");
+                if (!isAlwaysBreakingLines && stringifyTest.length < 150) {
+                    returnVal = stringifyTest;
+                } else {
+                    const listDelver = (list) => {
+                        const returns = [];
+                        for (const key of Object.keys(list))
+                            returns.push(`<div style="display: block; margin-left: 7px;">${key}: ${replacer(key, list[key])},</div>`);
+                        return `<b>{</b><div style="display: block; margin-left: 7px;">${returns.join("").slice(0, -7)}</div></div><b>}</b>`;
+                    };
+                    returnVal = listDelver(v);
+                }
+            } else if (_.isNumber(v)) {
+                returnVal = v.toString();
+            } else if (_.isString(v)) {
+                returnVal = `ϙQϙ${v}ϙQϙ`;
+            }
+            if (_.isString(returnVal))
+                returnVal = `${returnVal}`
+                    .replace(/[\n\r]/gu, "ϙNϙ")
+                    .replace(/<(.*?)>/gu, (x) => x
+                        .replace(/"/gu, "ϙHϙ")
+                        .replace(/ϙNϙ/gu, "\n")
+                        .replace(/\s\s+/gu, " ")) // Hides HTML-code quotes so they aren't replaced AND strips line breaks from inside HTML tags.
+                    .replace(/"/gu, "") // Removes all double-quotes.
+                    // replace(/[\t\n\r]/gu, "").
+                    // replace(/\\/gu, ""). // Strips tabs and escape slashes.
+                    .replace(/\n/gu, "<br/>") // Converts line breaks into HTML breaks.
+                    .replace(/(\s)\s+/gu, "$1") // Removes excess whitespace.
+                    .replace(/\\t/gu, "")
+                    .replace(/\\n/gu, "");
+            return returnVal;
+        };
+    };
     const jStr = (data, isVerbose = false, isAlwaysBreakingLines = false) => {
         /* Parses a value of any type via JSON.stringify, and then further styles it for display either
                 in Roll20 chat, in the API console log, or both. */
@@ -663,7 +809,10 @@ const D = (() => {
     // // };
 
     // console.log(jStrX(objTest));
-
+    const pTimeInMS = (timeRef, minForSecs = 60) => { // Converts timeRef to number, multiplies by 1000 if less than minForSecs
+        timeRef = D.Float(timeRef, 3);
+        return timeRef * (timeRef <= minForSecs ? 1000 : 1);
+    };
     const parseParams = (args, delim = " ") => {
         const returnVal = _.object(
             (VAL({array: args}) ? args.join(" ") : args)
@@ -740,8 +889,7 @@ const D = (() => {
             if (parseInt(digits.join("")) <= C.NUMBERWORDS.low.length)
                 result += C.NUMBERWORDS.low[parseInt(digits.join(""))];
             else
-                result +=
-                    C.NUMBERWORDS.tens[parseInt(digits.shift())] + (parseInt(digits[0]) > 0 ? `-${C.NUMBERWORDS.low[parseInt(digits[0])]}` : "");
+                result += C.NUMBERWORDS.tens[parseInt(digits.shift())] + (parseInt(digits[0]) > 0 ? `-${C.NUMBERWORDS.low[parseInt(digits[0])]}` : "");
             return result.toLowerCase();
         };
         const isNegative = numString.charAt(0) === "-";
@@ -780,16 +928,21 @@ const D = (() => {
                     _.map(C.NUMBERWORDS.low, (v) => v.toLowerCase()),
                     tenText.toLowerCase()
                 )
-            ) + VAL({string: oneText}) ?
-                Math.max(
+            ) + VAL({string: oneText})
+                ? Math.max(
                     0,
                     _.indexOf(
                         _.map(C.NUMBERWORDS.low, (v) => v.toLowerCase()),
                         oneText.toLowerCase()
                     )
-                ) :
-                0;
+                )
+                : 0;
         return 0;
+    };
+    const ellipsisText = (text, maxLength) => {
+        if (`${text}`.length > maxLength)
+            return `${text.slice(0, maxLength - 3)}…`;
+        return text;
     };
     const numToRomanNum = (num, isGroupingSymbols = true) => {
         if (isNaN(num))
@@ -864,9 +1017,9 @@ const D = (() => {
             i = 3;
         while (i--)
             roman = (key[D.Int(digits.pop()) + i * 10] || "") + roman;
-        return isGroupingSymbols ?
-            (Array(D.Int(digits.join("")) + 1).join("M") + roman).replace(/ⅩⅠ/gu, "Ⅺ").replace(/ⅩⅡ/gu, "Ⅻ") :
-            Array(D.Int(digits.join("")) + 1).join("M") + roman;
+        return isGroupingSymbols
+            ? (Array(D.Int(digits.join("")) + 1).join("M") + roman).replace(/ⅩⅠ/gu, "Ⅺ").replace(/ⅩⅡ/gu, "Ⅻ")
+            : Array(D.Int(digits.join("")) + 1).join("M") + roman;
     };
     const ordinal = (num, isFullText = false) => {
         /* Converts any number by adding its appropriate ordinal ("2nd", "3rd", etc.) */
@@ -913,14 +1066,14 @@ const D = (() => {
         .split(",")
         .map((x, i) => D[i === 3 ? "Round" : "Int"](x, 2))
         .map((x, i) => D[i === 3 ? "Round" : "Int"](
-            x +
-                        ((endColor
+            x
+                        + ((endColor
                             .replace(/[^\d\s,]*/gu, "")
                             .split(",")
-                            .map((xx, ii) => D[ii === 3 ? "Round" : "Int"](xx, 2))[i] -
-                            x) *
-                            step) /
-                            totalSteps,
+                            .map((xx, ii) => D[ii === 3 ? "Round" : "Int"](xx, 2))[i]
+                            - x)
+                            * step)
+                            / totalSteps,
             2
         ))
         .join(", ")})`;
@@ -958,8 +1111,8 @@ const D = (() => {
             if (STACKLOG.length > 450)
                 getStackRecord("... Stack");
             logStackAlert(
-                `<span style="background-color: rgba(0,0,0,0.${STACKLOG.length %
-                    2}); width: 1550px; display: block; font-family: 'Carrois Gothic SC'; font-size: 12px;"> ${"> ".repeat(
+                `<span style="background-color: rgba(0,0,0,0.${STACKLOG.length
+                    % 2}); width: 1550px; display: block; font-family: 'Carrois Gothic SC'; font-size: 12px;"> ${"> ".repeat(
                     FUNCSONSTACK.length - 1
                 )}${FUNCSONSTACK.slice(1)
                     .map((x) => dampenStackVal(x[1]))
@@ -991,8 +1144,8 @@ const D = (() => {
                     STACKLOG[STACKLOG.length - 1] = `${STACKLOG[STACKLOG.length - 1].replace(/<\/span>$/gu, " ◄</span>")}`;
                 else
                     logStackAlert(
-                        `<span style="background-color: rgba(0,0,0,0.${STACKLOG.length %
-                            2}); width: 1550px; display: block; font-family: 'Carrois Gothic SC'; font-size: 12px;"> ${" <".repeat(
+                        `<span style="background-color: rgba(0,0,0,0.${STACKLOG.length
+                            % 2}); width: 1550px; display: block; font-family: 'Carrois Gothic SC'; font-size: 12px;"> ${" <".repeat(
                             FUNCSONSTACK.length
                         )}${D.Clone(FUNCSONSTACK)
                             .slice(1)
@@ -1052,9 +1205,9 @@ const D = (() => {
         /* Whispers chat message to player given: display name OR player ID.
                 If no Title, message is sent without formatting. */
         const player = getPlayer(who) || who;
-        const html =
-            (isPureCode &&
-                `<div style="
+        const html
+            = (isPureCode
+                && `<div style="
                 display: block;
                 margin: -35px 0px -7px -42px;
                 height: auto;
@@ -1100,9 +1253,9 @@ const D = (() => {
                     box-shadow: none;
                     border: none;
                     white-space: nowrap;
-                ">${message}</span></div>`.replace(/\s+/gu, " ")) ||
-            (title === "none" &&
-                jStr(
+                ">${message}</span></div>`.replace(/\s+/gu, " "))
+            || (title === "none"
+                && jStr(
                     C.HTML.Block(
                         C.HTML.Header(message, {
                             height: "auto",
@@ -1119,9 +1272,9 @@ const D = (() => {
                         }),
                         {width: "auto", border: `2px solid ${C.COLORS.black}`}
                     )
-                )) ||
-            (title &&
-                jStr(
+                ))
+            || (title
+                && jStr(
                     C.HTML.Block(
                         [
                             C.HTML.Header(title, {
@@ -1157,8 +1310,8 @@ const D = (() => {
                             border: `2px solid ${C.COLORS.black}`
                         }
                     )
-                )) ||
-            message;
+                ))
+            || message;
         // sendChat(from, `/direct <pre>${JSON.stringify(html)}</pre>`)
         if (who === "all" || player === "all" || !player) {
             if (!isPublicDuringTesting && Session.IsTesting && !Session.IsFullTest)
@@ -1280,16 +1433,16 @@ const D = (() => {
                             const totalFlexEntities = rowData.contents.filter(
                                 (x) => (VAL({list: x}) && (!x.styles || !x.styles.width)) || (VAL({number: x}) && x === 0)
                             ).length;
-                            const strictSpacerTotWidth =
-                                rowData.contents
-                                    .map((x) => (VAL({list: x}) && "text" in x ?
-                                        D.Int(
+                            const strictSpacerTotWidth
+                                = rowData.contents
+                                    .map((x) => (VAL({list: x}) && "text" in x
+                                        ? D.Int(
                                             Object.assign({width: "40px"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(
                                                 /%|(px)/gu,
                                                 ""
                                             )
-                                        ) :
-                                        x))
+                                        )
+                                        : x))
                                     .filter((x) => VAL({number: x}))
                                     .reduce((tot, x) => tot + x + 2, 0) || 0;
                             // strictSpacerTotWidth = Math.floor(C.CHATWIDTH * (strictSpacerTotPercentWidth / 100)),
@@ -1411,8 +1564,8 @@ const D = (() => {
                 first
                     .toLowerCase()
                     .replace(/\W+/gu, "")
-                    .includes(second.toLowerCase().replace(/\W+/gu, "")) ||
-                second
+                    .includes(second.toLowerCase().replace(/\W+/gu, ""))
+                || second
                     .toLowerCase()
                     .replace(/\W+/gu, "")
                     .includes(first.toLowerCase().replace(/\W+/gu, ""))
@@ -1637,8 +1790,8 @@ const D = (() => {
                     let errorCheck = null;
                     switch (cat.toLowerCase()) {
                         case "jsobject": case "jsobj":
-                            if (v === null ||
-                                !((typeof v === "function") || (typeof v === "object")))
+                            if (v === null
+                                || !((typeof v === "function") || (typeof v === "object")))
                                 errorLines.push(`Invalid JavaScript object (=${v === null ? "NULL" : typeof v}): ${jStrL(v)}`);
                             break;
                         case "object":
@@ -1650,7 +1803,7 @@ const D = (() => {
                             if (_.isNaN(parseInt(v)))
                                 errorLines.push(`Invalid number: ${jStrL(v)}`);
                             break;
-                        case "string": // If
+                        case "string": // If v is a string OR a number
                             if (!_.isString(v) && !_.isNumber(v))
                                 errorLines.push(`Invalid string: ${jStrL(v)}`);
                             break;
@@ -1887,18 +2040,15 @@ const D = (() => {
     const getBlackList = () => sendToGM(`${jStr(STATE.REF.BLACKLIST)}`, "DEBUG BLACKLIST");
     const logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
         msg = formatMsgContents(msg, false);
-        if (STATE.REF.ISDEBUGGING && (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive)) {
+        if (STATE.REF.ISDEBUGGING && (Session.IsTesting || !Session.IsSessionActive)) {
             if (funcName) {
                 STATE.REF.DEBUGLOG.push({
                     timeStamp: new Date().getTime(),
                     title: formatTitle(funcName, scriptName, prefix),
                     contents: msg
                 });
-                if (STATE.REF.DEBUGLOG.length > 100) {
-                    if (Handouts.Count("debug") > 20)
-                        Handouts.RemoveAll("... DBLog", "debug");
+                if (STATE.REF.DEBUGLOG.length > 100)
                     getDebugRecord("... DBLog");
-                }
             }
             log(formatLogLine(msg, funcName, scriptName, prefix));
         }
@@ -1923,26 +2073,22 @@ const D = (() => {
     );
     const sendDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
         if (
-            (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) &&
-            !STATE.REF.BLACKLIST.includes(funcName) &&
-            !STATE.REF.BLACKLIST.includes(scriptName)
+            (!Session.IsSessionActive || Session.IsTesting)
+            && (STATE.REF.WATCHLIST.includes(funcName) || !STATE.REF.BLACKLIST.includes(funcName))
+            && (STATE.REF.WATCHLIST.includes(funcName) || STATE.REF.WATCHLIST.includes(scriptName) || !STATE.REF.BLACKLIST.includes(scriptName))
         ) {
             logDebugAlert(msg, funcName, scriptName, prefix);
             if (
-                (funcName && STATE.REF.WATCHLIST.includes(funcName)) ||
-                (scriptName && STATE.REF.WATCHLIST.includes(scriptName)) ||
-                (!funcName && !scriptName)
+                (funcName && STATE.REF.WATCHLIST.includes(funcName))
+                || (scriptName && STATE.REF.WATCHLIST.includes(scriptName))
+                || (!funcName && !scriptName)
             )
                 sendToGM(formatMsgContents(msg, true, true), formatTitle(funcName, scriptName, prefix));
         }
     };
-    const getDebugRecord = (title = "Debug Log", isClearing = false) => {
+    const getDebugRecord = (title = "Debug Log") => {
         const logLines = [];
         let lastTimeStamp, lastTitle;
-        if (isClearing) {
-            Handouts.RemoveAll("Debug Log", "debug");
-            Handouts.RemoveAll("... DBLog", "debug");
-        }
         for (const logData of STATE.REF.DEBUGLOG) {
             if (lastTimeStamp && logData.timeStamp - lastTimeStamp > 7200000) {
                 logLines.length = 0;
@@ -2074,11 +2220,10 @@ const D = (() => {
     };
     const getName = (value, isShort = false) => {
         // Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
-        const obj =
-            (VAL({object: value}) && value) ||
-            (VAL({char: value}) && getChar(value)) ||
-            (VAL({player: value}) && getPlayer(value)) ||
-            (VAL({string: value}) && getObj("graphic", value));
+        const obj = (VAL({object: value}) && value)
+            || (VAL({char: value}) && getChar(value))
+            || (VAL({player: value}) && getPlayer(value))
+            || (VAL({string: value}) && getObj("graphic", value));
         const name = (VAL({player: obj}) && obj.get("_displayname")) || (VAL({object: obj}, "getName") && obj.get("name"));
         if (VAL({object: obj, string: name}, "getName")) {
             if (isShort) {
@@ -2196,9 +2341,9 @@ const D = (() => {
                     dbstring += ` ... "${jStrL(v)}": `;
                     // If parameter is a STRING, assume it is a character name to fuzzy-match UNLESS isStrict is true.
                 } else {
-                    const charName = isFuzzyMatching ?
-                        D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCDICT, false) :
-                        D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCLIST, true);
+                    const charName = isFuzzyMatching
+                        ? D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCDICT, false)
+                        : D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCLIST, true);
                     const charObj = charName && (findObjs({_type: "character", name: charName}) || [])[0];
                     if (charObj)
                         charObjs.add(charObj);
@@ -2211,12 +2356,12 @@ const D = (() => {
             DB(dbstring, "getChars");
         if (charObjs.size === 0)
             return (
-                (VAL({string: funcName}) &&
-                    THROW(
+                (VAL({string: funcName})
+                    && THROW(
                         `No Characters Found using Search Parameters:<br>${jStrL(searchParams)} in Character Reference<br>${jStrL(charRef)}`,
                         `${D.JSL(funcName)} > getChars`
-                    )) ||
-                []
+                    ))
+                || []
             );
         return _.compact([...(charObjs || [])]);
     };
@@ -2364,8 +2509,8 @@ const D = (() => {
                                 if (
                                     !_.find(
                                         attrObjsInRow,
-                                        (v) => looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5)) &&
-                                            (val === "*" || looseMatch(v.get("current").toString(), val.toString()))
+                                        (v) => looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5))
+                                            && (val === "*" || looseMatch(v.get("current").toString(), val.toString()))
                                     )
                                 ) {
                                     // If neither of these tests pass, remove the rowID from the list of valid row IDs.
@@ -2374,8 +2519,8 @@ const D = (() => {
                                 } else {
                                     const obj = _.find(
                                         attrObjsInRow,
-                                        (v) => looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5)) &&
-                                            (val === "*" || looseMatch(v.get("current").toString(), val.toString()))
+                                        (v) => looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5))
+                                            && (val === "*" || looseMatch(v.get("current").toString(), val.toString()))
                                     );
                                     dbstring += `. . .  NAME+VALUE MATCH: VAL[${val}] = ${obj.get("current")}, VALNAME[${
                                         parseRepStat(obj.get("name"))[2]
@@ -2423,8 +2568,8 @@ const D = (() => {
             attrObjs.push(
                 ..._.filter(
                     findObjs({_type: "attribute", _characterid: charObj.id}),
-                    (v) => v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`) &&
-                        rowIDs.includes(v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)[1])
+                    (v) => v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)
+                        && rowIDs.includes(v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)[1])
                 )
             );
             // STEP TWO: ITERATE THROUGH EACH ROW TO LOOK FOR REQUESTED STAT(S)
@@ -2447,8 +2592,8 @@ const D = (() => {
                             fullName: v.get("name").replace(/_name$/gu, ""),
                             obj: _.find(
                                 rowAttrObjs,
-                                (vv) => vv.get("name").toLowerCase() ===
-                                    v
+                                (vv) => vv.get("name").toLowerCase()
+                                    === v
                                         .get("name")
                                         .toLowerCase()
                                         .slice(0, -5)
@@ -2466,19 +2611,19 @@ const D = (() => {
                 );
                 // IF a STATNAME has been specified...
                 if (statName) {
-                    const foundStat =
-                        _.find(attrNameData, (v) => looseMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) || // FIRST match it against an EXACT ATTRIBUTE NAME already found above.
-                        _.find(attrNameData, (v) => looseMatch(parseRepStat(v.name)[2], statName)) || // SECOND try to match with the EXACT "FOUND" NAME of a NAME/VALUE link.
-                        _.find(rowAttrObjs, (v) => looseMatch(parseRepStat(v.get("name"))[2], statName)) || // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
-                        _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) || // FINALLY repeat the above but with fuzzy matching. match it against an EXACT ATTRIBUTE NAME already found above.
-                        _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.name)[2], statName)) ||
-                        _.find(rowAttrObjs, (v) => fuzzyMatch(parseRepStat(v.get("name"))[2], statName));
+                    const foundStat
+                        = _.find(attrNameData, (v) => looseMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FIRST match it against an EXACT ATTRIBUTE NAME already found above.
+                        || _.find(attrNameData, (v) => looseMatch(parseRepStat(v.name)[2], statName)) // SECOND try to match with the EXACT "FOUND" NAME of a NAME/VALUE link.
+                        || _.find(rowAttrObjs, (v) => looseMatch(parseRepStat(v.get("name"))[2], statName)) // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
+                        || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FINALLY repeat the above but with fuzzy matching. match it against an EXACT ATTRIBUTE NAME already found above.
+                        || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.name)[2], statName))
+                        || _.find(rowAttrObjs, (v) => fuzzyMatch(parseRepStat(v.get("name"))[2], statName));
                     if (foundStat) {
                         // If a stat was found, change it to a data set if it isn't one already
                         finalRepData.push(
-                            foundStat.fullName ?
-                                foundStat :
-                                {
+                            foundStat.fullName
+                                ? foundStat
+                                : {
                                     charID: charObj.id,
                                     rowID,
                                     name: parseRepStat(foundStat.get("name"))[2],
@@ -2639,13 +2784,13 @@ const D = (() => {
                 return playerID || getGMID();
             }
             return (
-                VAL({string: funcName}) &&
-                THROW(`Unable to find player connected to reference '${jStrL(playerRef)}'`, `${D.JSL(funcName)} > getPlayerID`)
+                VAL({string: funcName})
+                && THROW(`Unable to find player connected to reference '${jStrL(playerRef)}'`, `${D.JSL(funcName)} > getPlayerID`)
             );
         } catch (errObj) {
             return (
-                VAL({string: funcName}) &&
-                THROW(
+                VAL({string: funcName})
+                && THROW(
                     `Unable to find player connected to reference '${jStrL(playerRef)}'.<br><br>${jStrL(errObj)}`,
                     `${D.JSL(funcName)} > getPlayerID`
                 )
@@ -2919,8 +3064,10 @@ const D = (() => {
         ParseCharSelection: parseCharSelect,
         RandomString: randomString,
         SumHTML: summarizeHTML,
+        TruncText: ellipsisText,
         Int: pInt,
         Float: pFloat,
+        TimeMS: pTimeInMS,
         LCase: pLowerCase,
         UCase: pUpperCase,
         Round: roundSig,

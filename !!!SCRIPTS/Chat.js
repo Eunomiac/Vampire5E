@@ -67,6 +67,42 @@ const Chat = (() => {
                         }
                         break;
                     }
+                    case "data": {
+                        const [type, ref] = args;
+                        DB({args, type, ref}, "getData");
+                        if (type && ref) {
+                            let thisObj = getObj(type, ref);
+                            if (!thisObj)
+                                thisObj = findObjs({_type: type, name: ref}).pop();
+                            if (!thisObj)
+                                thisObj = findObjs({_type: type, title: ref}).pop();
+                            D.Alert(D.JS(thisObj, true), "!get data");
+                        } else if (!getSelected(obj, true)) {
+                            sendHelpMsg();
+                        }
+                        break;
+                    }
+                    case "byidonly": {
+                        const thisObj = findObjs({_id: args[0]});
+                        if (thisObj)
+                            D.Alert(D.JS(thisObj, true), "!get byidonly");
+                        else
+                            D.Alert(`No object with id ${args[0]} found.`, "!get byidonly");
+                        break;
+                    }
+                    case "typelist": {
+                        const [type, val] = args;
+                        let theseObjs = findObjs({_type: type});
+                        if (val)
+                            theseObjs = theseObjs.map((x) => `<b>${val}</b>: ${x.get(val) || x[val] || "&lt;???&gt;"} - ${x.id}`);
+                        else
+                            theseObjs = theseObjs.map((x) => x.id);
+                        D.Alert([
+                            `<h3>All ${D.Capitalize(type)} Objects:</h3>`,
+                            ...theseObjs
+                        ].join("<br>"), "!get typelist");
+                        break;
+                    }
                     default: {
                         if (D.GetSelected(msg))
                             [obj] = D.GetSelected(msg);
@@ -83,10 +119,6 @@ const Chat = (() => {
                         switch (call) {
                             case "pages":
                                 if (!getPages())
-                                    sendHelpMsg();
-                                break;
-                            case "data":
-                                if (!getSelected(obj, true))
                                     sendHelpMsg();
                                 break;
                             case "id":
@@ -524,6 +556,17 @@ const Chat = (() => {
 
         return true;
     };
+    const sendKeyValMenu = (obj, keyButtonPrefix, valButtonPrefix, title = "Object Display") => {
+        D.Alert(Object.keys(obj).map((x, i) => `<div style="display: block; margin: 0px 0px; width: 100%; background-color: ${i % 2 === 0 ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.1)"};">
+        <div style="display: inline-block; height: 10px; margin-right: 2px; line-height: 12px; width: 30px; background-color: rgba(0, 0, 255, 0.3); border: 1px solid blue; text-align: center; text-align-last: center;">
+        <a style="display: inline-block; width: 100%; color: black; padding: 0px; border: none; background-color: transparent;" href="${keyButtonPrefix} ${x}">KEYS</a>
+        </div>
+        <div style="display: inline-block; height: 10px; margin-right: 6px; line-height: 12px; width: 30px; background-color: rgba(255, 0, 0, 0.3); border: 1px solid red; text-align: center; text-align-last: center;">
+        <a style="display: inline-block; width: 100%; color: black; padding: 0px; border: none; background-color: transparent;" href="${valButtonPrefix} ${x}">FULL</a>
+        </div>
+        <div style="display: inline-block; width: 189px; font-weight: bold; background-color: transparent; height: 14px; line-height: 14px;">${x}</div>
+        </div>`).join(""), title);
+    };
     const getStateData = (namespace, returnVals) => {
         let [stateInfo, lastKey, isVerbose] = [state, "state", false];
         // if (namespace[0] !== C.GAMENAME)
@@ -563,15 +606,7 @@ const Chat = (() => {
                 }
             });
             if (returnVals === true)
-                D.Alert(Object.keys(stateInfo).map((x, i) => `<div style="display: block; margin: 0px 0px; width: 100%; background-color: ${i % 2 === 0 ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.1)"};">
-<div style="display: inline-block; height: 10px; margin-right: 2px; line-height: 12px; width: 30px; background-color: rgba(0, 0, 255, 0.3); border: 1px solid blue; text-align: center; text-align-last: center;">
-<a style="display: inline-block; width: 100%; color: black; padding: 0px; border: none; background-color: transparent;" href="${commandPrefixes[0]} ${x}">KEYS</a>
-</div>
-<div style="display: inline-block; height: 10px; margin-right: 6px; line-height: 12px; width: 30px; background-color: rgba(255, 0, 0, 0.3); border: 1px solid red; text-align: center; text-align-last: center;">
-<a style="display: inline-block; width: 100%; color: black; padding: 0px; border: none; background-color: transparent;" href="${commandPrefixes[1]} ${x}">FULL</a>
-</div>
-<div style="display: inline-block; width: 189px; font-weight: bold; background-color: transparent; height: 14px; line-height: 14px;">${x}</div>
-</div>`).join(""), title);
+                sendKeyValMenu(stateInfo, commandPrefixes[0], commandPrefixes[1], title);
             else
                 D.Show(returnInfo, title); // D.Alert(D.JS(returnInfo, isVerbose), title);
         } else {
@@ -632,9 +667,9 @@ const Chat = (() => {
                 }
             }
             D.Alert(
-                `Created ${fonts.length} x ${STATE.REF.Chars.split("").length} x ${sizes.length} = ${fonts.length *
-                    STATE.REF.Chars.split("").length *
-                    sizes.length} text objects.<br><br>Move the text object(s) around, then type '!set text res' when you have.`
+                `Created ${fonts.length} x ${STATE.REF.Chars.split("").length} x ${sizes.length} = ${
+                    fonts.length * STATE.REF.Chars.split("").length * sizes.length
+                } text objects.<br><br>Move the text object(s) around, then type '!set text res' when you have.`
             );
         }
     };
@@ -667,8 +702,8 @@ const Chat = (() => {
                 continue;
             reportTableRows.push(
                 ...[
-                    `<tr style="border: 2px solid black;"><th colspan = "${3 +
-                        testChars.length}"><h4 style="text-align: left; background-color: #555555; color: white; text-indent: 10px;">${D.Capitalize(
+                    `<tr style="border: 2px solid black;"><th colspan = "${3
+                        + testChars.length}"><h4 style="text-align: left; background-color: #555555; color: white; text-indent: 10px;">${D.Capitalize(
                         fontName
                     )}</h4></th></tr>`,
                     `<tr style="height: 20px; font-size: 12px; background-color: #AAAAAA; border: 2px solid black; border-bottom: 1px solid black; line-height: 16px;"><th style="width: 30px; text-align: right;">S</th><th style="width: 30px; text-align: right;">#</th>${testChars.map(
@@ -691,10 +726,10 @@ const Chat = (() => {
             if (_.uniq(charCounts).length !== 1)
                 reportTableRows.push(
                     ...[
-                        `<tr style="border-left: 2px solid black; border-right: 2px solid black;><td colSpan = "${3 +
-                            testChars.length}" style = "background-color: red, color: white, font-weight: bold;">Character Count Mismatch!</td></tr>`,
-                        `<tr style="border-left: 2px solid black; border-right: 2px solid black;><td colSpan = "${3 +
-                            testChars.length}" style = "background-color: #FFBBBB;">${_.uniq(charCounts).join(", ")}</td></tr>`
+                        `<tr style="border-left: 2px solid black; border-right: 2px solid black;><td colSpan = "${3
+                            + testChars.length}" style = "background-color: red, color: white, font-weight: bold;">Character Count Mismatch!</td></tr>`,
+                        `<tr style="border-left: 2px solid black; border-right: 2px solid black;><td colSpan = "${3
+                            + testChars.length}" style = "background-color: #FFBBBB;">${_.uniq(charCounts).join(", ")}</td></tr>`
                     ]
                 );
             reportTableRows.push(`<tr style="height: 10px;"><td colspan="${3 + testChars.length}" style="border-top: 2px solid black;"></td></tr>`);

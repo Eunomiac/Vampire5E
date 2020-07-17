@@ -25,7 +25,7 @@ const Listener = (() => {
     const handleMessage = (msg, isRaw = false) => {
         if (!msg.content.includes("DB LISTENER: ListenFull"))
             DB({msg}, "ListenFull");
-        if (msg.content.startsWith("!playerspoof")) {
+        if (msg.content.match(/^!?!playerspoof/gu)) {
             const [, charRef] = msg.content.split(" ");
             let playerid, who;
             if (charRef)
@@ -48,18 +48,18 @@ const Listener = (() => {
             if (STATE.REF.isLocked || msg.type !== "api")
                 return false;
             msg.who = msg.who || "API";
-            if (!isRaw && STATE.REF.GMPlayerSpoof && playerIsGM(msg.playerid)) {
+            if (!isRaw && !msg.content.startsWith("!!") && STATE.REF.GMPlayerSpoof && playerIsGM(msg.playerid)) {
                 msg.playerid = STATE.REF.GMPlayerSpoof.playerid;
                 msg.who = D.LCase(msg.who) === "api" ? msg.who : STATE.REF.GMPlayerSpoof.who;
             }
+            msg.content = msg.content.replace(/^!!/gu, "!");
             let [call, args] = parseArgString(msg.content); // Splits by space unless surrounded by quotes; removes whitespace and comma separators
             if (call in SCRIPTCALLS.MESSAGE) {
                 const scriptData = SCRIPTCALLS.MESSAGE[call];
-                if (
-                    scriptData &&
-                    scriptData.script &&
-                    VAL({function: scriptData.script.OnChatCall}) &&
-                    (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API")
+                if (scriptData
+                    && scriptData.script
+                    && VAL({function: scriptData.script.OnChatCall})
+                    && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API")
                 ) {
                     const traceID = TRACEON("onChat:message", [msg]);
                     if (scriptData.isAlertingOnCall && VAL({function: scriptData.script.OnChatCallAlert}))
@@ -72,7 +72,7 @@ const Listener = (() => {
                             [
                                 `<b>${msg.content}</b>`,
                                 `CALL: ${call}`,
-                                `ARGS: ${returnArgs.join(" ")}`,
+                                `ARGS: ${returnArgs.join(" | ")}`,
                                 `OBJECTS: ${D.JS(objects)}`,
                                 " ",
                                 `FULL MESSAGE: ${D.JS(msg)}`
@@ -199,7 +199,7 @@ const Listener = (() => {
                 "!fuzzy": {script: Fuzzy, gmOnly: true, singleCall: true},
                 "!handouts": {script: Handouts, gmOnly: true, singleCall: true},
                 "!state": {script: Chat, gmOnly: true, singleCall: false},
-                "!get": {script: Chat, gmOnly: true, singleCall: false},
+                "!get": {script: Chat, gmOnly: true, singleCall: false, needsObjects: false},
                 "!set": {script: Chat, gmOnly: true, singleCall: false},
                 "!clear": {script: Chat, gmOnly: true, singleCall: false},
                 "!find": {script: Chat, gmOnly: true, singleCall: false},
@@ -294,8 +294,8 @@ const Listener = (() => {
         const objects = {};
         const argParser = (argString) => {
             if (
-                argString.startsWith("@") ||
-                argString
+                argString.startsWith("@")
+                || argString
                     .split(",")
                     .map((x) => x.trim())
                     .some(D.IsID)

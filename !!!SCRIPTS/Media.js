@@ -55,11 +55,10 @@ const Media = (() => {
         // STATE.REF.textregistry.panel.maxWidth = 330
 
         for (const [, textData] of Object.entries(STATE.REF.textregistry)) {
-            const realText =
-                (VAL({string: textData.curText}) && textData.curText !== "LAST" && textData.curText) ||
-                (VAL({string: textData.text}) && textData.text !== "LAST" && textData.text) ||
-                (VAL({string: textData.activeText}) && textData.activeText !== "LAST" && textData.activeText) ||
-                " ";
+            const realText = (VAL({string: textData.curText}) && textData.curText !== "LAST" && textData.curText)
+                || (VAL({string: textData.text}) && textData.text !== "LAST" && textData.text)
+                || (VAL({string: textData.activeText}) && textData.activeText !== "LAST" && textData.activeText)
+                || " ";
             textData.curText = realText;
             textData.activeText = realText;
             delete textData.text;
@@ -580,10 +579,10 @@ const Media = (() => {
                                 for (const imgRef of imgRefs) {
                                     const imgKeys = _.compact(
                                         _.flatten([
-                                            getImgKey(imgRef) ||
-                                            (VAL({string: imgRef}) &&
-                                                Object.keys(REGISTRY.IMG).map((x) => x.match(new RegExp(`^${imgRef}_?\\d*$`, "gu")))) ||
-                                            null
+                                            getImgKey(imgRef)
+                                            || (VAL({string: imgRef})
+                                                && Object.keys(REGISTRY.IMG).map((x) => x.match(new RegExp(`^${imgRef}_?\\d*$`, "gu"))))
+                                            || null
                                         ])
                                     );
                                     for (const imgKey of imgKeys) {
@@ -867,9 +866,9 @@ const Media = (() => {
                                 const [hostName, mode, key, val] = args;
                                 const textKey = getTextKey(hostName);
                                 if (
-                                    !Session.Modes.includes(mode) ||
-                                    !["isForcedOn", "isForcedState", "lastActive", "lastState"].includes(key) ||
-                                    !["true", "false", "null", "LAST", "NEVER"].includes(val)
+                                    !Session.Modes.includes(mode)
+                                    || !["isForcedOn", "isForcedState", "lastActive", "lastState"].includes(key)
+                                    || !["true", "false", "null", "LAST", "NEVER"].includes(val)
                                 ) {
                                     D.Alert("Mode Set Syntax:<br><br><b>!text set mode (hostName) (mode) (key) (val)</b>", "!text set mode");
                                 } else {
@@ -889,9 +888,9 @@ const Media = (() => {
                             case "font": {
                                 const textObj = textObjs.pop();
                                 const fontFamily = args.join(" ");
-                                let fontMatch =
-                                    (fontFamily.length > 4 &&
-                                        D.IsIn(D.LCase(fontFamily), [
+                                let fontMatch
+                                    = (fontFamily.length > 4
+                                        && D.IsIn(D.LCase(fontFamily), [
                                             "candal",
                                             "contrail",
                                             "contrail one",
@@ -899,8 +898,8 @@ const Media = (() => {
                                             "shadows into light",
                                             "patrick hand",
                                             "arial"
-                                        ])) ||
-                                    "";
+                                        ]))
+                                    || "";
                                 D.Alert(`Text Objs: ${D.JS(textObjs)}<br>Text Obj: ${D.JS(textObj)}<br>Text Obj ID: ${textObj.id}`);
                                 switch (D.LCase(fontMatch)) {
                                     case "contrail":
@@ -1037,8 +1036,8 @@ const Media = (() => {
                             args[2] = (args[2] !== "x" && args[2]) || hasShadowObj(msg);
                             args[3] = (args[3] !== "x" && args[3]) || textData.justification;
                             imgParams = args.slice(3).join(" ");
-                            imgParams =
-                                _.compact([
+                            imgParams
+                                = _.compact([
                                     imgParams.includes("vertAlign") ? "" : `vertAlign:${textData.vertAlign || "top"}`,
                                     textData.maxWidth && !imgParams.includes("maxWidth") ? `maxWidth:${textData.maxWidth}` : "",
                                     imgParams.includes("zIndex") ? "" : `zIndex:${textData.zIndex || 300}`
@@ -1099,10 +1098,10 @@ const Media = (() => {
                                 for (const textRef of textRefs) {
                                     const textKeys = _.compact(
                                         _.flatten([
-                                            getTextKey(textRef) ||
-                                            (VAL({string: textRef}) &&
-                                                Object.keys(REGISTRY.TEXT).map((x) => x.match(new RegExp(`^${textRef}_?\\d*$`, "gu")))) ||
-                                            null
+                                            getTextKey(textRef)
+                                            || (VAL({string: textRef})
+                                                && Object.keys(REGISTRY.TEXT).map((x) => x.match(new RegExp(`^${textRef}_?\\d*$`, "gu"))))
+                                            || null
                                         ])
                                     );
                                     for (const textKey of textKeys) {
@@ -1288,9 +1287,9 @@ const Media = (() => {
                 imgObj.remove();
             } else if (STATE.REF.autoRegTokenNames.length) {
                 const charName = STATE.REF.autoRegTokenNames.shift();
-                const charObj =
-                    D.GetChar(charName) ||
-                    createObj("character", {
+                const charObj
+                    = D.GetChar(charName)
+                    || createObj("character", {
                         name: charName,
                         inplayerjournals: "all",
                         controlledby: D.GMID()
@@ -1413,20 +1412,11 @@ const Media = (() => {
         get AREA() {
             return STATE.REF.areas;
         },
-        get SOUNDSCAPE() {
-            return state.Roll20AM;
-        },
-        get TRACKS() {
-            return state.Roll20AM.trackDetails;
-        },
-        get PLAYLISTS() {
-            return state.Roll20AM.playLists;
-        },
         get GRAPHIC() {
             return Object.assign({}, STATE.REF.animregistry, STATE.REF.imgregistry);
         },
         get ALL() {
-            return Object.assign({}, STATE.REF.animregistry, STATE.REF.soundregistry, STATE.REF.textregistry, STATE.REF.imgregistry);
+            return Object.assign({}, STATE.REF.animregistry, STATE.REF.textregistry, STATE.REF.imgregistry);
         },
         get PANELS() {
             return STATE.REF.panelLog;
@@ -1841,10 +1831,10 @@ const Media = (() => {
     };
     const modeUpdate = (mediaRefs = "all") => {
         const traceID = TRACEON("modeUpdate", [mediaRefs]);
-        mediaRefs =
-            mediaRefs === "all" ?
-                [...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.TEXT), ...Object.keys(REGISTRY.ANIM)] :
-                _.flatten([mediaRefs], true);
+        mediaRefs
+            = mediaRefs === "all"
+                ? [...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.TEXT), ...Object.keys(REGISTRY.ANIM)]
+                : _.flatten([mediaRefs], true);
         for (const mediaRef of mediaRefs)
             if (isRegText(mediaRef)) {
                 const textData = getTextData(mediaRef);
@@ -1855,9 +1845,9 @@ const Media = (() => {
                     const lastMode = textData.curMode;
                     if (lastMode) {
                         REGISTRY.TEXT[textKey].modes[lastMode].lastActive = textData.isActive;
-                        REGISTRY.TEXT[textKey].modes[lastMode].lastState =
-                            (textData.isActive && ((_.isString(textData.activeText) && textData.activeText) || textData.curText)) ||
-                            REGISTRY.TEXT[textKey].modes[lastMode].lastState;
+                        REGISTRY.TEXT[textKey].modes[lastMode].lastState
+                            = (textData.isActive && ((_.isString(textData.activeText) && textData.activeText) || textData.curText))
+                            || REGISTRY.TEXT[textKey].modes[lastMode].lastState;
                     }
                     REGISTRY.TEXT[textKey].curMode = Session.Mode;
                     if (!_.isUndefined(modeStatus.isActive)) {
@@ -1880,8 +1870,8 @@ const Media = (() => {
 
                     if (lastMode) {
                         regRef[graphicKey].modes[lastMode].lastActive = graphicData.isActive;
-                        regRef[graphicKey].modes[lastMode].lastState =
-                            (graphicData.isActive && graphicData.activeSrc) || regRef[graphicKey].modes[lastMode].lastState;
+                        regRef[graphicKey].modes[lastMode].lastState
+                            = (graphicData.isActive && graphicData.activeSrc) || regRef[graphicKey].modes[lastMode].lastState;
                     }
                     regRef[graphicKey].curMode = Session.Mode;
                     if (!_.isUndefined(modeStatus.isActive)) {
@@ -2258,8 +2248,8 @@ const Media = (() => {
             } catch (errObj) {
                 return TRACEOFF(
                     innerTraceID,
-                    VAL({string: funcName}) &&
-                    THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > getImgData`, errObj)
+                    VAL({string: funcName})
+                    && THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > getImgData`, errObj)
                 );
             }
         })();
@@ -2393,12 +2383,12 @@ const Media = (() => {
         );
         return TRACEOFF(
             traceID,
-            containerBounds &&
-            imgBounds &&
-            containerBounds.top <= imgBounds.top + padding &&
-            containerBounds.bottom >= imgBounds.bottom - padding &&
-            containerBounds.left <= imgBounds.left + padding &&
-            containerBounds.right >= imgBounds.right - padding
+            containerBounds
+            && imgBounds
+            && containerBounds.top <= imgBounds.top + padding
+            && containerBounds.bottom >= imgBounds.bottom - padding
+            && containerBounds.left <= imgBounds.left + padding
+            && containerBounds.right >= imgBounds.right - padding
         );
     };
     const getImgSrc = (imgRef) => (getImgData(imgRef) || {curSrc: false}).curSrc;
@@ -2453,11 +2443,11 @@ const Media = (() => {
     const addImgSrc = (imgSrcRef, imgName, srcName, isSilent = false) => {
         const traceID = TRACEON("addImgSrc", [imgSrcRef, imgName, srcName, isSilent]);
         try {
-            const imgSrc =
-                !srcName.startsWith("ref:") &&
-                (_.isString(imgSrcRef) && imgSrcRef.includes("http") ?
-                    imgSrcRef :
-                    (getImgObj(imgSrcRef) || {get: () => ""}).get("imgsrc").replace(/\w*?(?=\.\w+?\?)/u, "thumb"));
+            const imgSrc
+                = !srcName.startsWith("ref:")
+                && (_.isString(imgSrcRef) && imgSrcRef.includes("http")
+                    ? imgSrcRef
+                    : (getImgObj(imgSrcRef) || {get: () => ""}).get("imgsrc").replace(/\w*?(?=\.\w+?\?)/u, "thumb"));
             if (imgSrc !== "" && isRegImg(imgName)) {
                 if (srcName.startsWith("ref:"))
                     REGISTRY.IMG[getImgKey(imgName)].srcs = srcName.replace(/ref:/gu, "");
@@ -2474,9 +2464,9 @@ const Media = (() => {
     const addTokenSrc = (tokenSrcRef, charRef, srcName = false) => {
         const traceID = TRACEON("addTokenSrc", [tokenSrcRef, charRef, srcName]);
         const charObj = D.GetChar(charRef);
-        const tokenSrc = (VAL({string: tokenSrcRef}) && tokenSrcRef.includes(".png") ?
-            tokenSrcRef || "" :
-            (getImgObj(tokenSrcRef) || {get: () => ""}).get("imgsrc")
+        const tokenSrc = (VAL({string: tokenSrcRef}) && tokenSrcRef.includes(".png")
+            ? tokenSrcRef || ""
+            : (getImgObj(tokenSrcRef) || {get: () => ""}).get("imgsrc")
         ).replace(/[^/]*\.png/gu, "thumb.png");
         DB({charObj, tokenSrc}, "addTokenSrc");
         if (VAL({charObj, string: tokenSrc}) && tokenSrc.includes("png")) {
@@ -2610,25 +2600,25 @@ const Media = (() => {
             const name = `${baseName}_${_.filter(Object.keys(REGISTRY.IMG), (k) => k.includes(baseName)).length + 1}`;
             const params = {
                 left:
-                    options.left ||
-                    imgObj.get("left") ||
-                    REGISTRY.IMG[name].left ||
-                    (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].left),
+                    options.left
+                    || imgObj.get("left")
+                    || REGISTRY.IMG[name].left
+                    || (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].left),
                 top:
-                    options.top ||
-                    imgObj.get("top") ||
-                    REGISTRY.IMG[name].top ||
-                    (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].top),
+                    options.top
+                    || imgObj.get("top")
+                    || REGISTRY.IMG[name].top
+                    || (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].top),
                 height:
-                    options.height ||
-                    imgObj.get("height") ||
-                    REGISTRY.IMG[name].height ||
-                    (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].height),
+                    options.height
+                    || imgObj.get("height")
+                    || REGISTRY.IMG[name].height
+                    || (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].height),
                 width:
-                    options.width ||
-                    imgObj.get("width") ||
-                    REGISTRY.IMG[name].width ||
-                    (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].width)
+                    options.width
+                    || imgObj.get("width")
+                    || REGISTRY.IMG[name].width
+                    || (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].width)
             };
             if (!params.left || !params.top || !params.height || !params.width)
                 return TRACEOFF(traceID, THROW("Must supply position & dimension to register image.", "RegImg"));
@@ -2972,8 +2962,8 @@ const Media = (() => {
         const dpadDragPadIDs = _.uniq(Object.keys(DragPads.PadsByID));
         // Step 1) Check DragPads. Make sure they are listed in REGISTRY.IMG **AND** DragPads stateref.
         if (
-            _.isEqual(_.uniq(_.flatten(_.values(mediaDragPadIDs))).sort(), dpadDragPadIDs.sort()) &&
-            _.isEqual(dpadDragPadIDs.sort(), allPadIDs.sort())
+            _.isEqual(_.uniq(_.flatten(_.values(mediaDragPadIDs))).sort(), dpadDragPadIDs.sort())
+            && _.isEqual(dpadDragPadIDs.sort(), allPadIDs.sort())
         ) {
             D.Alert("All Pads Equal!", "Drag Pad Check");
         } else {
@@ -3078,8 +3068,8 @@ const Media = (() => {
             const imgSrc = imgObj.get("imgsrc");
             if (imgSrc.includes("webm"))
                 returnLines.push(
-                    `<div style="display: block; height: 60px; width: auto;"><b>${imgObj.get("name") ||
-                    "(UNNAMED)"}</b><br><span style='color: blue;'><b>${
+                    `<div style="display: block; height: 60px; width: auto;"><b>${imgObj.get("name")
+                    || "(UNNAMED)"}</b><br><span style='color: blue;'><b>${
                         imgObj.id
                     }</b></span><span style='color: red;'><b>REMOVED</b></span><br>${imgSrc}</div>`
                 );
@@ -3487,15 +3477,15 @@ const Media = (() => {
                 leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2 * minOverlap - 0.5 * rightData.width - 0.5 * rightData.width
             )} - ${D.Int(
                 leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2 * minOverlap - 0.5 * rightData.width + 0.5 * rightData.width
-            )} (${lastRightEdge -
-            D.Int(
-                leftData.leftEdge +
-                totalMidWidth +
-                leftData.width +
-                rightData.width -
-                2 * minOverlap -
-                0.5 * rightData.width -
-                0.5 * rightData.width
+            )} (${lastRightEdge
+            - D.Int(
+                leftData.leftEdge
+                + totalMidWidth
+                + leftData.width
+                + rightData.width
+                - 2 * minOverlap
+                - 0.5 * rightData.width
+                - 0.5 * rightData.width
             )})`;
             DB(dbString, "spreadImgs");
             // for (const imgData of midData)
@@ -3819,8 +3809,8 @@ const Media = (() => {
         } catch (errObj) {
             return TRACEOFF(
                 traceID,
-                VAL({string: funcName}) &&
-                THROW(`Cannot locate text key with search value '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > getTextKey`, errObj)
+                VAL({string: funcName})
+                && THROW(`Cannot locate text key with search value '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > getTextKey`, errObj)
             );
         }
     };
@@ -3882,14 +3872,14 @@ const Media = (() => {
             }
             return TRACEOFF(
                 traceID,
-                VAL({string: funcName}) &&
-                THROW(`Text reference '${textRef}' does not refer to a registered text object.`, `${D.JSL(funcName)} > getTextData`)
+                VAL({string: funcName})
+                && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, `${D.JSL(funcName)} > getTextData`)
             );
         } catch (errObj) {
             return TRACEOFF(
                 traceID,
-                VAL({string: funcName}) &&
-                THROW(`Text reference '${textRef}' does not refer to a registered text object.`, `${D.JSL(funcName)} > getTextData`, errObj)
+                VAL({string: funcName})
+                && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, `${D.JSL(funcName)} > getTextData`, errObj)
             );
         }
     };
@@ -3901,9 +3891,9 @@ const Media = (() => {
                 textObj
                     .get("font_family")
                     .toLowerCase()
-                    .includes("contrail") ?
-                    "Contrail One" :
-                    textObj.get("font_family"),
+                    .includes("contrail")
+                    ? "Contrail One"
+                    : textObj.get("font_family"),
                 textObj.get("font_size"),
                 textObj.get("height")
             ];
@@ -4152,9 +4142,9 @@ const Media = (() => {
                     // DB(`LINE ${lineCount}.  NextWidth: ${nextWidth}`, "splitTextLines")
                     while (nextWidth < maxWidth && wordsInLine.length) {
                         thisString += wordsInLine[0].endsWith("-") ? `${wordsInLine.shift()}` : `${wordsInLine.shift()} `;
-                        nextWidth = wordsInLine.length ?
-                            getTextWidth(textObj, thisString + wordsInLine[0] + (wordsInLine[0].endsWith("-") ? "" : " "), false) :
-                            0;
+                        nextWidth = wordsInLine.length
+                            ? getTextWidth(textObj, thisString + wordsInLine[0] + (wordsInLine[0].endsWith("-") ? "" : " "), false)
+                            : 0;
                         // stringCount++
                         // DB(`... STRING ${stringCount}: ${thisString}  NextWidth: ${nextWidth}`, "splitTextLines")
                     }
@@ -4204,9 +4194,9 @@ const Media = (() => {
                 textObj
                     .get("font_family")
                     .toLowerCase()
-                    .includes("contrail") ?
-                    "Contrail One" :
-                    textObj.get("font_family"),
+                    .includes("contrail")
+                    ? "Contrail One"
+                    : textObj.get("font_family"),
                 textObj.get("font_size"),
                 textObj.get("text").trim(),
                 textObj.get("height")
@@ -4366,17 +4356,17 @@ const Media = (() => {
                 if (slaveData) {
                     switch (edgeDir) {
                         case "left":
-                            REGISTRY.TEXT[slaveKey].pushleft = masterObj.get("text").match(/\S/giu) ?
-                                -getMaxWidth(masterObj) - slaveData.horizPad :
-                                0;
+                            REGISTRY.TEXT[slaveKey].pushleft = masterObj.get("text").match(/\S/giu)
+                                ? -getMaxWidth(masterObj) - slaveData.horizPad
+                                : 0;
                             break;
                         case "right":
                             REGISTRY.TEXT[slaveKey].pushleft = masterObj.get("text").match(/\S/giu) ? getMaxWidth(masterObj) + slaveData.horizPad : 0;
                             break;
                         case "top":
-                            REGISTRY.TEXT[slaveKey].pushtop = masterObj.get("text").match(/\S/giu) ?
-                                -getTextHeight(masterObj) - slaveData.vertPad :
-                                0;
+                            REGISTRY.TEXT[slaveKey].pushtop = masterObj.get("text").match(/\S/giu)
+                                ? -getTextHeight(masterObj) - slaveData.vertPad
+                                : 0;
                             break;
                         case "bottom":
                             REGISTRY.TEXT[slaveKey].pushtop = masterObj.get("text").match(/\S/giu) ? getTextHeight(masterObj) + slaveData.vertPad : 0;
@@ -4415,24 +4405,24 @@ const Media = (() => {
                 if (textParams.text.split("\n").length > 1)
                     switch (textData.vertAlign) {
                         case "top":
-                            totalTopShift +=
-                                0.5 *
-                                (textParams.text.split("\n").length - 1) *
-                                (textData.lineHeight ||
-                                    (D.CHARWIDTH[textObj.get("font_family")] &&
-                                        D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] &&
-                                        D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight) ||
-                                    0);
+                            totalTopShift
+                                += 0.5
+                                * (textParams.text.split("\n").length - 1)
+                                * (textData.lineHeight
+                                    || (D.CHARWIDTH[textObj.get("font_family")]
+                                        && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")]
+                                        && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight)
+                                    || 0);
                             break;
                         case "bottom":
-                            totalTopShift +=
-                                0.5 *
-                                (textParams.text.split("\n").length - 1) *
-                                (textData.lineHeight ||
-                                    (D.CHARWIDTH[textObj.get("font_family")] &&
-                                        D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] &&
-                                        D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight) ||
-                                    0);
+                            totalTopShift
+                                += 0.5
+                                * (textParams.text.split("\n").length - 1)
+                                * (textData.lineHeight
+                                    || (D.CHARWIDTH[textObj.get("font_family")]
+                                        && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")]
+                                        && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight)
+                                    || 0);
                             break;
                         // no default
                     }
@@ -4663,10 +4653,13 @@ const Media = (() => {
         OnGraphicChange: onGraphicChange,
 
         // REGISTRIES
-        IMAGES: REGISTRY.IMG,
-        TEXT: REGISTRY.TEXT,
-        AREAS: REGISTRY.AREA,
-        TOKENS: REGISTRY.TOKEN,
+        get IMAGES() { return REGISTRY.IMG },
+        get GRAPHICS() { return REGISTRY.GRAPHIC },
+        get TEXT() { return REGISTRY.TEXT },
+        get TEXTIDS() { return REGISTRY.ID },
+        get ANIM() { return REGISTRY.ANIM },
+        get AREAS() { return REGISTRY.AREA },
+        get TOKENS() { return REGISTRY.TOKEN },
 
         // GENERAL MEDIA FUNCTIONS
         Get: getMediaObj,
