@@ -1,7 +1,7 @@
 void MarkStart("Tester");
 const Tester = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-    
+
     const SCRIPTNAME = "Tester";
 
     // #region COMMON INITIALIZATION
@@ -10,7 +10,7 @@ const Tester = (() => {
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
-    
+
 
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
@@ -40,14 +40,14 @@ const Tester = (() => {
             "Enemy (Underwood)",
             "Addict (Painkillers)",
             "Known Corpse",
-            "Adversary (Seneschal)"                
+            "Adversary (Seneschal)"
         ];
         for (const adv of advNames)
             fuz.add(adv);
     };
-    
+
     const fuz = Fuzzy.Fix();
-    // #endregion	
+    // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const onChatCall = (call, args, objects, msg) => {
@@ -57,20 +57,20 @@ const Tester = (() => {
                 const [obj] = [...Listener.GetObjects(objects, "graphic"), ...Listener.GetObjects(objects, "text"), ...Listener.GetObjects(objects, "character")];
                 const targetKeys = Object.keys(obj.attributes);
                 const sourceKeys = args;
-                const allowedKeys = sourceKeys.filter(sKey => _.any(targetKeys, tKey => tKey.endsWith(sKey)));
-                                
+                const allowedKeys = sourceKeys.filter((sKey) => _.any(targetKeys, (tKey) => tKey.endsWith(sKey)));
+
                 D.Alert(D.JS({targetKeys, sourceKeys, allowedKeys}, true), "Object Data Test");
                 break;
             }
             case "defaulttoken": {
-                const [charObj] = findObjs({"_type": "character", "name": args.join(" ")});
-                if (charObj) 
+                const [charObj] = findObjs({_type: "character", name: args.join(" ")});
+                if (charObj)
                     charObj.get("_defaulttoken", (tokenData) => D.Alert(`Token Data for ${D.JS(charObj)}:
                         
                         ${D.JS(JSON.parse(tokenData))}`, "Token Data"));
-                else 
+                else
                     D.Alert(`No character object recovered for '${args.join(" ")}'`, "!test defaulttoken");
-                    
+
                 break;
             }
             case "statelength": {
@@ -86,31 +86,31 @@ const Tester = (() => {
             case "pause": TimeTracker.Pause(); break;
             case "resume": TimeTracker.Resume(); break;
             case "stoptracks": {
-                findObjs({_type: "jukeboxtrack"}).map(x => x.set({playing: false, softstop: false}));
+                findObjs({_type: "jukeboxtrack"}).map((x) => x.set({playing: false, softstop: false}));
                 break;
             }
             case "softstop": {
-                findObjs({_type: "jukeboxtrack"}).map(x => x.set({softstop: true}));
+                findObjs({_type: "jukeboxtrack"}).map((x) => x.set({softstop: true}));
                 break;
             }
             case "soundattrs": {
-                const thunderTrackObjs = _.uniq(findObjs({_type: "jukeboxtrack"}).filter(x => x.get("title").includes("Thunder")));
-                thunderTrackObjs.map(x => x.set({playing: false, loop: false, softstop: true}));
+                const thunderTrackObjs = _.uniq(findObjs({_type: "jukeboxtrack"}).filter((x) => x.get("title").includes("Thunder")));
+                thunderTrackObjs.map((x) => x.set({playing: false, loop: false, softstop: true}));
                 thunderTrackObjs[0].set({playing: true, loop: true});
                 thunderTrackObjs[1].set({playing: true, loop: false});
                 thunderTrackObjs[2].set({playing: true, loop: true, softstop: false});
                 thunderTrackObjs[3].set({playing: true, loop: false, softstop: false});
-                D.Alert(D.JS(thunderTrackObjs.map(x => ({[x.get("title")]: {playing: x.get("playing"), looping: x.get("loop"), softstop: x.get("softstop")}}))), "Thunder Sound Report");
+                D.Alert(D.JS(thunderTrackObjs.map((x) => ({[x.get("title")]: {playing: x.get("playing"), looping: x.get("loop"), softstop: x.get("softstop")}}))), "Thunder Sound Report");
                 break;
             }
-            case "jukebox": {                    
+            case "jukebox": {
                 const parseTrackKeyFromTitle = (trackRef) => {
-                    trackRef = D.IsID(trackRef) && getObj("jukeboxtrack", trackRef).get("title") ||
-                                    VAL({obj: trackRef}) && trackRef.get("title") ||
-                                    trackRef;
+                    trackRef = (D.IsID(trackRef) && getObj("jukeboxtrack", trackRef).get("title"))
+                                || (VAL({obj: trackRef}) && trackRef.get("title"))
+                                || trackRef;
                     return trackRef.replace(/\s*[([\{].*[)\]}]\s*/gu, "").replace(/[^A-Za-z0-9]*/gu, "");
                 };
-                const jukeboxData = JSON.parse(Campaign().get("_jukeboxfolder")).map(x => D.KeyMapObj(x, k => {
+                const jukeboxData = JSON.parse(Campaign().get("_jukeboxfolder")).map((x) => D.KeyMapObj(x, (k) => {
                     switch (k) {
                         case "i": return "trackNames";
                         case "n": return "name";
@@ -119,7 +119,7 @@ const Tester = (() => {
                     }
                 }, (v, k) => {
                     switch (k) {
-                        case "i": return v.map(xx => parseTrackKeyFromTitle(xx));
+                        case "i": return v.map((xx) => parseTrackKeyFromTitle(xx));
                         case "s": return {
                             isLooping: ["s", "b"].includes(v),
                             isRandom: ["s", "o"].includes(v),
@@ -128,14 +128,14 @@ const Tester = (() => {
                         default: return v;
                     }
                 }));
-                D.Alert(D.JS(jukeboxData), "Jukebox Data");            
+                D.Alert(D.JS(jukeboxData), "Jukebox Data");
                 break;
             }
             case "tokendata": {
                 const [charObj] = Listener.GetObjects(objects, "character");
                 charObj.get("_defaulttoken", (tokenData) => {
                     D.Alert(D.JS(JSON.parse(tokenData)), "Token Data");
-                } );
+                });
                 break;
             }
             case "boundnums": {
@@ -165,14 +165,14 @@ const Tester = (() => {
                 D.Alert(D.JS(REPLY));
                 break;
             }
-            case "handout": {       
+            case "handout": {
                 Handouts.Make("Test Run", "Test", C.HANDOUTHTML.EyesOnlyDoc.Block(
                     C.HANDOUTHTML.EyesOnlyDoc.Line([
                         C.HANDOUTHTML.EyesOnlyDoc.LineHeader("B. Giovanni"),
                         C.HANDOUTHTML.EyesOnlyDoc.LineBody(`This is the goal of my project! This is the goal of my project! This is the goal of my project! This is the goal of my project! This is the goal of my project! ${C.HANDOUTHTML.EyesOnlyDoc.LineBodyRight("<b><u>COMPLETED ON</u>:</b> Dec. 27, 2020)")}`)
                     ].join(""), {bgColor: "rgba(0,0,0,0.1)"})
                 ));
-                    
+
                 /*
                     `<div style="
                     display: block;
@@ -254,19 +254,19 @@ const Tester = (() => {
             }
             case "sound": {
                 const soundObjs = _.uniq(findObjs({_type: "jukeboxtrack"}));
-                const soundObjsData = _.sortBy(soundObjs.map(x => ({
+                const soundObjsData = _.sortBy(soundObjs.map((x) => ({
                     title: x.get("title"),
                     id: x.id,
                     status: {isPlaying: x.get("playing"), isSStop: x.get("softstop"), isLoop: x.get("loop")}
                 })), "title");
-                const soundReport = soundObjsData.map(x => `<tr><td><b>${x.title}</b></td><td style="background-color: ${x.status.isPlaying ? "rgba(0, 255, 0, 0.5)" : "white"};">${x.status.isLoop ? "<b><u>LOOP</u></b>" : ""} ${x.status.isSStop ? "(S)" : ""}</td><td style="font-family: Voltaire; font-size: 12px;">${x.id}</td></tr>`);
-                const playingSounds = soundReport.filter(x => x.includes("255, 0"));
+                const soundReport = soundObjsData.map((x) => `<tr><td><b>${x.title}</b></td><td style="background-color: ${x.status.isPlaying ? "rgba(0, 255, 0, 0.5)" : "white"};">${x.status.isLoop ? "<b><u>LOOP</u></b>" : ""} ${x.status.isSStop ? "(S)" : ""}</td><td style="font-family: Voltaire; font-size: 12px;">${x.id}</td></tr>`);
+                const playingSounds = soundReport.filter((x) => x.includes("255, 0"));
                 const reportLines = [];
                 if (args.length) {
                     const soundName = (args[0] === "stop" ? args.slice(1) : args).join(" ");
-                    const soundObj = soundObjs.find(x => x.get("title") === soundName);
+                    const soundObj = soundObjs.find((x) => x.get("title") === soundName);
                     if (args[0] === "stop")
-                        soundObj.set({playing:false,softstop:false});
+                        soundObj.set({playing: false, softstop: false});
                     reportLines.push(...[
                         `<h4>${soundName}</h4>`,
                         D.JS(soundObj, true)
@@ -323,8 +323,8 @@ const Tester = (() => {
                             </div>`;
                 };
                 const oneDay = [];
-                for (let i = 0; i < 24; i++) 
-                    oneDay.push(singleCell(i+1));	
+                for (let i = 0; i < 24; i++)
+                    oneDay.push(singleCell(i + 1));
 
                 D.Alert(oneDay.join(""));
                 break;
@@ -333,7 +333,7 @@ const Tester = (() => {
                 const allObjs = findObjs({
                     _type: args[0]
                 });
-                D.Alert(D.JS(allObjs.map(x => `<b>${x.get("name")}</b>: ${x.get("layer") || ""}`)), "All Objects");
+                D.Alert(D.JS(allObjs.map((x) => `<b>${x.get("name")}</b>: ${x.get("layer") || ""}`)), "All Objects");
                 break;
             }
             case "buttons": {
@@ -351,25 +351,27 @@ const Tester = (() => {
                                                         <list: {name, command, [styles]}>   >
                                     [buttonStyles]: <list of styles to apply to ALL of the buttons in a ButtonLine
                                     [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
-                                } 
+                                }
                         ]
                         [blockStyles:] <override C.HTML.Block 'options' parameter.
                     }
                     */
-                    
+
                 const frenzyCharObj = D.GetChar("L");
                 D.CommandMenu({
                     rows: [
                         {type: "Header", contents: `Set Frenzy Diff for ${D.JSL(D.GetName(frenzyCharObj, true))}`},
-                        {type: "ButtonLine", contents: [
-                            20,                                
-                            {name: "1", command: "!roll dice frenzy 1"},
-                            {name: "2", command: "!roll dice frenzy 2"},
-                            {name: "3", command: "!roll dice frenzy 3"},
-                            {name: "4", command: "!roll dice frenzy 4"},
-                            {name: "5", command: "!roll dice frenzy 5"},
-                            20
-                        ], styles: {bgColor: C.COLORS.darkred}}
+                        {type: "ButtonLine",
+                         contents: [
+                             20,
+                             {name: "1", command: "!roll dice frenzy 1"},
+                             {name: "2", command: "!roll dice frenzy 2"},
+                             {name: "3", command: "!roll dice frenzy 3"},
+                             {name: "4", command: "!roll dice frenzy 4"},
+                             {name: "5", command: "!roll dice frenzy 5"},
+                             20
+                         ],
+                         styles: {bgColor: C.COLORS.darkred}}
                     ]
                 });
                 break;
@@ -379,7 +381,7 @@ const Tester = (() => {
                 break;
             }
             case "pcs": {
-                D.Alert(D.JS(D.GetChars("registered").map(x => x.get("name"))));
+                D.Alert(D.JS(D.GetChars("registered").map((x) => x.get("name"))));
                 break;
             }
             case "spread": {
@@ -392,22 +394,22 @@ const Tester = (() => {
             case "macro": {
                 const macroName = args.shift();
                 const macroObjs = findObjs({_type: "macro", _playerid: D.GMID()});
-                const [macroObj] = macroObjs.filter(x => x.get("name") === macroName); 
+                const [macroObj] = macroObjs.filter((x) => x.get("name") === macroName);
                 if (macroObj)
                     D.Alert(`${D.JS(macroObj.get("action"))}<br><br>Length: ${D.JS(macroObj.get("action").length)}`, `MACRO: ${D.JS(macroObj.get("name"))}`);
                 else
-                    D.Alert(`Couldn't find macro '${D.JS(macroName)}'<br>Available macros:<br><br>${D.JS(macroObjs.map(x => x.get("name")).join(", "))}`);
+                    D.Alert(`Couldn't find macro '${D.JS(macroName)}'<br>Available macros:<br><br>${D.JS(macroObjs.map((x) => x.get("name")).join(", "))}`);
                 break;
             }
             case "tokenget": {
                 const returnStrings = [];
                 for (const charObj of D.GetChars("all"))
-                    charObj.get("_defaulttoken", defToken => {
+                    charObj.get("_defaulttoken", (defToken) => {
                         const imgMatch = D.JS(defToken).match(/imgsrc:(.*?),/u);
                         if (imgMatch && imgMatch.length) {
                             returnStrings.push(`<b>${D.JS(D.GetName(charObj, true))}</b>: ${D.JS(imgMatch[1].replace(/med\.png/gu, "thumb.png"))}`);
                             D.Alert(`${returnStrings.length} Strings Found`);
-                        }                      
+                        }
                     });
                 setTimeout(() => D.Alert(returnStrings.join("<br>")), 2000);
                 break;
@@ -418,13 +420,13 @@ const Tester = (() => {
             }
             case "charlocs": {
                 const loc = args.shift() || undefined;
-                D.Alert(`Chars In '${D.JS(loc)}':<br><br>${D.JS(Session.CharsIn(loc).map(x => x.get("name")))}`);
+                D.Alert(`Chars In '${D.JS(loc)}':<br><br>${D.JS(Session.CharsIn(loc).map((x) => x.get("name")))}`);
                 break;
             }
             case "funcqueue": {
                 const funcs = [
                     (first, second) => {
-                        D.Alert(`Function 1: ${first}, ${second}`);   
+                        D.Alert(`Function 1: ${first}, ${second}`);
                     },
                     (third, fourth) => {
                         D.Alert(`Function 2: ${third}, ${fourth}`);
@@ -446,11 +448,11 @@ const Tester = (() => {
             }
             case "exist": {
                 if (args[1])
-                    D.Alert(`${args[0].toUpperCase()} Object with ID ${args[1]}: ${Boolean(getObj(args[0], args[1])) && "Exists" || "Does NOT Exist"}`);
+                    D.Alert(`${args[0].toUpperCase()} Object with ID ${args[1]}: ${(Boolean(getObj(args[0], args[1])) && "Exists") || "Does NOT Exist"}`);
                 break;
             }
             case "fuzzy": {
-                switch(D.LCase(call = args.shift())) {
+                switch (D.LCase(call = args.shift())) {
                     case "stat": {
                         D.Alert(D.JS(D.IsIn(args.join(" "))));
                         break;
@@ -460,12 +462,12 @@ const Tester = (() => {
                         break;
                     }
                     // no default
-                }                
+                }
                 break;
             }
             case "pos": {
-                const charDatas = D.GetChars("registered").map(x => D.GetCharData(x));
-                const tokenObjs = _.compact(_.values(charDatas).map(x => (findObjs({_pageid: D.MAINPAGEID, _type: "graphic", _subtype: "token", represents: x.id}) || [null])[0]));
+                const charDatas = D.GetChars("registered").map((x) => D.GetCharData(x));
+                const tokenObjs = _.compact(_.values(charDatas).map((x) => (findObjs({_pageid: D.MAINPAGEID, _type: "graphic", _subtype: "token", represents: x.id}) || [null])[0]));
                 D.Alert(D.JS(tokenObjs, true));
                 break;
             }
@@ -485,20 +487,20 @@ const Tester = (() => {
                     "December 30th 100",
                     "December 30 10"
                 ];
-                const tableFunc = arr => {
+                const tableFunc = (arr) => {
                     let tableRow = "<tr>";
                     for (let i = 0; i < arr.length; i++)
                         tableRow += `<td style="width:100px;">${_.isUndefined(arr[i]) ? "UN" : arr[i]}</td>`;
                     tableRow += "<tr>";
                     return tableRow;
                 };
-                const parseDString = str => {
+                const parseDString = (str) => {
                     if (!str || !str.match)
                         return str;
                     if (!str.match(/\D/gu))
                         return new Date(D.Int(str));
                     if (_.isString(str) && str !== "") {
-                        let [month, day, year] = _.compact(str.match(/([\d]+)[^\w\d]*?([\d]+)[^\w\d]*?([\d]+)|(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*[^\w\d]*?([\d]+){1,2}\w*?[^\w\d]*?(\d+)/imuy)).slice(1);                
+                        let [month, day, year] = _.compact(str.match(/([\d]+)[^\w\d]*?([\d]+)[^\w\d]*?([\d]+)|(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*[^\w\d]*?([\d]+){1,2}\w*?[^\w\d]*?(\d+)/imuy)).slice(1);
                         if (!month || !day || !year)
                             return str;
                         if (!["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(month.toLowerCase()) && month > 12)
@@ -508,17 +510,17 @@ const Tester = (() => {
                         if (`${year}`.length < 3)
                             year = D.Int(year) + 2000;
                         day = D.Int(day);
-                        return new Date([year, ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase())+1, day]);
+                        return new Date([year, ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase()) + 1, day]);
                     }
                     return str;
                 };
-                const isValidDString = str => {
+                const isValidDString = (str) => {
                     const dateTest = parseDString(str);
                     return Boolean(str && dateTest && Object.prototype.toString.call(dateTest) === "[object Date]" && !_.isNaN(dateTest));
-                };   
+                };
                 const returnLines = ["<table><tr><th style=\"width:100px;\">INPUT</th><th style=\"width:100px;\">OUTPUT</th></tr>"];
                 for (const dString of dateStrings)
-                    if (isValidDString(dString))                   
+                    if (isValidDString(dString))
                         returnLines.push(tableFunc([dString, TimeTracker.FormatDate(parseDString(dString))]));
                 returnLines.push("</table>");
                 D.Alert(returnLines.join(""));
@@ -528,17 +530,17 @@ const Tester = (() => {
                 const playerObjs = findObjs({
                     _type: "player"
                 });
-                sendChat("", `/w Storyteller ${playerObjs.map(x => `${x.get("displayname")}: ${x.id}<br>`)}`);
+                sendChat("", `/w Storyteller ${playerObjs.map((x) => `${x.get("displayname")}: ${x.id}<br>`)}`);
                 break;
-            } 
+            }
             case "contimages": {
                 const imgObjs = Media.GetContents(args.shift(), {padding: 50});
-                D.Alert(`Contained Images: ${imgObjs.map(v => v.get("name"))}`, "!test contimages");
+                D.Alert(`Contained Images: ${imgObjs.map((v) => v.get("name"))}`, "!test contimages");
                 break;
-            }            
+            }
             case "contchars": {
                 const charObjs = D.GetChars("sandbox");
-                D.Alert(`Contained Chars: ${charObjs.map(v => v.get("name"))}`, "!test contchars");
+                D.Alert(`Contained Chars: ${charObjs.map((v) => v.get("name"))}`, "!test contchars");
                 break;
             }
             case "bounds": {
@@ -561,9 +563,9 @@ const Tester = (() => {
             /* falls through */
             case "text": {
                 const regData = _.values(state[C.GAMENAME].Media.textregistry);
-                const [reportLines, missingTextData, unregTextObjs] = [ [], [], [] ];
+                const [reportLines, missingTextData, unregTextObjs] = [[], [], []];
                 const allTextObjs = findObjs({
-                    _type: "text",
+                    _type: "text"
                 });
                 reportLines.push(
                     `${allTextObjs.length} text objects found.`,
@@ -572,22 +574,22 @@ const Tester = (() => {
                 );
                 // First, verify that all registered objects are present.
                 for (const textData of regData)
-                    if (!allTextObjs.map(x => x.id).includes(textData.id))
+                    if (!allTextObjs.map((x) => x.id).includes(textData.id))
                         missingTextData.push(textData);
                 if (missingTextData.length)
                     reportLines.push(
                         `${missingTextData.length} registered text objects missing:`,
-                        ...missingTextData.map(x => ` ...     ${x.name} (${x.id}) "${x.text}"`),
+                        ...missingTextData.map((x) => ` ...     ${x.name} (${x.id}) "${x.text}"`),
                         ""
                     );
                     // Next, find text objects that aren't registered:
                 for (const textObj of allTextObjs)
-                    if (!regData.map(x => x.id).includes(textObj.id))
+                    if (!regData.map((x) => x.id).includes(textObj.id))
                         unregTextObjs.push(textObj);
                 if (unregTextObjs.length)
                     reportLines.push(
                         `${unregTextObjs.length} unregistered text objects found:`,
-                        ...unregTextObjs.map(x => ` ...     ${x.get("layer").toUpperCase()}: *${x.get("text")}* (${x.get("text").length} chars)<br> ...      ...     (${x.get("left")}, ${x.get("top")}) Size: ${x.get("font_size")}, Color: ${x.get("color")}<br> ...      ...     ${x.id}<br>`),
+                        ...unregTextObjs.map((x) => ` ...     ${x.get("layer").toUpperCase()}: *${x.get("text")}* (${x.get("text").length} chars)<br> ...      ...     (${x.get("left")}, ${x.get("top")}) Size: ${x.get("font_size")}, Color: ${x.get("color")}<br> ...      ...     ${x.id}<br>`),
                         ""
                     );
                 if (isWriting)
@@ -601,7 +603,7 @@ const Tester = (() => {
                             });
                 if (isKilling)
                     for (const textObj of unregTextObjs)
-                        textObj.remove();                
+                        textObj.remove();
                 D.Alert(reportLines.join("<br>"), "Text Survey & Verification");
                 break;
             }
@@ -615,10 +617,10 @@ const Tester = (() => {
         CheckInstall: checkInstall,
         OnChatCall: onChatCall
     };
-} )();
+})();
 
 on("ready", () => {
     Tester.CheckInstall();
     D.Log("Tester Ready!");
-} );
+});
 void MarkStop("Tester");

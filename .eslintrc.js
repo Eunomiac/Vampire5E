@@ -1,84 +1,84 @@
 module.exports = {
-    "parser": "babel-eslint",
-    "env": {
-      "es6": true,
-      "browser": true,
-      "commonjs": true,
-      "jest": true
+    parser: "babel-eslint",
+    env: {
+        es6: true,
+        browser: true,
+        commonjs: true,
+        jest: true
     },
-    "extends": [
+    extends: [
         "eslint:recommended",
         "plugin:react/recommended",
         "eslint-config-prettier",
         "airbnb",
-        "prettier",
-        "plugin:prettier/recommended",
-        "prettier/@typescript-eslint",
+        // "prettier",
+        // "plugin:prettier/recommended",
+        // "prettier/@typescript-eslint",
         "prettier/babel",
         "prettier/flowtype",
         "prettier/react",
         "prettier/standard",
         "prettier/unicorn",
-        "prettier/vue",
-      ],
-      "parserOptions": {
-        "ecmaVersion": 2017,
-        "sourceType": "module",
-        "allowImportExportEverywhere": false,
-        "codeFrame": false,
-        "ecmaFeatures": {
-            "jsx": false,
-            "impliedStrict": true
-        } //
-      },
-    "rules": {
+        "prettier/vue"
+    ],
+    parserOptions: {
+        ecmaVersion: 2017,
+        sourceType: "module",
+        allowImportExportEverywhere: false,
+        codeFrame: false,
+        ecmaFeatures: {
+            jsx: false,
+            impliedStrict: true
+        }
+    },
+    rules: {
         "accessor-pairs": ["error"],
         "array-callback-return": "error",
         "babel/no-invalid-this": 1,
-        "babel/no-unused-expressions": 1,  
+        "babel/no-unused-expressions": 1,
         // "babel/object-curly-spacing": 1,
-        "babel/quotes": 1,
+        // "babel/quotes": 1,
         "block-scoped-var": "error",
         "class-methods-use-this": "warn",
         "consistent-return": "error",
-        "curly": ["error", "multi", "consistent"],
+        "comma-dangle": ["error", "never"],
+        curly: ["error", "multi", "consistent"],
         "default-case": "error",
         // "dot-location": ["error", "object"],
-        "dot-notation": ["error", { "allowKeywords": false }],
-        "eqeqeq": ["error", "always"],
-        // "indent": [
-        //     "error",
-        //     4,
-        //     { 
-        //         "SwitchCase": 1,
-        //         // "VariableDeclarator": 1,
-        //         // "outerIIFEBody": 1,
-        //         // "MemberExpression": 1,
-        //         "FunctionDeclaration": {
-        //                                     parameters: "first", 
-        //                                     // body: 1
-        //                                 },
-        //         "FunctionExpression": {
-        //                                     parameters: "first", 
-        //                                     // body: 1
-        //                                 },
-        //         "CallExpression": { 
-        //                                 arguments: "first" 
-        //                             },
-        //         "ArrayExpression": "first",
-        //         "ObjectExpression": "first",
-        //         "ImportDeclaration": "first",
-        //         "flatTernaryExpressions": true,
-        //         // "ignoreComments": false
-        //     }
-        // ],
-        // "linebreak-style": [
-        //     "error",
-        //     "windows"
-        // ],
+        "dot-notation": ["error", { allowKeywords: false }],
+        eqeqeq: ["error", "always"],
+        indent: [
+            "error",
+            4,
+            {
+                SwitchCase: 1,
+                // "VariableDeclarator": 1,
+                // "outerIIFEBody": 1,
+                // "MemberExpression": 1,
+                FunctionDeclaration: {
+                    parameters: "first"
+                    // body: 1
+                },
+                FunctionExpression: {
+                    parameters: "first"
+                    // body: 1
+                },
+                CallExpression: {
+                    arguments: "first"
+                },
+                ArrayExpression: "first",
+                ObjectExpression: "first",
+                ImportDeclaration: "first",
+                flatTernaryExpressions: true
+                // "ignoreComments": false
+            }
+        ],
+        "linebreak-style": ["error", "windows"],
         "lines-between-class-members": 0,
         "max-classes-per-file": 0,
+        "max-len": 0,
         "no-console": 0,
+        "no-constant-condition": ["error", { checkLoops: false }],
         "no-continue": 0,
         "no-debugger": "warn",
         "no-else-return": "off",
@@ -96,11 +96,11 @@ module.exports = {
         "no-labels": "error",
         "no-lone-blocks": "warn",
         "no-lonely-if": 0,
-        "no-loop-func": "error",        
-		// "no-mixed-spaces-and-tabs": [
-		// 	"error",
-		// 	"smart-tabs"
-		// ],
+        "no-loop-func": "error",
+        // "no-mixed-spaces-and-tabs": [
+        // 	"error",
+        // 	"smart-tabs"
+        // ],
         // "no-multi-spaces": "error",
         "no-multi-str": "error",
         "no-new": "error",
@@ -108,6 +108,7 @@ module.exports = {
         "no-plusplus": 0,
         "no-restricted-syntax": 0,
         "no-restricted-globals": 0,
+        "no-tabs": ["error", { allowIndentationTabs: true }],
         "no-template-curly-in-string": "warn",
         "no-underscore-dangle": 0,
         "no-unreachable": 0,
@@ -118,79 +119,77 @@ module.exports = {
         "no-useless-escape": 0,
         //"no-magic-numbers": ["warn", { "ignoreArrayIndexes": true, "ignore": [0, 1], "enforceConst": true } ],
         "no-void": 0,
-        // "one-var": ["error", "consecutive"],
+        "nonblock-statement-body-position": ["error", "below"],
+        "object-curly-newline": 0,
+        "object-curly-spacing": ["error", "never"],
         "one-var": ["error", { var: "always", let: "consecutive", const: "never" }],
-        "prefer-const": ["error", {"destructuring": "all"}],
+        "one-var-declaration-per-line": 0,
+        "operator-linebreak": ["error", "before"],
+        "prefer-arrow-callback": "error",
+        "prefer-const": ["error", { destructuring: "all" }],
+        "prefer-destructuring": 0,
         "prefer-object-spread": 0,
+        // "prettier/prettier": 0,
         // "prettier/prettier": "warn",
-        "babel/quotes": [
-            "error",
-            "double",
-            { "avoidEscape": true, "allowTemplateLiterals": false }
-        ],
-        "radix": 0,
-        // "semi": [
-        //     "error",
-        //     "always",
-        //     { "omitLastInOneLineBlock": true }
-        // ]
+        quotes: ["error", "double"],
+        "babel/quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: false }],
+        radix: 0,
+        semi: ["error", "always", { omitLastInOneLineBlock: true }]
     },
-    "reportUnusedDisableDirectives": true,
-    "globals": {
-        "START": "readonly",
-        "SCRIPTS": "readonly",
-        "C": "readonly",
-        "D": "readonly",
-        "Listener": "readonly",
-        "Char": "readonly",
-        "Chat": "readonly",
-        "Assets": "readonly",
-        "Media": "readonly",
-        "DragPads": "readonly",
-        "Handouts": "readonly",
-        "Roller": "readonly",
-        "Complications": "readonly",
-        "Session": "readonly",
-        "Player": "readonly",
-        "Fuzzy": "readonly",
-        "Tester": "readonly",
-        "TimeTracker": "readonly",
-        "Soundscape": "readonly",
-        "InitCommands": "readonly",
-        "_": "readonly",
-        "state": "writable",
-        "getAttrs": "readonly",
-        "setAttrs": "readonly",
-        "getSectionIDs": "readonly",
-        "getObj": "readonly",
-        "findObjs": "readonly",
-        "filterObjs": "readonly",
-        "getAllObjs": "readonly",
-        "getAttrByName": "readonly",
-        "removeRepeatingRow": "readonly",
-        "Campaign": "readonly",
-        "playerIsGM": "readonly",
-        "on": "readonly",
-        "log": "readonly",
-        "createObj": "readonly",
-        "console": "readonly",
-        "spawnFxWithDefinition": "readonly",
-        "sendChat": "readonly",
-        "toBack": "readonly",
-        "toFront": "readonly",
-        "randomInteger": "readonly",
-        "setInterval": "readonly",
-        "clearInterval": "readonly",
-        "getGMID": "readonly",
-        "sendChatMessage": "readonly",
-        "processStack": "readonly",
-        "arguments": "writable",
-        "generateRowID": "readonly",
-        "MarkStart": "readonly",
-        "MarkStop": "readonly"
+    reportUnusedDisableDirectives: true,
+    globals: {
+        START: "readonly",
+        SCRIPTS: "readonly",
+        C: "readonly",
+        D: "readonly",
+        Listener: "readonly",
+        Char: "readonly",
+        Chat: "readonly",
+        Assets: "readonly",
+        Media: "readonly",
+        DragPads: "readonly",
+        Handouts: "readonly",
+        Roller: "readonly",
+        Complications: "readonly",
+        Locations: "readonly",
+        Session: "readonly",
+        Player: "readonly",
+        Fuzzy: "readonly",
+        Tester: "readonly",
+        TimeTracker: "readonly",
+        Soundscape: "readonly",
+        InitCommands: "readonly",
+        _: "readonly",
+        state: "writable",
+        getAttrs: "readonly",
+        setAttrs: "readonly",
+        getSectionIDs: "readonly",
+        getObj: "readonly",
+        findObjs: "readonly",
+        filterObjs: "readonly",
+        getAllObjs: "readonly",
+        getAttrByName: "readonly",
+        removeRepeatingRow: "readonly",
+        Campaign: "readonly",
+        playerIsGM: "readonly",
+        on: "readonly",
+        log: "readonly",
+        createObj: "readonly",
+        console: "readonly",
+        spawnFxWithDefinition: "readonly",
+        sendChat: "readonly",
+        toBack: "readonly",
+        toFront: "readonly",
+        randomInteger: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        getGMID: "readonly",
+        sendChatMessage: "readonly",
+        processStack: "readonly",
+        arguments: "writable",
+        generateRowID: "readonly",
+        MarkStart: "readonly",
+        MarkStop: "readonly"
     },
-    "plugins": [
-        "babel",
-        "prettier"
-      ]
+    plugins: ["babel"] //plugins: ["babel", "prettier"]
 };
