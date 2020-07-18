@@ -21,9 +21,10 @@ const Handouts = (() => {
 
     // #region LOCAL INITIALIZATION
     const preInitialize = () => {
+        // delete STATE.REF.categoryLogs;
         STATE.REF.noteCounts = STATE.REF.noteCounts || {projects: 0, debug: 0};
-        STATE.REF.categoryLogs = STATE.REF.categoryLogs || {projects: [], debug: []};
-        STATE.REF.categoryLogs.debug = [];
+        STATE.REF.categoryLogs = STATE.REF.categoryLogs || {projects: [], debug: [], callLogs: []};
+        // STATE.REF.categoryLogs.callLogs = [];
     };
     // #endregion
 
@@ -31,9 +32,16 @@ const Handouts = (() => {
     const onChatCall = (call, args, objects, msg) => {
         switch (call) {
             case "kill": {
+                let category;
                 switch (D.LCase((call = args.shift()))) {
+                    case "cat": case "category": {
+                        category = args.shift();                        
+                    }
+                    // falls through
                     case "all": {
-                        delHandoutObjs(args.join(" "));
+                        delHandoutObjs(args.join(" "), category);
+                        if (category && category in STATE.REF.categoryLogs)
+                            STATE.REF.categoryLogs[category] = [];
                         break;
                     }
                     // no default
@@ -62,7 +70,8 @@ const Handouts = (() => {
     // #region CONFIGURATION
     const categoryMax = {
         default: 5,
-        debug: 10
+        debug: 10,
+        callLogs: 20
     };
     // #endregion
 
@@ -159,7 +168,7 @@ const Handouts = (() => {
         if (category) {
             STATE.REF.categoryLogs[category] = STATE.REF.categoryLogs[category] || [];
             while (getCount(category) >= (categoryMax[category] || categoryMax["default"]))
-                delHandoutObj(D.PullIndex(STATE.REF.categoryLogs[category], 0));
+                delHandoutObj(STATE.REF.categoryLogs[category][0], category);
             title += ` ${getCatNum(category)}`;
             STATE.REF.categoryLogs[category].push(title);
         } else {

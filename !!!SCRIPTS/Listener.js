@@ -22,71 +22,6 @@ const Listener = (() => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
         initialize();
     };
-    const handleMessage = (msg, isRaw = false) => {
-        if (!msg.content.includes("DB LISTENER: ListenFull"))
-            DB({msg}, "ListenFull");
-        if (msg.content.match(/^!?!playerspoof/gu)) {
-            const [, charRef] = msg.content.split(" ");
-            let playerid, who;
-            if (charRef)
-                [playerid, who] = [D.GetPlayerID(charRef.replace(/^@/gu, "")), D.GetName(charRef.replace(/^@/gu, ""))];
-            if (playerid) {
-                Media.ToggleText("PlayerSpoofNotice", true);
-                Media.ToggleText("PlayerSpoofNoticeSplash", true);
-                Media.SetText("PlayerSpoofNotice", `Spoofing: ${who}`);
-                Media.SetText("PlayerSpoofNoticeSplash", `Spoofing: ${who}`);
-                STATE.REF.GMPlayerSpoof = {playerid, who};
-                D.Alert(`Now spoofing ${who}`, "Listener Player Spoofing");
-            } else {
-                Media.ToggleText("PlayerSpoofNotice", false);
-                Media.ToggleText("PlayerSpoofNoticeSplash", false);
-                STATE.REF.GMPlayerSpoof = false;
-                D.Alert("Player Spoofing DISABLED", "Listener Player Spoofing");
-            }
-            return true;
-        } else {
-            if (STATE.REF.isLocked || msg.type !== "api")
-                return false;
-            msg.who = msg.who || "API";
-            if (!isRaw && !msg.content.startsWith("!!") && STATE.REF.GMPlayerSpoof && playerIsGM(msg.playerid)) {
-                msg.playerid = STATE.REF.GMPlayerSpoof.playerid;
-                msg.who = D.LCase(msg.who) === "api" ? msg.who : STATE.REF.GMPlayerSpoof.who;
-            }
-            msg.content = msg.content.replace(/^!!/gu, "!");
-            let [call, args] = parseArgString(msg.content); // Splits by space unless surrounded by quotes; removes whitespace and comma separators
-            if (call in SCRIPTCALLS.MESSAGE) {
-                const scriptData = SCRIPTCALLS.MESSAGE[call];
-                if (scriptData
-                    && scriptData.script
-                    && VAL({function: scriptData.script.OnChatCall})
-                    && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API")
-                ) {
-                    const traceID = TRACEON("onChat:message", [msg]);
-                    if (scriptData.isAlertingOnCall && VAL({function: scriptData.script.OnChatCallAlert}))
-                        scriptData.script.OnChatCallAlert([call, ...args], msg.playerid);
-                    const [objects, returnArgs] = parseMessage(args, msg, SCRIPTCALLS.MESSAGE[call].needsObjects !== false);
-                    DB({call, args, objects, returnArgs}, "regHandlers");
-                    call = (scriptData.singleCall && returnArgs.shift()) || call;
-                    if (D.WatchList.includes("Listen"))
-                        D.Poke(
-                            [
-                                `<b>${msg.content}</b>`,
-                                `CALL: ${call}`,
-                                `ARGS: ${returnArgs.join(" | ")}`,
-                                `OBJECTS: ${D.JS(objects)}`,
-                                " ",
-                                `FULL MESSAGE: ${D.JS(msg)}`
-                            ].join("<br>"),
-                            "LISTENER RESULTS"
-                        );
-                    scriptData.script.OnChatCall(call, returnArgs, objects, msg);
-                    TRACEOFF(traceID);
-                }
-                return true;
-            }
-            return false;
-        }
-    };
     const regHandlers = () => {
         on("chat:message", handleMessage);
         on("change:attribute:current", (attrObj, prevData) => {
@@ -190,6 +125,8 @@ const Listener = (() => {
     const initialize = () => {
         STATE.REF.isLocked = STATE.REF.isLocked || false;
         STATE.REF.objectLog = STATE.REF.objectLog || [];
+        STATE.REF.callLog = STATE.REF.callLog || [];
+        STATE.REF.callLogBlacklist = STATE.REF.callLogBlacklist || [];
         SCRIPTCALLS.MESSAGE = _.omit(
             {
                 "!char": {script: Char, gmOnly: true, singleCall: true},
@@ -260,6 +197,78 @@ const Listener = (() => {
     };
     // #endregion
 
+    const handleMessage = (msg, isRaw = false) => {
+        if (!msg.content.includes("DB LISTENER: ListenFull"))
+            DB({msg}, "ListenFull");
+        // if (msg.content.startsWith("!") && msg.type === "api" && !STATE.REF.callLog.includes(msg.content)) {
+        //     if (!_.any(STATE.REF.callLogBlacklist, x => msg.content.startsWith(x))) {
+        //         STATE.REF.callLog.push(msg.content);
+        //         if (STATE.REF.callLog.length > 10)
+        //             Handouts.Make("Call Log", "callLogs", STATE.REF.callLog.sort().join("<br>"));
+        //     }
+        // }
+        if (msg.content.match(/^!?!playerspoof/gu)) {
+            const [, charRef] = msg.content.split(" ");
+            let playerid, who;
+            if (charRef)
+                [playerid, who] = [D.GetPlayerID(charRef.replace(/^@/gu, "")), D.GetName(charRef.replace(/^@/gu, ""))];
+            if (playerid) {
+                Media.ToggleText("PlayerSpoofNotice", true);
+                Media.ToggleText("PlayerSpoofNoticeSplash", true);
+                Media.SetText("PlayerSpoofNotice", `Spoofing: ${who}`);
+                Media.SetText("PlayerSpoofNoticeSplash", `Spoofing: ${who}`);
+                STATE.REF.GMPlayerSpoof = {playerid, who};
+                D.Alert(`Now spoofing ${who}`, "Listener Player Spoofing");
+            } else {
+                Media.ToggleText("PlayerSpoofNotice", false);
+                Media.ToggleText("PlayerSpoofNoticeSplash", false);
+                STATE.REF.GMPlayerSpoof = false;
+                D.Alert("Player Spoofing DISABLED", "Listener Player Spoofing");
+            }
+            return true;
+        } else {
+            if (STATE.REF.isLocked || msg.type !== "api")
+                return false;
+            msg.who = msg.who || "API";
+            if (!isRaw && !msg.content.startsWith("!!") && STATE.REF.GMPlayerSpoof && playerIsGM(msg.playerid)) {
+                msg.playerid = STATE.REF.GMPlayerSpoof.playerid;
+                msg.who = D.LCase(msg.who) === "api" ? msg.who : STATE.REF.GMPlayerSpoof.who;
+            }
+            msg.content = msg.content.replace(/^!!/gu, "!");
+            let [call, args] = parseArgString(msg.content); // Splits by space unless surrounded by quotes; removes whitespace and comma separators
+            if (call in SCRIPTCALLS.MESSAGE) {
+                const scriptData = SCRIPTCALLS.MESSAGE[call];
+                if (scriptData
+                    && scriptData.script
+                    && VAL({function: scriptData.script.OnChatCall})
+                    && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API")
+                ) {
+                    const traceID = TRACEON("onChat:message", [msg]);
+                    if (scriptData.isAlertingOnCall && VAL({function: scriptData.script.OnChatCallAlert}))
+                        scriptData.script.OnChatCallAlert([call, ...args], msg.playerid);
+                    const [objects, returnArgs] = parseMessage(args, msg, SCRIPTCALLS.MESSAGE[call].needsObjects !== false);
+                    DB({call, args, objects, returnArgs}, "regHandlers");
+                    call = (scriptData.singleCall && returnArgs.shift()) || call;
+                    if (D.WatchList.includes("Listen"))
+                        D.Poke(
+                            [
+                                `<b>${msg.content}</b>`,
+                                `CALL: ${call}`,
+                                `ARGS: ${returnArgs.join(" | ")}`,
+                                `OBJECTS: ${D.JS(objects)}`,
+                                " ",
+                                `FULL MESSAGE: ${D.JS(msg)}`
+                            ].join("<br>"),
+                            "LISTENER RESULTS"
+                        );
+                    scriptData.script.OnChatCall(call, returnArgs, objects, msg);
+                    TRACEOFF(traceID);
+                }
+                return true;
+            }
+            return false;
+        }
+    };
     const parseArgString = (argString) => {
         // Splits argument string by space, unless spaces are contained within quotes.
         // Strips quotes used to isolate arguments
