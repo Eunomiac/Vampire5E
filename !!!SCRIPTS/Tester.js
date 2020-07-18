@@ -31,6 +31,16 @@ const Tester = (() => {
     const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
+            case "locationpos": {
+                const reportLines = [];
+                for (const [key, data] of Object.entries(Object.assign({}, Media.IMAGES, Media.TEXT))) {
+                    reportLines.push(`[&quot;${key.replace(/_\d*$/gu, "")}&quot;, {left: ${D.Int(data.left, true)}, top: ${D.Int(data.top, true)}, height: ${D.Int(data.height, true)}, width: ${D.Int(data.width, true)} }],`);
+                    if (VAL({list: data.srcs}))
+                        reportLines.push(`\t[${Object.keys(data.srcs).map((x) => `&quot;${x}&quot;`).join(", ")}]`);
+                }
+                D.Alert(reportLines.join("<br>"), "Media Data");
+                break;
+            }
             case "stathandout": {
                 const TraitSummaryTest = () => {
                     const html = C.HANDOUTHTML.TraitSummaryDoc;
