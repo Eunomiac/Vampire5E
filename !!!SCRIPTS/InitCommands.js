@@ -51,7 +51,7 @@ const InitCommands = (() => {
             }, Session.IsTesting ? 20 : 1000);
         }, Session.IsTesting ? 20 : 1000);
     };
-    // #endregion	
+    // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const onChatCall = (call, args, objects, msg) => {
@@ -78,5 +78,5 @@ const InitCommands = (() => {
 on("ready", () => {
     InitCommands.CheckInstall();
     D.Log("InitCommands Ready!");
-} );
+});
 void MarkStop("InitCommands");

@@ -2,16 +2,16 @@
 const D = (() => {
     // #region ~ ************* COMMON INITIALIZATION *************
     const SCRIPTNAME = "D";
-    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }}; 
-    
-    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray); 
-    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME); 
-    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME); 
+    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};
+
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
+    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
+    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
-    
+
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
-        initialize();            
+        initialize();
     };
     // #endregion
     // #region ~ ************* LOCAL INITIALIZATION **************
@@ -27,7 +27,7 @@ const D = (() => {
         STATE.REF.flexSpace = STATE.REF.flexSpace || 10.00;
         STATE.REF.isReportingListener = STATE.REF.isReportingListener || false;
         STATE.REF.FuncQueueName = STATE.REF.FuncQueueName || [];
-        STATE.REF.MissingTextChars = STATE.REF.MissingTextChars || [];        
+        STATE.REF.MissingTextChars = STATE.REF.MissingTextChars || [];
         STATE.REF.TRACELOG = [];
         STATE.REF.TRACENESTCOUNTER = 0;
         STATE.REF.TRACESTARTTIME = 0;
@@ -50,7 +50,7 @@ const D = (() => {
             // Initialize PCDICT Fuzzy Dictionary and PCLIST Strict Lookup
             STATE.REF.PCDICT = Fuzzy.Fix();
             STATE.REF.PCLIST = [];
-            for (const name of _.values(Char.REGISTRY).map(x => x.name)) {
+            for (const name of _.values(Char.REGISTRY).map((x) => x.name)) {
                 STATE.REF.PCDICT.add(name);
                 STATE.REF.PCLIST.push(name);
             }
@@ -58,7 +58,7 @@ const D = (() => {
             // Initialize NPCDICT Fuzzy Dictionary
             STATE.REF.NPCDICT = Fuzzy.Fix();
             STATE.REF.NPCLIST = [];
-            for (const name of getChars("all").map(x => x.get("name")).filter(x => !_.values(Char.REGISTRY).map(xx => xx.name).includes(x))) {
+            for (const name of getChars("all").map((x) => x.get("name")).filter((x) => !_.values(Char.REGISTRY).map((xx) => xx.name).includes(x))) {
                 STATE.REF.NPCDICT.add(name);
                 STATE.REF.NPCLIST.push(name);
             }
@@ -68,28 +68,27 @@ const D = (() => {
 
         if (STATE.REF.MissingTextChars.length)
             D.Alert(`Missing Character Widths for: '<b>${D.JSL(STATE.REF.MissingTextChars.join(""))}</b>'`, "DATA: Text Widths");
-
     };
-    // #endregion	
+    // #endregion
     // #region ~ ************* EVENT HANDLERS ********************
     const onChatCall = (call, args, objects, msg) => {
         switch (call) {
             case "!data": {
                 switch (D.LCase(call = args.shift())) {
                     case "add": case "set": {
-                        switch(D.LCase(call = args.shift())) {
+                        switch (D.LCase(call = args.shift())) {
                             case "blacklist":
                                 setBlackList(args);
                                 break;
                             case "watch": case "dbwatch": case "watchlist":
                                 setWatchList(args);
                                 break;
-                            case "flex": 
+                            case "flex":
                                 STATE.REF.flexSpace = D.Float(args.shift(), 2);
                                 break;
                             case "fulldebug":
-                                if (args[0] === "true") {        
-                                    STATE.REF.isThrottlingStackLog = false;                           
+                                if (args[0] === "true") {
+                                    STATE.REF.isThrottlingStackLog = false;
                                     Handouts.RemoveAll("Stack Log", "stack");
                                     Handouts.RemoveAll("... Stack", "stack");
                                     STACKLOG.length = 0;
@@ -103,7 +102,7 @@ const D = (() => {
                         break;
                     }
                     case "get": {
-                        switch(D.LCase(call = args.shift())) {
+                        switch (D.LCase(call = args.shift())) {
                             case "sites": {
                                 sendToGM(jStr(C.SITES));
                                 break;
@@ -126,7 +125,7 @@ const D = (() => {
                         break;
                     }
                     case "clear": case "reset": {
-                        switch(D.LCase(call = args.shift())) {
+                        switch (D.LCase(call = args.shift())) {
                             case "watch": case "dbwatch": case "watchlist":
                                 setWatchList("clear");
                                 break;
@@ -148,7 +147,7 @@ const D = (() => {
                         break;
                     }
                     case "refresh": {
-                        switch(D.LCase(call = args.shift())) {
+                        switch (D.LCase(call = args.shift())) {
                             case "shortnames": {
                                 refreshShortNames();
                                 break;
@@ -158,7 +157,7 @@ const D = (() => {
                                 const srcData = {};
                                 for (const charObj of D.GetChars("all")) {
                                     const nameKey = getName(charObj, true);
-                                    charObj.get("_defaulttoken", defToken => {
+                                    charObj.get("_defaulttoken", (defToken) => {
                                         const imgMatch = D.JS(defToken).match(/imgsrc:(.*?),/u);
                                         if (imgMatch && imgMatch.length)
                                             srcData[nameKey] = imgMatch[1].replace(/med\.png/gu, "thumb.png");
@@ -177,7 +176,7 @@ const D = (() => {
                         break;
                     }
                     case "toggle": {
-                        switch(D.LCase(call = args.shift())) {
+                        switch (D.LCase(call = args.shift())) {
                             case "debug": {
                                 STATE.REF.ISDEBUGGING = !STATE.REF.ISDEBUGGING;
                                 D.Flag(`Debugging is ${STATE.REF.ISDEBUGGING ? "ON" : "OFF"}`);
@@ -189,7 +188,7 @@ const D = (() => {
                                 break;
                             }
                             case "report": {
-                                switch(D.LCase(call = args.shift())) {
+                                switch (D.LCase(call = args.shift())) {
                                     case "listen": case "listener": {
                                         STATE.REF.isReportingListener = !STATE.REF.isReportingListener;
                                         D.Alert(STATE.REF.isReportingListener && "Now reporting Listener events." || "No longer reporting Listener events.", "!data toggle report listener");
@@ -199,7 +198,7 @@ const D = (() => {
                                 }
                                 break;
                             }
-                                // no default                               
+                                // no default
                         }
                         break;
                     }
@@ -208,14 +207,14 @@ const D = (() => {
                 break;
             }
             case "!reply": {
-                if (args.length) 
+                if (args.length)
                     receivePrompt(args.join(" "), objects);
                 else
                     receivePrompt("", objects);
                 break;
             }
             // no default
-        }               
+        }
     };
     // #endregion
 
@@ -227,26 +226,23 @@ const D = (() => {
         PAGEID: (pageRef) => {
             // DB({pageRef}, "VALS")
             if (pageRef) {
-                if (isID(pageRef)) 
+                if (isID(pageRef))
                     return (getObj("page", pageRef) || {id: false}).id;
-                if (_.isString(pageRef)) {  
+                if (_.isString(pageRef)) {
                     if (pageRef in C.PAGES)
                         return C.PAGES[pageRef];
-                    const pageObj = (findObjs({_type: "page"}).find(x => x.get("name") === pageRef) || {id: false}).id;  
+                    const pageObj = (findObjs({_type: "page"}).find((x) => x.get("name") === pageRef) || {id: false}).id;
                     if (pageObj && pageObj.id)
                         return pageObj.id;
                 }
                 // const object = getChar(pageRef) || Media.GetImg(pageRef) || Media.GetTokens(pageRef).pop() || Media.GetAnim(pageRef) || Media.GetText(pageRef)
                 if (VAL({object: pageRef}))
                     return pageRef.get("_pageid");
-            }                
+            }
             return getObj("page", D.GetPlayer(D.GMID()).get("_lastpage")).id;
         },
         CELLSIZE: (pageRef) => C.PIXELSPERSQUARE * (getObj("page", VALS.PAGEID(pageRef)) || {get: () => 70}).get("snapping_increment")
     };
-    const FunctionQueue = {};
-    const ISRUNNINGQUEUE = {};
-    const WAITINGQUEUES = [];
     // #endregion
 
     // #region DECLARATIONS: Dependent Variables
@@ -266,25 +262,25 @@ const D = (() => {
             this.styles = styles;
         }
 
-        get name() { return this._name}
+        get name() { return this._name }
 
-        set name(v) { 
+        set name(v) {
             if (VAL({string: v}))
                 this._name = v;
             else
                 this._name = this._name || _.escape("<BTN>");
         }
 
-        get command() { return this._command}
+        get command() { return this._command }
 
-        set command(v) { 
+        set command(v) {
             if (VAL({string: v}))
                 this._command = v;
             else
                 this._command = this._command || _.escape(`[Button '${this.name}'] Invalid Command`);
         }
 
-        get styles() { return this._styles}
+        get styles() { return this._styles }
 
         set styles(v) {
             if (VAL({list: v}))
@@ -328,9 +324,9 @@ const D = (() => {
     const $runFuncQueue = (cback) => {
         const queueName = STATE.REF.FuncQueueName.pop();
         if (!queueName)
-            return THROW("Attempt to run function queue without any queue names.", "runFuncQueue");           
+            return THROW("Attempt to run function queue without any queue names.", "runFuncQueue");
         DB(`Beginning Function Queue ${queueName}`, "runFuncQueue");
-        ISRUNNINGQUEUE[queueName] = true;             
+        ISRUNNINGQUEUE[queueName] = true;
         let current = 0;
         const done = (empty, ...args) => {
             const end = () => {
@@ -349,7 +345,7 @@ const D = (() => {
             end();
         };
         const each = (empty, ...args) => {
-            if (++current >= FunctionQueue[queueName].length || empty) {                            
+            if (++current >= FunctionQueue[queueName].length || empty) {
                 done(empty, args);
             } else {
                 if (STATE.REF.WATCHLIST.includes("runFuncQueue"))
@@ -357,14 +353,14 @@ const D = (() => {
                 FunctionQueue[queueName][current][0].apply(undefined, [].concat(args, each));
             }
         };
-        if (FunctionQueue[queueName].length)                 
+        if (FunctionQueue[queueName].length)
             FunctionQueue[queueName][0][0](each);
         else
             done(null);
         return true;
     };
     const runFuncQueue = (queueName = "main", cback) => {
-        const runningQueues = Object.keys(ISRUNNINGQUEUE).filter(x => ISRUNNINGQUEUE[x] === true);
+        const runningQueues = Object.keys(ISRUNNINGQUEUE).filter((x) => ISRUNNINGQUEUE[x] === true);
         if (ISRUNNINGQUEUE[queueName]) {
             D.Alert(`Attempting to run <b>${queueName}</b>, but it's already running!`, "ERROR: Function Queue");
             return false;
@@ -372,7 +368,7 @@ const D = (() => {
             WAITINGQUEUES.push([queueName, cback]);
             D.Flag(`Delaying ${queueName} for: ${D.JS(runningQueues)}`);
             return false;
-        } else {            
+        } else {
             STATE.REF.FuncQueueName.push(queueName);
             $runFuncQueue(cback);
             return true;
@@ -385,7 +381,7 @@ const D = (() => {
         /* Parses a value of any type via JSON.stringify, and then further styles it for display either
                 in Roll20 chat, in the API console log, or both. */
         try {
-            const typeColor = type => {
+            const typeColor = (type) => {
                 switch (pLowerCase(type)) {
                     case "character": return C.COLORS.brightgold;
                     case "graphic": return C.COLORS.palegreen;
@@ -394,14 +390,14 @@ const D = (() => {
                     case "date": return C.COLORS.palered;
                     default: return C.COLORS.palegrey;
                 }
-            }; 
+            };
             const replacer = (k, v) => {
                 let returnVal = v;
                 if (v instanceof Date) {
                     returnVal = `@@NAMESTART${typeColor("date")}@@${TimeTracker.FormatDate(new Date(v), true)}@@NAMEEND@@`;
                 } else if (!isVerbose && (
-                    k.slice(0, 3).toLowerCase() === "obj" ||
-                            v && (v.get || v._type)
+                    k.slice(0, 3).toLowerCase() === "obj"
+                            || v && (v.get || v._type)
                 )) {
                     const type = v.get && v.get("_type") || v._type || "O";
                     let name = v.get && v.get("name") || v.name || "(Unnamed)";
@@ -421,9 +417,9 @@ const D = (() => {
                     returnVal = "<b>&lt;NaN&gt;</b>";
                 } else if (_.isFunction(v)) {
                     returnVal = "<b>&lt;FUNCTION&gt;</b>";
-                } else if (_.isArray(v)) {							
-                    if (v.map(x => replacer(k, x)).join(",&nbsp;").length < 150) {
-                        returnVal = `<b>[</b> ${v.map(x => replacer(k, x)).join(",&nbsp;")} <b>]</b>`.replace(/\[\s+\]/gu, "<b>[]</b>");
+                } else if (_.isArray(v)) {
+                    if (v.map((x) => replacer(k, x)).join(",&nbsp;").length < 150) {
+                        returnVal = `<b>[</b> ${v.map((x) => replacer(k, x)).join(",&nbsp;")} <b>]</b>`.replace(/\[\s+\]/gu, "<b>[]</b>");
                     } else {
                         const arrayDelver = (array) => {
                             const returns = [];
@@ -447,40 +443,40 @@ const D = (() => {
                         returnVal = listDelver(v);
                     }
                 } else if (_.isNumber(v)) {
-                    returnVal = v.toString();                           
+                    returnVal = v.toString();
                 } else if (_.isString(v)) {
                     returnVal = `ϙQϙ${v}ϙQϙ`;
                 }
                 if (_.isString(returnVal))
-                    returnVal = `${returnVal}`.
-                        replace(/[\n\r]/g, "ϙNϙ").
-                        replace(/<(.*?)>/gu, x => x.replace(/"/gu, "ϙHϙ").replace(/ϙNϙ/gu, "\n").replace(/\s\s+/gu, " ")). // Hides HTML-code quotes so they aren't replaced AND strips line breaks from inside HTML tags.
-                        replace(/"/gu, ""). // Removes all double-quotes.
+                    returnVal = `${returnVal}`
+                        .replace(/[\n\r]/g, "ϙNϙ")
+                        .replace(/<(.*?)>/gu, (x) => x.replace(/"/gu, "ϙHϙ").replace(/ϙNϙ/gu, "\n").replace(/\s\s+/gu, " ")) // Hides HTML-code quotes so they aren't replaced AND strips line breaks from inside HTML tags.
+                        .replace(/"/gu, "") // Removes all double-quotes.
                         // replace(/[\t\n\r]/gu, "").
                         // replace(/\\/gu, ""). // Strips tabs and escape slashes.
-                        replace(/\n/g, "<br/>"). // Converts line breaks into HTML breaks.
-                        replace(/(\s)\s+/gu, "$1"). // Removes excess whitespace.
-                        replace(/\\t/gu, "").
-                        replace(/\\n/gu, "");
+                        .replace(/\n/g, "<br/>") // Converts line breaks into HTML breaks.
+                        .replace(/(\s)\s+/gu, "$1") // Removes excess whitespace.
+                        .replace(/\\t/gu, "")
+                        .replace(/\\n/gu, "");
                 return returnVal;
             };
 
-            let finalString = JSON.stringify(data, replacer, 4).
-                replace(/ (?= )/gu, "&nbsp;"). // Replaces any length of whitespace with one '&nbsp;'
-                replace(/@T@/gu, "&nbsp;&nbsp;&nbsp;&nbsp;"). // Converts custom '@T@' tab character to four spaces
-                // replace(/\\"/gu, "\""). // Escapes quote marks                
-                // replace(/(^"*|"*$)/gu, ""). // Removes quote marks from the beginning and end of the string  
+            let finalString = JSON.stringify(data, replacer, 4)
+                .replace(/ (?= )/gu, "&nbsp;") // Replaces any length of whitespace with one '&nbsp;'
+                .replace(/@T@/gu, "&nbsp;&nbsp;&nbsp;&nbsp;") // Converts custom '@T@' tab character to four spaces
+                // replace(/\\"/gu, "\""). // Escapes quote marks
+                // replace(/(^"*|"*$)/gu, ""). // Removes quote marks from the beginning and end of the string
                 // replace(/>&quot;/gu, ">").replace(/&quot;</gu, "<"). // Removes quotes from within entire HTML tags.
                 // replace(/&amp;quot;/gu, "\"").
-                replace(/ϙ[A-Z]ϙ\/w/gu, "/w"). // Fix whisper.
-                replace(/@@NAMESTART(.*?)@@/gu, "<span style=\"background-color: $1;\"><b>&lt;</b>").
-                replace(/@@NAMEEND@@/gu, "<b>&gt;</b></span>").
-                replace(/ϙHϙ/gu, "\""). // Restores deliberate quotes to HTML code.
-                replace(/ϙQϙ/gu, "&quot;"). // Restores quotes everywhere else
-                replace(/ϙNϙ/gu, "\\n"). // Restores deliberate line breaks.
-                replace(/$(\n|\s|\t|"|&quot;)*?/g, ""). // Restores deliberate line breaks.
-                replace(/(\n|\s|\t|"|&quot;)*?^/g, ""). // Removes lines that are JUST white space and quotes.
-                replace(/\n/g, "<br>"); // Replaces line breaks with <br>.
+                .replace(/ϙ[A-Z]ϙ\/w/gu, "/w") // Fix whisper.
+                .replace(/@@NAMESTART(.*?)@@/gu, "<span style=\"background-color: $1;\"><b>&lt;</b>")
+                .replace(/@@NAMEEND@@/gu, "<b>&gt;</b></span>")
+                .replace(/ϙHϙ/gu, "\"") // Restores deliberate quotes to HTML code.
+                .replace(/ϙQϙ/gu, "&quot;") // Restores quotes everywhere else
+                .replace(/ϙNϙ/gu, "\\n") // Restores deliberate line breaks.
+                .replace(/$(\n|\s|\t|"|&quot;)*?/g, "") // Restores deliberate line breaks.
+                .replace(/(\n|\s|\t|"|&quot;)*?^/g, "") // Removes lines that are JUST white space and quotes.
+                .replace(/\n/g, "<br>"); // Replaces line breaks with <br>.
             if (finalString.slice(0, 7) === "\"&quot;")
                 finalString = finalString.slice(7);
             if (finalString.slice(-7) === "&quot;\"")
@@ -490,7 +486,7 @@ const D = (() => {
             return `ERROR: ${JSON.stringify(errObj)}`;
         }
     };
-    const jStrH = data => {
+    const jStrH = (data) => {
         /* Parses data as above, but removes raw line breaks instead of converting them to <br>.
                 Line breaks must be specified in the code with '<br>' to be parsed as such.  */
         if (_.isUndefined(data))
@@ -499,21 +495,22 @@ const D = (() => {
                 data = data.replace(/(\r\n|\n|\r)/gu, " ") */
         return jStr(_.isString(data) ? `${data}`.replace(/<br\/?>/gu, "<br>") : data).replace(/<br\/>/gu, "").replace(/<br>/gu, "<br/>");
     };
-    const jStrL = data => {
+    const jStrL = (data) => {
         /* Parses data in a way that is appropriate to the console log, removing line breaks and redundant characters. */
         if (_.isUndefined(data))
             return "<UNDEFINED>";
 
-        return jStrH(data).
-            replace(/(\r\n|\n|\r|<br\/?>)/g, " "). // Removes all line breaks
-            replace(/(&nbsp;)+/gu, " "). // Converts &nbsp; back to whitespace
-            replace(/(&amp;nbsp;)+/gu, " "). // Converts escaped &nbsp; to whitespace
-            replace(/&quot;/gu, "'"). // Converts escaped double-quotes to single-quotes
-            replace(/\\"\\"/gu, "'"). // Converts escaped double-quotes to single-quotes
+        return jStrH(data)
+            .replace(/(\r\n|\n|\r|<br\/?>)/g, " ") // Removes all line breaks
+            .replace(/(&nbsp;)+/gu, " ") // Converts &nbsp; back to whitespace
+            .replace(/(&amp;nbsp;)+/gu, " ") // Converts escaped &nbsp; to whitespace
+            .replace(/&quot;/gu, "'") // Converts escaped double-quotes to single-quotes
+            .replace(/\\"\\"/gu, "'") // Converts escaped double-quotes to single-quotes
         // replace(/(<b>|<\/b>)/gu, ""). // Removes bold tagging
-            replace(/(<script(\s|\S)*?<\/script>)|(<style(\s|\S)*?<\/style>)|(<!--(\s|\S)*?-->)|(<\/?(\s|\S)*?>)/g, ""). // Strips all HTML tags.
-            replace(/&gt;/gu, ">").replace(/&lt;/gu, "<"). // Converts < and > back to symbols
-            replace(/"/gu, ""); // Removes all remaining double-quotes
+            .replace(/(<script(\s|\S)*?<\/script>)|(<style(\s|\S)*?<\/style>)|(<!--(\s|\S)*?-->)|(<\/?(\s|\S)*?>)/g, "") // Strips all HTML tags.
+            .replace(/&gt;/gu, ">")
+            .replace(/&lt;/gu, "<") // Converts < and > back to symbols
+            .replace(/"/gu, ""); // Removes all remaining double-quotes
     };
     const jStrC = (data, isShortForm = false, properties = []) => {
         /* Parses data to show all HTML code raw, rather than parsing it for formatting.
@@ -521,24 +518,24 @@ const D = (() => {
         if (_.isUndefined(data))
             return _.escape("<UNDEFINED>");
 
-        return `<pre>${_.escape(jStr(data, isShortForm, properties)).
-            replace(/&gt;&gt;/gu, ">"). // Restores doubled right brackets to code.
-            replace(/&lt;&lt;/gu, "<")}</pre>`; // Restores doubled left brackets to code.
+        return `<pre>${_.escape(jStr(data, isShortForm, properties))
+            .replace(/&gt;&gt;/gu, ">") // Restores doubled right brackets to code.
+            .replace(/&lt;&lt;/gu, "<")}</pre>`; // Restores doubled left brackets to code.
     };
     const parseParams = (args, delim = " ") => {
-        const returnVal = _.object((VAL({array: args}) ? args.join(" ") : args).split(new RegExp(`,?${delim}+`, "gu")).filter(x => x.includes(":")).map(x => x.trim().split(":")));
+        const returnVal = _.object((VAL({array: args}) ? args.join(" ") : args).split(new RegExp(`,?${delim}+`, "gu")).filter((x) => x.includes(":")).map((x) => x.trim().split(":")));
         D.Alert(`Args: ${D.JS(args)}<br>Delim: '${D.JS(delim)}'<br>Return: ${D.JS(returnVal)}`);
         return returnVal;
     };
-    const parseCharSelect = (call, args) => {                
+    const parseCharSelect = (call, args) => {
         let charObjs, charIDString;
         if (["registered", "sandbox", "pcs", "npcs"].includes(call.toLowerCase())) {
             charObjs = getChars(call);
             charIDString = call.toLowerCase();
         } else {
-            charObjs = _.compact(call.split(",").map(x => getObj("character", x.trim())));     
+            charObjs = _.compact(call.split(",").map((x) => getObj("character", x.trim())));
             charIDString = call;
-        }  
+        }
         if (VAL({charObj: charObjs}, null, true)) {
             // D.Alert("Characters Found!")
             call = args[0] ? args.shift() : call;
@@ -558,7 +555,7 @@ const D = (() => {
     const pFloat = (strRef, sigDigits = false) => VAL({number: sigDigits}) && roundSig(parseFloat(strRef) || 0, sigDigits) || parseFloat(strRef) || 0;
     const roundSig = (num, digits, isReturningPaddedString = false) => {
         if (VAL({number: digits}) && D.Int(digits) > 0) {
-            const returnNum = Math.round( num * 10**D.Int(digits) + Number.EPSILON ) / 10**D.Int(digits);
+            const returnNum = Math.round(num * 10 ** D.Int(digits) + Number.EPSILON) / 10 ** D.Int(digits);
             if (isReturningPaddedString)
                 if (!`${returnNum}`.includes(".")) {
                     return `${returnNum}.${"0".repeat(digits)}`;
@@ -568,7 +565,7 @@ const D = (() => {
                 }
             return returnNum;
         }
-        return D.Int(num, true);            
+        return D.Int(num, true);
     };
     const boundNum = (num, minVal, maxVal) => Math.max(Math.min(num, maxVal), minVal);
     const cycleNum = (num, minVal, maxVal) => {
@@ -578,16 +575,16 @@ const D = (() => {
             num += maxVal - minVal;
         return num;
     };
-    const pLowerCase = strRef => `${strRef || ""}`.toLowerCase();
-    const pUpperCase = strRef => `${strRef || ""}`.toUpperCase();
+    const pLowerCase = (strRef) => `${strRef || ""}`.toLowerCase();
+    const pUpperCase = (strRef) => `${strRef || ""}`.toUpperCase();
     const numToText = (num, isTitleCase = false) => {
         const numString = `${num}`;
-        const parseThreeDigits = v => {
-            const digits = _.map(v.toString().split(""), vv => parseInt(vv));
-            let result = "";                        
+        const parseThreeDigits = (v) => {
+            const digits = _.map(v.toString().split(""), (vv) => parseInt(vv));
+            let result = "";
             if (digits.length === 3) {
                 const hundreds = digits.shift();
-                result += hundreds > 0 ? `${C.NUMBERWORDS.low[hundreds] } hundred` : "";
+                result += hundreds > 0 ? `${C.NUMBERWORDS.low[hundreds]} hundred` : "";
                 if (digits[0] + digits[1] > 0)
                     result += " and ";
                 else
@@ -596,12 +593,12 @@ const D = (() => {
             if (parseInt(digits.join("")) <= C.NUMBERWORDS.low.length)
                 result += C.NUMBERWORDS.low[parseInt(digits.join(""))];
             else
-                result += C.NUMBERWORDS.tens[parseInt(digits.shift())] + (parseInt(digits[0]) > 0 ? `-${ C.NUMBERWORDS.low[parseInt(digits[0])]}` : "");
+                result += C.NUMBERWORDS.tens[parseInt(digits.shift())] + (parseInt(digits[0]) > 0 ? `-${C.NUMBERWORDS.low[parseInt(digits[0])]}` : "");
             return result.toLowerCase();
         };
         const isNegative = numString.charAt(0) === "-";
         const [integers, decimals] = numString.replace(/[,|\s|-]/gu, "").split(".");
-        const intArray = _.map(integers.split("").reverse().join("").match(/.{1,3}/g), v => v.split("").reverse().join("")).reverse();
+        const intArray = _.map(integers.split("").reverse().join("").match(/.{1,3}/g), (v) => v.split("").reverse().join("")).reverse();
         const [intStrings, decStrings] = [[], []];
         while (intArray.length)
             intStrings.push(`${parseThreeDigits(intArray.shift())} ${C.NUMBERWORDS.tiers[intArray.length]}`.toLowerCase().trim());
@@ -615,8 +612,8 @@ const D = (() => {
     const textToNum = (num) => {
         const [tenText, oneText] = num.split("-");
         if (VAL({string: tenText}, "textToNum"))
-            return Math.max(0, _.indexOf(_.map(C.NUMBERWORDS.tens, v => v.toLowerCase()), tenText.toLowerCase()) * 10, _.indexOf(_.map(C.NUMBERWORDS.low, v => v.toLowerCase()), tenText.toLowerCase())) +
-                    VAL({string: oneText}) ? Math.max(0, _.indexOf(_.map(C.NUMBERWORDS.low, v => v.toLowerCase()), oneText.toLowerCase())) : 0;
+            return Math.max(0, _.indexOf(_.map(C.NUMBERWORDS.tens, (v) => v.toLowerCase()), tenText.toLowerCase()) * 10, _.indexOf(_.map(C.NUMBERWORDS.low, (v) => v.toLowerCase()), tenText.toLowerCase()))
+                    + VAL({string: oneText}) ? Math.max(0, _.indexOf(_.map(C.NUMBERWORDS.low, (v) => v.toLowerCase()), oneText.toLowerCase())) : 0;
         return 0;
     };
     const numToRomanNum = (num, isGroupingSymbols = true) => {
@@ -624,14 +621,14 @@ const D = (() => {
             return NaN;
         const digits = String(D.Int(num)).split("");
         const key = isGroupingSymbols && [ // Ⅰ Ⅱ Ⅲ Ⅳ Ⅴ Ⅵ Ⅶ Ⅷ Ⅸ Ⅹ Ⅺ Ⅻ Ⅼ Ⅽ Ⅾ Ⅿ
-            "","Ⅽ","ⅭⅭ","ⅭⅭⅭ","ⅭⅮ","Ⅾ","ⅮⅭ","ⅮⅭⅭ","ⅮⅭⅭⅭ","ⅭⅯ",
-            "","Ⅹ","ⅩⅩ","ⅩⅩⅩ","ⅩⅬ","Ⅼ","ⅬⅩ","ⅬⅩⅩ","ⅬⅩⅩⅩ","ⅩⅭ",
-            "","Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ", "Ⅵ", "Ⅶ", "Ⅷ", "Ⅸ"
+            "", "Ⅽ", "ⅭⅭ", "ⅭⅭⅭ", "ⅭⅮ", "Ⅾ", "ⅮⅭ", "ⅮⅭⅭ", "ⅮⅭⅭⅭ", "ⅭⅯ",
+            "", "Ⅹ", "ⅩⅩ", "ⅩⅩⅩ", "ⅩⅬ", "Ⅼ", "ⅬⅩ", "ⅬⅩⅩ", "ⅬⅩⅩⅩ", "ⅩⅭ",
+            "", "Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ", "Ⅵ", "Ⅶ", "Ⅷ", "Ⅸ"
         ] || [ // Ⅰ Ⅴ Ⅹ Ⅼ Ⅽ Ⅾ Ⅿ
-            "","Ⅽ","ⅭⅭ","ⅭⅭⅭ","ⅭⅮ","Ⅾ","ⅮⅭ","ⅮⅭⅭ","ⅮⅭⅭⅭ","ⅭⅯ",
-            "","Ⅹ","ⅩⅩ","ⅩⅩⅩ","ⅩⅬ","Ⅼ","ⅬⅩ","ⅬⅩⅩ","ⅬⅩⅩⅩ","ⅩⅭ",
-            "","Ⅰ", "ⅠⅠ", "ⅠⅠⅠ", "ⅠⅤ", "Ⅴ", "ⅤⅠ", "ⅤⅠⅠ", "ⅤⅠⅠⅠ", "ⅠⅩ"
-        ]; 
+            "", "Ⅽ", "ⅭⅭ", "ⅭⅭⅭ", "ⅭⅮ", "Ⅾ", "ⅮⅭ", "ⅮⅭⅭ", "ⅮⅭⅭⅭ", "ⅭⅯ",
+            "", "Ⅹ", "ⅩⅩ", "ⅩⅩⅩ", "ⅩⅬ", "Ⅼ", "ⅬⅩ", "ⅬⅩⅩ", "ⅬⅩⅩⅩ", "ⅩⅭ",
+            "", "Ⅰ", "ⅠⅠ", "ⅠⅠⅠ", "ⅠⅤ", "Ⅴ", "ⅤⅠ", "ⅤⅠⅠ", "ⅤⅠⅠⅠ", "ⅠⅩ"
+        ];
         let roman = "", i = 3;
         while (i--)
             roman = (key[D.Int(digits.pop()) + i * 10] || "") + roman;
@@ -641,7 +638,7 @@ const D = (() => {
         /* Converts any number by adding its appropriate ordinal ("2nd", "3rd", etc.) */
         if (isFullText) {
             const [numText, suffix] = numToText(num).match(/.*?[-|\s](\w*?)$/u);
-            return numText.replace(new RegExp(`${suffix }$`, "u"), "") + C.ORDINALSUFFIX[suffix] || `${suffix }th`;
+            return numText.replace(new RegExp(`${suffix}$`, "u"), "") + C.ORDINALSUFFIX[suffix] || `${suffix}th`;
         }
         const tNum = parseInt(num) - 100 * Math.floor(parseInt(num) / 100);
         if ([11, 12, 13].includes(tNum))
@@ -652,7 +649,7 @@ const D = (() => {
     const capitalize = (str, isTitleCase = false) => {
         if (VAL({string: str}, "capitalize"))
             if (isTitleCase)
-                return _.map(_.map(str.split(" "), v => v.slice(0, 1).toUpperCase() + v.slice(1)).join(" ").split("-"), v => v.slice(0, 1).toUpperCase() + v.slice(1)).join("-").replace(/And/gu, "and");
+                return _.map(_.map(str.split(" "), (v) => v.slice(0, 1).toUpperCase() + v.slice(1)).join(" ").split("-"), (v) => v.slice(0, 1).toUpperCase() + v.slice(1)).join("-").replace(/And/gu, "and");
             else
                 return str.slice(0, 1).toUpperCase() + str.slice(1);
         THROW(`Attempt to capitalize non-string '${jStrL(str)}'`, "capitalize");
@@ -668,7 +665,7 @@ const D = (() => {
                 for (const [key, val] of Object.entries(areNewPropsOK ? source : _.pick(source, Object.keys(thisTarget))))
                     thisTarget[key] = merge(thisTarget[key], val, areNewPropsOK, isWritingToTarget);
                 if (isWritingToTarget)
-                    Object.assign(target, thisTarget);                
+                    Object.assign(target, thisTarget);
                 return thisTarget;
             }
         }
@@ -698,17 +695,19 @@ const D = (() => {
     const getRGB = (colorRef) => {
         if (["string", "number"].includes(typeof colorRef)) {
             colorRef = pLowerCase(colorRef);
-            return `rgb(${colorRef.startsWith("rgb") ? 
-                colorRef.replace(/[rgb\(\)]/gu, "").split(/,/gu).slice(0,3).map(x => D.Int(x.trim())).join(", ") :
-                /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorRef).slice(1).map(x => D.Int(`0x${x}`)).join(", ")})`;
+            return `rgb(${colorRef.startsWith("rgb")
+                ? colorRef.replace(/[rgb\(\)]/gu, "").split(/,/gu).slice(0, 3).map((x) => D.Int(x.trim()))
+                    .join(", ")
+                : /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorRef).slice(1).map((x) => D.Int(`0x${x}`)).join(", ")})`;
         }
         return colorRef;
     };
-    const rbgToHex = (rgb = [0, 0, 0]) => `#${rgb.slice(0, 3).map(x => x.toString(16)).join("")}`;
-    const colorGradient = (startColor, endColor, step, totalSteps) => `rgba(${startColor.replace(/[^\d\s,]*/gu, "").split(",").map((x, i) => D[i === 3 ? "Round" : "Int"](x, 2)).map((x, i) => D[i === 3 ? "Round" : "Int"](x + (endColor.replace(/[^\d\s,]*/gu, "").split(",").map((xx, ii) => D[ii === 3 ? "Round" : "Int"](xx, 2))[i] - x) * step / totalSteps, 2)).join(", ")})`;
+    const rbgToHex = (rgb = [0, 0, 0]) => `#${rgb.slice(0, 3).map((x) => x.toString(16)).join("")}`;
+    const colorGradient = (startColor, endColor, step, totalSteps) => `rgba(${startColor.replace(/[^\d\s,]*/gu, "").split(",").map((x, i) => D[i === 3 ? "Round" : "Int"](x, 2)).map((x, i) => D[i === 3 ? "Round" : "Int"](x + (endColor.replace(/[^\d\s,]*/gu, "").split(",").map((xx, ii) => D[ii === 3 ? "Round" : "Int"](xx, 2))[i] - x) * step / totalSteps, 2))
+        .join(", ")})`;
     const parseStack = (stackObj) => {
         const stackData = processStack(stackObj);
-        const reportLines = stackData.filteredStackLines.map(x => x.replace(/ *\[ *as[^\]]*\] */gu, " ").replace(/^.*?at /gu, "").replace(/\(([^:]*:[^:]*):\d+\)/gu, "($1)")); // .join("◄")
+        const reportLines = stackData.filteredStackLines.map((x) => x.replace(/ *\[ *as[^\]]*\] */gu, " ").replace(/^.*?at /gu, "").replace(/\(([^:]*:[^:]*):\d+\)/gu, "($1)")); // .join("◄")
         reportLines[0] = `<b>${reportLines[0].split(" ")[0]}</b> ${reportLines[0].split(" ")[1]}`;
         return reportLines;
     };
@@ -717,25 +716,23 @@ const D = (() => {
             [^(( +)(const )? *[^ \r\n\=]* *=.*?=> *\{)] >> [$1\r\n$2    const funcID = ONSTACK\(\)] (RegExp Replace)
             [ return ] >> [ return OFFSTACK(funcID) && ] (Normal Replace)
         */
-    const dampenStackVal = (code) => {
-        return code.
-            replace(/<\/?b>/gu, "").
-            replace(/\(([A-Z])[a-z]*?([A-Z])?[a-z]*?([A-Z])?[a-z]*?([A-Z])?[a-z]*:(\d+)\)/gu, "<span style=\"font-size: 10px;\"> ($1$2$3$4:$5)</span>").
-            replace(/^ *([a-z_]) *[ a-z._]*?([A-Z._])? *([a-z._]{0,3})[ a-z._]*([A-Z])?[ a-z._]*([A-Z])?[ a-z._]*([A-Z])?[ a-z._]*/gu, "<span style=\"background-color: rgba(0,0,0,0.3);\">$1$2$3$4$5$6</span>");
-    };
+    const dampenStackVal = (code) => code
+        .replace(/<\/?b>/gu, "")
+        .replace(/\(([A-Z])[a-z]*?([A-Z])?[a-z]*?([A-Z])?[a-z]*?([A-Z])?[a-z]*:(\d+)\)/gu, "<span style=\"font-size: 10px;\"> ($1$2$3$4:$5)</span>")
+        .replace(/^ *([a-z_]) *[ a-z._]*?([A-Z._])? *([a-z._]{0,3})[ a-z._]*([A-Z])?[ a-z._]*([A-Z])?[ a-z._]*([A-Z])?[ a-z._]*/gu, "<span style=\"background-color: rgba(0,0,0,0.3);\">$1$2$3$4$5$6</span>");
     const putOnStack = (excludeFunc, isThrottlingStackLog = false) => {
         if (!STATE.REF.isFullDebug || STATE.REF.isThrottlingStackLog)
             return true;
         const obj = {};
         let funcID = D.RandomString(20);
         const filterFunc = (fID) => (x) => x[0] === fID;
-        while (FUNCSONSTACK.filter(filterFunc(funcID)).length) 
+        while (FUNCSONSTACK.filter(filterFunc(funcID)).length)
             funcID = D.RandomString(20);
         Error.captureStackTrace(obj, excludeFunc);
         if (FUNCSONSTACK.length) {
             if (STACKLOG.length > 450)
                 getStackRecord("... Stack");
-            logStackAlert(`<span style="background-color: rgba(0,0,0,0.${STACKLOG.length % 2}); width: 1550px; display: block; font-family: 'Carrois Gothic SC'; font-size: 12px;"> ${"> ".repeat(FUNCSONSTACK.length - 1)}${FUNCSONSTACK.slice(1).map(x => dampenStackVal(x[1])).join(" > ")} ► ${D.ParseStack(obj).shift()}</span>`);
+            logStackAlert(`<span style="background-color: rgba(0,0,0,0.${STACKLOG.length % 2}); width: 1550px; display: block; font-family: 'Carrois Gothic SC'; font-size: 12px;"> ${"> ".repeat(FUNCSONSTACK.length - 1)}${FUNCSONSTACK.slice(1).map((x) => dampenStackVal(x[1])).join(" > ")} ► ${D.ParseStack(obj).shift()}</span>`);
         } else {
             logStackAlert(`<span style="background-color: rgba(0,0,0,0.8); color: ${C.COLORS.white}; border-top: 1px solid black; margin-top: 5px; width: 1550px; display: block; line-height: 10px; padding: 3px 0px; font-variant: small-caps;">&nbsp;&nbsp;&nbsp;${D.ParseStack(obj).shift()}</span>`);
         }
@@ -749,7 +746,7 @@ const D = (() => {
             STATE.REF.isThrottlingStackLog = false;
         if (!STATE.REF.isFullDebug || STATE.REF.isThrottlingStackLog)
             return true;
-        const remFunc = D.PullOut(FUNCSONSTACK, v => v[0] === funcID);
+        const remFunc = D.PullOut(FUNCSONSTACK, (v) => v[0] === funcID);
         if (remFunc)
             if (FUNCSONSTACK.length > 1)
                 if (STACKLOG[STACKLOG.length - 1].endsWith(`${remFunc[1]}</span>`))
@@ -778,11 +775,11 @@ const D = (() => {
         else if (Array.isArray(msg) || typeof msg === "string")
             if (isHTMLOk) {
                 if (isStrippingHTML)
-                    msg = _.flatten([msg], true).map(x => jStr(x)).join("");
+                    msg = _.flatten([msg], true).map((x) => jStr(x)).join("");
                 else
-                    msg = _.flatten([msg], true).map(x => jStrL(x)).join("");
+                    msg = _.flatten([msg], true).map((x) => jStrL(x)).join("");
             } else {
-                msg = _.flatten([msg], true).map(x => jStrL(x)).join(" ");
+                msg = _.flatten([msg], true).map((x) => jStrL(x)).join(" ");
             }
         else if (isHTMLOk && !isStrippingHTML)
             msg = jStr(msg);
@@ -791,17 +788,17 @@ const D = (() => {
 
         if (!isHTMLOk)
             msg = msg.replace(/<[\sa-z\/]*>/g, " ").replace(/\s\s+/gu, " ");
-            
+
         return msg;
     };
     const sendAPICommand = (command) => {
         sendChat(getName(getGMID()), command);
     };
     const sendChatMessage = (who, message = "", title) => {
-        /* Whispers chat message to player given: display name OR player ID. 
+        /* Whispers chat message to player given: display name OR player ID.
                 If no Title, message is sent without formatting. */
         const player = getPlayer(who) || who;
-        const html = title === "none" && jStr(C.HTML.Block(C.HTML.Header(message, {  
+        const html = title === "none" && jStr(C.HTML.Block(C.HTML.Header(message, {
             height: "auto",
             width: "auto",
             lineHeight: "25px",
@@ -813,9 +810,9 @@ const D = (() => {
             color: C.COLORS.white,
             border: "none",
             textAlign: "left"
-        }), {width: "auto", border: `2px solid ${C.COLORS.black}`})) ||
-                    title && jStr(C.HTML.Block([
-                        C.HTML.Header(title, {  
+        }), {width: "auto", border: `2px solid ${C.COLORS.black}`}))
+                    || title && jStr(C.HTML.Block([
+                        C.HTML.Header(title, {
                             height: "auto",
                             width: "auto",
                             lineHeight: "25px",
@@ -844,16 +841,16 @@ const D = (() => {
                         })
                     ].join(""), {
                         width: "auto",
-                        border:  `2px solid ${C.COLORS.black}`
-                    })) ||
-                    message;
+                        border: `2px solid ${C.COLORS.black}`
+                    }))
+                    || message;
         // sendChat(from, `/direct <pre>${JSON.stringify(html)}</pre>`)
         if (who === "all" || player === "all" || !player) {
             sendChat(randomString(3), html);
         } else {
             sendChat(randomString(3), `/w "${player.get("_displayname")}" ${html}`);
-            if (!playerIsGM(player.id))                
-                sendChat(randomString(3), `/w Storyteller ${html}<div style="display: block;height: 10px;max-height: 10px;position: relative;z-index: 999;text-align: right;width: 100%;margin-top: -10px;margin-bottom: -7px;background-color: transparent;padding: 0px;font-size: 0px;"><span style="font-size: 10px; display:inline-block; line-height: 10px; background-color: blue;color: white;max-height: 10px;width: auto;">(TO: ${player.get("_displayname").slice(0,5)})</span></div>`);
+            if (!playerIsGM(player.id))
+                sendChat(randomString(3), `/w Storyteller ${html}<div style="display: block;height: 10px;max-height: 10px;position: relative;z-index: 999;text-align: right;width: 100%;margin-top: -10px;margin-bottom: -7px;background-color: transparent;padding: 0px;font-size: 0px;"><span style="font-size: 10px; display:inline-block; line-height: 10px; background-color: blue;color: white;max-height: 10px;width: auto;">(TO: ${player.get("_displayname").slice(0, 5)})</span></div>`);
         }
     };
     const sendToGM = (msg, title = "[ALERT]", throttle = 0) => {
@@ -915,7 +912,7 @@ const D = (() => {
                 color: C.COLORS.black,
                 fontFamily: "Voltaire",
                 border: `none; border-bottom: 4px outset ${C.COLORS.crimson}`,
-                margin: "0px 0px 0px 0px",
+                margin: "0px 0px 0px 0px"
             },
             Header: {
                 color: C.COLORS.brightgold,
@@ -950,14 +947,14 @@ const D = (() => {
                     } else if (rowData.type === "ButtonLine") {
                         try {
                             const buttonsCode = [];
-                            const totalFlexEntities = rowData.contents.filter(x => VAL({list: x}) && (!x.styles || !x.styles.width) || VAL({number: x}) && x === 0).length;
-                            const strictSpacerTotWidth = rowData.contents.map(x => VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "40px"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%|(px)/gu, "")) : x).filter(x => VAL({number: x})).reduce((tot, x) => tot + x + 2, 0) || 0;
+                            const totalFlexEntities = rowData.contents.filter((x) => VAL({list: x}) && (!x.styles || !x.styles.width) || VAL({number: x}) && x === 0).length;
+                            const strictSpacerTotWidth = rowData.contents.map((x) => (VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "40px"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%|(px)/gu, "")) : x)).filter((x) => VAL({number: x})).reduce((tot, x) => tot + x + 2, 0) || 0;
                             // strictSpacerTotWidth = Math.floor(C.CHATWIDTH * (strictSpacerTotPercentWidth / 100)),
                             const totFlexSpacing = C.CHATWIDTH - strictSpacerTotWidth;
                             const flexEntityWidth = Math.floor(totFlexSpacing / totalFlexEntities);
                             DB({rowDataContents: D.JS(rowData.contents)}, "getCommandMenuHTML");
                             // DB({totalFlexEntities, strictSpacerTotWidth, totFlexSpacing, flexEntityWidth}, "getCommandMenuHTML")
-                            rowData.contents = rowData.contents.map(x => VAL({number: x}) && x === 0 && flexEntityWidth || x);
+                            rowData.contents = rowData.contents.map((x) => VAL({number: x}) && x === 0 && flexEntityWidth || x);
                             dbData.rows.push({strictSpacerTotWidth, totFlexSpacing, flexEntityWidth, rowData, entities: []});
                             for (const entity of rowData.contents)
                                 if (VAL({number: entity}))
@@ -986,7 +983,7 @@ const D = (() => {
                     }
                 };
                 if ("rows" in sectionData)
-                    sectionData.rows.forEach(x => parseRow(x));
+                    sectionData.rows.forEach((x) => parseRow(x));
                 else
                     parseRow(sectionData);
             } else {
@@ -1019,8 +1016,8 @@ const D = (() => {
         _.each(obj, (v, k) => { newObj[kFunc ? kFunc(k, v) : k] = vFunc ? vFunc(v, k) : v });
         return newObj;
     };
-    const removeFirst = (array, element) => array.splice(array.findIndex(v => v === element));
-    const pullElement = (array, checkFunc = (_v = true, _i = 0,_a = []) => {checkFunc(_v, _i, _a)}) => {
+    const removeFirst = (array, element) => array.splice(array.findIndex((v) => v === element));
+    const pullElement = (array, checkFunc = (_v = true, _i = 0, _a = []) => { checkFunc(_v, _i, _a) }) => {
         const index = array.findIndex((v, i, a) => checkFunc(v, i, a));
         return index !== -1 && array.splice(index, 1).pop();
     };
@@ -1034,40 +1031,40 @@ const D = (() => {
             args.push(...val);
         else
             return THROW(`Cannot parse value '${jStrC(val)}' to object.`, "parseToObj");
-        return _.object(args.filter(x => x.includes(keyValDelim)).map(x => x.trim().split(keyValDelim).map(xx => VAL({number: xx}) ? D.Float(xx,2) : xx)));
+        return _.object(args.filter((x) => x.includes(keyValDelim)).map((x) => x.trim().split(keyValDelim).map((xx) => (VAL({number: xx}) ? D.Float(xx, 2) : xx))));
     };
         // #endregion
 
-    // #region ~ SEARCH & VALIDATION: Match checking, Set membership checking, type validation. 
+    // #region ~ SEARCH & VALIDATION: Match checking, Set membership checking, type validation.
     const looseMatch = (first, second) => {
         if (VAL({string: [first, second]}, "looseMatch", true))
             return first.toLowerCase() === second.toLowerCase();
         return false;
-    }; 
+    };
     const fuzzyMatch = (first, second) => {
         if (VAL({string: [first, second]}, "fuzzyMatch", true))
-            return first.toLowerCase().replace(/\W+/gu, "").includes(second.toLowerCase().replace(/\W+/gu, "")) ||
-                second.toLowerCase().replace(/\W+/gu, "").includes(first.toLowerCase().replace(/\W+/gu, ""));
+            return first.toLowerCase().replace(/\W+/gu, "").includes(second.toLowerCase().replace(/\W+/gu, ""))
+                || second.toLowerCase().replace(/\W+/gu, "").includes(first.toLowerCase().replace(/\W+/gu, ""));
         return false;
     };
     const isInExact = (needle, haystack = ALLSTATS) => {
         // D.Alert(JSON.stringify(haystack))
-        // Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. 
+        // Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack.
         try {
             // STEP ZERO: VALIDATE NEEDLE & HAYSTACK
             // NEEDLE --> Must be STRING
-            // HAYSTACK --> Can be ARRAY, LIST or STRING 
+            // HAYSTACK --> Can be ARRAY, LIST or STRING
             if (VAL({string: needle}) || VAL({number: needle})) {
                 // STEP ONE: BUILD HAYSTACK.
                 // HAYSTACK = ARRAY? --> HAY = ARRAY
                 // HAYSTACK = LIST? ---> HAY = ARRAY (Object.keys(H))
                 // HAYSTACK = STRING? -> HAY = H
-                    
+
                 if (haystack && haystack.gramSizeLower)
                     return isIn(needle, haystack);
-                const hayType = VAL({array: haystack}) && "array" ||
-                                    VAL({list: haystack}) && "list" ||
-                                    VAL({string: haystack}) && "string";                             
+                const hayType = VAL({array: haystack}) && "array"
+                                    || VAL({list: haystack}) && "list"
+                                    || VAL({string: haystack}) && "string";
                 let ndl = needle.toString(),
                     hay, match;
                 switch (hayType) {
@@ -1090,29 +1087,33 @@ const D = (() => {
                 // *END: Search for match with end of haystack strings, case insensitive.
                 // *INCLUDE: Search for match of needle anywhere in haystack strings, case insensitive.
                 // *REVERSE INCLUDE: Search for match of HAYSTACK strings inside needle, case insensitive.
-                // FUZZY: Start again after stripping all non-word characters. 
+                // FUZZY: Start again after stripping all non-word characters.
                 if (hayType === "array" || hayType === "list") {
                     for (let i = 0; i <= 1; i++) {
                         let thisNeedle = ndl,
                             thisHay = hay;
-                        match = _.findIndex(thisHay, v => thisNeedle === v) + 1; // Adding 1 means "!match" passes on failure return of -1.
-                        if (match) break;                            
-                        thisHay = _.map(thisHay, v => (v || v === 0) && (VAL({string: v}) || VAL({number: v}) ? v.toString().toLowerCase() : v) || "§¥£");
+                        match = _.findIndex(thisHay, (v) => thisNeedle === v) + 1; // Adding 1 means "!match" passes on failure return of -1.
+                        if (match)
+                            break;
+                        thisHay = _.map(thisHay, (v) => (v || v === 0) && (VAL({string: v}) || VAL({number: v}) ? v.toString().toLowerCase() : v) || "§¥£");
                         thisNeedle = thisNeedle.toString().toLowerCase();
-                        match = _.findIndex(thisHay, v => thisNeedle === v) + 1;
-                        if (match) break;
+                        match = _.findIndex(thisHay, (v) => thisNeedle === v) + 1;
+                        if (match)
+                            break;
                         // Now strip all non-word characters and try again from the top.
                         ndl = ndl.replace(/\W+/gu, "");
-                        hay = _.map(hay, v => VAL({string: v}) || VAL({number: v}) ? v.toString().replace(/\W+/gu, "") : v);
+                        hay = _.map(hay, (v) => (VAL({string: v}) || VAL({number: v}) ? v.toString().replace(/\W+/gu, "") : v));
                     }
                     return match && hayType === "array" ? haystack[match - 1] : haystack[Object.keys(haystack)[match - 1]];
                 } else {
                     for (let i = 0; i <= 1; i++) {
                         match = hay === ndl && ["", hay];
-                        if (match) break;
+                        if (match)
+                            break;
                         const thisNeedleRegExp = new RegExp(`^(${ndl})$`, "iu");
                         match = hay.match(thisNeedleRegExp);
-                        if (match) break;
+                        if (match)
+                            break;
                         // Now strip all non-word characters and try again from the top.
                         ndl = ndl.replace(/\W+/gu, "");
                         hay = hay.replace(/\W+/gu, "");
@@ -1143,11 +1144,11 @@ const D = (() => {
     };
     const isID = (testStr) => typeof testStr === "string" && testStr.length === 20 && testStr.charAt(0) === "-";
     /* isntIn = (needle, haystack = ALLSTATS, isFuzzyMatching = true) => {
-            // Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. 
+            // Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack.
             try {
                 // STEP ZERO: VALIDATE NEEDLE & HAYSTACK
                       // NEEDLE --> Must be STRING
-                      // HAYSTACK --> Can be ARRAY, LIST or STRING 
+                      // HAYSTACK --> Can be ARRAY, LIST or STRING
                 if (VAL({string: needle}) || VAL({number: needle})) {
                     // STEP ONE: BUILD HAYSTACK.
                         // HAYSTACK = ARRAY? --> HAY = ARRAY
@@ -1155,7 +1156,7 @@ const D = (() => {
                         // HAYSTACK = STRING? -> HAY = H
                     const hayType = VAL({array: haystack}) && "array" ||
                                     VAL({list: haystack}) && "list" ||
-                                    VAL({string: haystack}) && "string"                                    
+                                    VAL({string: haystack}) && "string"
                     let ndl = needle.toString(),
                         hay, match
                     switch (hayType) {
@@ -1178,13 +1179,13 @@ const D = (() => {
                             // *END: Search for match with end of haystack strings, case insensitive.
                             // *INCLUDE: Search for match of needle anywhere in haystack strings, case insensitive.
                             // *REVERSE INCLUDE: Search for match of HAYSTACK strings inside needle, case insensitive.
-                            // FUZZY: Start again after stripping all non-word characters. 
+                            // FUZZY: Start again after stripping all non-word characters.
                     if (hayType === "array" || hayType === "list") {
                         for (let i = 0; i <= 1; i++) {
                             let thisNeedle = ndl,
                                 thisHay = hay
                             match = _.findIndex(thisHay, v => thisNeedle === v) + 1 // Adding 1 means "!match" passes on failure return of -1.
-                            if (match) break                            
+                            if (match) break
                             thisHay = _.map(thisHay, v => (v || v === 0) && (VAL({string: v}) || VAL({number: v}) ? v.toString().toLowerCase() : v) || "§¥£")
                             thisNeedle = thisNeedle.toString().toLowerCase()
                             match = _.findIndex(thisHay, v => thisNeedle === v) + 1
@@ -1215,22 +1216,22 @@ const D = (() => {
                             if (match) break
                             if (isFuzzyMatching) {
                                 thisNeedleRegExp = new RegExp(`^(${ndl})`, "iu")
-                                match = hay.match(thisNeedleRegExp) 
+                                match = hay.match(thisNeedleRegExp)
                             }
-                            if (match) break                            
+                            if (match) break
                             if (isFuzzyMatching) {
                                 thisNeedleRegExp = new RegExp(`(${ndl})$`, "iu")
-                                match = hay.match(thisNeedleRegExp) 
+                                match = hay.match(thisNeedleRegExp)
                             }
-                            if (match) break                           
+                            if (match) break
                             if (isFuzzyMatching) {
                                 thisNeedleRegExp = new RegExp(`(${ndl})`, "iu")
-                                match = hay.match(thisNeedleRegExp) 
+                                match = hay.match(thisNeedleRegExp)
                             }
-                            if (match) break                           
+                            if (match) break
                             if (isFuzzyMatching) {
                                 let thisHayRegExp = new RegExp(`(${hay})`, "iu")
-                                match = ndl.match(thisHayRegExp) 
+                                match = ndl.match(thisHayRegExp)
                             }
                             if (match) break
                             // Now strip all non-word characters and try again from the top.
@@ -1258,7 +1259,7 @@ const D = (() => {
             if (isArray && valArray.length === 0)
                 errorLines.push("No values to check in array.");
             else
-                _.each(valArray, v => {
+                _.each(valArray, (v) => {
                     let errorCheck = null;
                     switch (cat.toLowerCase()) {
                         case "object": case "obj": // If v has a "get" and an "id" property.
@@ -1269,7 +1270,7 @@ const D = (() => {
                             if (_.isNaN(parseInt(v)))
                                 errorLines.push(`Invalid number: ${jStrL(v)}`);
                             break;
-                        case "string": // If 
+                        case "string": // If
                             if (!_.isString(v) && !_.isNumber(v))
                                 errorLines.push(`Invalid string: ${jStrL(v)}`);
                             break;
@@ -1312,17 +1313,17 @@ const D = (() => {
                                 errorLines.push(`Invalid character object: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`);
                             else
                                 charArray.push(v);
-                            break;                        
+                            break;
                         case "playerchar": case "playercharref": case "pcref": case "pc":
                             if (!getChar(v, true))
                                 errorLines.push(`Invalid character reference: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`);
-                            else if (!_.values(Char.REGISTRY).map(x => x.id).includes(getChar(v, true).id))
+                            else if (!_.values(Char.REGISTRY).map((x) => x.id).includes(getChar(v, true).id))
                                 errorLines.push(`Character reference is not a player character: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`);
-                            break;                                               
+                            break;
                         case "npc": case "npcref": case "spc": case "spcref":
                             if (!getChar(v, true))
                                 errorLines.push(`Invalid character reference: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`);
-                            else if (_.values(Char.REGISTRY).map(x => x.id).includes(getChar(v, true).id))
+                            else if (_.values(Char.REGISTRY).map((x) => x.id).includes(getChar(v, true).id))
                                 errorLines.push(`Character reference is not a non-player character: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`);
                             break;
                         case "player": case "playerref":
@@ -1360,7 +1361,7 @@ const D = (() => {
                         case "trait":
                             if (charArray.length) {
                                 errorCheck = [];
-                                _.each(charArray, charObj => {
+                                _.each(charArray, (charObj) => {
                                     if (!getStat(charObj, v, true))
                                         errorCheck.push(charObj.get("name"));
                                 });
@@ -1379,7 +1380,7 @@ const D = (() => {
                                 else
                                     [section, statName] = _.isString(v) ? v.split(":") : [];
                                 if (statName) {
-                                    _.each(charArray, charObj => {
+                                    _.each(charArray, (charObj) => {
                                         if (!getRepStat(charObj, section, rowID, statName, true))
                                             errorCheck.push(charObj.get("name"));
                                     });
@@ -1408,16 +1409,16 @@ const D = (() => {
             return THROW(`[From ${D.JSL(scriptName).toUpperCase()}:${D.JSL(funcName)}]<br>... ${errorLines.join("<br>... ")}`, "validate");
         }
         return true;
-    };        
+    };
     // #endregion
 
     // #region DEBUGGING & ERROR MANAGEMENT
-    const setWatchList = keywords => {
+    const setWatchList = (keywords) => {
         if (keywords === "clear") {
             STATE.REF.WATCHLIST = [];
         } else {
             const watchwords = _.flatten([keywords]);
-            _.each(watchwords, v => {
+            _.each(watchwords, (v) => {
                 if (v.startsWith("!"))
                     STATE.REF.WATCHLIST = _.without(STATE.REF.WATCHLIST, v.slice(1));
                 else
@@ -1427,12 +1428,12 @@ const D = (() => {
         sendToGM(`Currently displaying debug information tagged with:<br><br>${jStr(STATE.REF.WATCHLIST.join("<br>"))}`, formatTitle("setWatchList", SCRIPTNAME));
     };
     const getWatchList = () => sendToGM(`${jStr(STATE.REF.WATCHLIST)}`, "DEBUG WATCH LIST");
-    const setBlackList = keywords => {
+    const setBlackList = (keywords) => {
         if (keywords === "clear") {
             STATE.REF.BLACKLIST = [];
         } else {
             const watchwords = _.flatten([keywords]);
-            _.each(watchwords, v => {
+            _.each(watchwords, (v) => {
                 if (v.startsWith("!"))
                     STATE.REF.BLACKLIST = _.without(STATE.REF.BLACKLIST, v.slice(1));
                 else
@@ -1444,7 +1445,7 @@ const D = (() => {
     const getBlackList = () => sendToGM(`${jStr(STATE.REF.BLACKLIST)}`, "DEBUG BLACKLIST");
     const logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
         msg = formatMsgContents(msg, false);
-        if (STATE.REF.ISDEBUGGING && (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive)) {                
+        if (STATE.REF.ISDEBUGGING && (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive)) {
             if (funcName) {
                 STATE.REF.DEBUGLOG.push({
                     timeStamp: (new Date()).getTime(),
@@ -1455,7 +1456,7 @@ const D = (() => {
                     if (Handouts.Count("debug") > 20)
                         Handouts.RemoveAll("... DBLog", "debug");
                     getDebugRecord("... DBLog");
-                }                        
+                }
             }
             log(formatLogLine(msg, funcName, scriptName, prefix));
         }
@@ -1468,7 +1469,7 @@ const D = (() => {
                     return;
                 } else {
                     getStackRecord("... Stack");
-                }     
+                }
             STACKLOG.push(rawCode.replace(/ *\[as/gu, "").replace(/Object\./gu, ""));
         }
     };
@@ -1483,7 +1484,7 @@ const D = (() => {
     const getDebugRecord = (title = "Debug Log", isClearing = false) => {
         const logLines = [];
         let lastTimeStamp, lastTitle;
-        if (isClearing) {           
+        if (isClearing) {
             Handouts.RemoveAll("Debug Log", "debug");
             Handouts.RemoveAll("... DBLog", "debug");
         }
@@ -1525,8 +1526,8 @@ const D = (() => {
             ISTRACING = false;
             Handouts.RemoveAll("Trace Report");
             for (const trace of STATE.REF.TRACELOG)
-                if (!_.isNaN(STATE.REF.TRACELOGSTOPS[trace[0]]-trace[4]))
-                    traceLogLines.push(`${trace[4]-STATE.REF.TRACESTARTTIME},${trace[3]},${trace[1]},${trace[2]},${STATE.REF.TRACELOGSTOPS[trace[0]]-trace[4]}`);
+                if (!_.isNaN(STATE.REF.TRACELOGSTOPS[trace[0]] - trace[4]))
+                    traceLogLines.push(`${trace[4] - STATE.REF.TRACESTARTTIME},${trace[3]},${trace[1]},${trace[2]},${STATE.REF.TRACELOGSTOPS[trace[0]] - trace[4]}`);
             Handouts.Make("Trace Report", false, traceLogLines.join("<br>"));
             STATE.REF.ISDEBUGGING = true;
             TimeTracker.Fix();
@@ -1534,7 +1535,7 @@ const D = (() => {
             ISTRACING = true;
             STATE.REF.ISDEBUGGING = false;
             TimeTracker.StopAllTimers();
-        }            
+        }
         STATE.REF.TRACELOG = [];
         STATE.REF.TRACENESTCOUNTER = 0;
         STATE.REF.TRACESTARTTIME = 0;
@@ -1545,7 +1546,7 @@ const D = (() => {
     const traceFuncStart = (funcName, funcParams, scriptName, message) => {
         if (ISTRACING) {
             funcParams = funcParams.length === 0 ? ["none"] : funcParams;
-            if (STATE.REF.TRACESTARTTIME === 0)                    
+            if (STATE.REF.TRACESTARTTIME === 0)
                 STATE.REF.TRACESTARTTIME = Date.now();
                 // if (Date.now() - STATE.REF.TRACELASTTIME <= 5) {
                 //    STATE.REF.TRACELASTTIME = Date.now()
@@ -1555,7 +1556,7 @@ const D = (() => {
             STATE.REF.TRACELOG.push([
                 funcID,
                 `${scriptName.toUpperCase()}.${funcName}`,
-                funcParams.map(x => `'${JSON.stringify(x)}'`).join("▐ ").replace(/,/gu, "¸"),
+                funcParams.map((x) => `'${JSON.stringify(x)}'`).join("▐ ").replace(/,/gu, "¸"),
                 STATE.REF.TRACENESTCOUNTER,
                 Date.now()
             ]);
@@ -1564,22 +1565,22 @@ const D = (() => {
             // DB({time: Date.now(), traceFuncStart: STATE.REF.TRACELOG, traceStopLog: STATE.REF.TRACELOGSTOPS}, "traceFuncStart")
             return funcID;
         }
-        return false;        
-    };        
+        return false;
+    };
     const traceFuncStop = (funcID, returnVal) => {
         if (ISTRACING && funcID) {
             STATE.REF.TRACELOGSTOPS[funcID] = Date.now();
             STATE.REF.TRACENESTCOUNTER--;
             // DB({time: Date.now(), traceFuncStop: STATE.REF.TRACELOG, traceStopLog: STATE.REF.TRACELOGSTOPS}, "traceFuncStop")
         }
-        return returnVal; 
+        return returnVal;
     };
     // #endregion
 
     // #region GETTERS: Object, Character and Player Data
     const getGMID = () => {
         /* Finds the first player who is GM. */
-        const gmObj = _.find(findObjs({_type: "player"}), v => playerIsGM(v.id));
+        const gmObj = _.find(findObjs({_type: "player"}), (v) => playerIsGM(v.id));
         return gmObj ? gmObj.id : THROW("No GM found.", "getGMID");
     };
     const getSelected = (msg, typeFilter = []) => {
@@ -1590,7 +1591,7 @@ const D = (() => {
         const selObjs = new Set();
         const types = _.flatten([typeFilter]);
         if (VAL({selection: msg}))
-            _.each(_.compact(msg.selected), v => {
+            _.each(_.compact(msg.selected), (v) => {
                 if (types.length === 0 || types.includes(v._type))
                     selObjs.add(getObj(v._type, v._id));
                 else if (v._type === "graphic" && VAL({token: getObj("graphic", v._id)}))
@@ -1601,7 +1602,7 @@ const D = (() => {
             });
         if (selObjs.size === 0)
             THROW(`None of the selected objects are of type(s) '${jStrL(types)}'`, "getSelected");
-        return [...selObjs]; 
+        return [...selObjs];
     };
     const refreshShortNames = () => {
         STATE.REF.shortNames = [];
@@ -1610,19 +1611,19 @@ const D = (() => {
     };
     const getName = (value, isShort = false) => {
         // Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
-        const obj = VAL({object: value}) && value ||
-                    VAL({char: value}) && getChar(value) ||
-                    VAL({player: value}) && getPlayer(value) ||
-                    VAL({string: value}) && getObj("graphic", value);
-        const name = VAL({player: obj}) && obj.get("_displayname") ||
-                    VAL({object: obj}, "getName") && obj.get("name");
+        const obj = VAL({object: value}) && value
+                    || VAL({char: value}) && getChar(value)
+                    || VAL({player: value}) && getPlayer(value)
+                    || VAL({string: value}) && getObj("graphic", value);
+        const name = VAL({player: obj}) && obj.get("_displayname")
+                    || VAL({object: obj}, "getName") && obj.get("name");
         if (VAL({object: obj, string: name}, "getName")) {
             if (isShort) {
-                if (_.find(_.values(Char.REGISTRY), v => v.name === name)) // If this is a registered character, return its short name.
-                    return _.find(_.values(Char.REGISTRY), v => v.name === name).shortName;
+                if (_.find(_.values(Char.REGISTRY), (v) => v.name === name)) // If this is a registered character, return its short name.
+                    return _.find(_.values(Char.REGISTRY), (v) => v.name === name).shortName;
                 if (name.includes("\""))	// If name contains quotes, remove everything except the quoted portion of the name.
                     return name.replace(/.*?["]/iu, "").replace(/["].*/iu, "");
-                return name.split(/\s+/gu).pop().replace(/_/gu, " "); // Otherwise, return the last word in the name only, replacing underscores with spaces.                    
+                return name.split(/\s+/gu).pop().replace(/_/gu, " "); // Otherwise, return the last word in the name only, replacing underscores with spaces.
             }
             return name.replace(/_/gu, " ");
         }
@@ -1635,7 +1636,7 @@ const D = (() => {
         let [searchParams, dbstring] = [[], ""];
         try {
             if (charRef.who) {
-                _.each(getSelected(charRef, "character"), charObj => { charObjs.add(charObj) });
+                _.each(getSelected(charRef, "character"), (charObj) => { charObjs.add(charObj) });
                 dbstring += `REF: Msg.  RETURNING: ${jStrL(...charObjs)}`;
                 if (charObjs.size > 0)
                     return [...charObjs || []];
@@ -1652,7 +1653,7 @@ const D = (() => {
         } catch (errObj) {
             return VAL({string: funcName}) && THROW("", `${D.JSL(funcName)} > getChars`, errObj) || [];
         }
-        _.each(searchParams, v => {
+        _.each(searchParams, (v) => {
             if (searchParams.length > 1)
                 dbstring += "<br>";
                 // If parameter is a digit corresponding to a REGISTERED CHARACTER:
@@ -1668,21 +1669,21 @@ const D = (() => {
                 charObjs.add(getObj("character", v));
                 dbstring += " ... CharID: ";
                 // If parameter is a (NON-GM) PLAYER OBJECT:
-            } else if (VAL({object: v}) && v.id !== getGMID() && _.findKey(Char.REGISTRY, vv => vv.playerID === v.id)) {
-                charObjs.add(getObj("character", Char.REGISTRY[_.findKey(Char.REGISTRY, vv => vv.playerID === v)].id));
+            } else if (VAL({object: v}) && v.id !== getGMID() && _.findKey(Char.REGISTRY, (vv) => vv.playerID === v.id)) {
+                charObjs.add(getObj("character", Char.REGISTRY[_.findKey(Char.REGISTRY, (vv) => vv.playerID === v)].id));
                 dbstring += " ... CharID: ";
                 // If parameters is a REGISTERED PLAYER ID:
-            } else if (VAL({string: v}) && v !== getGMID() && _.findKey(Char.REGISTRY, vv => vv.playerID === v)) {
-                charObjs.add(getObj("character", Char.REGISTRY[_.findKey(Char.REGISTRY, vv => vv.playerID === v)].id));
+            } else if (VAL({string: v}) && v !== getGMID() && _.findKey(Char.REGISTRY, (vv) => vv.playerID === v)) {
+                charObjs.add(getObj("character", Char.REGISTRY[_.findKey(Char.REGISTRY, (vv) => vv.playerID === v)].id));
                 dbstring += " ... CharID: ";
                 // If parameters is a TOKEN OBJECT:
             } else if (VAL({token: v}) && getObj("character", v.get("represents"))) {
                 charObjs.add(getObj("character", v.get("represents")));
-                dbstring += " ... Token: ";                    
+                dbstring += " ... Token: ";
             } else if (VAL({string: v})) {
                 // If parameter is "all":
                 if (v.toLowerCase() === "all") {
-                    _.each(findObjs({_type: "character"}), char => charObjs.add(char));
+                    _.each(findObjs({_type: "character"}), (char) => charObjs.add(char));
                     dbstring += ` ... "${jStrL(v)}": `;
                     // If parameter calls for REGISTERED CHARACTERS or PC CHARACTERS:
                 } else if (["registered", "pc", "pcs"].includes(v.toLowerCase())) {
@@ -1698,28 +1699,28 @@ const D = (() => {
                 } else if (["allregistered", "allreg", "allpcs"].includes(v.toLowerCase())) {
                     for (const [, charData] of Object.entries(Char.REGISTRY))
                         charObjs.add(getObj("character", charData.id));
-                    dbstring += ` ... "${jStrL(v)}": `;                        
+                    dbstring += ` ... "${jStrL(v)}": `;
                 } else if (["npc", "npcs"].includes(v.toLowerCase())) {
-                    _.each(findObjs({_type: "character"}).filter(x => !Object.values(Char.REGISTRY).map(xx => xx.id).includes(x.id)), charObj => charObjs.add(charObj));
+                    _.each(findObjs({_type: "character"}).filter((x) => !Object.values(Char.REGISTRY).map((xx) => xx.id).includes(x.id)), (charObj) => charObjs.add(charObj));
                     dbstring += ` ... "${jStrL(v)}": `;
                     // If parameter is "sandbox", calls for all characters with tokens in the sandbox (do player characters first)
                 } else if (v.toLowerCase() === "sandbox") {
-                    _.each(Media.GetContainedChars("Horizon", {padding: 50}), vv => charObjs.add(vv));
-                    dbstring += ` ... "${jStrL(v)}": `;                    
+                    _.each(Media.GetContainedChars("Horizon", {padding: 50}), (vv) => charObjs.add(vv));
+                    dbstring += ` ... "${jStrL(v)}": `;
                     // If parameter is "scene", it calls for all characters with tokens on or in the focused location card(s).
                 } else if (v.toLowerCase() === "scene") {
-                    _.each(Session.SceneChars, vv => charObjs.add(vv)); 
-                    dbstring += ` ... "${jStrL(v)}": `;                    
+                    _.each(Session.SceneChars, (vv) => charObjs.add(vv));
+                    dbstring += ` ... "${jStrL(v)}": `;
                     // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
-                } else if (v.length === 1 && _.find(Char.REGISTRY, data => data.initial.toLowerCase() === v.toLowerCase())) {
-                    const charData = _.find(Char.REGISTRY, data => data.initial.toLowerCase() === v.toLowerCase());
+                } else if (v.length === 1 && _.find(Char.REGISTRY, (data) => data.initial.toLowerCase() === v.toLowerCase())) {
+                    const charData = _.find(Char.REGISTRY, (data) => data.initial.toLowerCase() === v.toLowerCase());
                     if (charData)
                         charObjs.add(getObj("character", charData.id));
-                    dbstring += ` ... "${jStrL(v)}": `;                    
+                    dbstring += ` ... "${jStrL(v)}": `;
                     // If parameter is a STRING, assume it is a character name to fuzzy-match UNLESS isStrict is true.
                 } else {
-                    const charName = isFuzzyMatching ? D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCDICT, false) :
-                        D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCLIST, true);
+                    const charName = isFuzzyMatching ? D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCDICT, false)
+                        : D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCLIST, true);
                     const charObj = charName && (findObjs({_type: "character", name: charName}) || [])[0];
                     if (charObj)
                         charObjs.add(charObj);
@@ -1737,7 +1738,7 @@ const D = (() => {
     const getCharData = (charRef) => {
         const charObj = getChar(charRef);
         if (VAL({playerchar: charObj}, "getCharData"))
-            return _.find(_.values(Char.REGISTRY), v => v.id === charObj.id);
+            return _.find(_.values(Char.REGISTRY), (v) => v.id === charObj.id);
         else if (VAL({npc: charObj}, "getCharData"))
             return {
                 id: charObj.id,
@@ -1766,15 +1767,15 @@ const D = (() => {
             attrValue = null;
         if (VAL({charObj, string: stat}, VAL({string: funcName}) && `${D.JSL(funcName)} > getStat` || null)) {
             // STEP ONE: LOOK THROUGH NON-REPEATING ATTRIBUTES:
-            const attrObjs = _.filter(findObjs({_type: "attribute", _characterid: charObj.id}), v => !v.get("name").includes("repeating") || stat.includes("repeating")); // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
+            const attrObjs = _.filter(findObjs({_type: "attribute", _characterid: charObj.id}), (v) => !v.get("name").includes("repeating") || stat.includes("repeating")); // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
             // D.Alert(`All Attr Objs: ${D.JS(_.map(allAttrObjs, v => v.get("name")))}<br><br>Filtered Attr Objs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
-            attrValueObj = _.find(attrObjs, v => v.get("name").toLowerCase() === stat.toLowerCase());
-                
+            attrValueObj = _.find(attrObjs, (v) => v.get("name").toLowerCase() === stat.toLowerCase());
+
             // STEP TWO: LOOK THROUGH NON-REPEATING ATTRIBUTES FOR NAME/VAL PAIRS (e.g. "disc1_name, disc1")
             if (!attrValueObj) {
-                const attrNameObj = _.find(attrObjs, v => v.get("name").toLowerCase().endsWith("_name") && v.get("current").toLowerCase() === stat.toLowerCase());
+                const attrNameObj = _.find(attrObjs, (v) => v.get("name").toLowerCase().endsWith("_name") && v.get("current").toLowerCase() === stat.toLowerCase());
                 if (attrNameObj)
-                    attrValueObj = _.find(attrObjs, v => v.get("name") === attrNameObj.get("name").slice(0, -5));
+                    attrValueObj = _.find(attrObjs, (v) => v.get("name") === attrNameObj.get("name").slice(0, -5));
             }
 
             // STEP THREE: LOOK THROUGH REPEATING ATTRIBUTES IN C.TRAITREPSECS = ["advantage", "negadvantage", "discleft", "discmid", "discright"]
@@ -1804,20 +1805,20 @@ const D = (() => {
         // rowRef: rowID (string), stat:value (list, with special "name" entry for shortname), array of either (array), or null (all)
         DB(`GetRepIDs(${jStrL(charRef, true)}, ${section}, ${jStrL(rowFilter)})`, "getRepIDs");
         const charObj = getChar(charRef, funcName);
-        const getUniqIDs = attrObjs => _.uniq(_.map(attrObjs, v => v.get("name").match("repeating_[^_]*?_(.*?)_")[1]));
+        const getUniqIDs = (attrObjs) => _.uniq(_.map(attrObjs, (v) => v.get("name").match("repeating_[^_]*?_(.*?)_")[1]));
         let validRowIDs = [],
             dbstring = "";
         if (VAL({char: charObj, string: section}, "getRepIDs")) {
-            const attrObjs = _.filter(findObjs({_type: "attribute", _characterid: charObj.id}), v => v.get("name").toLowerCase().startsWith(section === "*" ? "repeating_" : `repeating_${section.toLowerCase()}_`));
+            const attrObjs = _.filter(findObjs({_type: "attribute", _characterid: charObj.id}), (v) => v.get("name").toLowerCase().startsWith(section === "*" ? "repeating_" : `repeating_${section.toLowerCase()}_`));
             // D.Alert(`attrObjs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
             const rowIDs = getUniqIDs(attrObjs);
-            DB(`attrObjsInSection: ${jStrL(_.map(attrObjs, v => parseRepStat(v.get("name"))[2]))}<br><br>rowIDsInSection: ${jStrL(rowIDs)}`, "getRepIDs");
+            DB(`attrObjsInSection: ${jStrL(_.map(attrObjs, (v) => parseRepStat(v.get("name"))[2]))}<br><br>rowIDsInSection: ${jStrL(rowIDs)}`, "getRepIDs");
             if (VAL({string: rowFilter})) {
                 // RowRef is a string. Check to see if it's a flag ("top"); if not, assume it's a rowid.
                 if (rowFilter === "top")
-                    return [_.find(rowIDs, v => v.toLowerCase() === (getStatVal(charObj, `_reporder_repeating_${section}`) || "").split(",")[0].toLowerCase())];
-                DB(`RowRef: STRING (${rowFilter}).  Valid Row IDs: ${jStrL(_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase()))}`, "getRepIDs");
-                return [_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase())];
+                    return [_.find(rowIDs, (v) => v.toLowerCase() === (getStatVal(charObj, `_reporder_repeating_${section}`) || "").split(",")[0].toLowerCase())];
+                DB(`RowRef: STRING (${rowFilter}).  Valid Row IDs: ${jStrL(_.find(rowIDs, (v) => v.toLowerCase() === rowFilter.toLowerCase()))}`, "getRepIDs");
+                return [_.find(rowIDs, (v) => v.toLowerCase() === rowFilter.toLowerCase())];
             } else if (VAL({list: rowFilter})) {
                 // RowRef is a key/value list of stat name and value to filter by. Only row IDs referring to ALL matching key/value pairs will be returned.
                 // If value === "*", any value is accepted (only checks for presence of stat name)
@@ -1828,25 +1829,25 @@ const D = (() => {
                     DB(`RowData: ${key}, ${val}`, "getRepIDs");
                     // Check each row against this filter element: Must satisfy, or remove from validRowIDs
                     for (const rowID of [...validRowIDs]) {
-                        const attrObjsInRow = _.filter(attrObjs, v => v.get("name").toLowerCase().includes(rowID.toLowerCase()));
+                        const attrObjsInRow = _.filter(attrObjs, (v) => v.get("name").toLowerCase().includes(rowID.toLowerCase()));
                         dbstring += `RowID: ${rowID}`;
-                        if (!_.find(attrObjsInRow, v => fuzzyMatch(v.get("name"), key) &&
-                                (val === "*" || looseMatch(v.get("current").toString(), val.toString())))) {
+                        if (!_.find(attrObjsInRow, (v) => fuzzyMatch(v.get("name"), key)
+                                && (val === "*" || looseMatch(v.get("current").toString(), val.toString())))) {
                             // If no direct match is found, check if the row contains a "_name" attribute that matches the key.
-                            const nameAttrObj = _.find(attrObjsInRow, v => v.get("name").endsWith("_name") &&
-                                    looseMatch(v.get("current").toString(), key.toString()));
+                            const nameAttrObj = _.find(attrObjsInRow, (v) => v.get("name").endsWith("_name")
+                                    && looseMatch(v.get("current").toString(), key.toString()));
                             dbstring += " -- No Direct Match.";
                             // If _name attribute exists, now find corresponding non-name attribute and compare its value to val.
                             if (nameAttrObj) {
                                 dbstring += `<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${parseRepStat(nameAttrObj.get("name"))[2]} -- <b><u>EXISTS!</u></b>`;
-                                if (!_.find(attrObjsInRow, v => looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5)) &&
-                                        (val === "*" || looseMatch(v.get("current").toString(), val.toString())))) {
+                                if (!_.find(attrObjsInRow, (v) => looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5))
+                                        && (val === "*" || looseMatch(v.get("current").toString(), val.toString())))) {
                                     // If neither of these tests pass, remove the rowID from the list of valid row IDs.
                                     dbstring += ". . .  But Doesn't Match Value";
                                     validRowIDs = _.without(validRowIDs, rowID);
                                 } else {
-                                    const obj = _.find(attrObjsInRow, v => looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5)) &&
-                                        (val === "*" || looseMatch(v.get("current").toString(), val.toString())));
+                                    const obj = _.find(attrObjsInRow, (v) => looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5))
+                                        && (val === "*" || looseMatch(v.get("current").toString(), val.toString())));
                                     dbstring += `. . .  NAME+VALUE MATCH: VAL[${val}] = ${obj.get("current")}, VALNAME[${parseRepStat(obj.get("name"))[2]}], NAMEOBJ[${parseRepStat(nameAttrObj.get("name"))[2]}]`;
                                 }
                             } else {
@@ -1854,7 +1855,7 @@ const D = (() => {
                                 validRowIDs = _.without(validRowIDs, rowID);
                             }
                         } else {
-                            const matchedAttr = _.find(attrObjsInRow, v => fuzzyMatch(v.get("name"), key) && (val === "*" || looseMatch(v.get("current").toString(), val.toString())));
+                            const matchedAttr = _.find(attrObjsInRow, (v) => fuzzyMatch(v.get("name"), key) && (val === "*" || looseMatch(v.get("current").toString(), val.toString())));
                             dbstring += ` -- DIRECT MATCH! ${matchedAttr.get("name")}: ${matchedAttr.get("current")}`;
                         }
                         dbstring += "<br>";
@@ -1880,29 +1881,29 @@ const D = (() => {
         let finalRepData = [];
         if (VAL({charObj, string: section}, "getRepStats")) {
             // STEP ONE: USE THE ROW FILTER TO GET VALID ROW IDS TO SEARCH
-            const filter = VAL({string: statName, list: rowFilter}) ? Object.assign({[statName]: "*"}, rowFilter) :
-                rowFilter;
+            const filter = VAL({string: statName, list: rowFilter}) ? Object.assign({[statName]: "*"}, rowFilter)
+                : rowFilter;
             const rowIDs = _.compact(getRepIDs(charObj, section, filter, funcName));
             const attrObjs = [];
             if (filter === "top" && !rowIDs.length)
                 rowIDs.push(..._.compact(getRepIDs(charObj, section, null, funcName)));
-            attrObjs.push(..._.filter(findObjs({_type: "attribute", _characterid: charObj.id}), v => v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`) &&
-                    rowIDs.includes(v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)[1])));
+            attrObjs.push(..._.filter(findObjs({_type: "attribute", _characterid: charObj.id}), (v) => v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)
+                    && rowIDs.includes(v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)[1])));
             // STEP TWO: ITERATE THROUGH EACH ROW TO LOOK FOR REQUESTED STAT(S)
             for (const rowID of rowIDs) {
-                const rowAttrObjs = _.filter(attrObjs, v => v.get("name").toLowerCase().includes(rowID.toLowerCase())); // Select the attribute objects from this row.
-                const attrNameObjs = _.filter(rowAttrObjs, v => v.get("name").toLowerCase().endsWith("_name")); // Select ALL row attribute objects that end with "_name"
-                const attrNameData = _.compact(_.map(attrNameObjs, v => { // ... and compile their data by linking them to their value objects.
+                const rowAttrObjs = _.filter(attrObjs, (v) => v.get("name").toLowerCase().includes(rowID.toLowerCase())); // Select the attribute objects from this row.
+                const attrNameObjs = _.filter(rowAttrObjs, (v) => v.get("name").toLowerCase().endsWith("_name")); // Select ALL row attribute objects that end with "_name"
+                const attrNameData = _.compact(_.map(attrNameObjs, (v) => { // ... and compile their data by linking them to their value objects.
                     const data = {
                         charID: charObj.id,
                         rowID,
                         name: v.get("current"),
                         fullName: v.get("name").replace(/_name$/gu, ""),
-                        obj: _.find(rowAttrObjs, vv => vv.get("name").toLowerCase() === v.get("name").toLowerCase().slice(0,-5))
+                        obj: _.find(rowAttrObjs, (vv) => vv.get("name").toLowerCase() === v.get("name").toLowerCase().slice(0, -5))
                     };
                     if (data.obj) {
                         data.val = data.obj.get("current");
-                        [,,data.attrName] = parseRepStat(data.obj.get("name"));
+                        [,, data.attrName] = parseRepStat(data.obj.get("name"));
                         DB(`NameData --> ValObject: NAME: ${data.name}, VAL: ${data.val}, OBJ: ${jStrL(data.obj)}`, "getRepStats");
                         return data;
                     } else {
@@ -1911,13 +1912,13 @@ const D = (() => {
                 }));
                     // IF a STATNAME has been specified...
                 if (statName) {
-                    const foundStat = 
-                            _.find(attrNameData, v => looseMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) || // FIRST match it against an EXACT ATTRIBUTE NAME already found above.
-                            _.find(attrNameData, v => looseMatch(parseRepStat(v.name)[2], statName)) || // SECOND try to match with the EXACT "FOUND" NAME of a NAME/VALUE link.
-                            _.find(rowAttrObjs, v => looseMatch(parseRepStat(v.get("name"))[2], statName)) || // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
-                            _.find(attrNameData, v => fuzzyMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) || // FINALLY repeat the above but with fuzzy matching. match it against an EXACT ATTRIBUTE NAME already found above.
-                            _.find(attrNameData, v => fuzzyMatch(parseRepStat(v.name)[2], statName)) || 
-                            _.find(rowAttrObjs, v => fuzzyMatch(parseRepStat(v.get("name"))[2], statName));
+                    const foundStat
+                            = _.find(attrNameData, (v) => looseMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FIRST match it against an EXACT ATTRIBUTE NAME already found above.
+                            || _.find(attrNameData, (v) => looseMatch(parseRepStat(v.name)[2], statName)) // SECOND try to match with the EXACT "FOUND" NAME of a NAME/VALUE link.
+                            || _.find(rowAttrObjs, (v) => looseMatch(parseRepStat(v.get("name"))[2], statName)) // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
+                            || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FINALLY repeat the above but with fuzzy matching. match it against an EXACT ATTRIBUTE NAME already found above.
+                            || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.name)[2], statName))
+                            || _.find(rowAttrObjs, (v) => fuzzyMatch(parseRepStat(v.get("name"))[2], statName));
                     if (foundStat) { // If a stat was found, change it to a data set if it isn't one already
                         finalRepData.push(foundStat.fullName ? foundStat : {
                             charID: charObj.id,
@@ -1933,7 +1934,7 @@ const D = (() => {
                     // IF a STATEMENT has NOT been specified, return ALL the row attribute objects (after parsing them into data sets)
                 } else {
                     finalRepData.push(...attrNameData);
-                    finalRepData.push(..._.map(rowAttrObjs, v => ({
+                    finalRepData.push(..._.map(rowAttrObjs, (v) => ({
                         charID: charObj.id,
                         rowID,
                         name: parseRepStat(v.get("name"))[2],
@@ -1948,16 +1949,16 @@ const D = (() => {
             finalRepData = _.compact(finalRepData);
             // Check for grouping and property-picking, and transform the data accordingly:
             if (VAL({string: groupBy}) && ["rowID", "fullName", "attrName", "name", "val"].includes(groupBy)) {
-                finalRepData = _.groupBy(finalRepData, v => v[groupBy]);
+                finalRepData = _.groupBy(finalRepData, (v) => v[groupBy]);
                 if (VAL({string: pickProperty}) && ["fullName", "attrName", "name", "obj", "val"].includes(pickProperty)) {
                     const pickData = {};
                     _.each(finalRepData, (v, k) => {
-                        pickData[k] = _.map(v, vv => vv[pickProperty]);
+                        pickData[k] = _.map(v, (vv) => vv[pickProperty]);
                     });
                     finalRepData = pickData;
                 }
             } else if (VAL({string: pickProperty}) && ["fullName", "attrName", "name", "obj", "val"].includes(pickProperty)) {
-                finalRepData = _.map(finalRepData, v => v[pickProperty]);
+                finalRepData = _.map(finalRepData, (v) => v[pickProperty]);
             }
         }
         return finalRepData;
@@ -2012,7 +2013,7 @@ const D = (() => {
                         _d20userid: playerRef
                     }, {caseInsensitive: true})[0].id;
                 }
-            }                
+            }
             if (VAL({char: playerRef})) {
                 let charObj = getChar(playerRef, true);
                 for (const charData of _.values(Char.REGISTRY))
@@ -2020,7 +2021,7 @@ const D = (() => {
                         charObj = getChar(charData.id);
                         break;
                     }
-                [playerID] = charObj.get("controlledby").split(",").filter(x => !["all", "", getGMID()].includes(x));
+                [playerID] = charObj.get("controlledby").split(",").filter((x) => !["all", "", getGMID()].includes(x));
                 DB(`PlayerRef identified as Character Object: ${D.JSL(charObj.get("name"))}... "controlledby": ${D.JSL(playerID)}`, "getPlayerID");
                 return playerID || getGMID();
             }
@@ -2031,14 +2032,14 @@ const D = (() => {
     };
     const getPlayer = (playerRef, funcName = false) => {
         const playerID = getPlayerID(playerRef, true);
-        if (VAL({string: playerID}) && VAL({object: getObj("player", playerID)})) 
+        if (VAL({string: playerID}) && VAL({object: getObj("player", playerID)}))
             return getObj("player", playerID);
-        else 
+        else
             DB(`Searching for Player with Player Ref: ${playerRef}
                 ... playerID: ${jStrL(playerID)}
                 .. String? ${VAL({string: playerID})}
                 .. Player Object? ${jStrL(getObj("player", playerID))}`, "getPlayer");
-            
+
         return VAL({string: funcName}) && THROW(`Unable to find a player object for reference '${jStrL(playerRef)}`, `${D.JSL(funcName)} > getPlayer`);
     };
     // #endregion
@@ -2071,7 +2072,7 @@ const D = (() => {
         }
         return [repStatName, repStatName, repStatName];
     };
-    const makeRepRow = (charRef, secName, attrs) => {            
+    const makeRepRow = (charRef, secName, attrs) => {
         DB(`CharRef: ${D.JSL(charRef)}, secName: ${secName}, Attrs: ${D.JSL(attrs, true)}`, "makeRepRow");
         const IDa = 0;
         const IDb = [];
@@ -2128,18 +2129,18 @@ const D = (() => {
             DB(`AttrObjs to Delete: ${jStrL(attrObjs, true)}`, "deleteRepRow");
             if (attrObjs.length === 0)
                 return THROW(`No row "repeating_${secName}_${rowID}" to delete for ${D.GetName(charRef)}.`, "deleteRepRow");
-            _.each(attrObjs, v => v.remove());
+            _.each(attrObjs, (v) => v.remove());
             return true;
         }
         return false;
     };
     const copyToRepSec = (charRef, sourceSec, sourceRowID, targetSec) => {
-        const attrList = kvpMap(getRepStats(charRef, sourceSec, sourceRowID), (k, v) => v.name, v => v.val);
+        const attrList = kvpMap(getRepStats(charRef, sourceSec, sourceRowID), (k, v) => v.name, (v) => v.val);
         DB(`CharRef: ${D.JSL(charRef)}, SourceSec: ${sourceSec}, RowID: ${sourceRowID}, TargetSec: ${targetSec}<br>... AttrList: ${D.JSL(attrList, true)}`, "copyToRepSec");
         makeRepRow(charRef, targetSec, attrList);
         deleteRepRow(charRef, sourceSec, sourceRowID);
     };
-    const sortRepSec = (charRef, secName, sortTrait, isDescending = false, transformFunc = v => v) => {
+    const sortRepSec = (charRef, secName, sortTrait, isDescending = false, transformFunc = (v) => v) => {
         const rowIDs = getRepIDs(charRef, secName);
         const rowData = [];
         // let dbString = ""
@@ -2149,12 +2150,12 @@ const D = (() => {
             const theseVals = {rowID};
             for (const statData of rowAttrData)
                 theseVals[statData.attrName] = statData.val;
-            // dbString += `... ${D.JS(statData.attrName, true)}: ${D.JS(theseVals[statData.attrName])}<br>`                
+            // dbString += `... ${D.JS(statData.attrName, true)}: ${D.JS(theseVals[statData.attrName])}<br>`
             theseVals.SORTER = transformFunc(theseVals[sortTrait]);
             // dbString += `... SORTER: ${D.JS(theseVals.SORTER)}<br>`
             rowData.push(theseVals);
         }
-        for (const rowID of rowIDs)                
+        for (const rowID of rowIDs)
             deleteRepRow(charRef, secName, rowID);
             // D.Alert(dbString, "sortRepSec")
             // D.Alert(D.JS(rowData, true), "sortRepSec")
@@ -2164,7 +2165,7 @@ const D = (() => {
             // D.Alert(D.JS(sortedData, true), "sortRepSec")
         for (let i = 0; i < sortedData.length; i++) {
             const attrList = _.omit(sortedData[i], "SORTER", "rowID");
-            makeRepRow(charRef, secName, attrList);                
+            makeRepRow(charRef, secName, attrList);
         }
     };
     const splitRepSec = (charRef, sourceSec, targetSec, sortFunc, mode = "split") => {
@@ -2177,7 +2178,7 @@ const D = (() => {
         // D.Alert(`splitRepSec(charRef, ${D.JS(sourceSec)}, ${D.JS(targetSec)}, sortFunc, ${D.JS(mode)})`, "DATA:SplitRepSec")
 
         // D.Alert("@@@ STARTING _.EACH COPYTOREPSEC @@@", "DATA:SplitRepSec")
-        _.each(getRepIDs(charRef, targetSec), id => {
+        _.each(getRepIDs(charRef, targetSec), (id) => {
             copyToRepSec(charRef, targetSec, id, sourceSec);
         });
         const sortedIDs = sortRepSec(charRef, sourceSec, sortFunc);
@@ -2200,7 +2201,6 @@ const D = (() => {
                 break;
                 // no default
         }
-            
     };
     // #endregion
 
@@ -2218,7 +2218,7 @@ const D = (() => {
 
         FUNCSONSTACK,
 
-        get STACKLOG() { return STATE.REF.stackLog },          
+        get STACKLOG() { return STATE.REF.stackLog },
 
         get STATSDICT() { return STATE.REF.STATSDICT },
         get PCDICT() { return STATE.REF.PCDICT },
@@ -2240,31 +2240,56 @@ const D = (() => {
 
         get IsReportingListener() { return STATE.REF.isReportingListener },
 
-        Queue: queueFunc, Run: runFuncQueue, IsFuncQueueClear: isFuncQueueClear,
-        JS: jStr, JSL: jStrL, JSH: jStrH, JSC: jStrC,
+        Queue: queueFunc,
+        Run: runFuncQueue,
+        IsFuncQueueClear: isFuncQueueClear,
+        JS: jStr,
+        JSL: jStrL,
+        JSH: jStrH,
+        JSC: jStrC,
         ParseParams: parseParams,
         ParseCharSelection: parseCharSelect,
         RandomString: randomString,
         SumHTML: summarizeHTML,
-        Int: pInt, Float: pFloat, LCase: pLowerCase, UCase: pUpperCase,
-        Round: roundSig, Bound: boundNum, Cycle: cycleNum,
-        NumToText: numToText, TextToNum: textToNum,
-        Ordinal: ordinal, Romanize: numToRomanNum,
+        Int: pInt,
+        Float: pFloat,
+        LCase: pLowerCase,
+        UCase: pUpperCase,
+        Round: roundSig,
+        Bound: boundNum,
+        Cycle: cycleNum,
+        NumToText: numToText,
+        TextToNum: textToNum,
+        Ordinal: ordinal,
+        Romanize: numToRomanNum,
         Capitalize: capitalize,
-        Clone: clone, Merge: merge,
-        FilterForObjectAttributes: filterForObjAttrs, FilterForChanges: filterForChanges,
-        Gradient: colorGradient, RGBtoHEX: rbgToHex, HEXtoRGB: getRGB, RGB: getRGB,
-        ParseStack: parseStack, ONSTACK: putOnStack, OFFSTACK: pullOffStack,
+        Clone: clone,
+        Merge: merge,
+        FilterForObjectAttributes: filterForObjAttrs,
+        FilterForChanges: filterForChanges,
+        Gradient: colorGradient,
+        RGBtoHEX: rbgToHex,
+        HEXtoRGB: getRGB,
+        RGB: getRGB,
+        ParseStack: parseStack,
+        ONSTACK: putOnStack,
+        OFFSTACK: pullOffStack,
 
         Call: sendAPICommand,
         Chat: sendChatMessage,
         Alert: sendToGM,
         Flag: (msg) => sendToGM(msg, "none"),
-        Poke: (msg, title = "[ALERT]") => { if (Session.IsTesting) sendToGM(msg, title); },
+        Poke: (msg, title = "[ALERT]") => {
+            if (Session.IsTesting)
+                sendToGM(msg, title);
+        },
         Prompt: promptGM,
-        CommandMenu: commandMenu, CommandMenuHTML: getCommandMenuHTML,
+        CommandMenu: commandMenu,
+        CommandMenuHTML: getCommandMenuHTML,
 
-        RemoveFirst: removeFirst, PullIndex: pullIndex, PullOut: pullElement,
+        RemoveFirst: removeFirst,
+        PullIndex: pullIndex,
+        PullOut: pullElement,
         KeyMapObj: kvpMap,
         ParseToObj: parseToObj,
 
@@ -2281,19 +2306,28 @@ const D = (() => {
         ThrowError: throwError,
         DBAlert: sendDebugAlert,
         GetDebugRecord: getDebugRecord,
-        TraceStart: traceFuncStart, TraceStop: traceFuncStop,
+        TraceStart: traceFuncStart,
+        TraceStop: traceFuncStop,
 
         GMID: getGMID,
         GetSelected: getSelected,
         GetName: getName,
-        GetChars: getChars, GetChar: getChar, GetCharData: getCharData, GetCharVals: getCharsProps,
-        GetStat: getStat, GetStatVal: getStatVal,
+        GetChars: getChars,
+        GetChar: getChar,
+        GetCharData: getCharData,
+        GetCharVals: getCharsProps,
+        GetStat: getStat,
+        GetStatVal: getStatVal,
         GetRepIDs: getRepIDs,
-        GetRepStats: getRepStats, GetRepStat: getRepStat,
-        GetPlayerID: getPlayerID, GetPlayer: getPlayer,
+        GetRepStats: getRepStats,
+        GetRepStat: getRepStat,
+        GetPlayerID: getPlayerID,
+        GetPlayer: getPlayer,
 
-        SetStat: setStat, SetStats: setStats,
-        SetRepStats: setRepStats, SetRepStat: setRepStat,
+        SetStat: setStat,
+        SetStats: setStats,
+        SetRepStats: setRepStats,
+        SetRepStat: setRepStat,
 
         ParseRepStat: parseRepStat,
         CopyToSec: copyToRepSec,

@@ -40,32 +40,39 @@ const Media = (() => {
         STATE.REF.VOLUME = STATE.REF.VOLUME || D.Clone(C.SOUNDVOLUME);
 
         for (const [, textData] of Object.entries(STATE.REF.textregistry)) {
-            const realText =
-                (VAL({string: textData.curText}) && textData.curText !== "LAST" && textData.curText) ||
-                (VAL({string: textData.text}) && textData.text !== "LAST" && textData.text) ||
-                (VAL({string: textData.activeText}) && textData.activeText !== "LAST" && textData.activeText) ||
-                " ";
+            const realText
+                = (VAL({string: textData.curText}) && textData.curText !== "LAST" && textData.curText)
+                || (VAL({string: textData.text}) && textData.text !== "LAST" && textData.text)
+                || (VAL({string: textData.activeText}) && textData.activeText !== "LAST" && textData.activeText)
+                || " ";
             textData.curText = realText;
             textData.activeText = realText;
             delete textData.text;
-            for (const [, modeData] of Object.entries(textData.modes)) if (modeData.lastState === "LAST") modeData.lastState = realText;
+            for (const [, modeData] of Object.entries(textData.modes))
+                if (modeData.lastState === "LAST")
+                    modeData.lastState = realText;
         }
 
-        for (const animData of Object.values(STATE.REF.animregistry).filter(x => x.timeOut)) toggleAnimation(animData.name, false);
+        for (const animData of Object.values(STATE.REF.animregistry).filter((x) => x.timeOut))
+            toggleAnimation(animData.name, false);
 
-        for (const panelName of Object.keys(STATE.REF.panelLog)) killPanel(panelName);
+        for (const panelName of Object.keys(STATE.REF.panelLog))
+            killPanel(panelName);
 
         // Initialize IMGDICT Fuzzy Dictionary
         STATE.REF.IMGDICT = Fuzzy.Fix();
-        for (const imgKey of Object.keys(STATE.REF.imgregistry)) STATE.REF.IMGDICT.add(imgKey);
+        for (const imgKey of Object.keys(STATE.REF.imgregistry))
+            STATE.REF.IMGDICT.add(imgKey);
 
         // Initialize TEXTDICT Fuzzy Dictionary
         STATE.REF.TEXTDICT = Fuzzy.Fix();
-        for (const textKey of Object.keys(STATE.REF.textregistry)) STATE.REF.TEXTDICT.add(textKey);
+        for (const textKey of Object.keys(STATE.REF.textregistry))
+            STATE.REF.TEXTDICT.add(textKey);
 
         // Initialize AREADICT Fuzzy Dictionary
         STATE.REF.AREADICT = Fuzzy.Fix();
-        for (const areaKey of Object.keys(STATE.REF.areas)) STATE.REF.AREADICT.add(areaKey);
+        for (const areaKey of Object.keys(STATE.REF.areas))
+            STATE.REF.AREADICT.add(areaKey);
     };
     // #endregion
     // #region ~ ************* EVENT HANDLERS ********************
@@ -177,7 +184,7 @@ const Media = (() => {
                         break;
                     }
                     case "adjust": {
-                        adjustObj(mediaObjs, ...args.map(x => D.Float(x)));
+                        adjustObj(mediaObjs, ...args.map((x) => D.Float(x)));
                         break;
                     }
                     // no default
@@ -190,9 +197,12 @@ const Media = (() => {
                 switch (D.LCase((call = args.shift()))) {
                     case "reg":
                     case "register": {
-                        if (!args.length) args.unshift(msg.content.split(/\s+/gu).pop());
-                        if (args.length && VAL({imgObj}, "!area register")) regArea(imgObj, args.shift());
-                        else D.Alert("Syntax: !area reg &lt;areaName&gt;", "!area reg");
+                        if (!args.length)
+                            args.unshift(msg.content.split(/\s+/gu).pop());
+                        if (args.length && VAL({imgObj}, "!area register"))
+                            regArea(imgObj, args.shift());
+                        else
+                            D.Alert("Syntax: !area reg &lt;areaName&gt;", "!area reg");
                         break;
                     }
                     case "get": {
@@ -258,7 +268,8 @@ const Media = (() => {
                         if (VAL({imgObj}, "!img register"))
                             switch (D.LCase((call = args.shift()))) {
                                 case "token": {
-                                    if (VAL({imgObj})) regToken(imgObj);
+                                    if (VAL({imgObj}))
+                                        regToken(imgObj);
                                     break;
                                 }
                                 case "generic":
@@ -266,7 +277,9 @@ const Media = (() => {
                                 case "gen":
                                 case "gentoken": {
                                     const [tokenCat] = args;
-                                    for (const img of imgObjs) if (VAL({img})) regGenericToken(img, tokenCat);
+                                    for (const img of imgObjs)
+                                        if (VAL({img}))
+                                            regGenericToken(img, tokenCat);
                                     break;
                                 }
                                 case "random":
@@ -296,13 +309,16 @@ const Media = (() => {
                                     break;
                                 }
                                 default: {
-                                    if (call) args.unshift(call);
+                                    if (call)
+                                        args.unshift(call);
                                     const [hostName, srcName, objLayer, ...paramArgs] = args;
                                     imgParams = imgParams || paramArgs.join(" ");
                                     if (hostName && srcName && objLayer) {
                                         regImg(imgObj, hostName, srcName, objLayer, D.ParseToObj(imgParams));
-                                        if (imgModes) REGISTRY.IMG[getImgKey(imgObj)].modes = imgModes;
-                                        if (imgSrcs) REGISTRY.IMG[getImgKey(imgObj)].srcs = imgSrcs;
+                                        if (imgModes)
+                                            REGISTRY.IMG[getImgKey(imgObj)].modes = imgModes;
+                                        if (imgSrcs)
+                                            REGISTRY.IMG[getImgKey(imgObj)].srcs = imgSrcs;
                                     } else {
                                         D.Alert(
                                             "Syntax: !img reg &lt;hostName&gt; &lt;(ref:)currentSourceName&gt; &lt;activeLayer&gt; [params (\"key:value, key:value\")]<br><br>OR !img rereg &lt;replace any of the above parameters with 'x' to skip it &gt;",
@@ -329,7 +345,7 @@ const Media = (() => {
                                 // D.Alert(`Params: ${D.JS(params)}`)
                                 if (!Session.Modes.includes(mode)) {
                                     D.Alert(
-                                        'Mode Set Syntax:<br><br><b>!img set mode (hostName) (mode) (key:val, key:val...)</b><br><br>isForcedOn: true, false, null, "LAST"<br>isForcedState: true, null, (string)<br>lastState: null, (string)<br>lastActive: true, false',
+                                        "Mode Set Syntax:<br><br><b>!img set mode (hostName) (mode) (key:val, key:val...)</b><br><br>isForcedOn: true, false, null, \"LAST\"<br>isForcedState: true, null, (string)<br>lastState: null, (string)<br>lastActive: true, false",
                                         "!img set mode"
                                     );
                                 } else {
@@ -348,32 +364,40 @@ const Media = (() => {
                             case "src": {
                                 const [imgObj] = imgObjs;
                                 const [hostName, srcName] = [getImgKey(imgObj), args.shift()];
-                                if (isRegImg(hostName)) setImg(hostName, srcName);
-                                else D.Alert(`Img name ${D.JS(hostName)} is not registered.`, "MEDIA: !img set src");
+                                if (isRegImg(hostName))
+                                    setImg(hostName, srcName);
+                                else
+                                    D.Alert(`Img name ${D.JS(hostName)} is not registered.`, "MEDIA: !img set src");
                                 break;
                             }
                             case "tokensrc": {
                                 const charObjs = Listener.GetObjects(objects, "characters");
-                                for (const charObj of charObjs) if (VAL({charObj})) combineTokenSrc(charObj, args.join(" "));
+                                for (const charObj of charObjs)
+                                    if (VAL({charObj}))
+                                        combineTokenSrc(charObj, args.join(" "));
                                 break;
                             }
                             case "activesource":
                             case "activesrc": {
                                 const [imgObj] = imgObjs;
                                 const [hostName, srcName] = [getImgKey(imgObj), args.shift()];
-                                if (isRegImg(hostName)) setImgData(hostName, {activeSrc: srcName});
-                                else D.Alert(`Img name ${D.JS(hostName)} is not registered.`, "MEDIA: !img set activesrc");
+                                if (isRegImg(hostName))
+                                    setImgData(hostName, {activeSrc: srcName});
+                                else
+                                    D.Alert(`Img name ${D.JS(hostName)} is not registered.`, "MEDIA: !img set activesrc");
                                 break;
                             }
                             case "area": {
                                 const [imgObj] = imgObjs;
-                                if (VAL({imgObj}, "!img set area")) setImgArea(imgObj, args.shift(), args.shift().toLowerCase === "resize");
+                                if (VAL({imgObj}, "!img set area"))
+                                    setImgArea(imgObj, args.shift(), args.shift().toLowerCase === "resize");
                                 break;
                             }
                             case "params": {
                                 const [imgObj] = imgObjs;
                                 const params = D.ParseToObj(args);
-                                if (VAL({imgObj}, "!img set params")) setImgTemp(imgObj, params);
+                                if (VAL({imgObj}, "!img set params"))
+                                    setImgTemp(imgObj, params);
                                 break;
                             }
                             case "front": {
@@ -437,9 +461,12 @@ const Media = (() => {
                                 const hostName = getImgKey(imgObj);
                                 srcName = srcName || args.shift();
                                 if (VAL({string: srcName}, "!img add cyclesrc") && isRegImg(hostName)) {
-                                    if (!_.isObject(REGISTRY.IMG[hostName].srcs)) REGISTRY.IMG[hostName].srcs = {};
-                                    if (srcName) addImgSrc(msg, hostName, srcName);
-                                    else D.Alert(`Invalid image name '${D.JS(srcName)}'`, "MEDIA: !img add src");
+                                    if (!_.isObject(REGISTRY.IMG[hostName].srcs))
+                                        REGISTRY.IMG[hostName].srcs = {};
+                                    if (srcName)
+                                        addImgSrc(msg, hostName, srcName);
+                                    else
+                                        D.Alert(`Invalid image name '${D.JS(srcName)}'`, "MEDIA: !img add src");
                                 } else {
                                     D.Alert(`Host name '${D.JS(hostName)}' not registered.`, "MEDIA: !img add src");
                                 }
@@ -450,7 +477,7 @@ const Media = (() => {
                             case "tokensrc":
                             case "tokensource": {
                                 const [charObj] = Listener.GetObjects(objects, "character");
-                                const tokenSrcObjs = Listener.GetObjects(objects, "graphic").filter(x => !x.get("name"));
+                                const tokenSrcObjs = Listener.GetObjects(objects, "graphic").filter((x) => !x.get("name"));
                                 // srcName = args.join(" ")
                                 DB(
                                     {
@@ -463,7 +490,8 @@ const Media = (() => {
                                     "addTokenSrc"
                                 );
                                 for (const tokenSrcObj of tokenSrcObjs)
-                                    if (VAL({charObj, imgObj: tokenSrcObj})) addTokenSrc(tokenSrcObj, charObj, args[0]);
+                                    if (VAL({charObj, imgObj: tokenSrcObj}))
+                                        addTokenSrc(tokenSrcObj, charObj, args[0]);
                                 break;
                             }
                             default: {
@@ -481,11 +509,13 @@ const Media = (() => {
                         switch (D.LCase((call = args.shift()))) {
                             case "all": {
                                 for (const hostName of Object.keys(REGISTRY.IMG))
-                                    if (D.LCase(hostName).includes(D.LCase(args.join(" ")))) removeImg(hostName);
+                                    if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
+                                        removeImg(hostName);
                                 break;
                             }
                             default: {
-                                for (const imgObj of imgObjs) removeImg(imgObj);
+                                for (const imgObj of imgObjs)
+                                    removeImg(imgObj);
                                 break;
                             }
                         }
@@ -497,24 +527,27 @@ const Media = (() => {
                             case "allimg":
                             case "allimages": {
                                 for (const hostName of Object.keys(REGISTRY.IMG))
-                                    if (D.LCase(hostName).includes(D.LCase(args.join(" ")))) removeImg(hostName, true);
+                                    if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
+                                        removeImg(hostName, true);
                                 break;
                             }
                             default: {
                                 const imgRefs = [...imgObjs, ...args];
-                                if (call) imgRefs.push(call);
+                                if (call)
+                                    imgRefs.push(call);
                                 for (const imgRef of imgRefs) {
                                     const imgKeys = _.compact(
                                         _.flatten([
-                                            getImgKey(imgRef) ||
-                                                (VAL({string: imgRef}) &&
-                                                    Object.keys(REGISTRY.IMG).map(x => x.match(new RegExp(`^${imgRef}_?\\d*$`, "gu")))) ||
-                                                null
+                                            getImgKey(imgRef)
+                                                || (VAL({string: imgRef})
+                                                    && Object.keys(REGISTRY.IMG).map((x) => x.match(new RegExp(`^${imgRef}_?\\d*$`, "gu"))))
+                                                || null
                                         ])
                                     );
                                     for (const imgKey of imgKeys) {
                                         removeImg(imgKey, true);
-                                        if (REGISTRY.IMG[imgKey]) delete REGISTRY.IMG[imgKey];
+                                        if (REGISTRY.IMG[imgKey])
+                                            delete REGISTRY.IMG[imgKey];
                                     }
                                 }
                                 break;
@@ -540,7 +573,8 @@ const Media = (() => {
                             case "cyclesrc":
                             case "cyclesrcs": {
                                 const imgKey = getImgKey(imgObjs.shift());
-                                if (isRegImg(imgKey)) delete REGISTRY.IMG[imgKey].cycleSrcs;
+                                if (isRegImg(imgKey))
+                                    delete REGISTRY.IMG[imgKey].cycleSrcs;
                                 break;
                             }
                             // no default
@@ -550,11 +584,13 @@ const Media = (() => {
                     case "toggle": {
                         switch (D.LCase((call = args.shift()))) {
                             case "on": {
-                                for (const imgObj of imgObjs) toggleImg(imgObj, true);
+                                for (const imgObj of imgObjs)
+                                    toggleImg(imgObj, true);
                                 break;
                             }
                             case "off": {
-                                for (const imgObj of imgObjs) toggleImg(imgObj, false);
+                                for (const imgObj of imgObjs)
+                                    toggleImg(imgObj, false);
                                 break;
                             }
                             case "token": {
@@ -574,8 +610,10 @@ const Media = (() => {
                             }
                             case "log": {
                                 imgRecord = !imgRecord;
-                                if (imgRecord) D.Alert("Logging image data as they are added to the sandbox.", "MEDIA, !img toggle log");
-                                else D.Alert("Img logging disabled.", "MEDIA, !img toggle log");
+                                if (imgRecord)
+                                    D.Alert("Logging image data as they are added to the sandbox.", "MEDIA, !img toggle log");
+                                else
+                                    D.Alert("Img logging disabled.", "MEDIA, !img toggle log");
                                 break;
                             }
                             case "resize": {
@@ -598,7 +636,7 @@ const Media = (() => {
                                 const mapIndObj = getImgObj("MapIndicator_Base_1");
                                 toFront(mapIndObj);
                                 if (!["confirm", "skip"].includes(args[0])) {
-                                    STATE.REF.siteNamesOnDeck = Object.keys(_.omit(C.SITES, v => v.district === null));
+                                    STATE.REF.siteNamesOnDeck = Object.keys(_.omit(C.SITES, (v) => v.district === null));
                                     D.Alert("Site Names loaded, prepare to identify map locations on my mark!", "Auto Site Movement");
                                 } else if (args[0] === "confirm") {
                                     state.VAMPIRE.Session.locationPointer[STATE.REF.siteNamesOnDeck[0]] = {
@@ -739,7 +777,8 @@ const Media = (() => {
                         switch (D.LCase((call = args.shift()))) {
                             case "data": {
                                 const [textObj] = textObjs;
-                                if (VAL({textObj}, "!text get data")) D.Alert(D.JS(getTextData(textObj)), "!text get data");
+                                if (VAL({textObj}, "!text get data"))
+                                    D.Alert(D.JS(getTextData(textObj)), "!text get data");
                                 break;
                             }
                             case "realdata": {
@@ -787,9 +826,9 @@ const Media = (() => {
                                 const [hostName, mode, key, val] = args;
                                 const textKey = getTextKey(hostName);
                                 if (
-                                    !Session.Modes.includes(mode) ||
-                                    !["isForcedOn", "isForcedState", "lastActive", "lastState"].includes(key) ||
-                                    !["true", "false", "null", "LAST", "NEVER"].includes(val)
+                                    !Session.Modes.includes(mode)
+                                    || !["isForcedOn", "isForcedState", "lastActive", "lastState"].includes(key)
+                                    || !["true", "false", "null", "LAST", "NEVER"].includes(val)
                                 ) {
                                     D.Alert(
                                         "Mode Set Syntax:<br><br><b>!text set mode (hostName) (mode) (key) (val)</b>",
@@ -815,9 +854,9 @@ const Media = (() => {
                             case "font": {
                                 const textObj = textObjs.pop();
                                 const fontFamily = args.join(" ");
-                                let fontMatch =
-                                    (fontFamily.length > 4 &&
-                                        D.IsIn(D.LCase(fontFamily), [
+                                let fontMatch
+                                    = (fontFamily.length > 4
+                                        && D.IsIn(D.LCase(fontFamily), [
                                             "candal",
                                             "contrail",
                                             "contrail one",
@@ -825,8 +864,8 @@ const Media = (() => {
                                             "shadows into light",
                                             "patrick hand",
                                             "arial"
-                                        ])) ||
-                                    "";
+                                        ]))
+                                    || "";
                                 D.Alert(`Text Objs: ${D.JS(textObjs)}<br>Text Obj: ${D.JS(textObj)}<br>Text Obj ID: ${textObj.id}`);
                                 switch (D.LCase(fontMatch)) {
                                     case "contrail":
@@ -868,13 +907,15 @@ const Media = (() => {
                             case "justification":
                             case "just": {
                                 const justification = args.shift() || "center";
-                                for (const textObj of textObjs) justifyText(textObj, justification);
+                                for (const textObj of textObjs)
+                                    justifyText(textObj, justification);
                                 break;
                             }
                             case "params": {
                                 const [textObj] = textObjs;
                                 const params = D.ParseToObj(args);
-                                if (VAL({textObj}, "!text set params")) setTextData(textObj, params);
+                                if (VAL({textObj}, "!text set params"))
+                                    setTextData(textObj, params);
                                 break;
                             }
                             case "front": {
@@ -900,7 +941,8 @@ const Media = (() => {
                             }
                             default: {
                                 const [textObj] = textObjs;
-                                if (VAL({textObj}, "!text set")) setText(textObj, args.join(" ") || " ");
+                                if (VAL({textObj}, "!text set"))
+                                    setText(textObj, args.join(" ") || " ");
                                 break;
                             }
                             // no default
@@ -943,11 +985,13 @@ const Media = (() => {
                         switch (D.LCase((call = args.shift()))) {
                             case "all": {
                                 for (const hostName of Object.keys(REGISTRY.TEXT))
-                                    if (D.LCase(hostName).includes(D.LCase(args.join(" ")))) removeText(hostName);
+                                    if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
+                                        removeText(hostName);
                                 break;
                             }
                             default: {
-                                for (const textObj of textObjs) removeText(textObj);
+                                for (const textObj of textObjs)
+                                    removeText(textObj);
                                 break;
                             }
                         }
@@ -963,8 +1007,8 @@ const Media = (() => {
                             args[2] = (args[2] !== "x" && args[2]) || hasShadowObj(msg);
                             args[3] = (args[3] !== "x" && args[3]) || textData.justification;
                             imgParams = args.slice(3).join(" ");
-                            imgParams =
-                                _.compact([
+                            imgParams
+                                = _.compact([
                                     imgParams.includes("vertAlign") ? "" : `vertAlign:${textData.vertAlign || "top"}`,
                                     textData.maxWidth && !imgParams.includes("maxWidth") ? `maxWidth:${textData.maxWidth}` : "",
                                     imgParams.includes("zIndex") ? "" : `zIndex:${textData.zIndex || 300}`
@@ -990,7 +1034,8 @@ const Media = (() => {
                                         justification || "center",
                                         D.ParseToObj(imgParams)
                                     );
-                                    if (imgModes) REGISTRY.TEXT[getTextKey(textObj)].modes = imgModes;
+                                    if (imgModes)
+                                        REGISTRY.TEXT[getTextKey(textObj)].modes = imgModes;
                                 } else {
                                     D.Alert(
                                         "Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]<br><br>OR !text rereg &lt;replace any of the above parameters with 'x' to skip it &gt;",
@@ -1002,7 +1047,7 @@ const Media = (() => {
                             }
                         } else {
                             D.Alert(
-                                'Syntax: !text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params ("key:value, key:value")]',
+                                "Syntax: !text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]",
                                 "MEDIA: !text reg"
                             );
                         }
@@ -1013,24 +1058,27 @@ const Media = (() => {
                         switch (D.LCase((call = args.shift()))) {
                             case "alltext": {
                                 for (const hostName of Object.keys(REGISTRY.TEXT))
-                                    if (D.LCase(hostName).includes(D.LCase(args.join(" ")))) removeText(hostName, true, true);
+                                    if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
+                                        removeText(hostName, true, true);
                                 break;
                             }
                             default: {
                                 const textRefs = [...textObjs, ...args];
-                                if (call) textRefs.push(call);
+                                if (call)
+                                    textRefs.push(call);
                                 for (const textRef of textRefs) {
                                     const textKeys = _.compact(
                                         _.flatten([
-                                            getTextKey(textRef) ||
-                                                (VAL({string: textRef}) &&
-                                                    Object.keys(REGISTRY.TEXT).map(x => x.match(new RegExp(`^${textRef}_?\\d*$`, "gu")))) ||
-                                                null
+                                            getTextKey(textRef)
+                                                || (VAL({string: textRef})
+                                                    && Object.keys(REGISTRY.TEXT).map((x) => x.match(new RegExp(`^${textRef}_?\\d*$`, "gu"))))
+                                                || null
                                         ])
                                     );
                                     for (const textKey of textKeys) {
                                         removeText(textKey, true, true);
-                                        if (REGISTRY.TEXT[textKey]) delete REGISTRY.TEXT[textKey];
+                                        if (REGISTRY.TEXT[textKey])
+                                            delete REGISTRY.TEXT[textKey];
                                     }
                                 }
                                 break;
@@ -1041,11 +1089,13 @@ const Media = (() => {
                     case "toggle": {
                         switch (D.LCase((call = args.shift()))) {
                             case "on": {
-                                for (const textObj of textObjs) toggleText(textObj, true, true);
+                                for (const textObj of textObjs)
+                                    toggleText(textObj, true, true);
                                 break;
                             }
                             case "off": {
-                                for (const textObj of textObjs) toggleText(textObj, false, true);
+                                for (const textObj of textObjs)
+                                    toggleText(textObj, false, true);
                                 break;
                             }
                             default: {
@@ -1071,7 +1121,8 @@ const Media = (() => {
                         const [animName, timeOut] = args;
                         if (VAL({imgObj, string: animName, number: timeOut}, "!anim register"))
                             regAnimation(imgObj, animName, D.Float(timeOut));
-                        else D.Alert("Syntax: <b>!anim register &lt;animName&gt; &lt;timeOut [ms]&gt;</b>", "!anim register");
+                        else
+                            D.Alert("Syntax: <b>!anim register &lt;animName&gt; &lt;timeOut [ms]&gt;</b>", "!anim register");
                         break;
                     }
                     case "get": {
@@ -1135,10 +1186,12 @@ const Media = (() => {
         }
         TRACEOFF(traceID);
     };
-    const onGraphicAdd = imgObj => {
+    const onGraphicAdd = (imgObj) => {
         const traceID = TRACEON("onGraphicAdd", [imgObj]);
-        if (imgRecord) LOG(imgObj.get("imgsrc"));
-        if (imgResize) imgObj.set(STATE.REF.imgResizeDims);
+        if (imgRecord)
+            LOG(imgObj.get("imgsrc"));
+        if (imgResize)
+            imgObj.set(STATE.REF.imgResizeDims);
         if (imgSrcAutoReg && STATE.REF.autoRegSrcNames.length) {
             const hostName = imgSrcAutoReg;
             const srcName = STATE.REF.autoRegSrcNames.shift();
@@ -1167,9 +1220,9 @@ const Media = (() => {
                 imgObj.remove();
             } else if (STATE.REF.autoRegTokenNames.length) {
                 const charName = STATE.REF.autoRegTokenNames.shift();
-                const charObj =
-                    D.GetChar(charName) ||
-                    createObj("character", {
+                const charObj
+                    = D.GetChar(charName)
+                    || createObj("character", {
                         name: charName,
                         inplayerjournals: "all",
                         controlledby: D.GMID()
@@ -1191,9 +1244,13 @@ const Media = (() => {
             }
             return TRACEOFF(traceID, true);
         }
-        if (imgSrcAutoGeneric && !isRegImg(imgObj) && !isCharToken(imgObj)) if (regGenericToken(imgObj, imgSrcAutoGeneric)) imgObj.remove();
-        if (isRandomizerToken(imgObj)) setRandomizerToken(imgObj);
-        if (isCharToken(imgObj)) setGenericToken(imgObj);
+        if (imgSrcAutoGeneric && !isRegImg(imgObj) && !isCharToken(imgObj))
+            if (regGenericToken(imgObj, imgSrcAutoGeneric))
+                imgObj.remove();
+        if (isRandomizerToken(imgObj))
+            setRandomizerToken(imgObj);
+        if (isCharToken(imgObj))
+            setGenericToken(imgObj);
         return TRACEOFF(traceID, true);
     };
     // #endregion
@@ -1209,7 +1266,7 @@ const Media = (() => {
         ],
         progressBarTimer = null;
     const animTimers = {};
-    const MODEDATAJSON = `[	
+    const MODEDATAJSON = `[
             ["TEXT", "testSessionNoticeSplash", "isActive", true],["TEXT", "testSessionNoticeSplash", "pageID", "SplashPage"],["TEXT", "testSessionNoticeSplash", "activeLayer", "gmlayer"],["TEXT", "testSessionNoticeSplash", "zIndex", 3000],["TEXT", "testSessionNoticeSplash", "modes", "Active", {"isForcedOn": null, "lastState": null}],["TEXT", "testSessionNoticeSplash", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "testSessionNoticeSplash", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["TEXT", "testSessionNoticeSplash", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["TEXT", "testSessionNoticeSplash", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["TEXT", "testSessionNoticeSplash", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "RelationshipMap_1", "isActive", true],["IMG", "RelationshipMap_1", "curSrc", "base"],["IMG", "RelationshipMap_1", "activeSrc", "base"],["IMG", "RelationshipMap_1", "pageID", "SplashPage"],["IMG", "RelationshipMap_1", "activeLayer", "map"],["IMG", "RelationshipMap_1", "zIndex", 10],["IMG", "RelationshipMap_1", "modes", "Active", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "RelationshipMap_1", "modes", "Inactive", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "RelationshipMap_1", "modes", "Daylighter", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "RelationshipMap_1", "modes", "Downtime", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "RelationshipMap_1", "modes", "Spotlight", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "RelationshipMap_1", "modes", "Complications", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "SplashHorizon_1", "isActive", true],["IMG", "SplashHorizon_1", "curSrc", "base"],["IMG", "SplashHorizon_1", "activeSrc", "base"],["IMG", "SplashHorizon_1", "pageID", "SplashPage"],["IMG", "SplashHorizon_1", "activeLayer", "map"],["IMG", "SplashHorizon_1", "zIndex", 2],["IMG", "SplashHorizon_1", "modes", "Active", {"isForcedOn": null, "lastState": null}],["IMG", "SplashHorizon_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "SplashHorizon_1", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["IMG", "SplashHorizon_1", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["IMG", "SplashHorizon_1", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["IMG", "SplashHorizon_1", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "SplashMoon_1", "isActive", true],["IMG", "SplashMoon_1", "curSrc", "base"],["IMG", "SplashMoon_1", "activeSrc", "base"],["IMG", "SplashMoon_1", "pageID", "SplashPage"],["IMG", "SplashMoon_1", "activeLayer", "map"],["IMG", "SplashMoon_1", "zIndex", 3],["IMG", "SplashMoon_1", "modes", "Active", {"isForcedOn": null, "lastState": null}],["IMG", "SplashMoon_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "SplashMoon_1", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["IMG", "SplashMoon_1", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["IMG", "SplashMoon_1", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["IMG", "SplashMoon_1", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "SplashOverlay_1", "isActive", true],["IMG", "SplashOverlay_1", "curSrc", "base"],["IMG", "SplashOverlay_1", "activeSrc", "base"],["IMG", "SplashOverlay_1", "pageID", "SplashPage"],["IMG", "SplashOverlay_1", "activeLayer", "map"],["IMG", "SplashOverlay_1", "zIndex", 6],["IMG", "SplashOverlay_1", "modes", "Active", {"isForcedOn": null, "lastState": null}],["IMG", "SplashOverlay_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "SplashOverlay_1", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["IMG", "SplashOverlay_1", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["IMG", "SplashOverlay_1", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["IMG", "SplashOverlay_1", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "SplashWater_1", "isActive", true],["IMG", "SplashWater_1", "curSrc", "red0"],["IMG", "SplashWater_1", "activeSrc", "red0"],["IMG", "SplashWater_1", "pageID", "SplashPage"],["IMG", "SplashWater_1", "activeLayer", "map"],["IMG", "SplashWater_1", "zIndex", 4],["IMG", "SplashWater_1", "modes", "Active", {"isForcedOn": null, "lastState": null}],["IMG", "SplashWater_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "SplashWater_1", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["IMG", "SplashWater_1", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["IMG", "SplashWater_1", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["IMG", "SplashWater_1", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["TEXT", "Countdown", "isActive", true],["TEXT", "Countdown", "pageID", "SplashPage"],["TEXT", "Countdown", "activeLayer", "objects"],["TEXT", "Countdown", "zIndex", 400],["TEXT", "Countdown", "modes", "Active", {"isForcedOn": null, "lastState": null}],["TEXT", "Countdown", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "Countdown", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["TEXT", "Countdown", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["TEXT", "Countdown", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["TEXT", "Countdown", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["TEXT", "NextSession", "isActive", true],["TEXT", "NextSession", "pageID", "SplashPage"],["TEXT", "NextSession", "activeLayer", "objects"],["TEXT", "NextSession", "zIndex", 401],["TEXT", "NextSession", "modes", "Active", {"isForcedOn": null, "lastState": null}],["TEXT", "NextSession", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "NextSession", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["TEXT", "NextSession", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["TEXT", "NextSession", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["TEXT", "NextSession", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["TEXT", "CompCard_Name_1", "isActive", false],["TEXT", "CompCard_Name_1", "pageID", "GAME"],["TEXT", "CompCard_Name_1", "activeLayer", "gmlayer"],["TEXT", "CompCard_Name_1", "zIndex", 2000],["TEXT", "CompCard_Name_1", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "CompCard_Name_1", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_1", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_1", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_1", "modes", "Complications", {"isForcedOn": true, "isForcedState": true, "lastState": "@@curText@@"}],["TEXT", "CompCard_Name_10", "isActive", false],["TEXT", "CompCard_Name_10", "pageID", "GAME"],["TEXT", "CompCard_Name_10", "activeLayer", "gmlayer"],["TEXT", "CompCard_Name_10", "zIndex", 2000],["TEXT", "CompCard_Name_10", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_10", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "CompCard_Name_10", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_10", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_10", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_10", "modes", "Complications", {"isForcedOn": true, "isForcedState": true, "lastState": "@@curText@@"}],["TEXT", "CompCard_Name_2", "isActive", false],["TEXT", "CompCard_Name_2", "pageID", "GAME"],["TEXT", "CompCard_Name_2", "activeLayer", "gmlayer"],["TEXT", "CompCard_Name_2", "zIndex", 2000],["TEXT", "CompCard_Name_2", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_2", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "CompCard_Name_2", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_2", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_2", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_2", "modes", "Complications", {"isForcedOn": true, "isForcedState": true, "lastState": "@@curText@@"}],["TEXT", "CompCard_Name_3", "isActive", false],["TEXT", "CompCard_Name_3", "pageID", "GAME"],["TEXT", "CompCard_Name_3", "activeLayer", "gmlayer"],["TEXT", "CompCard_Name_3", "zIndex", 2000],["TEXT", "CompCard_Name_3", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_3", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "CompCard_Name_3", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_3", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_3", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_3", "modes", "Complications", {"isForcedOn": true, "isForcedState": true, "lastState": "@@curText@@"}],["TEXT", "CompCard_Name_4", "isActive", false],["TEXT", "CompCard_Name_4", "pageID", "GAME"],["TEXT", "CompCard_Name_4", "activeLayer", "gmlayer"],["TEXT", "CompCard_Name_4", "zIndex", 2000],["TEXT", "CompCard_Name_4", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_4", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "CompCard_Name_4", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_4", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_4", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_4", "modes", "Complications", {"isForcedOn": true, "isForcedState": true, "lastState": "@@curText@@"}],["TEXT", "CompCard_Name_5", "isActive", false],["TEXT", "CompCard_Name_5", "pageID", "GAME"],["TEXT", "CompCard_Name_5", "activeLayer", "gmlayer"],["TEXT", "CompCard_Name_5", "zIndex", 2000],["TEXT", "CompCard_Name_5", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_5", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "CompCard_Name_5", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_5", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_5", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_5", "modes", "Complications", {"isForcedOn": true, "isForcedState": true, "lastState": "@@curText@@"}],["TEXT", "CompCard_Name_6", "isActive", false],["TEXT", "CompCard_Name_6", "pageID", "GAME"],["TEXT", "CompCard_Name_6", "activeLayer", "gmlayer"],["TEXT", "CompCard_Name_6", "zIndex", 2000],["TEXT", "CompCard_Name_6", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_6", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "CompCard_Name_6", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_6", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_6", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_6", "modes", "Complications", {"isForcedOn": true, "isForcedState": true, "lastState": "@@curText@@"}],["TEXT", "CompCard_Name_7", "isActive", false],["TEXT", "CompCard_Name_7", "pageID", "GAME"],["TEXT", "CompCard_Name_7", "activeLayer", "gmlayer"],["TEXT", "CompCard_Name_7", "zIndex", 2000],["TEXT", "CompCard_Name_7", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_7", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "CompCard_Name_7", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_7", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_7", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_7", "modes", "Complications", {"isForcedOn": true, "isForcedState": true, "lastState": "@@curText@@"}],["TEXT", "CompCard_Name_8", "isActive", false],["TEXT", "CompCard_Name_8", "pageID", "GAME"],["TEXT", "CompCard_Name_8", "activeLayer", "gmlayer"],["TEXT", "CompCard_Name_8", "zIndex", 2000],["TEXT", "CompCard_Name_8", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_8", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "CompCard_Name_8", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_8", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_8", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_8", "modes", "Complications", {"isForcedOn": true, "isForcedState": true, "lastState": "@@curText@@"}],["TEXT", "CompCard_Name_9", "isActive", false],["TEXT", "CompCard_Name_9", "pageID", "GAME"],["TEXT", "CompCard_Name_9", "activeLayer", "gmlayer"],["TEXT", "CompCard_Name_9", "zIndex", 2000],["TEXT", "CompCard_Name_9", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_9", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "CompCard_Name_9", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_9", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_9", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["TEXT", "CompCard_Name_9", "modes", "Complications", {"isForcedOn": true, "isForcedState": true, "lastState": "@@curText@@"}],["TEXT", "playerPageAlertMessage", "isActive", null],["TEXT", "playerPageAlertMessage", "pageID", "GAME"],["TEXT", "playerPageAlertMessage", "activeLayer", "gmlayer"],["TEXT", "playerPageAlertMessage", "zIndex", 3002],["TEXT", "playerPageAlertMessage", "modes", "Active", {"isForcedOn": null, "lastState": null}],["TEXT", "playerPageAlertMessage", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "playerPageAlertMessage", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["TEXT", "playerPageAlertMessage", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["TEXT", "playerPageAlertMessage", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["TEXT", "playerPageAlertMessage", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["TEXT", "secretRollTraits", "isActive", true],["TEXT", "secretRollTraits", "pageID", "GAME"],["TEXT", "secretRollTraits", "activeLayer", "gmlayer"],["TEXT", "secretRollTraits", "zIndex", 2500],["TEXT", "secretRollTraits", "modes", "Active", {"isForcedOn": null, "lastState": null}],["TEXT", "secretRollTraits", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "secretRollTraits", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["TEXT", "secretRollTraits", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["TEXT", "secretRollTraits", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["TEXT", "secretRollTraits", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["TEXT", "testSessionNotice", "isActive", true],["TEXT", "testSessionNotice", "pageID", "GAME"],["TEXT", "testSessionNotice", "activeLayer", "gmlayer"],["TEXT", "testSessionNotice", "zIndex", 3000],["TEXT", "testSessionNotice", "modes", "Active", {"isForcedOn": null, "lastState": null}],["TEXT", "testSessionNotice", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["TEXT", "testSessionNotice", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["TEXT", "testSessionNotice", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["TEXT", "testSessionNotice", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["TEXT", "testSessionNotice", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-A", "isActive", true],["IMG", "AirLights-A", "curSrc", null],["IMG", "AirLights-A", "activeSrc"],["IMG", "AirLights-A", "pageID", "GAME"],["IMG", "AirLights-A", "activeLayer", "map"],["IMG", "AirLights-A", "zIndex", 15],["IMG", "AirLights-A", "modes", "Active", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-A", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-A", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-A", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-A", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-A", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-B", "isActive", true],["IMG", "AirLights-B", "curSrc", null],["IMG", "AirLights-B", "activeSrc"],["IMG", "AirLights-B", "pageID", "GAME"],["IMG", "AirLights-B", "activeLayer", "map"],["IMG", "AirLights-B", "zIndex", 15],["IMG", "AirLights-B", "modes", "Active", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-B", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-B", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-B", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-B", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-B", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-C", "isActive", true],["IMG", "AirLights-C", "curSrc", null],["IMG", "AirLights-C", "activeSrc"],["IMG", "AirLights-C", "pageID", "GAME"],["IMG", "AirLights-C", "activeLayer", "map"],["IMG", "AirLights-C", "zIndex", 15],["IMG", "AirLights-C", "modes", "Active", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-C", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-C", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-C", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-C", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-C", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-C-Cloudy", "isActive", false],["IMG", "AirLights-C-Cloudy", "curSrc", null],["IMG", "AirLights-C-Cloudy", "activeSrc"],["IMG", "AirLights-C-Cloudy", "pageID", "GAME"],["IMG", "AirLights-C-Cloudy", "activeLayer", "map"],["IMG", "AirLights-C-Cloudy", "zIndex", 15],["IMG", "AirLights-C-Cloudy", "modes", "Active", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-C-Cloudy", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-C-Cloudy", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-C-Cloudy", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-C-Cloudy", "modes", "Spotlight", {"isForcedOn": null, "lastState": null}],["IMG", "AirLights-C-Cloudy", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Base_1", "isActive", false],["IMG", "CompCard_Base_1", "curSrc", "cardBack"],["IMG", "CompCard_Base_1", "activeSrc", "cardBack"],["IMG", "CompCard_Base_1", "pageID", "GAME"],["IMG", "CompCard_Base_1", "activeLayer", "map"],["IMG", "CompCard_Base_1", "zIndex", 702],["IMG", "CompCard_Base_1", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Base_1", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_1", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_1", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_1", "modes", "Complications", {"isForcedOn": true, "isForcedState": "cardBack", "lastState": "cardBack"}],["IMG", "CompCard_Base_10", "isActive", false],["IMG", "CompCard_Base_10", "curSrc", "cardBack"],["IMG", "CompCard_Base_10", "activeSrc", "cardBack"],["IMG", "CompCard_Base_10", "pageID", "GAME"],["IMG", "CompCard_Base_10", "activeLayer", "map"],["IMG", "CompCard_Base_10", "zIndex", 702],["IMG", "CompCard_Base_10", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_10", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Base_10", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_10", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_10", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_10", "modes", "Complications", {"isForcedOn": true, "isForcedState": "cardBack", "lastState": "cardBack"}],["IMG", "CompCard_Base_2", "isActive", false],["IMG", "CompCard_Base_2", "curSrc", "cardBack"],["IMG", "CompCard_Base_2", "activeSrc", "cardBack"],["IMG", "CompCard_Base_2", "pageID", "GAME"],["IMG", "CompCard_Base_2", "activeLayer", "map"],["IMG", "CompCard_Base_2", "zIndex", 702],["IMG", "CompCard_Base_2", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_2", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Base_2", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_2", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_2", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_2", "modes", "Complications", {"isForcedOn": true, "isForcedState": "cardBack", "lastState": "cardBack"}],
             ["IMG", "CompCard_Base_3", "isActive", false],["IMG", "CompCard_Base_3", "curSrc", "cardBack"],["IMG", "CompCard_Base_3", "activeSrc", "cardBack"],["IMG", "CompCard_Base_3", "pageID", "GAME"],["IMG", "CompCard_Base_3", "activeLayer", "map"],["IMG", "CompCard_Base_3", "zIndex", 702],["IMG", "CompCard_Base_3", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_3", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Base_3", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_3", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_3", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_3", "modes", "Complications", {"isForcedOn": true, "isForcedState": "cardBack", "lastState": "cardBack"}],["IMG", "CompCard_Base_4", "isActive", false],["IMG", "CompCard_Base_4", "curSrc", "cardBack"],["IMG", "CompCard_Base_4", "activeSrc", "cardBack"],["IMG", "CompCard_Base_4", "pageID", "GAME"],["IMG", "CompCard_Base_4", "activeLayer", "map"],["IMG", "CompCard_Base_4", "zIndex", 702],["IMG", "CompCard_Base_4", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_4", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Base_4", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_4", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_4", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_4", "modes", "Complications", {"isForcedOn": true, "isForcedState": "cardBack", "lastState": "cardBack"}],["IMG", "CompCard_Base_5", "isActive", false],["IMG", "CompCard_Base_5", "curSrc", "cardBack"],["IMG", "CompCard_Base_5", "activeSrc", "cardBack"],["IMG", "CompCard_Base_5", "pageID", "GAME"],["IMG", "CompCard_Base_5", "activeLayer", "map"],["IMG", "CompCard_Base_5", "zIndex", 702],["IMG", "CompCard_Base_5", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_5", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Base_5", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_5", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_5", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_5", "modes", "Complications", {"isForcedOn": true, "isForcedState": "cardBack", "lastState": "cardBack"}],["IMG", "CompCard_Base_6", "isActive", false],["IMG", "CompCard_Base_6", "curSrc", "cardBack"],["IMG", "CompCard_Base_6", "activeSrc", "cardBack"],["IMG", "CompCard_Base_6", "pageID", "GAME"],["IMG", "CompCard_Base_6", "activeLayer", "map"],["IMG", "CompCard_Base_6", "zIndex", 702],["IMG", "CompCard_Base_6", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_6", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Base_6", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_6", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_6", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_6", "modes", "Complications", {"isForcedOn": true, "isForcedState": "cardBack", "lastState": "cardBack"}],["IMG", "CompCard_Base_7", "isActive", false],["IMG", "CompCard_Base_7", "curSrc", "cardBack"],["IMG", "CompCard_Base_7", "activeSrc", "cardBack"],["IMG", "CompCard_Base_7", "pageID", "GAME"],["IMG", "CompCard_Base_7", "activeLayer", "map"],["IMG", "CompCard_Base_7", "zIndex", 702],["IMG", "CompCard_Base_7", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_7", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Base_7", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_7", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_7", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_7", "modes", "Complications", {"isForcedOn": true, "isForcedState": "cardBack", "lastState": "cardBack"}],["IMG", "CompCard_Base_8", "isActive", false],["IMG", "CompCard_Base_8", "curSrc", "cardBack"],["IMG", "CompCard_Base_8", "activeSrc", "cardBack"],["IMG", "CompCard_Base_8", "pageID", "GAME"],["IMG", "CompCard_Base_8", "activeLayer", "map"],["IMG", "CompCard_Base_8", "zIndex", 702],["IMG", "CompCard_Base_8", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_8", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Base_8", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_8", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_8", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_8", "modes", "Complications", {"isForcedOn": true, "isForcedState": "cardBack", "lastState": "cardBack"}],["IMG", "CompCard_Base_9", "isActive", false],["IMG", "CompCard_Base_9", "curSrc", "cardBack"],["IMG", "CompCard_Base_9", "activeSrc", "cardBack"],["IMG", "CompCard_Base_9", "pageID", "GAME"],["IMG", "CompCard_Base_9", "activeLayer", "map"],["IMG", "CompCard_Base_9", "zIndex", 702],["IMG", "CompCard_Base_9", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_9", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Base_9", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_9", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_9", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Base_9", "modes", "Complications", {"isForcedOn": true, "isForcedState": "cardBack", "lastState": "cardBack"}],["IMG", "CompCard_Negated_1", "isActive", false],["IMG", "CompCard_Negated_1", "curSrc", "base"],["IMG", "CompCard_Negated_1", "activeSrc", "base"],["IMG", "CompCard_Negated_1", "pageID", "GAME"],["IMG", "CompCard_Negated_1", "activeLayer", "map"],["IMG", "CompCard_Negated_1", "zIndex", 705],["IMG", "CompCard_Negated_1", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Negated_1", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_1", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_1", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_1", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Negated_10", "isActive", false],["IMG", "CompCard_Negated_10", "curSrc", "base"],["IMG", "CompCard_Negated_10", "activeSrc", "base"],["IMG", "CompCard_Negated_10", "pageID", "GAME"],["IMG", "CompCard_Negated_10", "activeLayer", "map"],["IMG", "CompCard_Negated_10", "zIndex", 705],["IMG", "CompCard_Negated_10", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_10", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Negated_10", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_10", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_10", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_10", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Negated_2", "isActive", false],["IMG", "CompCard_Negated_2", "curSrc", "base"],["IMG", "CompCard_Negated_2", "activeSrc", "base"],["IMG", "CompCard_Negated_2", "pageID", "GAME"],["IMG", "CompCard_Negated_2", "activeLayer", "map"],["IMG", "CompCard_Negated_2", "zIndex", 705],["IMG", "CompCard_Negated_2", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_2", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Negated_2", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_2", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_2", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_2", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Negated_3", "isActive", false],["IMG", "CompCard_Negated_3", "curSrc", "base"],["IMG", "CompCard_Negated_3", "activeSrc", "base"],["IMG", "CompCard_Negated_3", "pageID", "GAME"],["IMG", "CompCard_Negated_3", "activeLayer", "map"],["IMG", "CompCard_Negated_3", "zIndex", 705],["IMG", "CompCard_Negated_3", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_3", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Negated_3", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_3", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_3", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_3", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Negated_4", "isActive", false],["IMG", "CompCard_Negated_4", "curSrc", "base"],["IMG", "CompCard_Negated_4", "activeSrc", "base"],["IMG", "CompCard_Negated_4", "pageID", "GAME"],["IMG", "CompCard_Negated_4", "activeLayer", "map"],["IMG", "CompCard_Negated_4", "zIndex", 705],["IMG", "CompCard_Negated_4", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_4", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Negated_4", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_4", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_4", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_4", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Negated_5", "isActive", false],["IMG", "CompCard_Negated_5", "curSrc", "base"],["IMG", "CompCard_Negated_5", "activeSrc", "base"],["IMG", "CompCard_Negated_5", "pageID", "GAME"],["IMG", "CompCard_Negated_5", "activeLayer", "map"],["IMG", "CompCard_Negated_5", "zIndex", 705],["IMG", "CompCard_Negated_5", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_5", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Negated_5", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_5", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_5", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_5", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Negated_6", "isActive", false],["IMG", "CompCard_Negated_6", "curSrc", "base"],["IMG", "CompCard_Negated_6", "activeSrc", "base"],["IMG", "CompCard_Negated_6", "pageID", "GAME"],["IMG", "CompCard_Negated_6", "activeLayer", "map"],["IMG", "CompCard_Negated_6", "zIndex", 705],["IMG", "CompCard_Negated_6", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_6", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Negated_6", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_6", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_6", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_6", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Negated_7", "isActive", false],["IMG", "CompCard_Negated_7", "curSrc", "base"],["IMG", "CompCard_Negated_7", "activeSrc", "base"],["IMG", "CompCard_Negated_7", "pageID", "GAME"],["IMG", "CompCard_Negated_7", "activeLayer", "map"],["IMG", "CompCard_Negated_7", "zIndex", 705],["IMG", "CompCard_Negated_7", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_7", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Negated_7", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_7", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_7", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_7", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Negated_8", "isActive", false],["IMG", "CompCard_Negated_8", "curSrc", "base"],["IMG", "CompCard_Negated_8", "activeSrc", "base"],["IMG", "CompCard_Negated_8", "pageID", "GAME"],["IMG", "CompCard_Negated_8", "activeLayer", "map"],["IMG", "CompCard_Negated_8", "zIndex", 705],["IMG", "CompCard_Negated_8", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_8", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Negated_8", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_8", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_8", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_8", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Negated_9", "isActive", false],["IMG", "CompCard_Negated_9", "curSrc", "base"],["IMG", "CompCard_Negated_9", "activeSrc", "base"],["IMG", "CompCard_Negated_9", "pageID", "GAME"],["IMG", "CompCard_Negated_9", "activeLayer", "map"],["IMG", "CompCard_Negated_9", "zIndex", 705],["IMG", "CompCard_Negated_9", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_9", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Negated_9", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_9", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_9", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Negated_9", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Revalue_1", "isActive", false],["IMG", "CompCard_Revalue_1", "curSrc", "0"],["IMG", "CompCard_Revalue_1", "activeSrc", "0"],["IMG", "CompCard_Revalue_1", "pageID", "GAME"],["IMG", "CompCard_Revalue_1", "activeLayer", "map"],["IMG", "CompCard_Revalue_1", "zIndex", 704],["IMG", "CompCard_Revalue_1", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Revalue_1", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_1", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_1", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_1", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Revalue_10", "isActive", false],["IMG", "CompCard_Revalue_10", "curSrc", "0"],["IMG", "CompCard_Revalue_10", "activeSrc", "0"],["IMG", "CompCard_Revalue_10", "pageID", "GAME"],["IMG", "CompCard_Revalue_10", "activeLayer", "map"],["IMG", "CompCard_Revalue_10", "zIndex", 704],["IMG", "CompCard_Revalue_10", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_10", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Revalue_10", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_10", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_10", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_10", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Revalue_2", "isActive", false],["IMG", "CompCard_Revalue_2", "curSrc", "0"],["IMG", "CompCard_Revalue_2", "activeSrc", "0"],["IMG", "CompCard_Revalue_2", "pageID", "GAME"],["IMG", "CompCard_Revalue_2", "activeLayer", "map"],["IMG", "CompCard_Revalue_2", "zIndex", 704],["IMG", "CompCard_Revalue_2", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_2", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Revalue_2", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_2", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_2", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_2", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Revalue_3", "isActive", false],["IMG", "CompCard_Revalue_3", "curSrc", "0"],["IMG", "CompCard_Revalue_3", "activeSrc", "0"],["IMG", "CompCard_Revalue_3", "pageID", "GAME"],["IMG", "CompCard_Revalue_3", "activeLayer", "map"],["IMG", "CompCard_Revalue_3", "zIndex", 704],["IMG", "CompCard_Revalue_3", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_3", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Revalue_3", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_3", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_3", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_3", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Revalue_4", "isActive", false],["IMG", "CompCard_Revalue_4", "curSrc", "0"],["IMG", "CompCard_Revalue_4", "activeSrc", "0"],["IMG", "CompCard_Revalue_4", "pageID", "GAME"],["IMG", "CompCard_Revalue_4", "activeLayer", "map"],["IMG", "CompCard_Revalue_4", "zIndex", 704],["IMG", "CompCard_Revalue_4", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_4", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Revalue_4", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_4", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_4", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_4", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Revalue_5", "isActive", false],["IMG", "CompCard_Revalue_5", "curSrc", "0"],["IMG", "CompCard_Revalue_5", "activeSrc", "0"],["IMG", "CompCard_Revalue_5", "pageID", "GAME"],["IMG", "CompCard_Revalue_5", "activeLayer", "map"],["IMG", "CompCard_Revalue_5", "zIndex", 704],["IMG", "CompCard_Revalue_5", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_5", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Revalue_5", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_5", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_5", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_5", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Revalue_6", "isActive", false],["IMG", "CompCard_Revalue_6", "curSrc", "0"],["IMG", "CompCard_Revalue_6", "activeSrc", "0"],["IMG", "CompCard_Revalue_6", "pageID", "GAME"],["IMG", "CompCard_Revalue_6", "activeLayer", "map"],["IMG", "CompCard_Revalue_6", "zIndex", 704],["IMG", "CompCard_Revalue_6", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_6", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Revalue_6", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_6", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_6", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_6", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Revalue_7", "isActive", false],["IMG", "CompCard_Revalue_7", "curSrc", "0"],["IMG", "CompCard_Revalue_7", "activeSrc", "0"],["IMG", "CompCard_Revalue_7", "pageID", "GAME"],["IMG", "CompCard_Revalue_7", "activeLayer", "map"],["IMG", "CompCard_Revalue_7", "zIndex", 704],["IMG", "CompCard_Revalue_7", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_7", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Revalue_7", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_7", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_7", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_7", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Revalue_8", "isActive", false],["IMG", "CompCard_Revalue_8", "curSrc", "0"],["IMG", "CompCard_Revalue_8", "activeSrc", "0"],["IMG", "CompCard_Revalue_8", "pageID", "GAME"],["IMG", "CompCard_Revalue_8", "activeLayer", "map"],["IMG", "CompCard_Revalue_8", "zIndex", 704],["IMG", "CompCard_Revalue_8", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_8", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Revalue_8", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_8", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_8", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_8", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Revalue_9", "isActive", false],["IMG", "CompCard_Revalue_9", "curSrc", "0"],["IMG", "CompCard_Revalue_9", "activeSrc", "0"],["IMG", "CompCard_Revalue_9", "pageID", "GAME"],["IMG", "CompCard_Revalue_9", "activeLayer", "map"],["IMG", "CompCard_Revalue_9", "zIndex", 704],["IMG", "CompCard_Revalue_9", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_9", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Revalue_9", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_9", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_9", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Revalue_9", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Text_1", "isActive", false],["IMG", "CompCard_Text_1", "curSrc", "@@curSrc@@"],["IMG", "CompCard_Text_1", "activeSrc"],["IMG", "CompCard_Text_1", "pageID", "GAME"],["IMG", "CompCard_Text_1", "activeLayer", "map"],["IMG", "CompCard_Text_1", "zIndex", 703],["IMG", "CompCard_Text_1", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Text_1", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_1", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_1", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_1", "modes", "Complications", {"isForcedOn": false, "lastState": null}],
             ["IMG", "CompCard_Text_10", "isActive", false],["IMG", "CompCard_Text_10", "curSrc", "@@curSrc@@"],["IMG", "CompCard_Text_10", "activeSrc"],["IMG", "CompCard_Text_10", "pageID", "GAME"],["IMG", "CompCard_Text_10", "activeLayer", "map"],["IMG", "CompCard_Text_10", "zIndex", 703],["IMG", "CompCard_Text_10", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_10", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Text_10", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_10", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_10", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_10", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Text_2", "isActive", false],["IMG", "CompCard_Text_2", "curSrc", "@@curSrc@@"],["IMG", "CompCard_Text_2", "activeSrc"],["IMG", "CompCard_Text_2", "pageID", "GAME"],["IMG", "CompCard_Text_2", "activeLayer", "map"],["IMG", "CompCard_Text_2", "zIndex", 703],["IMG", "CompCard_Text_2", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_2", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Text_2", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_2", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_2", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_2", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Text_3", "isActive", false],["IMG", "CompCard_Text_3", "curSrc", "@@curSrc@@"],["IMG", "CompCard_Text_3", "activeSrc"],["IMG", "CompCard_Text_3", "pageID", "GAME"],["IMG", "CompCard_Text_3", "activeLayer", "map"],["IMG", "CompCard_Text_3", "zIndex", 703],["IMG", "CompCard_Text_3", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_3", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Text_3", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_3", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_3", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_3", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Text_4", "isActive", false],["IMG", "CompCard_Text_4", "curSrc", "@@curSrc@@"],["IMG", "CompCard_Text_4", "activeSrc"],["IMG", "CompCard_Text_4", "pageID", "GAME"],["IMG", "CompCard_Text_4", "activeLayer", "map"],["IMG", "CompCard_Text_4", "zIndex", 703],["IMG", "CompCard_Text_4", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_4", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Text_4", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_4", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_4", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_4", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Text_5", "isActive", false],["IMG", "CompCard_Text_5", "curSrc", "@@curSrc@@"],["IMG", "CompCard_Text_5", "activeSrc"],["IMG", "CompCard_Text_5", "pageID", "GAME"],["IMG", "CompCard_Text_5", "activeLayer", "map"],["IMG", "CompCard_Text_5", "zIndex", 703],["IMG", "CompCard_Text_5", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_5", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Text_5", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_5", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_5", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_5", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Text_6", "isActive", false],["IMG", "CompCard_Text_6", "curSrc", "@@curSrc@@"],["IMG", "CompCard_Text_6", "activeSrc"],["IMG", "CompCard_Text_6", "pageID", "GAME"],["IMG", "CompCard_Text_6", "activeLayer", "map"],["IMG", "CompCard_Text_6", "zIndex", 703],["IMG", "CompCard_Text_6", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_6", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Text_6", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_6", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_6", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_6", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Text_7", "isActive", false],["IMG", "CompCard_Text_7", "curSrc", "@@curSrc@@"],["IMG", "CompCard_Text_7", "activeSrc"],["IMG", "CompCard_Text_7", "pageID", "GAME"],["IMG", "CompCard_Text_7", "activeLayer", "map"],["IMG", "CompCard_Text_7", "zIndex", 703],["IMG", "CompCard_Text_7", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_7", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Text_7", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_7", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_7", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_7", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Text_8", "isActive", false],["IMG", "CompCard_Text_8", "curSrc", "@@curSrc@@"],["IMG", "CompCard_Text_8", "activeSrc"],["IMG", "CompCard_Text_8", "pageID", "GAME"],["IMG", "CompCard_Text_8", "activeLayer", "map"],["IMG", "CompCard_Text_8", "zIndex", 703],["IMG", "CompCard_Text_8", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_8", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Text_8", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_8", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_8", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_8", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "CompCard_Text_9", "isActive", false],["IMG", "CompCard_Text_9", "curSrc", "@@curSrc@@"],["IMG", "CompCard_Text_9", "activeSrc"],["IMG", "CompCard_Text_9", "pageID", "GAME"],["IMG", "CompCard_Text_9", "activeLayer", "map"],["IMG", "CompCard_Text_9", "zIndex", 703],["IMG", "CompCard_Text_9", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_9", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompCard_Text_9", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_9", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_9", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompCard_Text_9", "modes", "Complications", {"isForcedOn": false, "lastState": null}],["IMG", "ComplicationMat_1", "isActive", false],["IMG", "ComplicationMat_1", "curSrc", "base"],["IMG", "ComplicationMat_1", "activeSrc", "base"],["IMG", "ComplicationMat_1", "pageID", "GAME"],["IMG", "ComplicationMat_1", "activeLayer", "map"],["IMG", "ComplicationMat_1", "zIndex", 700],["IMG", "ComplicationMat_1", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "ComplicationMat_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "ComplicationMat_1", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "ComplicationMat_1", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "ComplicationMat_1", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "ComplicationMat_1", "modes", "Complications", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "CompSpot_1", "isActive", false],["IMG", "CompSpot_1", "curSrc", "base"],["IMG", "CompSpot_1", "activeSrc", "base"],["IMG", "CompSpot_1", "pageID", "GAME"],["IMG", "CompSpot_1", "activeLayer", "map"],["IMG", "CompSpot_1", "zIndex", 701],["IMG", "CompSpot_1", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompSpot_1", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_1", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_1", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_1", "modes", "Complications", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "CompSpot_10", "isActive", false],["IMG", "CompSpot_10", "curSrc", "base"],["IMG", "CompSpot_10", "activeSrc", "base"],["IMG", "CompSpot_10", "pageID", "GAME"],["IMG", "CompSpot_10", "activeLayer", "map"],["IMG", "CompSpot_10", "zIndex", 701],["IMG", "CompSpot_10", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_10", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompSpot_10", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_10", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_10", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_10", "modes", "Complications", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "CompSpot_2", "isActive", false],["IMG", "CompSpot_2", "curSrc", "base"],["IMG", "CompSpot_2", "activeSrc", "base"],["IMG", "CompSpot_2", "pageID", "GAME"],["IMG", "CompSpot_2", "activeLayer", "map"],["IMG", "CompSpot_2", "zIndex", 701],["IMG", "CompSpot_2", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_2", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompSpot_2", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_2", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_2", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_2", "modes", "Complications", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "CompSpot_3", "isActive", false],["IMG", "CompSpot_3", "curSrc", "base"],["IMG", "CompSpot_3", "activeSrc", "base"],["IMG", "CompSpot_3", "pageID", "GAME"],["IMG", "CompSpot_3", "activeLayer", "map"],["IMG", "CompSpot_3", "zIndex", 701],["IMG", "CompSpot_3", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_3", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompSpot_3", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_3", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_3", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_3", "modes", "Complications", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "CompSpot_4", "isActive", false],["IMG", "CompSpot_4", "curSrc", "base"],["IMG", "CompSpot_4", "activeSrc", "base"],["IMG", "CompSpot_4", "pageID", "GAME"],["IMG", "CompSpot_4", "activeLayer", "map"],["IMG", "CompSpot_4", "zIndex", 701],["IMG", "CompSpot_4", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_4", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompSpot_4", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_4", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_4", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_4", "modes", "Complications", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "CompSpot_5", "isActive", false],["IMG", "CompSpot_5", "curSrc", "base"],["IMG", "CompSpot_5", "activeSrc", "base"],["IMG", "CompSpot_5", "pageID", "GAME"],["IMG", "CompSpot_5", "activeLayer", "map"],["IMG", "CompSpot_5", "zIndex", 701],["IMG", "CompSpot_5", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_5", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompSpot_5", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_5", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_5", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_5", "modes", "Complications", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "CompSpot_6", "isActive", false],["IMG", "CompSpot_6", "curSrc", "base"],["IMG", "CompSpot_6", "activeSrc", "base"],["IMG", "CompSpot_6", "pageID", "GAME"],["IMG", "CompSpot_6", "activeLayer", "map"],["IMG", "CompSpot_6", "zIndex", 701],["IMG", "CompSpot_6", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_6", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompSpot_6", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_6", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_6", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_6", "modes", "Complications", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "CompSpot_7", "isActive", false],["IMG", "CompSpot_7", "curSrc", "base"],["IMG", "CompSpot_7", "activeSrc", "base"],["IMG", "CompSpot_7", "pageID", "GAME"],["IMG", "CompSpot_7", "activeLayer", "map"],["IMG", "CompSpot_7", "zIndex", 701],["IMG", "CompSpot_7", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_7", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompSpot_7", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_7", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_7", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_7", "modes", "Complications", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "CompSpot_8", "isActive", false],["IMG", "CompSpot_8", "curSrc", "base"],["IMG", "CompSpot_8", "activeSrc", "base"],["IMG", "CompSpot_8", "pageID", "GAME"],["IMG", "CompSpot_8", "activeLayer", "map"],["IMG", "CompSpot_8", "zIndex", 701],["IMG", "CompSpot_8", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_8", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompSpot_8", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_8", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_8", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_8", "modes", "Complications", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "CompSpot_9", "isActive", false],["IMG", "CompSpot_9", "curSrc", "base"],["IMG", "CompSpot_9", "activeSrc", "base"],["IMG", "CompSpot_9", "pageID", "GAME"],["IMG", "CompSpot_9", "activeLayer", "map"],["IMG", "CompSpot_9", "zIndex", 701],["IMG", "CompSpot_9", "modes", "Active", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_9", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "CompSpot_9", "modes", "Daylighter", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_9", "modes", "Downtime", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_9", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "CompSpot_9", "modes", "Complications", {"isForcedOn": true, "isForcedState": "base", "lastState": "base"}],["IMG", "DisableLocLeft_1", "isActive", "@@curState@@"],["IMG", "DisableLocLeft_1", "curSrc", "base"],["IMG", "DisableLocLeft_1", "activeSrc", "base"],["IMG", "DisableLocLeft_1", "pageID", "GAME"],["IMG", "DisableLocLeft_1", "activeLayer", "map"],["IMG", "DisableLocLeft_1", "zIndex", 154],["IMG", "DisableLocLeft_1", "modes", "Active", {"isForcedOn": "LAST", "isForcedState": "base", "lastActive": false, "lastState": "base"}],["IMG", "DisableLocLeft_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "DisableLocLeft_1", "modes", "Daylighter", {"isForcedOn": "LAST", "isForcedState": "base", "lastActive": false, "lastState": "base"}],["IMG", "DisableLocLeft_1", "modes", "Downtime", {"isForcedOn": "LAST", "isForcedState": "base", "lastActive": false, "lastState": "base"}],["IMG", "DisableLocLeft_1", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "DisableLocLeft_1", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "DisableLocRight_1", "isActive", "@@curState@@"],["IMG", "DisableLocRight_1", "curSrc", "base"],["IMG", "DisableLocRight_1", "activeSrc", "base"],["IMG", "DisableLocRight_1", "pageID", "GAME"],["IMG", "DisableLocRight_1", "activeLayer", "map"],["IMG", "DisableLocRight_1", "zIndex", 154],["IMG", "DisableLocRight_1", "modes", "Active", {"isForcedOn": "LAST", "isForcedState": "base", "lastActive": false, "lastState": "base"}],["IMG", "DisableLocRight_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "DisableLocRight_1", "modes", "Daylighter", {"isForcedOn": "LAST", "isForcedState": "base", "lastActive": false, "lastState": "base"}],["IMG", "DisableLocRight_1", "modes", "Downtime", {"isForcedOn": "LAST", "isForcedState": "base", "lastActive": false, "lastState": "base"}],["IMG", "DisableLocRight_1", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "DisableLocRight_1", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "DisableSiteLeft_1", "isActive", "@@curState@@"],["IMG", "DisableSiteLeft_1", "curSrc", "base"],["IMG", "DisableSiteLeft_1", "activeSrc", "base"],["IMG", "DisableSiteLeft_1", "pageID", "GAME"],["IMG", "DisableSiteLeft_1", "activeLayer", "map"],["IMG", "DisableSiteLeft_1", "zIndex", 154],["IMG", "DisableSiteLeft_1", "modes", "Active", {"isForcedOn": "LAST", "isForcedState": "base", "lastActive": false, "lastState": "base"}],["IMG", "DisableSiteLeft_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "DisableSiteLeft_1", "modes", "Daylighter", {"isForcedOn": "LAST", "isForcedState": "base", "lastActive": false, "lastState": "base"}],["IMG", "DisableSiteLeft_1", "modes", "Downtime", {"isForcedOn": "LAST", "isForcedState": "base", "lastActive": false, "lastState": "base"}],["IMG", "DisableSiteLeft_1", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "DisableSiteLeft_1", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "DisableSiteRight_1", "isActive", "@@curState@@"],["IMG", "DisableSiteRight_1", "curSrc", "base"],["IMG", "DisableSiteRight_1", "activeSrc", "base"],["IMG", "DisableSiteRight_1", "pageID", "GAME"],["IMG", "DisableSiteRight_1", "activeLayer", "map"],["IMG", "DisableSiteRight_1", "zIndex", 154],["IMG", "DisableSiteRight_1", "modes", "Active", {"isForcedOn": "LAST", "isForcedState": "base", "lastActive": false, "lastState": "base"}],["IMG", "DisableSiteRight_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "DisableSiteRight_1", "modes", "Daylighter", {"isForcedOn": "LAST", "isForcedState": "base", "lastActive": false, "lastState": "base"}],["IMG", "DisableSiteRight_1", "modes", "Downtime", {"isForcedOn": "LAST", "isForcedState": "base", "lastActive": false, "lastState": "base"}],["IMG", "DisableSiteRight_1", "modes", "Spotlight", {"isForcedOn": "NEVER", "lastState": null}],["IMG", "DisableSiteRight_1", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "DistrictCenter_1", "isActive", true],["IMG", "DistrictCenter_1", "curSrc", "@@curSrc@@"],["IMG", "DistrictCenter_1", "activeSrc"],["IMG", "DistrictCenter_1", "pageID", "GAME"],["IMG", "DistrictCenter_1", "activeLayer", "map"],["IMG", "DistrictCenter_1", "zIndex", 140],["IMG", "DistrictCenter_1", "modes", "Active", {"isForcedOn": "LAST", "isForcedState": true, "lastActive": false, "lastState": "@@curSrc@@"}],["IMG", "DistrictCenter_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "DistrictCenter_1", "modes", "Daylighter", {"isForcedOn": "LAST", "isForcedState": true, "lastActive": false, "lastState": "@@curSrc@@"}],["IMG", "DistrictCenter_1", "modes", "Downtime", {"isForcedOn": "LAST", "isForcedState": true, "lastActive": false, "lastState": "@@curSrc@@"}],["IMG", "DistrictCenter_1", "modes", "Spotlight", {"isForcedOn": "LAST", "isForcedState": true, "lastActive": false, "lastState": "@@curSrc@@"}],["IMG", "DistrictCenter_1", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "DistrictLeft_1", "isActive", true],["IMG", "DistrictLeft_1", "curSrc", "@@curSrc@@"],["IMG", "DistrictLeft_1", "activeSrc"],["IMG", "DistrictLeft_1", "pageID", "GAME"],["IMG", "DistrictLeft_1", "activeLayer", "map"],["IMG", "DistrictLeft_1", "zIndex", 140],["IMG", "DistrictLeft_1", "modes", "Active", {"isForcedOn": "LAST", "isForcedState": true, "lastActive": false, "lastState": "@@curSrc@@"}],["IMG", "DistrictLeft_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "DistrictLeft_1", "modes", "Daylighter", {"isForcedOn": "LAST", "isForcedState": true, "lastActive": false, "lastState": "@@curSrc@@"}],["IMG", "DistrictLeft_1", "modes", "Downtime", {"isForcedOn": "LAST", "isForcedState": true, "lastActive": false, "lastState": "@@curSrc@@"}],["IMG", "DistrictLeft_1", "modes", "Spotlight", {"isForcedOn": "LAST", "isForcedState": true, "lastActive": false, "lastState": "@@curSrc@@"}],["IMG", "DistrictLeft_1", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "DistrictRight_1", "isActive", true],["IMG", "DistrictRight_1", "curSrc", "@@curSrc@@"],["IMG", "DistrictRight_1", "activeSrc"],["IMG", "DistrictRight_1", "pageID", "GAME"],["IMG", "DistrictRight_1", "activeLayer", "map"],["IMG", "DistrictRight_1", "zIndex", 140],["IMG", "DistrictRight_1", "modes", "Active", {"isForcedOn": "LAST", "isForcedState": true, "lastActive": false, "lastState": "@@curSrc@@"}],["IMG", "DistrictRight_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "DistrictRight_1", "modes", "Daylighter", {"isForcedOn": "LAST", "isForcedState": true, "lastActive": false, "lastState": "@@curSrc@@"}],["IMG", "DistrictRight_1", "modes", "Downtime", {"isForcedOn": "LAST", "isForcedState": true, "lastActive": false, "lastState": "@@curSrc@@"}],["IMG", "DistrictRight_1", "modes", "Spotlight", {"isForcedOn": "LAST", "isForcedState": true, "lastActive": false, "lastState": "@@curSrc@@"}],["IMG", "DistrictRight_1", "modes", "Complications", {"isForcedOn": null, "lastState": null}],["IMG", "Foreground_1", "isActive", true],["IMG", "Foreground_1", "curSrc", "@@curSrc@@"],["IMG", "Foreground_1", "activeSrc"],["IMG", "Foreground_1", "pageID", "GAME"],["IMG", "Foreground_1", "activeLayer", "map"],["IMG", "Foreground_1", "zIndex", 85],["IMG", "Foreground_1", "modes", "Active", {"isForcedOn": null, "lastState": null}],["IMG", "Foreground_1", "modes", "Inactive", {"isForcedOn": null, "lastState": null}],["IMG", "Foreground_1", "modes", "Daylighter", {"isForcedOn": null, "lastState": null}],["IMG", "Foreground_1", "modes", "Downtime", {"isForcedOn": null, "lastState": null}],["IMG", "Foreground_1", "modes", "Spotlight", {"isForcedOn": true, "isForcedState": "spotlight", "lastState": "spotlight"}],["IMG", "Foreground_1", "modes", "Complications", {"isForcedOn": null, "lastState": null}],
@@ -1324,40 +1381,50 @@ const Media = (() => {
     // #endregion
 
     // #region ~ GENERAL MEDIA OBJECT GETTERS:
-    const isRegistered = mediaRef => {
-        if (mediaRef === null) return Boolean(LAST.Media.key);
+    const isRegistered = (mediaRef) => {
+        if (mediaRef === null)
+            return Boolean(LAST.Media.key);
         return isRegText(mediaRef) || isRegImg(mediaRef) || isRegAnim(mediaRef);
     };
-    const getMediaObj = mediaRef => {
-        if (mediaRef === null) return LAST.Media.obj || false;
+    const getMediaObj = (mediaRef) => {
+        if (mediaRef === null)
+            return LAST.Media.obj || false;
         const traceID = TRACEON("getMediaObj", [mediaRef]);
-        if (VAL({object: mediaRef})) return TRACEOFF(traceID, mediaRef);
+        if (VAL({object: mediaRef}))
+            return TRACEOFF(traceID, mediaRef);
         if (isRegText(mediaRef)) {
             return TRACEOFF(traceID, getTextObj(mediaRef));
         } else if (isRegImg(mediaRef)) {
             return TRACEOFF(traceID, getImgObj(mediaRef));
         } else if (VAL({string: mediaRef})) {
             const imgObj = getObj("graphic", mediaRef);
-            if (VAL({imgObj})) return TRACEOFF(traceID, imgObj);
+            if (VAL({imgObj}))
+                return TRACEOFF(traceID, imgObj);
             const textObj = getObj("text", mediaRef);
-            if (VAL({textObj})) return TRACEOFF(traceID, textObj);
+            if (VAL({textObj}))
+                return TRACEOFF(traceID, textObj);
         }
         return TRACEOFF(traceID, mediaRef);
     };
     const getMediaKey = (mediaRef, funcName = false) => {
-        if (mediaRef === null) return LAST.Media.key || false;
+        if (mediaRef === null)
+            return LAST.Media.key || false;
         const traceID = TRACEON("getMediaKey", [mediaRef, funcName]);
-        if (mediaRef === null) return LAST.Media.key;
-        if (isRegText(mediaRef)) return TRACEOFF(traceID, getTextKey(mediaRef, funcName));
+        if (mediaRef === null)
+            return LAST.Media.key;
+        if (isRegText(mediaRef))
+            return TRACEOFF(traceID, getTextKey(mediaRef, funcName));
         return TRACEOFF(traceID, getImgKey(mediaRef, funcName));
     };
-    const getMediaData = mediaRef => {
-        if (mediaRef === null) return LAST.Media.data || false;
+    const getMediaData = (mediaRef) => {
+        if (mediaRef === null)
+            return LAST.Media.data || false;
         const traceID = TRACEON("getMediaData", [mediaRef]);
-        if (isRegText(mediaRef)) return TRACEOFF(traceID, getTextData(mediaRef));
+        if (isRegText(mediaRef))
+            return TRACEOFF(traceID, getTextData(mediaRef));
         return TRACEOFF(traceID, getImgData(mediaRef));
     };
-    const getRegistryRef = mediaRef => {
+    const getRegistryRef = (mediaRef) => {
         if (mediaRef === null)
             return (
                 {
@@ -1369,10 +1436,14 @@ const Media = (() => {
                 }[D.LCase(LAST.Media.type)] || {}
             );
         const traceID = TRACEON("getRegistryRef", [mediaRef]);
-        if (isRegText(mediaRef)) return TRACEOFF(traceID, REGISTRY.TEXT);
-        if (isRegAnim(mediaRef)) return TRACEOFF(traceID, REGISTRY.ANIM);
-        if (isRegToken(mediaRef)) return TRACEOFF(traceID, REGISTRY.TOKEN);
-        if (isRegImg(mediaRef)) return TRACEOFF(traceID, REGISTRY.IMG);
+        if (isRegText(mediaRef))
+            return TRACEOFF(traceID, REGISTRY.TEXT);
+        if (isRegAnim(mediaRef))
+            return TRACEOFF(traceID, REGISTRY.ANIM);
+        if (isRegToken(mediaRef))
+            return TRACEOFF(traceID, REGISTRY.TOKEN);
+        if (isRegImg(mediaRef))
+            return TRACEOFF(traceID, REGISTRY.IMG);
         DB(`Unable to find registry reference for ${D.JSL(mediaRef)}!`, "getRegistryRef");
         return TRACEOFF(traceID, {});
     };
@@ -1380,17 +1451,18 @@ const Media = (() => {
         const traceID = TRACEON("getModeData", [mediaRef, mode]);
         mode = mode || Session.Mode;
         const mediaData = getMediaData(mediaRef);
-        if (VAL({list: [mediaData, mediaData.modes]}, "getModeData", true)) return TRACEOFF(traceID, mediaData.modes[mode]);
+        if (VAL({list: [mediaData, mediaData.modes]}, "getModeData", true))
+            return TRACEOFF(traceID, mediaData.modes[mode]);
         return TRACEOFF(traceID, THROW(`Invalid Media Reference: ${D.JSL(mediaRef)}`, "getModeData"));
     };
-    const hasForcedState = mediaRef => {
+    const hasForcedState = (mediaRef) => {
         const traceID = TRACEON("hasForcedState", [mediaRef]);
         const mediaData = getModeData(mediaRef, Session.Mode);
         if (VAL({list: mediaData}, "hasForcedState"))
             return TRACEOFF(traceID, VAL({string: mediaData.isForcedState}) && mediaData.isForcedState !== "LAST");
         return TRACEOFF(traceID, THROW(`Invalid Media Reference: ${D.JSL(mediaRef)}`, "hasForcedState"));
     };
-    const getModeStatus = mediaRef => {
+    const getModeStatus = (mediaRef) => {
         const traceID = TRACEON("getModeStatus", [mediaRef]);
         const modeStatus = {};
         if (isRegistered(mediaRef)) {
@@ -1398,23 +1470,31 @@ const Media = (() => {
             if (VAL({list: mediaData}, "getModeStatus")) {
                 const mediaModes = mediaData.modes && _.clone(mediaData.modes[Session.Mode]);
                 if (VAL({list: mediaModes}, "getModeStatus")) {
-                    if (mediaModes.isForcedOn === "LAST") modeStatus.isActive = mediaModes.lastActive;
-                    else if (mediaModes.isForcedOn === "NEVER") modeStatus.isActive = false;
-                    else if (mediaModes.isForcedOn === true || mediaModes.isForcedOn === false) modeStatus.isActive = mediaModes.isForcedOn;
-                    else modeStatus.isActive = mediaData.isActive;
-                    if (mediaModes.isForcedState === true || mediaModes.isForcedState === "LAST") modeStatus.state = mediaModes.lastState;
-                    else if (mediaModes.isForcedState === null) modeStatus.state = undefined;
-                    else modeStatus.state = mediaModes.isForcedState;
+                    if (mediaModes.isForcedOn === "LAST")
+                        modeStatus.isActive = mediaModes.lastActive;
+                    else if (mediaModes.isForcedOn === "NEVER")
+                        modeStatus.isActive = false;
+                    else if (mediaModes.isForcedOn === true || mediaModes.isForcedOn === false)
+                        modeStatus.isActive = mediaModes.isForcedOn;
+                    else
+                        modeStatus.isActive = mediaData.isActive;
+                    if (mediaModes.isForcedState === true || mediaModes.isForcedState === "LAST")
+                        modeStatus.state = mediaModes.lastState;
+                    else if (mediaModes.isForcedState === null)
+                        modeStatus.state = undefined;
+                    else
+                        modeStatus.state = mediaModes.isForcedState;
                     return TRACEOFF(traceID, modeStatus);
                 }
             }
         }
         return TRACEOFF(traceID, THROW(`Invalid Media Reference: ${D.JSL(mediaRef)}`, "getModeStatus"));
     };
-    const getActiveLayer = mediaRef => {
+    const getActiveLayer = (mediaRef) => {
         const traceID = TRACEON("getActiveLayer", [mediaRef]);
         const mediaData = getMediaData(mediaRef);
-        if (VAL({list: mediaData}, "getActiveLayer")) return TRACEOFF(traceID, mediaData.activeLayer);
+        if (VAL({list: mediaData}, "getActiveLayer"))
+            return TRACEOFF(traceID, mediaData.activeLayer);
         return TRACEOFF(traceID, THROW(`Invalid Media Reference: ${D.JSL(mediaRef)}`, "getActiveLayer"));
     };
     // #endregion
@@ -1429,7 +1509,8 @@ const Media = (() => {
 
         // D.Chat("all", C.HTML.Block(C.HTML.Header("Initializing Media Assets", STYLES.Initialization.Header), STYLES.Initialization.Block))
         if (currentMode === "Active") {
-            if (!isTesting) Session.ToggleTesting(true);
+            if (!isTesting)
+                Session.ToggleTesting(true);
             STATE.REF.fixAllCommands = [];
             Media.ToggleLoadingScreen("initializing", null, {duration: 120, numTicks: 30});
             D.Queue(Media.SetLoadingMessage, ["Initializating Media Assets!"], "Media", 3);
@@ -1466,7 +1547,8 @@ const Media = (() => {
             D.Queue(Soundscape.Sync, [true], "Media", 3);
             D.Queue(Media.SetLoadingMessage, ["[17/17] Cleaning Up..."], "Media", 0.1);
 
-            if (isTesting) D.Queue(Session.ToggleTesting, [isTesting], "Media", 0.1);
+            if (isTesting)
+                D.Queue(Session.ToggleTesting, [isTesting], "Media", 0.1);
 
             // D.Queue(Media.SetLoadingMessage, ["Finished! (Please Refresh Sandbox!)"], "Media", 2)
             // D.Queue(Media.SetLoadingMessage, ["Returning to Game ..."], "Media", 2)
@@ -1492,7 +1574,8 @@ const Media = (() => {
         if (VAL({list: mediaData}, "setLayer")) {
             const mediaObj = getMediaObj(mediaRef);
             layer = layer || getActiveLayer(mediaData.name);
-            if (!isForcing && mediaData.layer === layer) return TRACEOFF(traceID, null);
+            if (!isForcing && mediaData.layer === layer)
+                return TRACEOFF(traceID, null);
             mediaObj.set("layer", layer);
             return TRACEOFF(traceID, true);
         }
@@ -1501,16 +1584,19 @@ const Media = (() => {
     const setMediaTemp = (mediaRef, params = {}) => {
         const traceID = TRACEON("setMediaTemp", [mediaRef, params]);
         const mediaObj = getMediaObj(mediaRef);
-        if (VAL({object: mediaObj})) mediaObj.set(params);
+        if (VAL({object: mediaObj}))
+            mediaObj.set(params);
         TRACEOFF(traceID);
     };
     const toggle = (mediaRef, isActive, isForcing = false) => {
         const traceID = TRACEON("toggle", [mediaRef, isActive, isForcing]);
-        if (isActive !== true && isActive !== false) return TRACEOFF(traceID, null);
-        if (isRegText(mediaRef)) return TRACEOFF(traceID, toggleText(mediaRef, isActive, isForcing));
+        if (isActive !== true && isActive !== false)
+            return TRACEOFF(traceID, null);
+        if (isRegText(mediaRef))
+            return TRACEOFF(traceID, toggleText(mediaRef, isActive, isForcing));
         return TRACEOFF(traceID, toggleImg(mediaRef, isActive, isForcing));
     };
-    const setAnchor = mediaRef => {
+    const setAnchor = (mediaRef) => {
         const traceID = TRACEON("setAnchor", [mediaRef]);
         const mediaObj = getMediaObj(mediaRef);
         if (VAL({object: mediaObj})) {
@@ -1531,13 +1617,13 @@ const Media = (() => {
     const distObjs = (mediaRefs, distDir) => {
         const traceID = TRACEON("distObjs", [mediaRefs, distDir]);
         const posRef = D.LCase(distDir).startsWith("h") ? "left" : "top";
-        const mediaObjs = mediaRefs.map(x => getMediaObj(x)).sort((a, b) => a.get(posRef) - b.get(posRef));
+        const mediaObjs = mediaRefs.map((x) => getMediaObj(x)).sort((a, b) => a.get(posRef) - b.get(posRef));
         spreadImgs(mediaObjs.shift(), mediaObjs.pop(), mediaObjs);
         TRACEOFF(traceID);
     };
     const alignObjs = (mediaRefs, objAlignFrom = "center", anchorAlignTo = "center") => {
         const traceID = TRACEON("alignObjs", [mediaRefs, objAlignFrom, anchorAlignTo]);
-        const mediaObjs = _.compact(mediaRefs.map(x => getMediaObj(x) || (VAL({object: x}) && x) || false));
+        const mediaObjs = _.compact(mediaRefs.map((x) => getMediaObj(x) || (VAL({object: x}) && x) || false));
         const alignGuides = {left: STATE.REF.anchorObj.left, top: STATE.REF.anchorObj.top};
         anchorAlignTo = anchorAlignTo || objAlignFrom;
         switch (D.LCase(anchorAlignTo)) {
@@ -1624,7 +1710,7 @@ const Media = (() => {
     };
     const adjustObj = (mediaRefs, deltaX, deltaY) => {
         const traceID = TRACEON("adjustObj", [mediaRefs, deltaX, deltaY]);
-        for (const mediaObj of _.flatten([mediaRefs]).map(x => getMediaObj(x)))
+        for (const mediaObj of _.flatten([mediaRefs]).map((x) => getMediaObj(x)))
             if (VAL({object: mediaObj}))
                 setMediaTemp({
                     left: D.Float(mediaObj.get("left")) + D.Float(deltaX),
@@ -1634,8 +1720,8 @@ const Media = (() => {
     };
     const modeUpdate = (mediaRefs = "all") => {
         const traceID = TRACEON("modeUpdate", [mediaRefs]);
-        mediaRefs =
-            mediaRefs === "all"
+        mediaRefs
+            = mediaRefs === "all"
                 ? [...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.TEXT), ...Object.keys(REGISTRY.ANIM)]
                 : _.flatten([mediaRefs], true);
         for (const mediaRef of mediaRefs)
@@ -1648,8 +1734,8 @@ const Media = (() => {
                     const lastMode = textData.curMode;
                     if (lastMode) {
                         REGISTRY.TEXT[textKey].modes[lastMode].lastActive = textData.isActive;
-                        REGISTRY.TEXT[textKey].modes[lastMode].lastState =
-                            (textData.isActive && textData.curText) || REGISTRY.TEXT[textKey].modes[lastMode].lastState;
+                        REGISTRY.TEXT[textKey].modes[lastMode].lastState
+                            = (textData.isActive && textData.curText) || REGISTRY.TEXT[textKey].modes[lastMode].lastState;
                     }
                     REGISTRY.TEXT[textKey].curMode = Session.Mode;
                     if (!_.isUndefined(modeStatus.isActive)) {
@@ -1672,8 +1758,8 @@ const Media = (() => {
 
                     if (lastMode) {
                         regRef[graphicKey].modes[lastMode].lastActive = graphicData.isActive;
-                        regRef[graphicKey].modes[lastMode].lastState =
-                            (graphicData.isActive && graphicData.curSrc) || regRef[graphicKey].modes[lastMode].lastState;
+                        regRef[graphicKey].modes[lastMode].lastState
+                            = (graphicData.isActive && graphicData.curSrc) || regRef[graphicKey].modes[lastMode].lastState;
                     }
                     regRef[graphicKey].curMode = Session.Mode;
                     if (!_.isUndefined(modeStatus.isActive)) {
@@ -1691,11 +1777,12 @@ const Media = (() => {
     const setActiveLayers = () => {
         const traceID = TRACEON("setActiveLayers", []);
         const mediaObjData = [
-            ...Object.values(REGISTRY.GRAPHIC).map(x => [getObj("graphic", x.id), x]),
-            ...Object.values(REGISTRY.TEXT).map(x => [getObj("text", x.id), x])
-        ].filter(x => x[0] && x[0].get && x[0].get("layer") !== ((x[1].isActive && x[1].activeLayer) || "walls"));
+            ...Object.values(REGISTRY.GRAPHIC).map((x) => [getObj("graphic", x.id), x]),
+            ...Object.values(REGISTRY.TEXT).map((x) => [getObj("text", x.id), x])
+        ].filter((x) => x[0] && x[0].get && x[0].get("layer") !== ((x[1].isActive && x[1].activeLayer) || "walls"));
         DB({mediaObjData}, "setActiveLayers");
-        for (const objData of mediaObjData) objData[0].set({layer: (objData[1].isActive && objData[1].activeLayer) || "walls"});
+        for (const objData of mediaObjData)
+            objData[0].set({layer: (objData[1].isActive && objData[1].activeLayer) || "walls"});
         TRACEOFF(traceID);
     };
     const setZIndices = () => {
@@ -1708,19 +1795,17 @@ const Media = (() => {
         ];
         const allMediaRefs = _.compact([
             ..._.flatten(
-                allImgDatas.map(x =>
-                    _.compact([
-                        [getObj("graphic", x.id), x.zIndex],
-                        "padID" in x && [getObj("graphic", x.padID), DEFAULTZINDICES.dragpad],
-                        "partnerID" in x && [getObj("graphic", x.partnerID), DEFAULTZINDICES.dragpad]
-                    ])
-                ),
+                allImgDatas.map((x) => _.compact([
+                    [getObj("graphic", x.id), x.zIndex],
+                    "padID" in x && [getObj("graphic", x.padID), DEFAULTZINDICES.dragpad],
+                    "partnerID" in x && [getObj("graphic", x.partnerID), DEFAULTZINDICES.dragpad]
+                ])),
                 true
             ),
-            ...getTokenObjs().map(x => [x, DEFAULTZINDICES.token]),
-            ...allAnimDatas.map(x => [getObj("graphic", x.id), x.zIndex]),
+            ...getTokenObjs().map((x) => [x, DEFAULTZINDICES.token]),
+            ...allAnimDatas.map((x) => [getObj("graphic", x.id), x.zIndex]),
             ..._.flatten(
-                allTextDatas.map(x => {
+                allTextDatas.map((x) => {
                     const returnData = [[getObj("text", x.id), x.zIndex]];
                     if ("shadowID" in x) {
                         let shadowObj = getObj("text", x.shadowID);
@@ -1743,10 +1828,11 @@ const Media = (() => {
                 }),
                 true
             )
-        ]).filter(x => VAL({object: x[0], number: x[1]}));
+        ]).filter((x) => VAL({object: x[0], number: x[1]}));
         const sortedMediaRefs = allMediaRefs.sort((a, b) => a[1] - b[1]).reverse();
         DB({allMediaRefs, sortedMediaRefs}, "setZIndices");
-        for (const [mediaObj] of sortedMediaRefs) toBack(mediaObj);
+        for (const [mediaObj] of sortedMediaRefs)
+            toBack(mediaObj);
     };
     const resetModeData = (isResettingAll = false, isQueueing = false, isVerbose = false, isChangingData = false) => {
         const traceID = TRACEON("resetModeData", [isResettingAll, isQueueing, isVerbose, isChangingData]);
@@ -1759,13 +1845,15 @@ const Media = (() => {
         const MODEDATA = JSON.parse(MODEDATAJSON);
         const parseValue = (objKey, k, v) => {
             const innerTraceID = TRACEON("parseValue", [objKey, k, v]);
-            if (v === null) return TRACEOFF(innerTraceID, v);
+            if (v === null)
+                return TRACEOFF(innerTraceID, v);
             if (VAL({list: v}) || VAL({array: v}))
                 return TRACEOFF(
                     innerTraceID,
                     D.KeyMapObj(D.Clone(v), null, (vv, kk) => parseValue(objKey, kk, vv))
                 );
-            if (k === "pageID") return TRACEOFF(innerTraceID, D.GetPageID(v));
+            if (k === "pageID")
+                return TRACEOFF(innerTraceID, D.GetPageID(v));
             if (VAL({string: v}) && `${v}`.startsWith("@@")) {
                 const mediaObj = getMediaObj(objKey);
                 const mediaData = getMediaData(objKey);
@@ -1785,7 +1873,7 @@ const Media = (() => {
                                 return TRACEOFF(innerTraceID, null);
                             }
                             if (!`${mediaObj.get("imgsrc")}`.includes("http")) {
-                                const topSrc = Object.keys(getImgSrcs(mediaObj)).filter(x => !(x in C.IMAGES));
+                                const topSrc = Object.keys(getImgSrcs(mediaObj)).filter((x) => !(x in C.IMAGES));
                                 setImg(mediaObj, topSrc, undefined, true);
                                 errorLines.push(
                                     `<span style="color: darkred; background-color: rgba(100,0,0,0.2);"><b>${objKey}</b>: Object imgsrc set wrong (${D.JSL(
@@ -1797,7 +1885,7 @@ const Media = (() => {
                             if (srcRef) {
                                 return TRACEOFF(innerTraceID, srcRef);
                             } else {
-                                const topSrc = Object.keys(getImgSrcs(mediaObj)).filter(x => !(x in C.IMAGES));
+                                const topSrc = Object.keys(getImgSrcs(mediaObj)).filter((x) => !(x in C.IMAGES));
                                 setImg(mediaObj, topSrc, undefined, true);
                                 errorLines.push(
                                     `<span style="color: darkred; background-color: rgba(100,0,0,0.2);"><b>${objKey}</b>: Failure finding curSrc from URL '${D.JSL(
@@ -1834,28 +1922,37 @@ const Media = (() => {
             const objType = (objName in REGISTRY.ANIM && "ANIM") || objFlag;
             let ref = REGISTRY[objType][objName];
 
-            if (!ref || (!isResettingAll && ref.wasModeUpdated)) continue;
+            if (!ref || (!isResettingAll && ref.wasModeUpdated))
+                continue;
             value = parseValue(objName, key, value);
-            if (value === null) continue;
+            if (value === null)
+                continue;
 
             while (data.length) {
                 const newKey = data.shift();
-                if (newKey === "modes") updatedKeys[objType].push(objName);
-                if (!ref[newKey]) ref[newKey] = {};
+                if (newKey === "modes")
+                    updatedKeys[objType].push(objName);
+                if (!ref[newKey])
+                    ref[newKey] = {};
                 ref = ref[newKey];
             }
 
             if (isVerbose)
                 errorLines.push(`<span style="color: darkgreen;"><b>${objName}</b></span>: ref[${D.JSL(key)}] set to ${D.JSL(value)}`);
-            if (isChangingData) ref[key] = value;
+            if (isChangingData)
+                ref[key] = value;
         }
         if (isChangingData) {
-            for (const imgKey of _.uniq(updatedKeys.IMG)) REGISTRY.IMG[imgKey].wasModeUpdated = true;
-            for (const textKey of _.uniq(updatedKeys.TEXT)) REGISTRY.TEXT[textKey].wasModeUpdated = true;
-            for (const animKey of _.uniq(updatedKeys.ANIM)) REGISTRY.ANIM[animKey].wasModeUpdated = true;
+            for (const imgKey of _.uniq(updatedKeys.IMG))
+                REGISTRY.IMG[imgKey].wasModeUpdated = true;
+            for (const textKey of _.uniq(updatedKeys.TEXT))
+                REGISTRY.TEXT[textKey].wasModeUpdated = true;
+            for (const animKey of _.uniq(updatedKeys.ANIM))
+                REGISTRY.ANIM[animKey].wasModeUpdated = true;
         }
         if (errorLines.length)
-            if (isQueueing) STATE.REF.fixAllCommands.push(...["<h3><u>Resetting Mode Data</u></h3>", ...errorLines]);
+            if (isQueueing)
+                STATE.REF.fixAllCommands.push(...["<h3><u>Resetting Mode Data</u></h3>", ...errorLines]);
             else
                 D.Alert(
                     _.compact([
@@ -1873,27 +1970,30 @@ const Media = (() => {
     // #endregion
 
     // #region ~ IMG OBJECT & AREA GETTERS: Img Object & Data Retrieval
-    const isRegImg = imgRef => Boolean(getImgKey(imgRef, true));
-    const isCharToken = imgObj => VAL({imgObj}) && getObj("character", imgObj.get("represents"));
-    const isRegToken = imgObj => VAL({imgObj}) && Boolean(REGISTRY.TOKEN[D.GetName(imgObj.get("represents"))]);
-    const isRandomizerToken = tokenObj =>
-        isCharToken(tokenObj) &&
-        isRegToken(tokenObj) &&
-        (REGISTRY.TOKEN[D.GetName(tokenObj.get("represents"))].srcs.randomSrcs || []).length;
-    const isCyclingImg = imgObj => {
+    const isRegImg = (imgRef) => Boolean(getImgKey(imgRef, true));
+    const isCharToken = (imgObj) => VAL({imgObj}) && getObj("character", imgObj.get("represents"));
+    const isRegToken = (imgObj) => VAL({imgObj}) && Boolean(REGISTRY.TOKEN[D.GetName(imgObj.get("represents"))]);
+    const isRandomizerToken = (tokenObj) => isCharToken(tokenObj)
+        && isRegToken(tokenObj)
+        && (REGISTRY.TOKEN[D.GetName(tokenObj.get("represents"))].srcs.randomSrcs || []).length;
+    const isCyclingImg = (imgObj) => {
         const traceID = TRACEON("isCyclingImg", [imgObj]);
         const imgData = getImgData(imgObj);
-        if (VAL({list: imgData})) return TRACEOFF(traceID, imgData.cycleSrcs && imgData.cycleSrcs.length);
+        if (VAL({list: imgData}))
+            return TRACEOFF(traceID, imgData.cycleSrcs && imgData.cycleSrcs.length);
         return TRACEOFF(traceID, false);
     };
     const getImgKey = (imgRef, funcName = false) => {
         const traceID = TRACEON("getImgKey", [imgRef, funcName]);
         try {
             let imgKey, imgObj;
-            if (VAL({char: imgRef})) return TRACEOFF(traceID, imgRef);
+            if (VAL({char: imgRef}))
+                return TRACEOFF(traceID, imgRef);
             if (VAL({string: imgRef})) {
-                if (REGISTRY.GRAPHIC[imgRef]) return TRACEOFF(traceID, imgRef);
-                if (REGISTRY.GRAPHIC[`${imgRef}_1`]) return TRACEOFF(traceID, `${imgRef}_1`);
+                if (REGISTRY.GRAPHIC[imgRef])
+                    return TRACEOFF(traceID, imgRef);
+                if (REGISTRY.GRAPHIC[`${imgRef}_1`])
+                    return TRACEOFF(traceID, `${imgRef}_1`);
                 imgObj = getObj("graphic", imgRef);
             } else if (VAL({imgObj: imgRef})) {
                 imgObj = imgRef;
@@ -1902,32 +2002,36 @@ const Media = (() => {
             }
             if (VAL({imgObj})) {
                 imgKey = getImgKey(imgObj.get("name"), true);
-                if (REGISTRY.GRAPHIC[imgKey]) return TRACEOFF(traceID, imgKey);
+                if (REGISTRY.GRAPHIC[imgKey])
+                    return TRACEOFF(traceID, imgKey);
                 imgKey = getImgKey(imgObj.get("name"), true);
-                if (REGISTRY.GRAPHIC[imgKey]) return TRACEOFF(traceID, imgKey);
+                if (REGISTRY.GRAPHIC[imgKey])
+                    return TRACEOFF(traceID, imgKey);
                 imgKey = getImgKey(
-                    (_.find(_.values(Char.REGISTRY), x => x.id === imgObj.get("represents")) || {tokenName: false}).tokenName,
+                    (_.find(_.values(Char.REGISTRY), (x) => x.id === imgObj.get("represents")) || {tokenName: false}).tokenName,
                     true
                 );
-                if (REGISTRY.GRAPHIC[imgKey]) return TRACEOFF(traceID, imgKey);
+                if (REGISTRY.GRAPHIC[imgKey])
+                    return TRACEOFF(traceID, imgKey);
                 imgKey = getImgKey(
                     `${getObj("character", imgObj.get("represents"))
                         .get("name")
                         .replace(/\s+/gu, "")}Token`,
                     true
                 );
-                if (REGISTRY.GRAPHIC[imgKey]) return TRACEOFF(traceID, imgKey);
+                if (REGISTRY.GRAPHIC[imgKey])
+                    return TRACEOFF(traceID, imgKey);
             }
             return TRACEOFF(
                 traceID,
-                VAL({string: funcName}) &&
-                    THROW(`Cannot find name of image from reference '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > GetImgKey`)
+                VAL({string: funcName})
+                    && THROW(`Cannot find name of image from reference '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > GetImgKey`)
             );
         } catch (errObj) {
             return TRACEOFF(
                 traceID,
-                VAL({string: funcName}) &&
-                    THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > GetImgKey`, errObj)
+                VAL({string: funcName})
+                    && THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > GetImgKey`, errObj)
             );
         }
     };
@@ -1936,7 +2040,8 @@ const Media = (() => {
         // D.Alert("GETTING IMG OBJECT")
         try {
             let imgObj;
-            if (VAL({imgObj: imgRef})) return TRACEOFF(traceID, imgRef);
+            if (VAL({imgObj: imgRef}))
+                return TRACEOFF(traceID, imgRef);
             if (VAL({char: imgRef}))
                 return TRACEOFF(
                     traceID,
@@ -1949,15 +2054,19 @@ const Media = (() => {
                 );
             if (VAL({string: imgRef})) {
                 imgObj = getObj("graphic", imgRef);
-                if (VAL({imgObj})) return TRACEOFF(traceID, imgObj);
+                if (VAL({imgObj}))
+                    return TRACEOFF(traceID, imgObj);
             }
             if (VAL({selection: imgRef})) {
                 [imgObj] = D.GetSelected(imgRef);
-                if (VAL({imgObj})) return TRACEOFF(traceID, imgObj);
+                if (VAL({imgObj}))
+                    return TRACEOFF(traceID, imgObj);
             }
             const imgKey = getImgKey(imgRef);
-            if (VAL({string: imgKey})) imgObj = getObj("graphic", REGISTRY.GRAPHIC[imgKey].id);
-            if (VAL({imgObj})) return TRACEOFF(traceID, imgObj);
+            if (VAL({string: imgKey}))
+                imgObj = getObj("graphic", REGISTRY.GRAPHIC[imgKey].id);
+            if (VAL({imgObj}))
+                return TRACEOFF(traceID, imgObj);
             return TRACEOFF(traceID, false);
         } catch (errObj) {
             return TRACEOFF(
@@ -1971,7 +2080,9 @@ const Media = (() => {
         // D.Alert(`GetSelected ImgRefs: ${D.JS(D.GetSelected(imgRefs))}`)
         imgRefs = VAL({selection: imgRefs}) ? D.GetSelected(imgRefs) : _.flatten([imgRefs]) || Object.keys(REGISTRY.GRAPHIC);
         const imgObjs = [];
-        if (VAL({array: imgRefs})) for (const imgRef of imgRefs) imgObjs.push(getImgObj(imgRef, funcName));
+        if (VAL({array: imgRefs}))
+            for (const imgRef of imgRefs)
+                imgObjs.push(getImgObj(imgRef, funcName));
         return TRACEOFF(traceID, _.compact(imgObjs));
     };
     const getImgData = (imgRef, funcName = false) => {
@@ -1985,7 +2096,8 @@ const Media = (() => {
                     return TRACEOFF(innerTraceID, REGISTRY.GRAPHIC[imgKey] || REGISTRY.GRAPHIC[imgKey.get("name")]);
                 imgObj = getImgObj(imgRef, funcName);
                 if (VAL({imgObj}, "getImgData")) {
-                    if (REGISTRY.GRAPHIC[imgObj.get("name")]) return TRACEOFF(innerTraceID, REGISTRY.GRAPHIC[imgObj.get("name")]);
+                    if (REGISTRY.GRAPHIC[imgObj.get("name")])
+                        return TRACEOFF(innerTraceID, REGISTRY.GRAPHIC[imgObj.get("name")]);
                     if (VAL({char: imgKey}) && !REGISTRY.GRAPHIC[imgObj.get("name")])
                         return TRACEOFF(
                             innerTraceID,
@@ -2034,8 +2146,8 @@ const Media = (() => {
             } catch (errObj) {
                 return TRACEOFF(
                     innerTraceID,
-                    VAL({string: funcName}) &&
-                        THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > getImgData`, errObj)
+                    VAL({string: funcName})
+                        && THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > getImgData`, errObj)
                 );
             }
         })();
@@ -2047,11 +2159,12 @@ const Media = (() => {
         }
         return TRACEOFF(traceID, imgData);
     };
-    const getImgSrcs = imgRef => {
+    const getImgSrcs = (imgRef) => {
         const traceID = TRACEON("getImgSrcs", [imgRef]);
         let imgData = getImgData(imgRef);
         if (VAL({list: imgData})) {
-            while (isRegImg(imgData.srcs)) imgData = getImgData(imgData.srcs);
+            while (isRegImg(imgData.srcs))
+                imgData = getImgData(imgData.srcs);
             return TRACEOFF(traceID, Object.assign({}, D.Clone(C.IMAGES), imgData.srcs));
         }
         return TRACEOFF(traceID, false);
@@ -2059,20 +2172,26 @@ const Media = (() => {
     const getURLFromSrc = (srcRef, srcData) => {
         const traceID = TRACEON("getURLFromSrc", [srcRef, srcData]);
         if (VAL({string: srcRef})) {
-            if (`${srcRef}`.includes("http")) return TRACEOFF(traceID, srcRef);
-            if (VAL({string: srcData})) srcData = getImgSrcs(srcData);
-            if (VAL({list: srcData}, "getURLFromSrc")) return TRACEOFF(traceID, srcData[srcRef] || false);
+            if (`${srcRef}`.includes("http"))
+                return TRACEOFF(traceID, srcRef);
+            if (VAL({string: srcData}))
+                srcData = getImgSrcs(srcData);
+            if (VAL({list: srcData}, "getURLFromSrc"))
+                return TRACEOFF(traceID, srcData[srcRef] || false);
         }
         return TRACEOFF(traceID, false);
     };
     const getSrcFromURL = (URLRef, srcData) => {
         const traceID = TRACEON("getSrcFromURL", [URLRef, srcData]);
-        if (VAL({string: srcData})) srcData = getImgSrcs(srcData);
+        if (VAL({string: srcData}))
+            srcData = getImgSrcs(srcData);
         if (VAL({string: URLRef, list: srcData}, "getSrcFromURL")) {
-            let matchingKeys = Object.keys(srcData).filter(x => D.LCase(srcData[x]) === D.LCase(URLRef));
-            if (matchingKeys.length === 1) return TRACEOFF(traceID, matchingKeys.pop());
-            matchingKeys = matchingKeys.filter(x => x !== "blank");
-            if (matchingKeys.length === 1) return TRACEOFF(traceID, matchingKeys.pop());
+            let matchingKeys = Object.keys(srcData).filter((x) => D.LCase(srcData[x]) === D.LCase(URLRef));
+            if (matchingKeys.length === 1)
+                return TRACEOFF(traceID, matchingKeys.pop());
+            matchingKeys = matchingKeys.filter((x) => x !== "blank");
+            if (matchingKeys.length === 1)
+                return TRACEOFF(traceID, matchingKeys.pop());
         }
         return TRACEOFF(traceID, false);
     };
@@ -2087,25 +2206,26 @@ const Media = (() => {
                     _subtype: "token"
                 }
             ) || []
-        ).filter(x => isCharToken(x));
-        const charIDs = (charRef && D.GetChars(charRef).map(x => x.id)) || "ALL";
+        ).filter((x) => isCharToken(x));
+        const charIDs = (charRef && D.GetChars(charRef).map((x) => x.id)) || "ALL";
         DB({mainPageID, allTokenObjs, charIDs}, "getTokenObjs");
         return TRACEOFF(
             traceID,
             _.compact(
-                (charIDs === "ALL" && allTokenObjs) ||
-                    (charIDs.length && allTokenObjs.filter(x => charIDs.includes(x.get("represents")))) ||
-                    []
+                (charIDs === "ALL" && allTokenObjs)
+                    || (charIDs.length && allTokenObjs.filter((x) => charIDs.includes(x.get("represents"))))
+                    || []
             )
         );
     };
-    const getTokenData = charRef => {
+    const getTokenData = (charRef) => {
         const traceID = TRACEON("getTokenData", [charRef]);
         const charID = (D.GetChar(charRef) || {id: false}).id;
-        if (charID) return TRACEOFF(traceID, _.findWhere(REGISTRY.TOKEN, {charID}));
+        if (charID)
+            return TRACEOFF(traceID, _.findWhere(REGISTRY.TOKEN, {charID}));
         return TRACEOFF(traceID, {});
     };
-    const getAreaData = areaRef => REGISTRY.AREA[areaRef];
+    const getAreaData = (areaRef) => REGISTRY.AREA[areaRef];
     /* getImgDatas = imgRefs => {
 			const imgRefs = D.GetSelected(imgRefs) || imgRefs,
 				 imgDatas = []
@@ -2113,8 +2233,8 @@ const Media = (() => {
 				imgDatas.push(getImgData(imgRef))
 			}
 			return imgDatas
-		},	*/
-    const getBounds = imgRef => {
+		}, */
+    const getBounds = (imgRef) => {
         const traceID = TRACEON("getBounds", [imgRef]);
         const imgObj = getImgObj(imgRef);
         const boundaryData = {};
@@ -2142,17 +2262,17 @@ const Media = (() => {
         DB({containerRef, imgRef, padding, containerBounds, imgBounds}, "checkBounds");
         return TRACEOFF(
             traceID,
-            containerBounds &&
-                imgBounds &&
-                containerBounds.top <= imgBounds.top + padding &&
-                containerBounds.bottom >= imgBounds.bottom - padding &&
-                containerBounds.left <= imgBounds.left + padding &&
-                containerBounds.right >= imgBounds.right - padding
+            containerBounds
+                && imgBounds
+                && containerBounds.top <= imgBounds.top + padding
+                && containerBounds.bottom >= imgBounds.bottom - padding
+                && containerBounds.left <= imgBounds.left + padding
+                && containerBounds.right >= imgBounds.right - padding
         );
     };
-    const getImgSrc = imgRef => (getImgData(imgRef) || {curSrc: false}).curSrc;
+    const getImgSrc = (imgRef) => (getImgData(imgRef) || {curSrc: false}).curSrc;
     /* getImgSrcs = imgRef => getImgData(imgRef) ? getImgData(imgRef).srcs : false, */
-    const isObjActive = mediaRef => (getMediaData(mediaRef) || {isActive: null}).isActive;
+    const isObjActive = (mediaRef) => (getMediaData(mediaRef) || {isActive: null}).isActive;
     const getContainedImgObjs = (containerRef, options = {}, filter = {}) => {
         const traceID = TRACEON("getContainedImgObjs", [containerRef, options, filter]);
         const containerObj = getImgObj(containerRef);
@@ -2173,10 +2293,14 @@ const Media = (() => {
         const containedImgObjs = findObjs({
             _pageid: D.GetPageID(containerObj),
             _type: "graphic"
-        }).filter(x => {
-            if (containerData.id === x.id) return false;
-            if (!isObjActive(x)) return false;
-            for (const [prop, value] of Object.entries(filter)) if (x.get(prop) !== value) return false;
+        }).filter((x) => {
+            if (containerData.id === x.id)
+                return false;
+            if (!isObjActive(x))
+                return false;
+            for (const [prop, value] of Object.entries(filter))
+                if (x.get(prop) !== value)
+                    return false;
             return isInside(containerData.id, x.id, options.padding || 0);
         });
         DB(
@@ -2191,29 +2315,11 @@ const Media = (() => {
         );
         return TRACEOFF(traceID, containedImgObjs);
     };
-    const getContainedChars = (containerRef, options, filter = {}) =>
-        getContainedImgObjs(containerRef, options, Object.assign(filter, {_subtype: "token", _layer: "objects"})).map(x => D.GetChar(x));
+    const getContainedChars = (containerRef, options, filter = {}) => getContainedImgObjs(containerRef, options, Object.assign(filter, {_subtype: "token", _layer: "objects"})).map((x) => D.GetChar(x));
     // #endregion
 
     // #region ~ IMG OBJECT & AREA SETTERS: Registering & Manipulating Img Objects
-    const addImgSrc = (imgSrcRef, imgName, srcName, isSilent = false) => {
-        const traceID = TRACEON("addImgSrc", [imgSrcRef, imgName, srcName, isSilent]);
-        try {
-            const imgSrc =
-                !srcName.startsWith("ref:") &&
-                (_.isString(imgSrcRef) && imgSrcRef.includes("http")
-                    ? imgSrcRef
-                    : (getImgObj(imgSrcRef) || {get: () => ""}).get("imgsrc").replace(/\w*?(?=\.\w+?\?)/u, "thumb"));
-            if (imgSrc !== "" && isRegImg(imgName)) {
-                if (srcName.startsWith("ref:")) REGISTRY.IMG[getImgKey(imgName)].srcs = srcName.replace(/ref:/gu, "");
-                else REGISTRY.IMG[getImgKey(imgName)].srcs[srcName] = imgSrc;
-                if (!isSilent) D.Alert(`Img '${D.JS(srcName)}' added to category '${D.JS(imgName)}'.<br><br>Source: ${D.JS(imgSrc)}`);
-            }
-        } catch (errObj) {
-            THROW("", "addImgSrc", errObj);
-        }
-        TRACEOFF(traceID);
-    };
+
     const addTokenSrc = (tokenSrcRef, charRef, srcName = false) => {
         const traceID = TRACEON("addTokenSrc", [tokenSrcRef, charRef, srcName]);
         const charObj = D.GetChar(charRef);
@@ -2242,6 +2348,27 @@ const Media = (() => {
         D.Alert("Invalid character or token image source.", "addTokenSrc");
         return TRACEOFF(traceID, false);
     };
+    const addImgSrc = (imgSrcRef, imgName, srcName, isSilent = false) => {
+        const traceID = TRACEON("addImgSrc", [imgSrcRef, imgName, srcName, isSilent]);
+        try {
+            const imgSrc
+                = !srcName.startsWith("ref:")
+                && (_.isString(imgSrcRef) && imgSrcRef.includes("http")
+                    ? imgSrcRef
+                    : (getImgObj(imgSrcRef) || {get: () => ""}).get("imgsrc").replace(/\w*?(?=\.\w+?\?)/u, "thumb"));
+            if (imgSrc !== "" && isRegImg(imgName)) {
+                if (srcName.startsWith("ref:"))
+                    REGISTRY.IMG[getImgKey(imgName)].srcs = srcName.replace(/ref:/gu, "");
+                else
+                    REGISTRY.IMG[getImgKey(imgName)].srcs[srcName] = imgSrc;
+                if (!isSilent)
+                    D.Alert(`Img '${D.JS(srcName)}' added to category '${D.JS(imgName)}'.<br><br>Source: ${D.JS(imgSrc)}`);
+            }
+        } catch (errObj) {
+            THROW("", "addImgSrc", errObj);
+        }
+        TRACEOFF(traceID);
+    };
     const setTokenSrc = (charRef, srcName = "base") => {
         const traceID = TRACEON("setTokenSrc", [charRef, srcName]);
         srcName = srcName === "" ? "base" : srcName;
@@ -2257,7 +2384,7 @@ const Media = (() => {
         }
         TRACEOFF(traceID);
     };
-    const setGenericToken = imgObj => {
+    const setGenericToken = (imgObj) => {
         const traceID = TRACEON("setGenericToken", [imgObj]);
         const tokenCat = D.LCase(D.GetStatVal(imgObj, "tokencat"));
         if (tokenCat in REGISTRY.TOKEN.GENERIC)
@@ -2274,8 +2401,10 @@ const Media = (() => {
         DB({tokenRef, isActive}, "toggleTokens");
         if (isActive !== null)
             for (const tokenObj of getTokenObjs(tokenRef))
-                if (isActive === true && tokenObj.get("layer") !== "objects") tokenObj.set("layer", "objects");
-                else if (isActive === false && tokenObj.get("layer") !== "walls") tokenObj.set("layer", "walls");
+                if (isActive === true && tokenObj.get("layer") !== "objects")
+                    tokenObj.set("layer", "objects");
+                else if (isActive === false && tokenObj.get("layer") !== "walls")
+                    tokenObj.set("layer", "walls");
         TRACEOFF(traceID);
     };
     const combineTokenSrc = (charRef, srcName = "base") => {
@@ -2286,9 +2415,12 @@ const Media = (() => {
             const tokenSrc = REGISTRY.TOKEN[tokenName].curSrc || "base";
             const splitTokenSrcs = D.Capitalize(tokenSrc).match(/[A-Z][a-z]*/gu);
             let newTokenSrcs = [];
-            if (D.LCase(srcName) === "base") newTokenSrcs = ["base"];
-            else if (splitTokenSrcs.includes(D.Capitalize(srcName))) newTokenSrcs = _.without(splitTokenSrcs, D.Capitalize(srcName));
-            else newTokenSrcs = [..._.without(splitTokenSrcs, "Base"), D.Capitalize(srcName)];
+            if (D.LCase(srcName) === "base")
+                newTokenSrcs = ["base"];
+            else if (splitTokenSrcs.includes(D.Capitalize(srcName)))
+                newTokenSrcs = _.without(splitTokenSrcs, D.Capitalize(srcName));
+            else
+                newTokenSrcs = [..._.without(splitTokenSrcs, "Base"), D.Capitalize(srcName)];
             newTokenSrcs.sort();
             setTokenSrc(charRef, newTokenSrcs.join(""));
         }
@@ -2302,28 +2434,28 @@ const Media = (() => {
         const imgObj = getImgObj(imgRef);
         if (VAL({graphicObj: imgObj}, "regImg")) {
             const baseName = imgName.replace(/(_|\d|#)+$/gu, "");
-            const name = `${baseName}_${_.filter(Object.keys(REGISTRY.IMG), k => k.includes(baseName)).length + 1}`;
+            const name = `${baseName}_${_.filter(Object.keys(REGISTRY.IMG), (k) => k.includes(baseName)).length + 1}`;
             const params = {
                 left:
-                    options.left ||
-                    imgObj.get("left") ||
-                    REGISTRY.IMG[name].left ||
-                    (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].left),
+                    options.left
+                    || imgObj.get("left")
+                    || REGISTRY.IMG[name].left
+                    || (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].left),
                 top:
-                    options.top ||
-                    imgObj.get("top") ||
-                    REGISTRY.IMG[name].top ||
-                    (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].top),
+                    options.top
+                    || imgObj.get("top")
+                    || REGISTRY.IMG[name].top
+                    || (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].top),
                 height:
-                    options.height ||
-                    imgObj.get("height") ||
-                    REGISTRY.IMG[name].height ||
-                    (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].height),
+                    options.height
+                    || imgObj.get("height")
+                    || REGISTRY.IMG[name].height
+                    || (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].height),
                 width:
-                    options.width ||
-                    imgObj.get("width") ||
-                    REGISTRY.IMG[name].width ||
-                    (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].width)
+                    options.width
+                    || imgObj.get("width")
+                    || REGISTRY.IMG[name].width
+                    || (C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].width)
             };
             if (!params.left || !params.top || !params.height || !params.width)
                 return TRACEOFF(traceID, THROW("Must supply position & dimension to register image.", "RegImg"));
@@ -2343,14 +2475,16 @@ const Media = (() => {
                 isActive: true,
                 isSetToken: imgObj.get("represents") || options.isDrawing === false
             };
-            if (options.modes) REGISTRY.IMG[name].wasModeUpdated = true;
+            if (options.modes)
+                REGISTRY.IMG[name].wasModeUpdated = true;
             DB(`Modes for ${name}: ${D.JSL(REGISTRY.IMG[name].modes)}`, "regImg");
             if (srcName !== "none") {
                 addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, srcName, isSilent);
                 setImg(name, srcName.includes("ref:") ? "base" : srcName);
             }
             layerImgs([name], REGISTRY.IMG[name].activeLayer);
-            if (options.isActive === false) toggleImg(name, false, true);
+            if (options.isActive === false)
+                toggleImg(name, false, true);
             if (VAL({string: funcName}) && !isSilent)
                 D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY.IMG[name])}`, "MEDIA: regImg");
             return TRACEOFF(traceID, getImgData(name));
@@ -2459,13 +2593,16 @@ const Media = (() => {
     const setImg = (imgRef, srcRef, isToggling, isForcing = false) => {
         const traceID = TRACEON("setImg", [imgRef, srcRef, isToggling, isForcing]);
         // D.Alert(`Getting ${D.JS(srcRef)} for ${D.JS(imgRef)} --> ${D.JS(REGISTRY[getImgData(imgRef).name].srcs[srcRef])}`, "MEDIA:SetImg")
-        if (isToggling === true || isToggling === false) toggleImg(imgRef, isToggling, isForcing);
-        if (srcRef === null || REGISTRY.ANIM[getImgKey(imgRef)]) return TRACEOFF(traceID, null);
+        if (isToggling === true || isToggling === false)
+            toggleImg(imgRef, isToggling, isForcing);
+        if (srcRef === null || REGISTRY.ANIM[getImgKey(imgRef)])
+            return TRACEOFF(traceID, null);
         const imgData = getImgData(imgRef);
         const imgObj = imgData && getImgObj(imgData.id);
         if (VAL({list: imgData}))
             if (VAL({string: srcRef})) {
-                if (!isForcing && imgData.curSrc === srcRef) return TRACEOFF(traceID, null);
+                if (!isForcing && imgData.curSrc === srcRef)
+                    return TRACEOFF(traceID, null);
                 const srcData = getImgSrcs(imgData.name);
                 const srcURL = getURLFromSrc(srcRef, srcData);
                 if (VAL({string: srcURL}, "setImg")) {
@@ -2478,7 +2615,7 @@ const Media = (() => {
                     return TRACEOFF(traceID, imgObj);
                 }
             } else if (VAL({charObj: srcRef})) {
-                srcRef.get("_defaulttoken", tokenDataJSON => {
+                srcRef.get("_defaulttoken", (tokenDataJSON) => {
                     const tokenData = JSON.parse(tokenDataJSON);
                     const srcURL = tokenData.imgsrc.replace(/med\.png/gu, "thumb.png");
                     REGISTRY.IMG[imgData.name].curSrc = srcURL;
@@ -2487,14 +2624,15 @@ const Media = (() => {
             }
         return TRACEOFF(traceID, false);
     };
-    const setRandomizerToken = tokenObj => {
+    const setRandomizerToken = (tokenObj) => {
         const traceID = TRACEON("setRandomizerToken", [tokenObj]);
         if (isRandomizerToken(tokenObj)) {
             const tokenKey = D.GetName(tokenObj.get("represents"));
             const tokenSrcs = REGISTRY.TOKEN[tokenKey].srcs.randomSrcs;
             let tokenNum = REGISTRY.TOKEN[tokenKey].randomSrcCount;
             tokenNum++;
-            if (tokenNum >= tokenSrcs.length) tokenNum = 0;
+            if (tokenNum >= tokenSrcs.length)
+                tokenNum = 0;
             const tokenSrc = tokenSrcs[tokenNum];
             tokenObj.set("imgsrc", tokenSrc);
             REGISTRY.TOKEN[tokenKey].randomSrcCount = tokenNum;
@@ -2506,16 +2644,20 @@ const Media = (() => {
         const imgData = getImgData(imgRef);
         if (imgData && isCyclingImg(imgData.id)) {
             const srcIndex = Math.max(
-                _.findIndex(imgData.cycleSrcs, x => x === imgData.curSrc),
+                _.findIndex(imgData.cycleSrcs, (x) => x === imgData.curSrc),
                 0
             );
             let newIndex = srcIndex + (isReversing ? -1 : 1);
             if (newIndex < 0)
-                if (isLooping) newIndex = imgData.cycleSrcs.length - 1;
-                else return TRACEOFF(traceID, false);
+                if (isLooping)
+                    newIndex = imgData.cycleSrcs.length - 1;
+                else
+                    return TRACEOFF(traceID, false);
             else if (newIndex >= imgData.cycleSrcs.length)
-                if (isLooping) newIndex = 0;
-                else return TRACEOFF(traceID, false);
+                if (isLooping)
+                    newIndex = 0;
+                else
+                    return TRACEOFF(traceID, false);
             toggleImg(imgData.name, true);
             setImg(imgData.name, imgData.cycleSrcs[newIndex]);
             return TRACEOFF(traceID, newIndex);
@@ -2536,17 +2678,20 @@ const Media = (() => {
         const imgKey = getImgKey(imgRef);
         if (VAL({string: imgKey}, "setImgData")) {
             _.each(params, (v, k) => {
-                if (imgKey in REGISTRY.IMG) REGISTRY.IMG[imgKey][k] = v;
-                else if (imgKey in REGISTRY.ANIM) REGISTRY.ANIM[imgKey][k] = v;
+                if (imgKey in REGISTRY.IMG)
+                    REGISTRY.IMG[imgKey][k] = v;
+                else if (imgKey in REGISTRY.ANIM)
+                    REGISTRY.ANIM[imgKey][k] = v;
             });
-            if (isSettingObject) setImgTemp(imgKey, params);
+            if (isSettingObject)
+                setImgTemp(imgKey, params);
             return TRACEOFF(traceID, REGISTRY.IMG[imgKey]);
         }
         return TRACEOFF(traceID, false);
     };
     const resizeImgs = (imgRefs, axes = []) => {
         const traceID = TRACEON("resizeImgs", [imgRefs, axes]);
-        const imgObjs = imgRefs.map(x => getImgObj(x));
+        const imgObjs = imgRefs.map((x) => getImgObj(x));
         for (const imgObj of imgObjs) {
             const dims = {height: STATE.REF.anchorObj.height, width: STATE.REF.anchorObj.width};
             if (axes.length === 1)
@@ -2560,16 +2705,19 @@ const Media = (() => {
     };
     const toggleImg = (imgRef, isActive, isForcing = false) => {
         const traceID = TRACEON("toggleImg", [imgRef, isActive, isForcing]);
-        if (isActive === null) return TRACEOFF(traceID, null);
+        if (isActive === null)
+            return TRACEOFF(traceID, null);
         const regRef = getRegistryRef(imgRef);
         const imgData = getImgData(imgRef) || (VAL({object: imgRef}) && {isActive: imgRef.get("layer") === "walls"});
         const modeData = getModeData(imgRef, Session.Mode);
         if (VAL({list: [imgData, modeData]}, "toggleImg", true)) {
             let activeCheck = null;
-            if ((isActive === true || (isActive !== false && !imgData.isActive)) && modeData.isForcedOn !== "NEVER") activeCheck = true;
+            if ((isActive === true || (isActive !== false && !imgData.isActive)) && modeData.isForcedOn !== "NEVER")
+                activeCheck = true;
             else if (isActive === false || (isActive !== true && imgData.isActive) || (modeData.isForcedOn === "NEVER" && imgData.isActive))
                 activeCheck = false;
-            if (activeCheck === null || (!isForcing && imgData.isActive === activeCheck)) return TRACEOFF(traceID, null);
+            if (activeCheck === null || (!isForcing && imgData.isActive === activeCheck))
+                return TRACEOFF(traceID, null);
             const imgObj = getImgObj(imgData.name) || (VAL({graphicObj: imgRef}) && imgRef);
             DragPads.Toggle(imgData.name, activeCheck, true);
             if (activeCheck === false) {
@@ -2609,8 +2757,9 @@ const Media = (() => {
     };
     const removeImgs = (imgString, isUnregOnly) => {
         const traceID = TRACEON("removeImgs", [imgString, isUnregOnly]);
-        const imgNames = _.filter([...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.ANIM)], v => v.includes(imgString));
-        for (const imgName of imgNames) removeImg(imgName, isUnregOnly);
+        const imgNames = _.filter([...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.ANIM)], (v) => v.includes(imgString));
+        for (const imgName of imgNames)
+            removeImg(imgName, isUnregOnly);
         TRACEOFF(traceID);
     };
     const checkDragPads = () => {
@@ -2620,23 +2769,23 @@ const Media = (() => {
             _type: "graphic",
             _pageid: D.MAINPAGEID
         });
-        const allPadObjs = allImgObjs.filter(x => x.get("name").endsWith("_Pad") || x.get("name").endsWith("_PartnerPad"));
-        const allPadIDs = allPadObjs.map(x => x.id);
+        const allPadObjs = allImgObjs.filter((x) => x.get("name").endsWith("_Pad") || x.get("name").endsWith("_PartnerPad"));
+        const allPadIDs = allPadObjs.map((x) => x.id);
         const mediaDragPadIDs = D.KeyMapObj(
-            _.omit(REGISTRY.IMG, v => !v.padID && !v.partnerID),
+            _.omit(REGISTRY.IMG, (v) => !v.padID && !v.partnerID),
             (k, v) => v.id,
-            v => [v.padID, v.partnerID]
+            (v) => [v.padID, v.partnerID]
         );
         const dpadDragPadIDs = _.uniq(Object.keys(DragPads.PadsByID));
         // Step 1) Check DragPads. Make sure they are listed in REGISTRY.IMG **AND** DragPads stateref.
         if (
-            _.isEqual(_.uniq(_.flatten(_.values(mediaDragPadIDs))).sort(), dpadDragPadIDs.sort()) &&
-            _.isEqual(dpadDragPadIDs.sort(), allPadIDs.sort())
+            _.isEqual(_.uniq(_.flatten(_.values(mediaDragPadIDs))).sort(), dpadDragPadIDs.sort())
+            && _.isEqual(dpadDragPadIDs.sort(), allPadIDs.sort())
         ) {
             D.Alert("All Pads Equal!", "Drag Pad Check");
         } else {
             const missingDragPadIDs = _.without(dpadDragPadIDs, ..._.uniq(_.flatten(_.values(mediaDragPadIDs))));
-            reportLines.push(...missingDragPadIDs.map(x => `<b>${DragPads.PadsByID[x].name}</b> (${x})`));
+            reportLines.push(...missingDragPadIDs.map((x) => `<b>${DragPads.PadsByID[x].name}</b> (${x})`));
             D.Alert(
                 `Pad List DOES NOT Equal.<br><br><b>Found ${allPadIDs.length} Pads.<br>${
                     _.uniq(_.flatten(_.values(mediaDragPadIDs))).length
@@ -2725,21 +2874,21 @@ const Media = (() => {
             _type: "graphic"
         });
         const regPadIDs = Object.values(REGISTRY.IMG)
-            .filter(x => x.padID)
-            .map(x => x.padID);
+            .filter((x) => x.padID)
+            .map((x) => x.padID);
         const regPartnerIDs = Object.values(REGISTRY.IMG)
-            .filter(x => x.partnerID)
-            .map(x => x.partnerID);
-        const allRegIDs = [..._.values(REGISTRY.GRAPHIC).map(x => x.id), ...regPadIDs, ...regPartnerIDs];
-        const unregImgObjs = allImgObjs.filter(x => !isRegToken(x) && !allRegIDs.includes(x.id));
+            .filter((x) => x.partnerID)
+            .map((x) => x.partnerID);
+        const allRegIDs = [..._.values(REGISTRY.GRAPHIC).map((x) => x.id), ...regPadIDs, ...regPartnerIDs];
+        const unregImgObjs = allImgObjs.filter((x) => !isRegToken(x) && !allRegIDs.includes(x.id));
 
         // D.Alert(`RegPadIDs: ${D.JSL(regPadIDs)}<br><br>PartnerIDs: ${D.JSL(regPartnerIDs)}`)
         for (const imgObj of unregImgObjs) {
             const imgSrc = imgObj.get("imgsrc");
             if (imgSrc.includes("webm"))
                 returnLines.push(
-                    `<div style="display: block; height: 60px; width: auto;"><b>${imgObj.get("name") ||
-                        "(UNNAMED)"}</b> <span style='color: red;'><b>REMOVED</b></span><br>${imgSrc}</div>`
+                    `<div style="display: block; height: 60px; width: auto;"><b>${imgObj.get("name")
+                        || "(UNNAMED)"}</b> <span style='color: red;'><b>REMOVED</b></span><br>${imgSrc}</div>`
                 );
             else
                 returnLines.push(
@@ -2747,11 +2896,14 @@ const Media = (() => {
                         "name"
                     ) || "(UNNAMED)"}</b> <span style='color: red;'><b>REMOVED</b></span></div>`
                 );
-            if (isKilling) imgObj.remove();
+            if (isKilling)
+                imgObj.remove();
         }
         if (returnLines.length)
-            if (isQueueing) STATE.REF.fixAllCommands.push(...["<h4><u>Clearing Unregistered Image Objects</u></h4>", ...returnLines]);
-            else D.Alert(D.JS(["<h4><u>Clearing Orphan Images</u></h4>", ...returnLines].join("")), "clearUnregImgs");
+            if (isQueueing)
+                STATE.REF.fixAllCommands.push(...["<h4><u>Clearing Unregistered Image Objects</u></h4>", ...returnLines]);
+            else
+                D.Alert(D.JS(["<h4><u>Clearing Orphan Images</u></h4>", ...returnLines].join("")), "clearUnregImgs");
         TRACEOFF(traceID);
     };
     const toggleLoadingScreen = (imgSrc, customText = " ", progressBarData = false) => {
@@ -2784,7 +2936,8 @@ const Media = (() => {
                     Media.ToggleText("LoadingMessage", false, true);
                     Media.ToggleText("LoadingProgressBar", false, true);
                     Media.ToggleImg("LoadingProgressMatte", false, true);
-                    if (VAL({function: progressBarData.callback})) progressBarData.callback();
+                    if (VAL({function: progressBarData.callback}))
+                        progressBarData.callback();
                 });
             }
         } else {
@@ -2817,7 +2970,8 @@ const Media = (() => {
                 Media.ToggleText("LoadingProgressBar", false, true);
                 clearTimeout(progressBarTimer);
                 progressBarTimer = null;
-                if (VAL({function: callback})) return TRACEOFF(innerTraceID, callback());
+                if (VAL({function: callback}))
+                    return TRACEOFF(innerTraceID, callback());
                 return TRACEOFF(innerTraceID, true);
             }
         };
@@ -2840,8 +2994,8 @@ const Media = (() => {
         // D.Alert(`Starting FixImgObjects: ${D.JS(REGISTRY.ANIM.MapIndicator.isActive)}`)
         const imgKeys = [...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.ANIM)];
         const imgPairs = _.zip(
-            imgKeys.map(x => REGISTRY.IMG[x] || REGISTRY.ANIM[x]),
-            imgKeys.map(x => getObj("graphic", (REGISTRY.IMG[x] || REGISTRY.ANIM[x]).id))
+            imgKeys.map((x) => REGISTRY.IMG[x] || REGISTRY.ANIM[x]),
+            imgKeys.map((x) => getObj("graphic", (REGISTRY.IMG[x] || REGISTRY.ANIM[x]).id))
         );
         const reportLines = [];
         // D.Alert(`Beginning Checks: ${D.JS(REGISTRY.ANIM.MapIndicator.isActive)}`)
@@ -2926,12 +3080,15 @@ const Media = (() => {
                 }
             }
             toggleImg(imgData.name, imgData.isActive, true);
-            if (reportStrings.length) reportLines.push(...[`<b>${imgData.name}</b>`, reportStrings.map(x => `... ${x}`).join("<br>")]);
+            if (reportStrings.length)
+                reportLines.push(...[`<b>${imgData.name}</b>`, reportStrings.map((x) => `... ${x}`).join("<br>")]);
         }
         // layerImgs(imgKeys, null, true)
         if (reportLines.length)
-            if (isQueueing) STATE.REF.fixAllCommands.push(...["<h3><u>Final Image Object Pass</u></h3>", ...reportLines]);
-            else D.Alert(["<h3><u>Fixing Image Objects</u></h3>", ...reportLines].join("<br>"), "fixImgObjs");
+            if (isQueueing)
+                STATE.REF.fixAllCommands.push(...["<h3><u>Final Image Object Pass</u></h3>", ...reportLines]);
+            else
+                D.Alert(["<h3><u>Fixing Image Objects</u></h3>", ...reportLines].join("<br>"), "fixImgObjs");
         TRACEOFF(traceID);
     };
     const layerImgs = (imgRefs, layer, isSilent = false) => {
@@ -2950,11 +3107,14 @@ const Media = (() => {
     };
     const setImgArea = (imgRef, areaRef, isResizing = false) => {
         const traceID = TRACEON("setImgArea", [imgRef, areaRef, isResizing]);
-        if (!imgRef) return TRACEOFF(traceID, false);
+        if (!imgRef)
+            return TRACEOFF(traceID, false);
         const imgObj = getImgObj(imgRef);
         const areaData = getAreaData(areaRef);
-        if (!imgObj) return TRACEOFF(traceID, D.Alert(`Invalid image reference: ${D.JS(imgRef)}`, "MEDIA: setImgArea"));
-        else if (!areaData) return TRACEOFF(traceID, D.Alert(`No area registered as '${D.JS(areaRef)}'`, "MEDIA: setImgArea"));
+        if (!imgObj)
+            return TRACEOFF(traceID, D.Alert(`Invalid image reference: ${D.JS(imgRef)}`, "MEDIA: setImgArea"));
+        else if (!areaData)
+            return TRACEOFF(traceID, D.Alert(`No area registered as '${D.JS(areaRef)}'`, "MEDIA: setImgArea"));
         const imgParams = {
             top: areaData.top,
             left: areaData.left
@@ -2970,29 +3130,30 @@ const Media = (() => {
         const traceID = TRACEON("spreadImgs", [leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap, maxOverlap]);
         DB({leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap, maxOverlap}, "spreadImgs");
         midImgRefOrRefs = _.flatten([midImgRefOrRefs]);
-        const [leftObj, rightObj, ...midObjs] = [getImgObj(leftImgRef), getImgObj(rightImgRef), ...midImgRefOrRefs.map(x => getImgObj(x))];
+        const [leftObj, rightObj, ...midObjs] = [getImgObj(leftImgRef), getImgObj(rightImgRef), ...midImgRefOrRefs.map((x) => getImgObj(x))];
         const [leftData, rightData, ...midData] = [leftObj, rightObj, ...midObjs].map(
-            x =>
-                (isRegImg(x) && getImgData(x)) || {
-                    id: x.id,
-                    name: x.get("name"),
-                    left: x.get("left"),
-                    width: x.get("width"),
-                    leftEdge: x.get("left") - 0.5 * x.get("width"),
-                    rightEdge: x.get("left") + 0.5 * x.get("width")
-                }
+            (x) => (isRegImg(x) && getImgData(x)) || {
+                id: x.id,
+                name: x.get("name"),
+                left: x.get("left"),
+                width: x.get("width"),
+                leftEdge: x.get("left") - 0.5 * x.get("width"),
+                rightEdge: x.get("left") + 0.5 * x.get("width")
+            }
         );
         if (!VAL({number: width})) {
             const [startPos, endPos] = [leftData.left, rightData.left];
             const buffer = (endPos - startPos) / (midObjs.length + 1);
-            for (let i = 0; i < midObjs.length; i++) setImgTemp(midObjs[i], {left: startPos + (i + 1) * buffer});
+            for (let i = 0; i < midObjs.length; i++)
+                setImgTemp(midObjs[i], {left: startPos + (i + 1) * buffer});
             return TRACEOFF(traceID, true);
         }
         const spread = parseFloat(VAL({number: width}) ? width : rightData.left - leftData.left);
         let dbString = `Width: ${spread}, MinOverlap: ${parseFloat(minOverlap)}, MaxOverlap: ${parseFloat(maxOverlap)}<br><br>`;
         DB(`minOverlap: ${minOverlap}, maxOverlap: ${maxOverlap}`);
         if (VAL({list: [leftData, rightData, ...midData], number: [spread]}, "spreadImgs", true)) {
-            for (const imgRef of [leftData.name, rightData.name]) toggleImg(imgRef, true);
+            for (const imgRef of [leftData.name, rightData.name])
+                toggleImg(imgRef, true);
             setImgTemp(leftData.id, {left: leftData.left});
             dbString += `Setting Left to {left: ${D.Int(leftData.left)}}<br>`;
             // If the spread is smaller than the combined width of the bookends, then set the minimum possible spread and blank all mid imgs.
@@ -3000,7 +3161,8 @@ const Media = (() => {
                 dbString += `Spread ${D.Int(spread)} less than ${D.Int(leftData.width + rightData.width - 2 * maxOverlap)} (${D.Int(
                     leftData.width
                 )} + ${D.Int(rightData.width)} - ${2 * D.Int(maxOverlap)})<br>`;
-                for (const imgData of midData) toggleImg(imgData.id, false);
+                for (const imgData of midData)
+                    toggleImg(imgData.id, false);
                 DB(
                     `${dbString}Setting Right to {left: ${D.Int(leftData.rightEdge)} + 0.5x${D.Int(rightData.width)} - ${D.Int(
                         maxOverlap
@@ -3119,30 +3281,30 @@ const Media = (() => {
                 left: leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2 * minOverlap - 0.5 * rightData.width
             });
             dbString += `RIGHT: ${D.Int(
-                leftData.leftEdge +
-                    totalMidWidth +
-                    leftData.width +
-                    rightData.width -
-                    2 * minOverlap -
-                    0.5 * rightData.width -
-                    0.5 * rightData.width
+                leftData.leftEdge
+                    + totalMidWidth
+                    + leftData.width
+                    + rightData.width
+                    - 2 * minOverlap
+                    - 0.5 * rightData.width
+                    - 0.5 * rightData.width
             )} - ${D.Int(
-                leftData.leftEdge +
-                    totalMidWidth +
-                    leftData.width +
-                    rightData.width -
-                    2 * minOverlap -
-                    0.5 * rightData.width +
-                    0.5 * rightData.width
-            )} (${lastRightEdge -
-                D.Int(
-                    leftData.leftEdge +
-                        totalMidWidth +
-                        leftData.width +
-                        rightData.width -
-                        2 * minOverlap -
-                        0.5 * rightData.width -
-                        0.5 * rightData.width
+                leftData.leftEdge
+                    + totalMidWidth
+                    + leftData.width
+                    + rightData.width
+                    - 2 * minOverlap
+                    - 0.5 * rightData.width
+                    + 0.5 * rightData.width
+            )} (${lastRightEdge
+                - D.Int(
+                    leftData.leftEdge
+                        + totalMidWidth
+                        + leftData.width
+                        + rightData.width
+                        - 2 * minOverlap
+                        - 0.5 * rightData.width
+                        - 0.5 * rightData.width
                 )})`;
             DB(dbString, "spreadImgs");
             // for (const imgData of midData)
@@ -3155,7 +3317,7 @@ const Media = (() => {
     // #endregion
 
     // #region ~ ANIMATIONS: Creating, Timeouts, Controlling WEBM Animations
-    const isRegAnim = animRef => {
+    const isRegAnim = (animRef) => {
         const traceID = TRACEON("isRegAnim", [animRef]);
         const imgObj = getImgObj(animRef);
         return TRACEOFF(traceID, imgObj && imgObj.get("name") in REGISTRY.ANIM);
@@ -3209,7 +3371,7 @@ const Media = (() => {
         animData.validModes = validModes.split("|");
         TRACEOFF(traceID);
     };
-    const flashAnimation = animName => {
+    const flashAnimation = (animName) => {
         const traceID = TRACEON("flashAnimation", [animName]);
         const animData = getImgData(animName);
         if (!animData.validModes.includes(Session.Mode)) {
@@ -3217,8 +3379,10 @@ const Media = (() => {
         } else if (animData.isActive) {
             const animObj = getImgObj(animName);
             animObj.set("layer", animData.activeLayer);
-            if (animData.soundEffect && animData.validModes.includes(Session.Mode)) Soundscape.Play(animData.soundEffect);
-            if (animData.timeOut) setTimeout(() => killAnimation(animObj), animData.timeOut);
+            if (animData.soundEffect && animData.validModes.includes(Session.Mode))
+                Soundscape.Play(animData.soundEffect);
+            if (animData.timeOut)
+                setTimeout(() => killAnimation(animObj), animData.timeOut);
         }
         TRACEOFF(traceID);
     };
@@ -3253,7 +3417,7 @@ const Media = (() => {
             }, animTimes.pop());
         TRACEOFF(traceID);
     };
-    const pulseAnimation = animName => {
+    const pulseAnimation = (animName) => {
         const traceID = TRACEON("pulseAnimation", [animName]);
         const animData = getImgData(animName);
         if (animTimers[animName]) {
@@ -3263,7 +3427,7 @@ const Media = (() => {
         if (animData.isActive) {
             const timeBetween = randomInteger(animData.maxTimeBetween - animData.minTimeBetween) + animData.minTimeBetween;
             flashAnimation(animName);
-            animTimers[animName] = setTimeout(function animTimer() {
+            animTimers[animName] = setTimeout(() => {
                 const innerTraceID = TRACEON("animTimer");
                 pulseAnimation(animName);
                 return TRACEOFF(innerTraceID);
@@ -3272,7 +3436,7 @@ const Media = (() => {
         TRACEOFF(traceID);
         // D.Alert(JSON.stringify(activeTimers[animName]))
     };
-    const deactivateAnimation = animName => {
+    const deactivateAnimation = (animName) => {
         const traceID = TRACEON("deactivateAnimation", [animName]);
         const animData = getImgData(animName);
         if (animTimers[animName]) {
@@ -3298,14 +3462,16 @@ const Media = (() => {
         }
         TRACEOFF(traceID);
     };
-    const killAnimation = animObj => {
+    const killAnimation = (animObj) => {
         const traceID = TRACEON("killAnimation", [animObj]);
-        if (VAL({imgObj: animObj}, "killAnimation")) animObj.set("layer", "walls");
+        if (VAL({imgObj: animObj}, "killAnimation"))
+            animObj.set("layer", "walls");
         TRACEOFF(traceID);
     };
     const killAllAnims = () => {
         const traceID = TRACEON("killAllAnims", []);
-        for (const animData of _.values(REGISTRY.ANIM)) (getObj("graphic", animData.id) || {set: () => false}).set("layer", "walls");
+        for (const animData of _.values(REGISTRY.ANIM))
+            (getObj("graphic", animData.id) || {set: () => false}).set("layer", "walls");
         TRACEOFF(traceID);
     };
     // #endregion
@@ -3317,7 +3483,7 @@ const Media = (() => {
         top: (textHeight = 0) => PANELTOP + 0.5 * textHeight,
         left: (textWidth = 0) => PANELLEFT + 0.5 * textWidth
     };
-    const killPanel = panelKey => {
+    const killPanel = (panelKey) => {
         const traceID = TRACEON("killPanel", [panelKey]);
         if (panelKey in REGISTRY.PANELS) {
             setText(panelKey, " ");
@@ -3327,7 +3493,7 @@ const Media = (() => {
         }
         TRACEOFF(traceID);
     };
-    const killPanelBG = panelKey => {
+    const killPanelBG = (panelKey) => {
         const traceID = TRACEON("killPanelBG", [panelKey]);
         const panelBGObj = getObj("path", (REGISTRY.PANELS[panelKey] || {bgID: false}).bgID);
         if (panelBGObj) {
@@ -3336,7 +3502,7 @@ const Media = (() => {
         }
         TRACEOFF(traceID);
     };
-    const resetPanelBG = panelKey => {
+    const resetPanelBG = (panelKey) => {
         const traceID = TRACEON("resetPanelBG", [panelKey]);
         const panelBGObj = getObj("path", (REGISTRY.PANELS[panelKey] || {bgID: false}).bgID);
         const panelTextHeight = getTextHeight(panelKey, (REGISTRY.PANELS[panelKey].textLines || [" "]).join("\n"));
@@ -3350,7 +3516,8 @@ const Media = (() => {
         ];
         const panelTop = PANELPOS.top(panelTextHeight) - 10;
         const panelLeft = PANELPOS.left(panelTextWidth) - 10;
-        if (panelBGObj && panelBGObj.get("top") === panelTop && panelBGObj.get("left") === panelLeft) return TRACEOFF(traceID);
+        if (panelBGObj && panelBGObj.get("top") === panelTop && panelBGObj.get("left") === panelLeft)
+            return TRACEOFF(traceID);
         killPanelBG(panelKey);
         const panelObj = createObj("path", {
             _pageid: D.THISPAGEID,
@@ -3394,8 +3561,9 @@ const Media = (() => {
     };
     const removePanelText = (panelKey = "panel", delText = "", numRepeats = 2) => {
         const traceID = TRACEON("removePanelText", [panelKey, delText, numRepeats]);
-        if (numRepeats === 0) return TRACEOFF(traceID);
-        D.PullOut(REGISTRY.PANELS[panelKey].textLines, v => v === delText);
+        if (numRepeats === 0)
+            return TRACEOFF(traceID);
+        D.PullOut(REGISTRY.PANELS[panelKey].textLines, (v) => v === delText);
         if (REGISTRY.PANELS[panelKey].textLines.length) {
             setText(panelKey, (REGISTRY.PANELS[panelKey].textLines || [" "]).join("\n"));
             resetPanelBG(panelKey);
@@ -3411,29 +3579,34 @@ const Media = (() => {
     // #endregion
 
     // #region ~ TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval
-    const isRegText = textRef =>
-        Boolean(getTextKey(textRef, true)) || (VAL({object: textRef}) && _.findKey(REGISTRY.TEXT, v => v.shadowID === textRef.id));
+    const isRegText = (textRef) => Boolean(getTextKey(textRef, true)) || (VAL({object: textRef}) && _.findKey(REGISTRY.TEXT, (v) => v.shadowID === textRef.id));
     const getTextKey = (textRef, funcName = false) => {
         const traceID = TRACEON("getTextKey", [textRef, funcName]);
         try {
             let textObj;
             if (VAL({string: textRef})) {
-                if (REGISTRY.TEXT[textRef]) return TRACEOFF(traceID, textRef);
-                if (REGISTRY.ID[textRef]) return TRACEOFF(traceID, REGISTRY.ID[textRef]);
+                if (REGISTRY.TEXT[textRef])
+                    return TRACEOFF(traceID, textRef);
+                if (REGISTRY.ID[textRef])
+                    return TRACEOFF(traceID, REGISTRY.ID[textRef]);
             }
-            if (VAL({selected: textRef})) [textObj] = D.GetSelected(textRef);
-            if (VAL({textObj: textRef})) textObj = textRef;
-            if (VAL({textObj})) if (REGISTRY.ID[textObj.id]) return TRACEOFF(traceID, REGISTRY.ID[textObj.id]);
+            if (VAL({selected: textRef}))
+                [textObj] = D.GetSelected(textRef);
+            if (VAL({textObj: textRef}))
+                textObj = textRef;
+            if (VAL({textObj}))
+                if (REGISTRY.ID[textObj.id])
+                    return TRACEOFF(traceID, REGISTRY.ID[textObj.id]);
             return TRACEOFF(
                 traceID,
-                VAL({string: funcName}) &&
-                    THROW(`Cannot locate text key with search value '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > getTextKey`)
+                VAL({string: funcName})
+                    && THROW(`Cannot locate text key with search value '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > getTextKey`)
             );
         } catch (errObj) {
             return TRACEOFF(
                 traceID,
-                VAL({string: funcName}) &&
-                    THROW(`Cannot locate text key with search value '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > getTextKey`, errObj)
+                VAL({string: funcName})
+                    && THROW(`Cannot locate text key with search value '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > getTextKey`, errObj)
             );
         }
     };
@@ -3441,11 +3614,15 @@ const Media = (() => {
         const traceID = TRACEON("getTextObj", [textRef, funcName]);
         try {
             let textObj;
-            if (VAL({textObj: textRef})) textObj = textRef;
+            if (VAL({textObj: textRef}))
+                textObj = textRef;
             else if (VAL({string: textRef}))
-                if (getTextKey(textRef, funcName)) textObj = getObj("text", REGISTRY.TEXT[getTextKey(textRef)].id);
-                else textObj = getObj("text", textRef) || null;
-            else if (VAL({selected: textRef})) [textObj] = D.GetSelected(textRef);
+                if (getTextKey(textRef, funcName))
+                    textObj = getObj("text", REGISTRY.TEXT[getTextKey(textRef)].id);
+                else
+                    textObj = getObj("text", textRef) || null;
+            else if (VAL({selected: textRef}))
+                [textObj] = D.GetSelected(textRef);
             return TRACEOFF(
                 traceID,
                 textObj || (VAL({string: funcName}) && THROW(`Bad text reference: ${D.JSL(textRef)}`, `${D.JSL(funcName)} > getTextObj`))
@@ -3461,12 +3638,14 @@ const Media = (() => {
         const traceID = TRACEON("getTextObjs", [textRefs, funcName]);
         textRefs = VAL({selection: textRefs}) ? D.GetSelected(textRefs) : _.flatten([textRefs]) || Object.keys(REGISTRY.TEXT);
         const textObjs = [];
-        if (VAL({array: textRefs})) for (const textRef of textRefs) textObjs.push(getTextObj(textRef, funcName));
+        if (VAL({array: textRefs}))
+            for (const textRef of textRefs)
+                textObjs.push(getTextObj(textRef, funcName));
         return TRACEOFF(traceID, _.compact(textObjs));
     };
-    const hasShadowObj = textRef => Boolean((getTextData(textRef) || {shadowID: false}).shadowID);
-    const getTextShadowObj = textRef => getObj("text", (getTextData(textRef) || {shadowID: false}).shadowID);
-    const getShadowShift = textRef => C.SHADOWOFFSETS[(getTextObj(textRef) || {get: () => 20}).get("font_size")];
+    const hasShadowObj = (textRef) => Boolean((getTextData(textRef) || {shadowID: false}).shadowID);
+    const getTextShadowObj = (textRef) => getObj("text", (getTextData(textRef) || {shadowID: false}).shadowID);
+    const getShadowShift = (textRef) => C.SHADOWOFFSETS[(getTextObj(textRef) || {get: () => 20}).get("font_size")];
     const getTextData = (textRef, funcName = false) => {
         const traceID = TRACEON("getTextData", [textRef, funcName]);
         try {
@@ -3489,14 +3668,14 @@ const Media = (() => {
             }
             return TRACEOFF(
                 traceID,
-                VAL({string: funcName}) &&
-                    THROW(`Text reference '${textRef}' does not refer to a registered text object.`, `${D.JSL(funcName)} > getTextData`)
+                VAL({string: funcName})
+                    && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, `${D.JSL(funcName)} > getTextData`)
             );
         } catch (errObj) {
             return TRACEOFF(
                 traceID,
-                VAL({string: funcName}) &&
-                    THROW(
+                VAL({string: funcName})
+                    && THROW(
                         `Text reference '${textRef}' does not refer to a registered text object.`,
                         `${D.JSL(funcName)} > getTextData`,
                         errObj
@@ -3504,7 +3683,7 @@ const Media = (() => {
             );
         }
     };
-    const getLineHeight = textRef => {
+    const getLineHeight = (textRef) => {
         const traceID = TRACEON("getLineHeight", [textRef]);
         const textObj = getTextObj(textRef);
         if (VAL({textObj})) {
@@ -3530,7 +3709,7 @@ const Media = (() => {
         const traceID = TRACEON("getSimpleTextWidth", [text, fontFamily, fontSize]);
         const sizeRef = D.IsIn(fontFamily, D.CHARWIDTH) && D.IsIn(fontSize, D.CHARWIDTH[fontFamily]) && D.CHARWIDTH[fontFamily][fontSize];
         const sizeDefault = VAL({array: sizeRef}) && D.Float(_.reduce(sizeRef, (tot, n) => tot + n) / sizeRef.length, 2);
-        const sizeArray = VAL({string: text}) && text.split("").map(x => (x in sizeRef && sizeRef[x]) || sizeDefault);
+        const sizeArray = VAL({string: text}) && text.split("").map((x) => (x in sizeRef && sizeRef[x]) || sizeDefault);
         return TRACEOFF(
             traceID,
             _.reduce(sizeArray, (tot, n) => tot + n, 0)
@@ -3563,7 +3742,8 @@ const Media = (() => {
                     ? "TEXT OK!"
                     : `TEXT LENGTH MISMATCH: ${chars.length} chars, ${textString.length} text length.<br>`
             );
-            if (!textString || textString === "" || textString.length === 0) return TRACEOFF(traceID, 0);
+            if (!textString || textString === "" || textString.length === 0)
+                return TRACEOFF(traceID, 0);
             if (!fontRef || !charRef) {
                 dbLines.push(`No font/character reference for '${font}' at size '${size}': Returning default`, "getTextWidth");
                 DB(dbLines.join("<br>"), "getTextWidth");
@@ -3575,11 +3755,11 @@ const Media = (() => {
             else if (maxWidth !== false && textString && textString.includes("\n"))
                 textLines = textString
                     .split(/\n/g)
-                    .filter(x => x || x === "" || x === 0)
-                    .map(x => x.trim());
+                    .filter((x) => x || x === "" || x === 0)
+                    .map((x) => x.trim());
             if (textLines.length) {
                 dbLines.push(
-                    `Text split into text lines:<br>${textLines.map(x => `▐${x.replace(/ /gu, "⸰")}▌ ► ${x.length} Chars`).join("<br>")}`
+                    `Text split into text lines:<br>${textLines.map((x) => `▐${x.replace(/ /gu, "⸰")}▌ ► ${x.length} Chars`).join("<br>")}`
                 );
                 let maxLine = textLines[0];
                 dbLines.push("Iterating Max-Line...");
@@ -3590,35 +3770,40 @@ const Media = (() => {
                             2
                         )}`
                     );
-                    maxLine =
-                        getTextWidth(textObj, maxLine, false, true) < getTextWidth(textObj, textLine, false, true) ? textLine : maxLine;
+                    maxLine
+                        = getTextWidth(textObj, maxLine, false, true) < getTextWidth(textObj, textLine, false, true) ? textLine : maxLine;
                 }
                 dbLines.push(
                     `Max Line: ▐${maxLine}▌ ► Returning maxline width (${D.Round(getTextWidth(textObj, maxLine, false, true), 2)})`
                 );
-                if (!isSilent) DB(dbLines.join("<br>"), "getTextWidth");
+                if (!isSilent)
+                    DB(dbLines.join("<br>"), "getTextWidth");
                 return TRACEOFF(traceID, getTextWidth(textObj, maxLine, false, true));
             }
             let charString = "";
             for (const char of chars) {
                 charString += char;
-                if (char !== "\n" && !charRef[char]) D.MissingTextChars = char;
-                else width += charRef[char];
+                if (char !== "\n" && !charRef[char])
+                    D.MissingTextChars = char;
+                else
+                    width += charRef[char];
             }
             dbLines.push(`Chars measured: ▐${charString}▌ ► Returning width (${D.Round(width, 2)}`);
-            if (!isSilent) DB(dbLines.join("<br>"), "getTextWidth");
+            if (!isSilent)
+                DB(dbLines.join("<br>"), "getTextWidth");
             /* if (maxWidth !== false)
                     D.Alert(`GetTextWidth called on ${text} with maxWidth ${D.JS(maxWidth)} and maxW ${D.JS(maxW)}`) */
             return TRACEOFF(traceID, width);
         }
         return TRACEOFF(traceID, false);
     };
-    const getMaxWidth = textRef => {
+    const getMaxWidth = (textRef) => {
         const traceID = TRACEON("getMaxWidth", [textRef]);
         const textObj = getTextObj(textRef);
         const splitLines = textObj.get("text").split(/\n/g);
         let max = 0;
-        for (const line of splitLines) max = Math.max(max, getTextWidth(textObj, line, false));
+        for (const line of splitLines)
+            max = Math.max(max, getTextWidth(textObj, line, false));
         return TRACEOFF(traceID, max);
     };
     const getTextLines = (textRef, text, maxWidth) => {
@@ -3634,8 +3819,7 @@ const Media = (() => {
                 : (textValue.match(/\n/g) || []).length + 1
         );
     };
-    const getTextHeight = (textRef, text, maxWidth) =>
-        (getTextData(textRef) || {lineHeight: "10"}).lineHeight * getTextLines(textRef, text, maxWidth);
+    const getTextHeight = (textRef, text, maxWidth) => (getTextData(textRef) || {lineHeight: "10"}).lineHeight * getTextLines(textRef, text, maxWidth);
     const getBlankLeft = (textRef, justification, maxWidth = 0, useCurrent = false) => {
         const traceID = TRACEON("getBlankLeft", [textRef, justification, maxWidth, useCurrent]);
         const textObj = getTextObj(textRef);
@@ -3666,8 +3850,8 @@ const Media = (() => {
             // D.Alert(`getRealLeft(${D.JS(textData.name)}, ${D.JS(params)}) =<br>Left: ${D.JS(textObj.get("left"))}, DataLeft: ${D.JS(textData.left)}, Final: ${params.left + {left: -0.5, right: 0.5, center: 0}[params.justification] * getTextWidth(textObj, params.text, params.maxWidth || 0)}`)
             return TRACEOFF(
                 traceID,
-                params.left +
-                    {left: 0.5, right: -0.5, center: 0}[params.justification] * getTextWidth(textObj, params.text, params.maxWidth || 0)
+                params.left
+                    + {left: 0.5, right: -0.5, center: 0}[params.justification] * getTextWidth(textObj, params.text, params.maxWidth || 0)
             );
         }
         return TRACEOFF(traceID, false);
@@ -3682,24 +3866,17 @@ const Media = (() => {
         const textLines = (text || " ").split(/\n/g);
         const splitLines = [];
         const mapperFuncs = {
-            center: hWidth => {
-                return v =>
-                    `${buffer(textObj, 0.5 * (hWidth - getTextWidth(textObj, v, false)))}${v}${buffer(
-                        textObj,
-                        0.5 * (hWidth - getTextWidth(textObj, v, false))
-                    )}`;
-            },
-            right: hWidth => {
-                return v => `${buffer(textObj, hWidth - getTextWidth(textObj, v, false))}${v}`;
-            },
-            left: () => {
-                return v => `${v}`;
-            }
+            center: (hWidth) => (v) => `${buffer(textObj, 0.5 * (hWidth - getTextWidth(textObj, v, false)))}${v}${buffer(
+                textObj,
+                0.5 * (hWidth - getTextWidth(textObj, v, false))
+            )}`,
+            right: (hWidth) => (v) => `${buffer(textObj, hWidth - getTextWidth(textObj, v, false))}${v}`,
+            left: () => (v) => `${v}`
         };
         let highWidth = 0;
         if (VAL({textObj}, "splitTextLines")) {
             for (const textLine of textLines) {
-                let wordsInLine = textLine.split(/(\s|-)/gu).filter(x => x.match(/\S/gu));
+                let wordsInLine = textLine.split(/(\s|-)/gu).filter((x) => x.match(/\S/gu));
                 const splitLine = [];
                 for (let i = 0; i < wordsInLine.length; i++)
                     if (wordsInLine[i] === "-") {
@@ -3713,10 +3890,14 @@ const Media = (() => {
                             wordsInLine[count],
                             count < wordsInLine.length - 1 ? wordsInLine[count + 1] : false
                         ];
-                        if (prevLine !== false && prevLine.charAt(prevLine.length - 1) === " ") prevLine = prevLine.slice(0, -1);
-                        if (nextLine !== false && nextLine.charAt(0) === " ") nextLine = nextLine.slice(1);
-                        if (curLine.charAt(curLine.length - 1) === " ") curLine = curLine.slice(0, -1);
-                        if (curLine.charAt(0) === " ") curLine = curLine.slice(1);
+                        if (prevLine !== false && prevLine.charAt(prevLine.length - 1) === " ")
+                            prevLine = prevLine.slice(0, -1);
+                        if (nextLine !== false && nextLine.charAt(0) === " ")
+                            nextLine = nextLine.slice(1);
+                        if (curLine.charAt(curLine.length - 1) === " ")
+                            curLine = curLine.slice(0, -1);
+                        if (curLine.charAt(0) === " ")
+                            curLine = curLine.slice(1);
                         const [prevLineSpace, nextLineSpace] = [
                             prevLine === false ? maxWidth : maxWidth - getTextWidth(textObj, prevLine, false),
                             nextLine === false ? maxWidth : maxWidth - getTextWidth(textObj, nextLine, false)
@@ -3726,7 +3907,8 @@ const Media = (() => {
                             let shiftString = curLine.charAt(0);
                             curLine = curLine.slice(1);
                             for (let j = 0; j < curLine.length; j++) {
-                                if (getTextWidth(textObj, ` ${shiftString}${curLine.charAt(0)}-`, false) > prevLineSpace) break;
+                                if (getTextWidth(textObj, ` ${shiftString}${curLine.charAt(0)}-`, false) > prevLineSpace)
+                                    break;
                                 shiftString += curLine.charAt(0);
                                 curLine = curLine.slice(1);
                             }
@@ -3736,7 +3918,8 @@ const Media = (() => {
                             let shiftString = curLine.charAt(curLine.length - 1);
                             curLine = curLine.slice(0, -1);
                             for (let j = 0; j < curLine.length; j++) {
-                                if (getTextWidth(textObj, `${curLine}-`, false) <= maxWidth) break;
+                                if (getTextWidth(textObj, `${curLine}-`, false) <= maxWidth)
+                                    break;
                                 shiftString = curLine.charAt(curLine.length - 1);
                                 curLine = curLine.slice(0, -1);
                             }
@@ -3744,16 +3927,20 @@ const Media = (() => {
                             nextLine = `${shiftString}${((nextLine && ` ${nextLine}`) || "").replace(/^-/gu, "")}`;
                         }
                         if (count === 0 && prevLine) {
-                            if (nextLine) wordsInLine = [prevLine, curLine, nextLine, ...wordsInLine.slice(2)];
-                            else wordsInLine = [prevLine, curLine];
+                            if (nextLine)
+                                wordsInLine = [prevLine, curLine, nextLine, ...wordsInLine.slice(2)];
+                            else
+                                wordsInLine = [prevLine, curLine];
                             count++;
                         } else {
                             wordsInLine[count - 1] = prevLine || wordsInLine[count - 1];
                             wordsInLine[count] = curLine;
-                            if (nextLine) wordsInLine[count + 1] = nextLine;
+                            if (nextLine)
+                                wordsInLine[count + 1] = nextLine;
                         }
                     }
-                    if (count >= wordsInLine.length - 1) break;
+                    if (count >= wordsInLine.length - 1)
+                        break;
                 }
                 // let [stringCount, lineCount] = [0, 0]
 
@@ -3806,12 +3993,12 @@ const Media = (() => {
             if (!(hostName && activeLayer))
                 return TRACEOFF(traceID, THROW("Must supply host name and active layer for regText.", "RegText"));
             let name;
-            if (options.name && !REGISTRY.TEXT[options.name]) name = options.name;
-            else if (!REGISTRY.TEXT[hostName]) name = hostName;
+            if (options.name && !REGISTRY.TEXT[options.name])
+                name = options.name;
+            else if (!REGISTRY.TEXT[hostName])
+                name = hostName;
             else
-                name = `${hostName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(Object.keys(REGISTRY.TEXT), k =>
-                    k.includes(hostName.replace(/(_|\d|#)+$/gu, ""))
-                ).length + 1}`;
+                name = `${hostName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(Object.keys(REGISTRY.TEXT), (k) => k.includes(hostName.replace(/(_|\d|#)+$/gu, ""))).length + 1}`;
             /* eslint-disable-next-line camelcase */
             const [font_family, font_size, curText, height] = [
                 textObj
@@ -3868,8 +4055,10 @@ const Media = (() => {
                 });
                 toFront(shadowObj);
             }
-            if (options.isActive === false) toggleText(name, false, true);
-            else toFront(textObj);
+            if (options.isActive === false)
+                toggleText(name, false, true);
+            else
+                toFront(textObj);
             // D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY.TEXT[name])}`, "regText")
             setZIndices();
             return TRACEOFF(traceID, getTextData(name));
@@ -3929,7 +4118,7 @@ const Media = (() => {
         updateTextShadow(textKey);
         return TRACEOFF(traceID, shadowObj);
     };
-    const updateTextShadow = textRef => {
+    const updateTextShadow = (textRef) => {
         const traceID = TRACEON("updateTextShadow", [textRef]);
         const textData = getTextData(textRef);
         if (VAL({list: textData}, "updateTextShadow") && textData.shadowID) {
@@ -3969,7 +4158,7 @@ const Media = (() => {
         updateSlaveText(masterKey);
         TRACEOFF(traceID);
     };
-    const updateSlaveText = masterRef => {
+    const updateSlaveText = (masterRef) => {
         const traceID = TRACEON("updateSlaveText", [masterRef]);
         const masterObj = getTextObj(masterRef);
         const masterKey = getTextKey(masterObj);
@@ -4008,11 +4197,14 @@ const Media = (() => {
     const setText = (textRef, text, isToggling, isForcing = false) => {
         const traceID = TRACEON("setText", [textRef, text, isToggling, isForcing]);
         // D.Alert(`setText(${D.JS(textRef, true)}, ${D.JS(text)}, ${D.JS(isToggling)}, ${D.JS(isForcing)})`)
-        if (isToggling === false || isToggling === true) toggleText(textRef, isToggling, isForcing);
-        if (!isForcing && (text === null || text === undefined)) return TRACEOFF(traceID, null);
+        if (isToggling === false || isToggling === true)
+            toggleText(textRef, isToggling, isForcing);
+        if (!isForcing && (text === null || text === undefined))
+            return TRACEOFF(traceID, null);
         const textData = getTextData(textRef);
         if (VAL({list: textData}, "setText")) {
-            if (!isForcing && textData.curText === text) return TRACEOFF(traceID, null);
+            if (!isForcing && textData.curText === text)
+                return TRACEOFF(traceID, null);
             const textKey = textData.name;
             const textObj = getTextObj(textRef);
             const textParams = {text};
@@ -4030,24 +4222,24 @@ const Media = (() => {
                 if (textParams.text.split("\n").length > 1)
                     switch (textData.vertAlign) {
                         case "top":
-                            totalTopShift +=
-                                0.5 *
-                                (textParams.text.split("\n").length - 1) *
-                                (textData.lineHeight ||
-                                    (D.CHARWIDTH[textObj.get("font_family")] &&
-                                        D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] &&
-                                        D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight) ||
-                                    0);
+                            totalTopShift
+                                += 0.5
+                                * (textParams.text.split("\n").length - 1)
+                                * (textData.lineHeight
+                                    || (D.CHARWIDTH[textObj.get("font_family")]
+                                        && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")]
+                                        && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight)
+                                    || 0);
                             break;
                         case "bottom":
-                            totalTopShift +=
-                                0.5 *
-                                (textParams.text.split("\n").length - 1) *
-                                (textData.lineHeight ||
-                                    (D.CHARWIDTH[textObj.get("font_family")] &&
-                                        D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] &&
-                                        D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight) ||
-                                    0);
+                            totalTopShift
+                                += 0.5
+                                * (textParams.text.split("\n").length - 1)
+                                * (textData.lineHeight
+                                    || (D.CHARWIDTH[textObj.get("font_family")]
+                                        && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")]
+                                        && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight)
+                                    || 0);
                             break;
                         // no default
                     }
@@ -4058,14 +4250,19 @@ const Media = (() => {
                     maxWidth: textData.maxWidth
                 });
                 textParams.top = (textData.top || textObj.get("top")) + totalTopShift;
-                if (textData.isActive) REGISTRY.TEXT[textData.name].activeText = textParams.text;
+                if (textData.isActive)
+                    REGISTRY.TEXT[textData.name].activeText = textParams.text;
                 // D.Alert(`Setting CurText on ${D.JS(textData.name)}`)
                 REGISTRY.TEXT[textData.name].curText = textParams.text;
-                if (textParams.left === textObj.get("left")) delete textParams.left;
-                if (textParams.top === textObj.get("top")) delete textParams.top;
+                if (textParams.left === textObj.get("left"))
+                    delete textParams.left;
+                if (textParams.top === textObj.get("top"))
+                    delete textParams.top;
                 textObj.set(textParams);
-                if (textData.shadowID) updateTextShadow(textKey);
-                if (textData.linkedText) updateSlaveText(textKey);
+                if (textData.shadowID)
+                    updateTextShadow(textKey);
+                if (textData.linkedText)
+                    updateSlaveText(textKey);
                 REGISTRY.TEXT[textData.name].width = getTextWidth(textKey, textParams.text, textData.maxWidth);
                 return TRACEOFF(traceID, textObj);
             }
@@ -4084,7 +4281,8 @@ const Media = (() => {
                 _.each(textParams, (v, k) => {
                     if (k === "text")
                         D.Alert("Attempt to set 'text' via setTextData: Use setText() to set text values!", "ERROR: setTextData");
-                    else REGISTRY.TEXT[textKey][k] = v;
+                    else
+                        REGISTRY.TEXT[textKey][k] = v;
                 });
                 textObj.set(objParams);
                 if (_.intersection(Object.keys(textParams), ["shiftTop", "top", "shiftLeft", "left", "pushtop", "pushleft"]).length)
@@ -4098,19 +4296,22 @@ const Media = (() => {
         const traceID = TRACEON("toggleText", [textRef, isActive, isForcing]);
         // NON-PERMANENT.  If turning off, set activeSrc to curSrc.
         // Also, verify img status is changing before doing anything.
-        if (isActive === null) return TRACEOFF(traceID, null);
+        if (isActive === null)
+            return TRACEOFF(traceID, null);
         const textData = getTextData(textRef);
         const modeData = getModeData(textRef, Session.Mode);
         if (VAL({list: [textData, modeData]}, "toggleText", true)) {
             let activeCheck = null;
-            if ((isActive === true || (isActive !== false && !textData.isActive)) && modeData.isForcedOn !== "NEVER") activeCheck = true;
+            if ((isActive === true || (isActive !== false && !textData.isActive)) && modeData.isForcedOn !== "NEVER")
+                activeCheck = true;
             else if (
-                isActive === false ||
-                (isActive !== true && textData.isActive) ||
-                (modeData.isForcedOn === "NEVER" && textData.isActive)
+                isActive === false
+                || (isActive !== true && textData.isActive)
+                || (modeData.isForcedOn === "NEVER" && textData.isActive)
             )
                 activeCheck = false;
-            if (activeCheck === null || (!isForcing && textData.isActive === activeCheck)) return TRACEOFF(traceID, null);
+            if (activeCheck === null || (!isForcing && textData.isActive === activeCheck))
+                return TRACEOFF(traceID, null);
             const textKey = textData.name;
             const textObj = getTextObj(textKey);
             if (activeCheck === false) {
@@ -4119,7 +4320,8 @@ const Media = (() => {
                 REGISTRY.TEXT[textKey].isActive = false;
                 // setLayer(textObj, "walls", isForcing)
                 textObj.set("layer", "walls");
-                if (textData.shadowID) (getObj("text", textData.shadowID) || {set: () => false}).set("layer", "walls");
+                if (textData.shadowID)
+                    (getObj("text", textData.shadowID) || {set: () => false}).set("layer", "walls");
                 return TRACEOFF(traceID, false);
             } else if (activeCheck === true) {
                 // TURN ON: Set layer to active layer, toggle on associated drag pads, restore activeState value if it's different
@@ -4127,7 +4329,8 @@ const Media = (() => {
                 setText(textKey, textData.activeText, null, isForcing);
                 textObj.set("layer", textData.activeLayer);
                 // setLayer(textObj, textData.activeLayer, isForcing)
-                if (textData.shadowID) (getObj("text", textData.shadowID) || {set: () => false}).set("layer", textData.activeLayer);
+                if (textData.shadowID)
+                    (getObj("text", textData.shadowID) || {set: () => false}).set("layer", textData.activeLayer);
                 return TRACEOFF(traceID, true);
             }
         }
@@ -4139,20 +4342,25 @@ const Media = (() => {
         const textData = getTextData(textRef);
         if (textData.shadowID) {
             const shadowObj = getObj("text", textData.shadowID);
-            if (shadowObj && (!isUnregOnly || isStillKillingShadow)) shadowObj.remove();
+            if (shadowObj && (!isUnregOnly || isStillKillingShadow))
+                shadowObj.remove();
         }
-        if (textObj && !isUnregOnly) textObj.remove();
+        if (textObj && !isUnregOnly)
+            textObj.remove();
         if (textData) {
-            if (REGISTRY.ID[textData.id]) delete REGISTRY.ID[textData.id];
-            if (REGISTRY.TEXT[textData.name]) delete REGISTRY.TEXT[textData.name];
+            if (REGISTRY.ID[textData.id])
+                delete REGISTRY.ID[textData.id];
+            if (REGISTRY.TEXT[textData.name])
+                delete REGISTRY.TEXT[textData.name];
             return TRACEOFF(traceID, true);
         }
         return TRACEOFF(traceID, THROW(`Invalid text reference ${D.JSL(textRef)}`, "removeText"));
     };
     const removeTexts = (textString, isUnregOnly) => {
         const traceID = TRACEON("removeTexts", [textString, isUnregOnly]);
-        const textNames = _.filter(Object.keys(REGISTRY.TEXT), v => v.includes(textString));
-        for (const textName of textNames) removeText(textName, isUnregOnly);
+        const textNames = _.filter(Object.keys(REGISTRY.TEXT), (v) => v.includes(textString));
+        for (const textName of textNames)
+            removeText(textName, isUnregOnly);
         TRACEOFF(traceID);
     };
     const clearMissingRegText = () => {
@@ -4177,16 +4385,18 @@ const Media = (() => {
         const allTextObjs = findObjs({
             _type: "text"
         });
-        const unregTextObjs = allTextObjs.filter(x => !isRegText(x) && (isKillingPlayerText || x.get("controlledby") === D.GMID()));
+        const unregTextObjs = allTextObjs.filter((x) => !isRegText(x) && (isKillingPlayerText || x.get("controlledby") === D.GMID()));
         for (const textObj of unregTextObjs) {
             returnLines.push(
                 `"<span style='color: ${textObj.get("color")}; background-color: #AAAAAA;'> ${textObj
                     .get("text")
                     .slice(0, 15)}... </span>" <span style='color: red;'><b>REMOVED</b></span>`
             );
-            if (isKilling) textObj.remove();
+            if (isKilling)
+                textObj.remove();
         }
-        if (returnLines.length) STATE.REF.fixAllCommands.push(...["<h4><u>Clearing Orphan Texts</u></h4>", ...returnLines]);
+        if (returnLines.length)
+            STATE.REF.fixAllCommands.push(...["<h4><u>Clearing Orphan Texts</u></h4>", ...returnLines]);
         TRACEOFF(traceID);
     };
     const resetTextRegistry = () => {
@@ -4199,8 +4409,8 @@ const Media = (() => {
         const traceID = TRACEON("fixTextObjs", [isQueueing]);
         const textKeys = Object.keys(REGISTRY.TEXT);
         const textPairs = _.zip(
-            textKeys.map(x => REGISTRY.TEXT[x]),
-            textKeys.map(x => getObj("text", REGISTRY.TEXT[x].id))
+            textKeys.map((x) => REGISTRY.TEXT[x]),
+            textKeys.map((x) => getObj("text", REGISTRY.TEXT[x].id))
         );
         const reportLines = [];
         for (const [textData, textObj] of textPairs) {
@@ -4245,11 +4455,14 @@ const Media = (() => {
                 }
             toggleText(textData.name, textData.isActive, true);
             setText(textData.name, textData.curText, null, true);
-            if (reportStrings.length) reportLines.push(...[`<b>${textData.name}</b>`, reportStrings.map(x => `... ${x}`).join("<br>")]);
+            if (reportStrings.length)
+                reportLines.push(...[`<b>${textData.name}</b>`, reportStrings.map((x) => `... ${x}`).join("<br>")]);
         }
         if (reportLines.length)
-            if (isQueueing) STATE.REF.fixAllCommands.push(...["<h3><u>Final Text Object Pass</u></h3>", ...reportLines]);
-            else D.Alert(["<h3><u>Fixing Text Objects</u></h3>", ...reportLines].join("<br>"), "fixTextObjs");
+            if (isQueueing)
+                STATE.REF.fixAllCommands.push(...["<h3><u>Final Text Object Pass</u></h3>", ...reportLines]);
+            else
+                D.Alert(["<h3><u>Fixing Text Objects</u></h3>", ...reportLines].join("<br>"), "fixTextObjs");
         TRACEOFF(traceID);
     };
     // #endregion
@@ -4275,9 +4488,9 @@ const Media = (() => {
                     name: assetName,
                     type: "image",
                     page:
-                        (C.PAGES.GAME === assetObj.get("_pageid") && "GAME") ||
-                        (C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage") ||
-                        assetObj.get("_pageid"),
+                        (C.PAGES.GAME === assetObj.get("_pageid") && "GAME")
+                        || (C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage")
+                        || assetObj.get("_pageid"),
                     layer: assetObj.get("layer"),
                     zIndex: D.Int(mediaData.zIndex),
                     top: D.Int(assetObj.get("top")),
@@ -4293,12 +4506,10 @@ const Media = (() => {
                         typeof mediaData.srcs === "string"
                             ? mediaData.srcs.replace(/_1$/g, mediaData.srcs.replace(/_1$/g, "_2") in REGISTRY.IMG ? "_1" : "")
                             : D.Clone(
-                                  D.KeyMapObj(mediaData.srcs, null, v =>
-                                      v
-                                          .replace(/[a-z]*\.(png|jpg|gif)/gu, "thumb.$1")
-                                          .replace(new RegExp(C.IMGPREFIX.replace("/", "/"), "g"), "")
-                                  )
-                              )
+                                D.KeyMapObj(mediaData.srcs, null, (v) => v
+                                    .replace(/[a-z]*\.(png|jpg|gif)/gu, "thumb.$1")
+                                    .replace(new RegExp(C.IMGPREFIX.replace("/", "/"), "g"), ""))
+                            )
                 };
                 if (mediaData.padID) {
                     const pad = getObj("graphic", mediaData.padID);
@@ -4316,8 +4527,10 @@ const Media = (() => {
                 errorLines.push(`Error finding registered object with key ${D.JS(mediaData.name)}`);
             }
         }
-        if (errorLines.length) D.Alert(errorLines.join("<br>"), "Image Conversion Errors");
-        else D.Flag("Image Conversion Successful!");
+        if (errorLines.length)
+            D.Alert(errorLines.join("<br>"), "Image Conversion Errors");
+        else
+            D.Flag("Image Conversion Successful!");
     };
     const parseTEXTRegistry = () => {
         const errorLines = [];
@@ -4330,9 +4543,9 @@ const Media = (() => {
                     name: mediaData.name,
                     type: "text",
                     page:
-                        (C.PAGES.GAME === assetObj.get("_pageid") && "GAME") ||
-                        (C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage") ||
-                        assetObj.get("_pageid"),
+                        (C.PAGES.GAME === assetObj.get("_pageid") && "GAME")
+                        || (C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage")
+                        || assetObj.get("_pageid"),
                     layer: assetObj.get("layer"),
                     zIndex: D.Int(mediaData.zIndex),
                     top: D.Int(assetObj.get("top")),
@@ -4346,9 +4559,9 @@ const Media = (() => {
                     modes: D.Clone(mediaData.modes),
                     color: D.RGB(mediaData.color),
                     font_family:
-                        (D.LCase(mediaData.font_family).includes("contrail") && "Contrail One") ||
-                        (D.LCase(mediaData.font_family).includes("shadow") && "Shadows Into Light") ||
-                        mediaData.font_family,
+                        (D.LCase(mediaData.font_family).includes("contrail") && "Contrail One")
+                        || (D.LCase(mediaData.font_family).includes("shadow") && "Shadows Into Light")
+                        || mediaData.font_family,
                     font_size: D.Int(mediaData.font_size),
                     alignVert: mediaData.vertAlign,
                     alignHoriz: mediaData.justification,
@@ -4356,18 +4569,21 @@ const Media = (() => {
                     lineHeight: mediaData.lineHeight
                 };
                 try {
-                    ASSETREF[assetObj.id].lineHeight =
-                        D.CHARWIDTH[ASSETREF[assetObj.id].font_family][ASSETREF[assetObj.id].font_size].lineHeight;
+                    ASSETREF[assetObj.id].lineHeight
+                        = D.CHARWIDTH[ASSETREF[assetObj.id].font_family][ASSETREF[assetObj.id].font_size].lineHeight;
                 } catch (errObj) {
                     D.Flag(`No Line Height Data Found for ${ASSETREF[assetObj.id].name}`);
                 }
-                if (mediaData.shadowID) ASSETREF[assetObj.id].shadowID = mediaData.shadowID;
+                if (mediaData.shadowID)
+                    ASSETREF[assetObj.id].shadowID = mediaData.shadowID;
             } else {
                 errorLines.push(`Error finding text object with key ${D.JS(mediaData.name)}`);
             }
         }
-        if (errorLines.length) D.Alert(errorLines.join("<br>"), "Text Conversion Errors");
-        else D.Flag("Text Conversion Successful!");
+        if (errorLines.length)
+            D.Alert(errorLines.join("<br>"), "Text Conversion Errors");
+        else
+            D.Flag("Text Conversion Successful!");
     };
     const parseANIMRegistry = () => {
         const errorLines = [];
@@ -4380,9 +4596,9 @@ const Media = (() => {
                     name: mediaData.name,
                     type: "anim",
                     page:
-                        (C.PAGES.GAME === assetObj.get("_pageid") && "GAME") ||
-                        (C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage") ||
-                        assetObj.get("_pageid"),
+                        (C.PAGES.GAME === assetObj.get("_pageid") && "GAME")
+                        || (C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage")
+                        || assetObj.get("_pageid"),
                     layer: assetObj.get("layer"),
                     zIndex: D.Int(mediaData.zIndex),
                     top: D.Int(assetObj.get("top")),
@@ -4412,14 +4628,17 @@ const Media = (() => {
                 errorLines.push(`Error finding animation object with key ${D.JS(mediaData.name)}`);
             }
         }
-        if (errorLines.length) D.Alert(errorLines.join("<br>"), "Animation Conversion Errors");
-        else D.Flag("Animation Conversion Successful!");
+        if (errorLines.length)
+            D.Alert(errorLines.join("<br>"), "Animation Conversion Errors");
+        else
+            D.Flag("Animation Conversion Successful!");
     };
     const parseTOKENRegistry = () => {
         const errorLines = [];
         const ASSETREF = state[C.GAMENAME].Assets.AssetLibrary;
         for (const mediaData of Object.values(REGISTRY.TOKEN)) {
-            if (typeof mediaData.srcs === "object" && "base" in mediaData.srcs && Object.values(mediaData.srcs).length === 1) continue;
+            if (typeof mediaData.srcs === "object" && "base" in mediaData.srcs && Object.values(mediaData.srcs).length === 1)
+                continue;
             const charObj = getObj("character", mediaData.charID);
             if (charObj) {
                 ASSETREF[charObj.id] = {
@@ -4457,20 +4676,18 @@ const Media = (() => {
                     ASSETREF[charObj.id].isRandomToken = true;
                 } else if (mediaData.srcs.randomSrcs) {
                     ASSETREF[charObj.id].srcs = D.Clone(
-                        _.uniq(_.compact([mediaData.srcs.base, ...mediaData.srcs.randomSrcs])).map(x =>
-                            x.replace(/[a-z]*\.(png|jpg|gif)/gu, "thumb.$1").replace(new RegExp(C.IMGPREFIX.replace("/", "/"), "g"), "")
-                        )
+                        _.uniq(_.compact([mediaData.srcs.base, ...mediaData.srcs.randomSrcs])).map((x) => x.replace(/[a-z]*\.(png|jpg|gif)/gu, "thumb.$1").replace(new RegExp(C.IMGPREFIX.replace("/", "/"), "g"), ""))
                     );
                     ASSETREF[charObj.id].state = 0;
                     ASSETREF[charObj.id].isRandomToken = true;
                 } else if (mediaData.srcs && Object.keys(mediaData.srcs).length) {
                     ASSETREF[charObj.id].srcs = D.Clone(
-                        D.KeyMapObj(mediaData.srcs, null, v =>
-                            v.replace(/[a-z]*\.(png|jpg|gif)/gu, "thumb.$1").replace(new RegExp(C.IMGPREFIX.replace("/", "/"), "g"), "")
-                        )
+                        D.KeyMapObj(mediaData.srcs, null, (v) => v.replace(/[a-z]*\.(png|jpg|gif)/gu, "thumb.$1").replace(new RegExp(C.IMGPREFIX.replace("/", "/"), "g"), ""))
                     );
-                    if (!("base" in mediaData.srcs)) errorLines.push(`No base source found for character '${mediaData.name}'`);
-                    else ASSETREF[charObj.id].state = "base";
+                    if (!("base" in mediaData.srcs))
+                        errorLines.push(`No base source found for character '${mediaData.name}'`);
+                    else
+                        ASSETREF[charObj.id].state = "base";
                 } else {
                     errorLines.push(`No image sources for character '${mediaData.name}'`);
                 }
@@ -4479,7 +4696,7 @@ const Media = (() => {
             }
         }
         // Also want to search all characters to see if there are any with generic token categories.
-        findObjs({_type: "character"}).forEach(charObj => {
+        findObjs({_type: "character"}).forEach((charObj) => {
             const tokenCat = D.GetStatVal(charObj.id, "tokencat");
             if (tokenCat)
                 ASSETREF[charObj.id] = {
@@ -4511,8 +4728,10 @@ const Media = (() => {
                     isRandomToken: true
                 };
         });
-        if (errorLines.length) D.Alert(errorLines.join("<br>"), "Token Conversion Errors");
-        else D.Flag("Token Conversion Successful!");
+        if (errorLines.length)
+            D.Alert(errorLines.join("<br>"), "Token Conversion Errors");
+        else
+            D.Flag("Token Conversion Successful!");
     };
     // #endregion
 
