@@ -35,7 +35,7 @@ const Handouts = (() => {
                 let category;
                 switch (D.LCase((call = args.shift()))) {
                     case "cat": case "category": {
-                        category = args.shift();                        
+                        category = args.shift();
                     }
                     // falls through
                     case "all": {
@@ -56,6 +56,11 @@ const Handouts = (() => {
                     }
                     case "prestation": {
                         // summarizePrestation("Prestation Summary", D.GetChars("registered"));
+                        break;
+                    }
+                    case "charsummary": {
+                        updateCharDetails();
+                        updateCharSummary();
                         break;
                     }
                     // no default
@@ -205,6 +210,578 @@ const Handouts = (() => {
                 D.PullOut(STATE.REF.categoryLogs[category], (v) => v === handoutObj.get("name"));
             handoutObj.remove();
         }
+    };
+    // #endregion
+
+    // #region HANDOUTS: Specific Handouts
+    const updateCharSummary = () => {
+        const html = C.HANDOUTHTML.TraitSummaryDoc;
+        const colorScheme = {
+            physical: [
+                "rgba(255,234,230,1)",
+                "rgba(255,219,211,1)",
+                "rgba(255,203,192,1)",
+                "rgba(107,19,0,1)"
+            ],
+            social: [
+                "rgba(237,254,228,1)",
+                "rgba(223,251,208,1)",
+                "rgba(208,248,187,1)",
+                "rgba(33,93,0,1)"
+            ],
+            mental: [
+                "rgba(234,229,252,1)",
+                "rgba(217,209,246,1)",
+                "rgba(198,186,238,1)",
+                "rgba(59,34,146,1)"
+            ],
+            disciplines: [
+                "rgba(225,225,225,1)",
+                "rgba(175,175,175,1)",
+                "rgba(175,175,175,1)",
+                "rgba(20,20,20,1)"
+            ],
+            trackers: [
+                "rgba(225,225,225,1)",
+                "rgba(175,175,175,1)",
+                "rgba(175,175,175,1)",
+                "rgba(20,20,20,1)"
+            ]
+        };
+        const charObjs = D.GetChars("registered");
+        // Initial Header
+        const tableRows = [
+            html.HeaderRow([
+                html.HeaderCell("ATTRIBUTES"),
+                ...charObjs.map((x) => html.HeaderCell(D.GetName(x, true)))
+            ].join(""), C.COLORS.darkdarkgrey)
+        ];
+        // Attribute Lines
+        for (const [attrCat, attributes] of Object.entries(C.ATTRIBUTES)) {
+            const colors = colorScheme[attrCat].slice(0, 3);
+            for (const attribute of attributes) {
+                const rowCells = [html.HeaderCell(attribute)];
+                for (const charObj of charObjs) {
+                    const attrVal = D.GetStatVal(charObj, attribute);
+                    rowCells.push(html.Cell([
+                        html.SymbolSpan([
+                            html.Symbols.DotFull.repeat(attrVal),
+                            html.Symbols.DotEmpty.repeat(5 - attrVal)
+                        ].join("")),
+                        html.SpecialtySpan(" ")
+                    ].join("")));
+                }
+                tableRows.push(html.Row(rowCells.join(""), colors.pop()));
+            }
+        }
+        // Skill Lines
+        for (const [skillCat, skills] of Object.entries(C.SKILLS)) {
+            const colors = colorScheme[skillCat];
+            tableRows.push(html.HeaderRow([
+                html.HeaderCell(`SKILLS: ${D.UCase(skillCat)}`),
+                ...charObjs.map((x) => html.HeaderCell(D.GetName(x, true)))
+            ].join(""), colors.pop()));
+            colors.shift();
+            for (const skill of skills) {
+                const rowCells = [html.HeaderCell(skill)];
+                for (const charObj of charObjs) {
+                    const skillVal = D.GetStatVal(charObj, skill.replace(/ /gu, "_"));
+                    const specVal = D.GetStatVal(charObj, `${skill}_spec`.replace(/ /gu, "_")).replace(/\s*?,\s*?/gu, "<br>");
+                    rowCells.push(html.Cell([
+                        html.SymbolSpan([
+                            html.Symbols.DotFull.repeat(skillVal),
+                            html.Symbols.DotEmpty.repeat(5 - skillVal)
+                        ].join("")),
+                        html.SpecialtySpan(specVal)
+                    ].join("")));
+                }
+                tableRows.push(html.Row(rowCells.join(""), colors[0]));
+                colors.unshift(colors.pop());
+            }
+        }
+        // Trackers
+        const trackerColors = colorScheme.trackers;
+        tableRows.push(html.HeaderRow([
+            html.HeaderCell("TRACKERS:"),
+            ...charObjs.map((x) => html.HeaderCell(D.GetName(x, true)))
+        ].join(""), trackerColors.pop()));
+        trackerColors.pop();
+        //      Health & Willpower
+        for (const tracker of ["Health", "Willpower"]) {
+            const rowCells = [html.HeaderCell(tracker)];
+            for (const charObj of charObjs) {
+                const trackerLine = (new Array(17)).fill(false);
+                let [aggDmg, supDmg, total] = [
+                        D.GetStatVal(charObj, `${D.LCase(tracker)}_aggravated`),
+                        D.GetStatVal(charObj, `${D.LCase(tracker)}_bashing`),
+                        D.GetStatVal(charObj, `${D.LCase(tracker)}_max`)
+                    ],
+                    isTwoRows = false;
+                for (let i = 0; i < trackerLine.length; i++)
+                    if (i === 5) {
+                        trackerLine[i] = "&nbsp;";
+                    } else if (i === 11) {
+                        trackerLine[i] = "<br>";
+                        isTwoRows = true;
+                    } else if (aggDmg > 0) {
+                        aggDmg--;
+                        total--;
+                        trackerLine[i] = html.Symbols.BoxAggro;
+                    } else if (supDmg > 0) {
+                        supDmg--;
+                        total--;
+                        trackerLine[i] = html.Symbols.BoxSuper;
+                    } else if (total > 0) {
+                        total--;
+                        trackerLine[i] = html.Symbols.BoxEmpty;
+                    } else {
+                        trackerLine.length = i;
+                        break;
+                    }
+                if (isTwoRows)
+                    trackerLine.forEach((x, i) => { trackerLine[i] = x.replace(/margin-top: 3px/gu, "margin-top: 2px;") });
+                rowCells.push(html.TrackerCell([
+                    html.SymbolSpan(trackerLine.join("")).replace(/margin-top: 1px/gu, "margin-bottom: 2px;")
+                ].join("")));
+            }
+            tableRows.push(html.Row(rowCells.join(""), trackerColors[0]));
+            trackerColors.unshift(trackerColors.pop());
+        }
+        //      Blood Potency
+        const rowCells = [html.HeaderCell("Blood Potency")];
+        for (const charObj of charObjs) {
+            const [currentBP, maxBP] = [
+                D.GetStatVal(charObj, "blood_potency"),
+                D.GetStatVal(charObj, "blood_potency_max")
+            ];
+            rowCells.push(html.TrackerCell([
+                html.SymbolSpan([
+                    html.Symbols.DotBPFull.repeat(currentBP),
+                    html.Symbols.DotBPEmpty.repeat(maxBP - currentBP)
+                ].join(""))
+            ].join("")));
+        }
+        tableRows.push(html.Row(rowCells.join(""), trackerColors[0]));
+        trackerColors.unshift(trackerColors.pop());
+        rowCells.length = 0;
+        //      Humanity
+        rowCells.push(html.HeaderCell("Humanity"));
+        for (const charObj of charObjs) {
+            const [curHumanity, curStains] = [
+                D.GetStatVal(charObj, "humanity"),
+                D.GetStatVal(charObj, "stains")
+            ];
+            rowCells.push(html.TrackerCell([
+                html.SymbolSpan([
+                    html.Symbols.BoxHumanity.repeat(curHumanity),
+                    html.Symbols.BoxHumStain.repeat(Math.max(0, curHumanity + curStains - 10)),
+                    html.Symbols.BoxEmpty.repeat(Math.max(0, 10 - curHumanity - curStains)),
+                    html.Symbols.BoxStain.repeat(curStains)
+                ].join(""))
+            ].join("")));
+        }
+        tableRows.push(html.Row(rowCells.join(""), trackerColors[0]));
+        // Disciplines
+        const discColors = colorScheme.disciplines;
+        tableRows.push(html.HeaderRow([
+            html.HeaderCell("DISCIPLINES:"),
+            ...charObjs.map((x) => html.HeaderCell(D.GetName(x, true)))
+        ].join(""), discColors.pop()));
+        discColors.pop();
+        for (const disc of Object.keys(C.DISCIPLINES)) {
+            rowCells.length = 0;
+            rowCells.push(html.HeaderCell(disc));
+            let areAllZero = true;
+            for (const charObj of charObjs) {
+                const attrData = D.GetStat(charObj, disc);
+                if (attrData) {
+                    const [skillVal, attrObj] = attrData;
+                    const discPowerLines = [];
+                    if (skillVal > 0) {
+                        areAllZero = false;
+                        if (attrObj.get("name").startsWith("repeating")) {
+                            const [section, rowID, statName] = D.ParseRepStat(attrObj);
+                            for (let i = 1; i <= skillVal; i++)
+                                discPowerLines.push(`${html.Symbols.DotFull} ${D.GetRepStats(charObj, section, rowID, `discpower_${i}`, null, "val").pop()}`);
+                        } else {
+                            const statPrefix = attrObj.get("name");
+                            for (let i = 1; i <= skillVal; i++)
+                                discPowerLines.push(`${html.Symbols.DotFull} ${D.GetStatVal(charObj, `${statPrefix}_${i}`)}`);
+                        }
+                    }
+                    rowCells.push(html.Cell(discPowerLines.map((x) => html.PowerSpan(x)).join("")));
+                } else {
+                    rowCells.push(html.Cell(" "));
+                }
+            }
+            if (!areAllZero) {
+                tableRows.push(html.Row(rowCells.join(""), discColors[0]));
+                discColors.unshift(discColors.pop());
+            }
+        }
+
+        // Assemble Full Table Code
+        const fullCode = html.Table(tableRows.join(""));
+        updateHandout("Character Stat Summary", null, fullCode);
+    };
+    const updateCharDetails = () => {
+        const html = C.HANDOUTHTML.DetailsSummaryDoc;
+        const masterColorScheme = [
+            "rgba(0,0,0,0.1);",
+            "rgba(0,0,0,0);"
+        ];
+        let colorScheme = D.Clone(masterColorScheme);
+        const tables = [];
+        const tableRows = [];
+        const rowCells = [];
+        const cellLines = [];
+        const charObjs = D.GetChars("registered");
+
+        // === CONVICTIONS & COMPROMISES ===
+        tableRows.length = 0;
+        rowCells.length = 0;
+        cellLines.length = 0;
+        colorScheme = D.Clone(masterColorScheme);
+
+        // Tenets Line
+        tableRows.push(html.SubtitleRow(html.SubtitleCell(C.TENETS.join("&nbsp;&nbsp;♦&nbsp;&nbsp;"), 3)));
+        // Initial Header
+        tableRows.push(html.HeaderRow([
+            html.HeaderCell("CONVICTIONS", 2),
+            html.HeaderCell("Compromised Tenets")
+        ].join("")));
+
+        // Convictions & Compromises
+        for (const charObj of charObjs) {
+            rowCells.length = 0;
+            rowCells.push(html.RowFirstCell(D.GetName(charObj, true)));
+            const compromises = D.GetRepStats(charObj, "beliefs", null, "conviction", null, "val");
+            const convictions = D.GetRepStats(charObj, "beliefs", null, "touchstone_name", null, "val");
+            const lineColors = D.Clone(masterColorScheme);
+            cellLines.length = 0;
+            convictions.forEach((x) => {
+                cellLines.push(html.CellLine(x, lineColors[0]));
+                lineColors.unshift(lineColors.pop());
+            });
+            rowCells.push(html.Cell(cellLines.join(""), "middle"));
+            cellLines.length = 0;
+            compromises.forEach((x, i) => {
+                if (x) {
+                    cellLines.push(html.CellLine(`${C.TENETS[i]}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${x}`, lineColors[0]));
+                    lineColors.unshift(lineColors.pop());
+                }
+            });
+            rowCells.push(html.Cell(cellLines.join("")));
+            tableRows.push(html.Row(rowCells.join(""), colorScheme[0]));
+            colorScheme.unshift(colorScheme.pop());
+        }
+        tables.push(html.Table(tableRows.join("")));
+
+
+        // === COMPULSIONS & DYSCRASIAS ===
+        tableRows.length = 0;
+        rowCells.length = 0;
+        cellLines.length = 0;
+        colorScheme = D.Clone(masterColorScheme);
+
+        // Initial Header
+        tableRows.push(html.HeaderRow([html.HeaderCell("COMPULSIONS & DYSCRASIAS", 2)]));
+        // Compulsions & Dyscrasias
+        for (const charObj of charObjs) {
+            rowCells.length = 0;
+            cellLines.length = 0;
+            rowCells.push([html.RowFirstCell(D.GetName(charObj, true))]);
+            if (!D.Int(D.GetStatVal(charObj, "compulsion_toggle")) && !D.Int(D.GetStatVal(charObj, "dyscrasias_toggle")))
+                continue;
+            let numLines = 0;
+            if (D.Int(D.GetStatVal(charObj, "compulsion_toggle"))) {
+                const [compulsionTitle, compulsionDetails] = (D.GetStatVal(charObj, "compulsion") || "").split("—").map((x) => x.trim());
+                if (compulsionDetails) {
+                    cellLines.push(html.CellLine([
+                        html.CellTitleSpan(compulsionTitle),
+                        compulsionDetails
+                    ].join(""), C.COLORS.palered));
+                    numLines += Math.ceil(compulsionDetails.length / 105) + 1.8;
+                }
+            }
+            if (D.Int(D.GetStatVal(charObj, "dyscrasias_toggle"))) {
+                const [dyscrasiaTitle, dyscrasiaDetails] = (D.GetStatVal(charObj, "dyscrasias") || "").split("—").map((x) => x.trim());
+                if (dyscrasiaDetails) {
+                    cellLines.push(html.CellLine([
+                        html.CellTitleSpan(dyscrasiaTitle),
+                        dyscrasiaDetails
+                    ].join(""), C.COLORS.brightgrey));
+                    numLines += Math.ceil(dyscrasiaDetails.length / 105) + 1.8;
+                }
+            }
+            rowCells.push(html.LongTextCell(cellLines.join(""), Math.max(numLines, 1)));
+            tableRows.push(html.Row(rowCells.join(""), colorScheme[0]));
+            colorScheme.unshift(colorScheme.pop());
+        }
+        tables.push(html.Table(tableRows.join("")));
+
+        // === AMBITION ===
+        tableRows.length = 0;
+        rowCells.length = 0;
+        cellLines.length = 0;
+        colorScheme = D.Clone(masterColorScheme);
+
+        // Initial Header
+        tableRows.push(html.HeaderRow([html.HeaderCell("AMBITION", 2)]));
+        // Ambitions
+        for (const charObj of charObjs) {
+            rowCells.length = 0;
+            rowCells.push([html.RowFirstCell(D.GetName(charObj, true))]);
+            const ambition = D.GetStatVal(charObj, "ambition") || "&nbsp;";
+            const numLines = Math.ceil(ambition.length / 105);
+            rowCells.push(html.LongTextCell(ambition, numLines));
+            tableRows.push(html.Row(rowCells.join(""), colorScheme[0]));
+            colorScheme.unshift(colorScheme.pop());
+        }
+        tables.push(html.Table(tableRows.join("")));
+
+        // === HUMANITY MARKS ===
+        tableRows.length = 0;
+        rowCells.length = 0;
+        cellLines.length = 0;
+        colorScheme = D.Clone(masterColorScheme);
+
+        // Initial Header
+        tableRows.push(html.HeaderRow([html.HeaderCell("DEGENERATION MARKS", 2)]));
+        // Marks
+        for (const charObj of charObjs) {
+            rowCells.length = 0;
+            rowCells.push(html.RowFirstCell(D.GetName(charObj, true)));
+            const markDetails = D.GetStatVal(charObj, "deathmarks");
+            if (markDetails) {
+                const numLines = Math.ceil(markDetails.length / 105);
+                rowCells.push(html.LongTextCell(markDetails, numLines));
+                tableRows.push(html.Row(rowCells.join(""), colorScheme[0]));
+                colorScheme.unshift(colorScheme.pop());
+            }
+        }
+        tables.push(html.Table(tableRows.join("")));
+
+        // === MASK ===
+        tableRows.length = 0;
+        rowCells.length = 0;
+        cellLines.length = 0;
+        colorScheme = D.Clone(masterColorScheme);
+
+        // Initial Header
+        tableRows.push(html.HeaderRow([html.HeaderCell("MASK", 2)]));
+        // Mask Details
+        for (const charObj of charObjs) {
+            rowCells.length = 0;
+            rowCells.push(html.RowFirstCell(D.GetName(charObj, true)));
+            const maskName = D.GetStatVal(charObj, "maskname");
+            const maskDetails = D.GetStatVal(charObj, "mask");
+            if (!maskDetails && !maskName)
+                continue;
+            const numLines = Math.ceil((maskDetails || "&nbsp;").length / 105) + 1.6;
+            rowCells.push(html.LongTextCell([
+                html.CellTitleSpan(maskName || "&nbsp;"),
+                maskDetails || "&nbsp;"
+            ].join(""), numLines));
+            tableRows.push(html.Row(rowCells.join(""), colorScheme[0]));
+            colorScheme.unshift(colorScheme.pop());
+        }
+        tables.push(html.Table(tableRows.join("")));
+
+        // === PREDATOR ===
+        tableRows.length = 0;
+        rowCells.length = 0;
+        cellLines.length = 0;
+        colorScheme = D.Clone(masterColorScheme);
+
+        // Initial Header
+        tableRows.push(html.HeaderRow([
+            html.HeaderCell("PREDATOR TYPE", 3)
+        ].join("")));
+        // Predator Type Details
+        for (const charObj of charObjs) {
+            rowCells.length = 0;
+            rowCells.push(html.RowFirstCell(D.GetName(charObj, true)));
+            const predatorType = D.GetStatVal(charObj, "predator") || "&nbsp;";
+            const predatorRoll = (C.PREDTYPES[predatorType] || []).join(" + ");
+            rowCells.push(html.BigTextCell(predatorType.replace(/_/gu, " ")), html.BigTextCell(predatorRoll));
+            tableRows.push(html.Row(rowCells.join(""), colorScheme[0]));
+            colorScheme.unshift(colorScheme.pop());
+        }
+        tables.push(html.Table(tableRows.join("")));
+
+        // Assemble Full Table Code
+        const fullCode = tables.join("");
+        updateHandout("Character Details", null, fullCode);
+
+        /*
+        for (const [attrCat, attributes] of Object.entries(C.ATTRIBUTES)) {
+            const colors = colorScheme[attrCat].slice(0, 3);
+            for (const attribute of attributes) {
+                const rowCells = [html.HeaderCell(attribute)];
+                for (const charObj of charObjs) {
+                    const attrVal = D.GetStatVal(charObj, attribute);
+                    rowCells.push(html.Cell([
+                        html.SymbolSpan([
+                            html.Symbols.DotFull.repeat(attrVal),
+                            html.Symbols.DotEmpty.repeat(5 - attrVal)
+                        ].join("")),
+                        html.SpecialtySpan(" ")
+                    ].join("")));
+                }
+                tableRows.push(html.Row(rowCells.join(""), colors.pop()));
+            }
+        }
+        // Skill Lines
+        for (const [skillCat, skills] of Object.entries(C.SKILLS)) {
+            const colors = colorScheme[skillCat];
+            tableRows.push(html.HeaderRow([
+                html.HeaderCell(`SKILLS: ${D.UCase(skillCat)}`),
+                ...charObjs.map((x) => html.HeaderCell(D.GetName(x, true)))
+            ].join(""), colors.pop()));
+            colors.shift();
+            for (const skill of skills) {
+                const rowCells = [html.HeaderCell(skill)];
+                for (const charObj of charObjs) {
+                    const skillVal = D.GetStatVal(charObj, skill.replace(/ /gu, "_"));
+                    const specVal = D.GetStatVal(charObj, `${skill}_spec`.replace(/ /gu, "_")).replace(/\s*?,\s*?/gu, "<br>");
+                    rowCells.push(html.Cell([
+                        html.SymbolSpan([
+                            html.Symbols.DotFull.repeat(skillVal),
+                            html.Symbols.DotEmpty.repeat(5 - skillVal)
+                        ].join("")),
+                        html.SpecialtySpan(specVal)
+                    ].join("")));
+                }
+                tableRows.push(html.Row(rowCells.join(""), colors[0]));
+                colors.unshift(colors.pop());
+            }
+        }
+        // Trackers
+        const trackerColors = colorScheme.trackers;
+        tableRows.push(html.HeaderRow([
+            html.HeaderCell("TRACKERS:"),
+            ...charObjs.map((x) => html.HeaderCell(D.GetName(x, true)))
+        ].join(""), trackerColors.pop()));
+        trackerColors.pop();
+        //      Health & Willpower
+        for (const tracker of ["Health", "Willpower"]) {
+            const rowCells = [html.HeaderCell(tracker)];
+            for (const charObj of charObjs) {
+                const trackerLine = (new Array(17)).fill(false);
+                let [aggDmg, supDmg, total] = [
+                        D.GetStatVal(charObj, `${D.LCase(tracker)}_aggravated`),
+                        D.GetStatVal(charObj, `${D.LCase(tracker)}_bashing`),
+                        D.GetStatVal(charObj, `${D.LCase(tracker)}_max`)
+                    ],
+                    isTwoRows = false;
+                for (let i = 0; i < trackerLine.length; i++)
+                    if (i === 5) {
+                        trackerLine[i] = "&nbsp;";
+                    } else if (i === 11) {
+                        trackerLine[i] = "<br>";
+                        isTwoRows = true;
+                    } else if (aggDmg > 0) {
+                        aggDmg--;
+                        total--;
+                        trackerLine[i] = html.Symbols.BoxAggro;
+                    } else if (supDmg > 0) {
+                        supDmg--;
+                        total--;
+                        trackerLine[i] = html.Symbols.BoxSuper;
+                    } else if (total > 0) {
+                        total--;
+                        trackerLine[i] = html.Symbols.BoxEmpty;
+                    } else {
+                        trackerLine.length = i;
+                        break;
+                    }
+                if (isTwoRows)
+                    trackerLine.forEach((x, i) => { trackerLine[i] = x.replace(/margin-top: 3px/gu, "margin-top: 2px;") });
+                rowCells.push(html.TrackerCell([
+                    html.SymbolSpan(trackerLine.join("")).replace(/margin-top: 1px/gu, "margin-bottom: 2px;")
+                ].join("")));
+            }
+            tableRows.push(html.Row(rowCells.join(""), trackerColors[0]));
+            trackerColors.unshift(trackerColors.pop());
+        }
+        //      Blood Potency
+        const rowCells = [html.HeaderCell("Blood Potency")];
+        for (const charObj of charObjs) {
+            const [currentBP, maxBP] = [
+                D.GetStatVal(charObj, "blood_potency"),
+                D.GetStatVal(charObj, "blood_potency_max")
+            ];
+            rowCells.push(html.TrackerCell([
+                html.SymbolSpan([
+                    html.Symbols.DotBPFull.repeat(currentBP),
+                    html.Symbols.DotBPEmpty.repeat(maxBP - currentBP)
+                ].join(""))
+            ].join("")));
+        }
+        tableRows.push(html.Row(rowCells.join(""), trackerColors[0]));
+        trackerColors.unshift(trackerColors.pop());
+        rowCells.length = 0;
+        //      Humanity
+        rowCells.push(html.HeaderCell("Humanity"));
+        for (const charObj of charObjs) {
+            const [curHumanity, curStains] = [
+                D.GetStatVal(charObj, "humanity"),
+                D.GetStatVal(charObj, "stains")
+            ];
+            rowCells.push(html.TrackerCell([
+                html.SymbolSpan([
+                    html.Symbols.BoxHumanity.repeat(curHumanity),
+                    html.Symbols.BoxHumStain.repeat(Math.max(0, curHumanity + curStains - 10)),
+                    html.Symbols.BoxEmpty.repeat(Math.max(0, 10 - curHumanity - curStains)),
+                    html.Symbols.BoxStain.repeat(curStains)
+                ].join(""))
+            ].join("")));
+        }
+        tableRows.push(html.Row(rowCells.join(""), trackerColors[0]));
+        // Disciplines
+        const discColors = colorScheme.disciplines;
+        tableRows.push(html.HeaderRow([
+            html.HeaderCell("DISCIPLINES:"),
+            ...charObjs.map((x) => html.HeaderCell(D.GetName(x, true)))
+        ].join(""), discColors.pop()));
+        discColors.pop();
+        for (const disc of Object.keys(C.DISCIPLINES)) {
+            rowCells.length = 0;
+            rowCells.push(html.HeaderCell(disc));
+            let areAllZero = true;
+            for (const charObj of charObjs) {
+                const attrData = D.GetStat(charObj, disc);
+                if (attrData) {
+                    const [skillVal, attrObj] = attrData;
+                    const discPowerLines = [];
+                    if (skillVal > 0) {
+                        areAllZero = false;
+                        if (attrObj.get("name").startsWith("repeating")) {
+                            const [section, rowID, statName] = D.ParseRepStat(attrObj);
+                            for (let i = 1; i <= skillVal; i++)
+                                discPowerLines.push(`${html.Symbols.DotFull} ${D.GetRepStats(charObj, section, rowID, `discpower_${i}`, null, "val").pop()}`);
+                        } else {
+                            const statPrefix = attrObj.get("name");
+                            for (let i = 1; i <= skillVal; i++)
+                                discPowerLines.push(`${html.Symbols.DotFull} ${D.GetStatVal(charObj, `${statPrefix}_${i}`)}`);
+                        }
+                    }
+                    rowCells.push(html.Cell(discPowerLines.map((x) => html.PowerSpan(x)).join("")));
+                } else {
+                    rowCells.push(html.Cell(" "));
+                }
+            }
+            if (!areAllZero) {
+                tableRows.push(html.Row(rowCells.join(""), discColors[0]));
+                discColors.unshift(discColors.pop());
+            }
+        }
+
+        // Assemble Full Table Code
+        const fullCode = html.Table(tableRows.join(""));
+        updateHandout("Character Stat Summary", null, fullCode);
+        */
     };
     // #endregion
 
@@ -376,7 +953,12 @@ const Handouts = (() => {
         RemoveAll: delHandoutObjs,
         Get: getHandoutObj,
         ParseCode: getHandoutCode,
-        Count: getCount
+        Count: getCount,
+
+        UpdateReferenceHandouts: () => {
+            updateCharSummary();
+            updateCharDetails();
+        }
     };
 })();
 

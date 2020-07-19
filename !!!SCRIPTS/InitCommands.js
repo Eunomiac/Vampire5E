@@ -27,24 +27,22 @@ const InitCommands = (() => {
         Listener.Lock();
         setTimeout(() => {
             D.Flag("... Fixing TimeTracker ...");
-            D.Flag("... Fixing Soundscape ...");
-            D.Flag("... Fixing Character Displays ...");
             if (TimeTracker && TimeTracker.Fix)
                 TimeTracker.Fix();
             setTimeout(() => {
                 D.Flag("... Fixing Soundscape ...");
                 if (Soundscape && Soundscape.Sync)
                     Soundscape.Sync();
-                // setTimeout(() => {
-                //     D.Flag("... Fixing Character Displays ...");
-                //     if (Char && Char.RefreshDisplays)
-                //         Char.RefreshDisplays();
                 setTimeout(() => {
-                    D.Flag("Initialization Complete!");
-                    Listener.Unlock();
+                    D.Flag("... Fixing Character Displays ...");
+                    if (Char && Char.RefreshDisplays)
+                        Char.RefreshDisplays();
+                    setTimeout(() => {
+                        D.Flag("Initialization Complete!");
+                        Listener.Unlock();
+                    }, delayTime);
                 }, delayTime);
             }, delayTime);
-            // }, delayTime);
         }, delayTime);
     };
     // #endregion

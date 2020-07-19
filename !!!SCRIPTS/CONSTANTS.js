@@ -1318,25 +1318,45 @@ const C = (() => {
                         margin: 0px 5px 5px -5px;
                     ">${content}</div>`)
         },
+        DetailsSummaryDoc: {
+            Table: (content) => D.JSH(`<table style="width: 600px; box-shadow: 7px 7px 7px rgba(0,0,0,0.5); border: 1px solid black; font-size: 0px; font-family: 'Carrois Gothic SC'; margin: 0px;"><tbody>${content}</tbody></table>`),
+            HeaderRow: (content, bgColor = "rgba(20, 20, 20, 1)") => D.JSH(`<tr style="font-size: 14px; font-weight: bold; color: white; background-color: ${bgColor};">${content}</tr>`),
+            Row: (content, bgColor) => D.JSH(`<tr style="vertical-align: top; border-bottom: 1px solid black; background-color: ${bgColor};">${content}</tr>`),
+            SubtitleRow: (content) => D.JSH(`<tr style="vertical-align: top; border: none; background-color: white;">${content}</tr>`),
+            Cell: (content, vertAlign = "top") => D.JSH(`<td style="padding: 2px 1px; white-space: nowrap; border-right: 1px solid black; line-height: 14px; vertical-align: ${vertAlign};">${content}</td>`),
+            HeaderCell: (content, colSpan = 1) => D.JSH(`<td colspan="${colSpan}" style="padding: 2px 1px; white-space: nowrap; border: none; line-height: 14px;">${content}</td>`),
+            SubtitleCell: (content, colSpan = 1) => D.JSH(`<td colspan="${colSpan}" style="border: none; font-family: 'Voltaire'; font-size: 17px; font-weight: bold; text-align: center; text-align-last: center; border: 1px solid transparent; overflow: hidden; padding: 0px; line-height: 18px; white-space: nowrap; vertical-align: bottom; height: 40px;">${content}</td>`),
+            RowFirstCell: (content) => D.JSH(`<td style="line-height: 14px; font-weight: bold; font-size: 14px; padding: 2px 1px; white-space: nowrap; border-right: 1px solid black; width: 60px;">${content}</td>`),
+            BigTextCell: (content) => D.JSH(`<td style="padding: 2px 1px; white-space: nowrap; border-right: 1px solid black; line-height: 14px; font-size: 14px;">${content}</td>`),
+            LongTextCell: (content, numLines) => D.JSH(`<td style="padding: 2px 1px; white-space: nowrap; border-right: 1px solid black; line-height: 10px;"><div style="width: 100%; display: block; font-size: 10px; line-height: 10px; position:relative; height: ${numLines * 10}px; padding: 0px; white-space: normal;"><div style="width: 100%; display: block; font-size: 10px; line-height: 10px; position: absolute; overflow: hidden; width: 100%; padding: 1px 0px; margin: auto; top: 0; bottom:0; white-space: normal;">${content}</div></div></td>`),
+            CellTitleSpan: (content) => D.JSH(`<span style="display: block; width: 100%; border-bottom: 1px solid rgb(200,200,200); font-family: 'Marcellus SC'; font-size: 14px; line-height: 12px; text-shadow: 0px 0px 1px black; padding: 0px 2px 2px 2px;">${content}</span>`),
+            Headline: (content) => D.JSH(`<h2 style="font-family: 'Marcellus SC'; margin-bottom: -4px;" >${content}</h2>`),
+            CellLine: (content, bgColor) => D.JSH(`<div style="display: block; font-size: 10px; line-height: 10px; padding: 2px; white-space: normal; background-color: ${bgColor};">${content}</div>`)
+        },
         TraitSummaryDoc: {
-            Table: (content) => D.JSH(`<table style="margin-bottom: 1500px; width: 600px; box-shadow: 7px 7px 7px rgba(0,0,0,0.5); border: 1px solid black; font-family: 'Carrois Gothic SC'; margin-left: -30px;"><tbody>${content}</tbody></table>`),
+            Table: (content) => D.JSH(`<table style="width: 600px; box-shadow: 7px 7px 7px rgba(0,0,0,0.5); border: 1px solid black; font-family: 'Carrois Gothic SC'; font-size: 0px; margin-left: -30px;"><tbody>${content}</tbody></table>`),
             HeaderRow: (content, bgColor) => D.JSH(`<tr style="font-weight: bold; color: white; background-color: ${bgColor};">${content}</tr>`),
             Row: (content, bgColor) => D.JSH(`<tr style="background-color: ${bgColor};">${content}</tr>`),
-            Cell: (content) => D.JSH(`<td style="line-height: 16px; padding: 0px 1px; white-space: nowrap; border: none; border-right: 1px solid black;">${content}</td>`),
+            Cell: (content) => D.JSH(`<td style="line-height: 16px; padding: 1px; white-space: nowrap; border: none; border-right: 1px solid black;">${content}</td>`),
+            HeaderCell: (content) => D.JSH(`<td style="line-height: 16px; padding: 0px 1px; white-space: nowrap; border: none; border-right: 1px solid black; font-size: 12px;">${content}</td>`),
             TrackerCell: (content) => D.JSH(`<td style="line-height: 12px; padding: 0px 2px; white-space: nowrap; border: none; border-right: 1px solid black; text-align: center; text-align-last: center; ">${content}</td>`),
-            SymbolSpan: (content) => D.JSH(`<span style="display: inline-block; vertical-align: top; font-size: 14px; margin-top: 1px;">${content}</span>`),
+            SymbolSpan: (content) => D.JSH(`<span style="display: inline-block; line-height: 12px;">${content}</span>`),
             SpecialtySpan: (content) => D.JSH(`<span style="display: inline-block; vertical-align: top; font-family: 'Economica'; font-size: 10px; padding-left: 3px; line-height: 8px; width: 70px; font-variant: small-caps; overflow-x: hidden; white-space: normal; text-shadow: 0px 0px 1px black;">${content}</span>`),
+            PowerSpan: (content) => D.JSH(`<span style="display: block; vertical-align: top; font-family: 'Carrois Gothic SC'; font-size: 9px; padding-left: 3px; line-height: 12px; width: 100%; font-variant: small-caps; overflow-x: hidden; white-space: normal; text-shadow: 0px 0px 1px black; height: 12px;">${content}</span>`),
             Symbols: {
-                DotFull: "<span style=\"display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top;\">●</span>",
-                DotEmpty: "<span style=\"display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top; color: rgba(125, 125, 125, 1);\">○</span>",
-                BoxAggro: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/3gqGRAd.png'); background-size: 100%;\"></span>",
-                BoxSuper: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/e7l3Cx8.png'); background-size: 100%;\"></span>",
-                BoxEmpty: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc;\"></span>",
-                BoxHumanity: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); background: url('https://i.imgur.com/9ZoSd0Z.jpg') no-repeat center; background-size: 120%; box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;\"></span>",
-                BoxStain: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/IVia33U.jpg') no-repeat center; background-size: 110%;\"></span>",
-                BoxHumStain: "<span style=\"display: inline-block; font-size: 18px; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; margin-top: 3px; background: url('https://i.imgur.com/MmbObrq.jpg') no-repeat center; background-size: 110%;\"></span>",
-                DotBPFull: "<span style=\"display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top; background: rgba(150, 150, 150, 0.4); border: none; height: 9px; box-shadow: 1px 1px 2px black, 1px 1px 2px black; border-radius: 100%; margin: 2px 1px 1px 1px; background: url('https://imgsrv.roll20.net/?src=https%3A//i.imgur.com/U5ZW214.png') no-repeat center; background-size: 100%;\"></span>",
-                DotBPEmpty: "<span style=\"display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top; background: rgba(150, 150, 150, 0.4); border: none; height: 9px; box-shadow: -1px -1px 0px #000, 0px -1px 0px #999, 1px -1px 0px #aaa, 0px 0px 2px #000, 1px 0px 0px #fff, 0px 1px 0px #ccc, 1px 1px 0px #fff; border-radius: 100%; margin: 3px 1px 0px 1px;\"></span>"
+                DotFull: "<span style=\"display: inline-block; width: 8px; height: 8px; margin: 0px 1px 0px 0px; background: url('https://i.imgur.com/EdVCrGM.png') center; border: solid 1px black; border-radius: 50%; vertical-align: top; box-shadow: 1px 1px 2px black, 1px 1px 2px black;\">&nbsp;</span>",
+                DotEmpty: "<span style=\"display: inline-block; width: 9px; height: 9px; margin: 1px 1px 0px 1px; background: rgba(150, 150, 150, 0.4); border-radius: 50%; vertical-align: top; box-shadow: -1px -1px 0px #000, 0px -1px 0px #999, 1px -1px 0px #aaa, 0px 0px 1px #000, 1px 0px 0px #fff, 0px 1px 0px #ccc, 1px 1px 0px #fff;\">&nbsp;</span>",
+                OldDotFull: "<span style=\"display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top;\">●</span>",
+                OldDotEmpty: "<span style=\"display: inline-block; width: 9px; font-size: 18px; line-height: 12px; vertical-align: top; color: rgba(125, 125, 125, 1);\">○</span>",
+                OldDotDisc: "<span style=\"display: inline-block; height: 14px; margin-right: 4px; width: 9px; font-size: 18px; line-height: 7px; vertical-align: top;\">●</span>",
+                BoxAggro: "<span style=\"display: inline-block; vertical-align: top; width: 9px; height: 9px; line-height: 7px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/3gqGRAd.png'); background-size: 100%;\"></span>",
+                BoxSuper: "<span style=\"display: inline-block; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/e7l3Cx8.png'); background-size: 100%;\"></span>",
+                BoxEmpty: "<span style=\"display: inline-block; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc;\"></span>",
+                BoxHumanity: "<span style=\"display: inline-block; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); background: url('https://i.imgur.com/9ZoSd0Z.jpg') no-repeat center; background-size: 120%; box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;\"></span>",
+                BoxStain: "<span style=\"display: inline-block; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; background: url('https://i.imgur.com/IVia33U.jpg') no-repeat center; background-size: 110%;\"></span>",
+                BoxHumStain: "<span style=\"display: inline-block; vertical-align: top; width: 9px; height: 9px; line-height: 10px; margin: 1px; margin-bottom: 0px; margin-top: 3px; background-color: rgba(150, 150, 150, 0.4); box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; margin-top: 3px; background: url('https://i.imgur.com/MmbObrq.jpg') no-repeat center; background-size: 110%;\"></span>",
+                DotBPFull: "<span style=\"display: inline-block; width: 9px; line-height: 12px; vertical-align: top; background: rgba(150, 150, 150, 0.4); border: none; height: 9px; box-shadow: 1px 1px 2px black, 1px 1px 2px black; border-radius: 100%; margin: 2px 1px 1px 1px; background: url('https://imgsrv.roll20.net/?src=https%3A//i.imgur.com/U5ZW214.png') no-repeat center; background-size: 100%;\"></span>",
+                DotBPEmpty: "<span style=\"display: inline-block; width: 9px; line-height: 12px; vertical-align: top; background: rgba(150, 150, 150, 0.4); border: none; height: 9px; box-shadow: -1px -1px 0px #000, 0px -1px 0px #999, 1px -1px 0px #aaa, 0px 0px 2px #000, 1px 0px 0px #fff, 0px 1px 0px #ccc, 1px 1px 0px #fff; border-radius: 100%; margin: 3px 1px 0px 1px;\"></span>"
             }
         },
         main: (content) => D.JSH(`<div style="
@@ -2877,6 +2897,11 @@ const C = (() => {
             doubleAcute: [0.45, 0.3, 0.15, 0.1]
         }
     };
+    const TENETS = [
+        "Take Care of Our Own",
+        "Don't Kill Without Good Reason",
+        "Keep the Beast Under Control"
+    ];
     const MARQUEETIPS = {
         "Caine the First": [
             "Caine, son of Adam, was the First vampire.",
@@ -3227,6 +3252,18 @@ const C = (() => {
             "are defectors to the Sabbat, but there do exist Lasombra antitribu in the Camarilla. Tzimisce antitribu are virtually unheard of, both",
             "because the Tremere hunt them mercilessly, and because of the ease with which the Clan of Shapers can disguise their heritage."
         ]
+    };
+    const PREDTYPES = {
+        Alleycat: ["Strength", "Brawl"],
+        Bagger: ["Intelligence", "Streetwise"],
+        Cleaver: ["Manipulation", "Subterfuge"],
+        Consensualist: ["Manipulation", "Persuasion"],
+        Farmer: ["Composure", "Animal Ken"],
+        Headhunter: ["(Other Vampires)"],
+        Osiris: ["Manipulation", "Subterfuge/Intimidation", "Fame"],
+        Sandman: ["Dexterity", "Stealth"],
+        Scene_Queen: ["Manipulation", "Persuasion"],
+        Siren: ["Charisma", "Subterfuge"]
     };
     // #endregion
 
@@ -3593,10 +3630,12 @@ const C = (() => {
         TRACKERS,
         CLANS,
         SECTS,
+        PREDTYPES,
         MARQUEETIPS,
         MISCATTRS,
         BLOODPOTENCY,
         RESONANCEODDS,
+        TENETS,
 
         DISTRICTS,
         SITES,

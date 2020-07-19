@@ -1321,7 +1321,7 @@
                     // Bloodline Text Entries:
                     if (attrList.bloodline_toggle)
                         Object.assign(attrList, (bloodlineText[ATTRS.clan] || {})[ATTRS.bloodline] || {bloodline_detailstoggle: 0});
-                   
+
                     log(`[DOCLANS ATTRLIST = ${JSON.stringify(attrList)}]`);
 
                     // Clan/Bloodline Bane:

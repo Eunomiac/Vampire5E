@@ -31,6 +31,17 @@ const Tester = (() => {
     const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
+            case "tokens": {
+                const allTokens = _.sortBy(findObjs({
+                    // _pageid: C.PAGES.GAME,
+                    _type: "graphic"
+                }).filter((x) => x.get("represents")), (x) => x.get("name")).map((x) => `${D.GetName(x)}: ${x.get("layer")} (${_.findKey(C.PAGES, (v) => v === x.get("_pageid"))})`);
+                D.Alert([
+                    "<h3>Token Objects</h3>",
+                    ...allTokens
+                ].join("<br>"), "!test tokens");
+                break;
+            }
             case "locationpos": {
                 const reportLines = [];
                 for (const [key, data] of Object.entries(Object.assign({}, Media.IMAGES, Media.TEXT))) {
@@ -41,209 +52,25 @@ const Tester = (() => {
                 D.Alert(reportLines.join("<br>"), "Media Data");
                 break;
             }
-            case "stathandout": {
-                const TraitSummaryTest = () => {
-                    const html = C.HANDOUTHTML.TraitSummaryDoc;
-                    const colorScheme = {
-                        physical: [
-                            "rgba(255,234,230,1)",
-                            "rgba(255,219,211,1)",
-                            "rgba(255,203,192,1)",
-                            "rgba(107,19,0,1)"
-                        ],
-                        social: [
-                            "rgba(237,254,228,1)",
-                            "rgba(223,251,208,1)",
-                            "rgba(208,248,187,1)",
-                            "rgba(33,93,0,1)"
-                        ],
-                        mental: [
-                            "rgba(234,229,252,1)",
-                            "rgba(217,209,246,1)",
-                            "rgba(198,186,238,1)",
-                            "rgba(59,34,146,1)"
-                        ],
-                        disciplines: [
-                            "rgba(225,225,225,1)",
-                            "rgba(175,175,175,1)",
-                            "rgba(175,175,175,1)",
-                            "rgba(20,20,20,1)"
-                        ],
-                        trackers: [
-                            "rgba(225,225,225,1)",
-                            "rgba(175,175,175,1)",
-                            "rgba(175,175,175,1)",
-                            "rgba(20,20,20,1)"
-                        ]
-                    };
-                    const charObjs = D.GetChars("registered");
-                    // Initial Header
-                    const tableRows = [
-                        html.HeaderRow([
-                            html.Cell("ATTRIBUTES"),
-                            ...charObjs.map((x) => html.Cell(D.GetName(x, true)))
-                        ].join(""), C.COLORS.darkdarkgrey)
-                    ];
-                    // Attribute Lines
-                    for (const [attrCat, attributes] of Object.entries(C.ATTRIBUTES)) {
-                        const colors = colorScheme[attrCat].slice(0, 3);
-                        for (const attribute of attributes) {
-                            const rowCells = [html.Cell(attribute)];
-                            for (const charObj of charObjs) {
-                                const attrVal = D.GetStatVal(charObj, attribute);
-                                rowCells.push(html.Cell([
-                                    html.SymbolSpan([
-                                        html.Symbols.DotFull.repeat(attrVal),
-                                        html.Symbols.DotEmpty.repeat(5 - attrVal)
-                                    ].join("")),
-                                    html.SpecialtySpan(" ")
-                                ].join("")));
-                            }
-                            tableRows.push(html.Row(rowCells.join(""), colors.pop()));
-                        }
-                    }
-                    // Skill Lines
-                    for (const [skillCat, skills] of Object.entries(C.SKILLS)) {
-                        const colors = colorScheme[skillCat];
-                        tableRows.push(html.HeaderRow([
-                            html.Cell(`SKILLS: ${D.UCase(skillCat)}`),
-                            ...charObjs.map((x) => html.Cell(D.GetName(x, true)))
-                        ].join(""), colors.pop()));
-                        colors.shift();
-                        for (const skill of skills) {
-                            const rowCells = [html.Cell(skill)];
-                            for (const charObj of charObjs) {
-                                const skillVal = D.GetStatVal(charObj, skill.replace(/ /gu, "_"));
-                                const specVal = D.GetStatVal(charObj, `${skill}_spec`.replace(/ /gu, "_")).replace(/\s*?,\s*?/gu, "<br>");
-                                rowCells.push(html.Cell([
-                                    html.SymbolSpan([
-                                        html.Symbols.DotFull.repeat(skillVal),
-                                        html.Symbols.DotEmpty.repeat(5 - skillVal)
-                                    ].join("")),
-                                    html.SpecialtySpan(specVal)
-                                ].join("")));
-                            }
-                            tableRows.push(html.Row(rowCells.join(""), colors[0]));
-                            colors.unshift(colors.pop());
-                        }
-                    }
-                    // Disciplines
-                    const discColors = colorScheme.disciplines;
-                    tableRows.push(html.HeaderRow([
-                        html.Cell("DISCIPLINES:"),
-                        ...charObjs.map((x) => html.Cell(D.GetName(x, true)))
-                    ].join(""), discColors.pop()));
-                    discColors.pop();
-                    for (const disc of Object.keys(C.DISCIPLINES)) {
-                        const rowCells = [html.Cell(disc)];
-                        let areAllZero = true;
-                        for (const charObj of charObjs) {
-                            const skillVal = D.GetStatVal(charObj, disc.replace(/ /gu, "_"));
-                            if (skillVal > 0)
-                                areAllZero = false;
-                            rowCells.push(html.Cell([
-                                html.SymbolSpan([
-                                    html.Symbols.DotFull.repeat(skillVal),
-                                    html.Symbols.DotEmpty.repeat(5 - skillVal)
-                                ].join("")),
-                                html.SpecialtySpan(" ")
-                            ].join("")));
-                        }
-                        if (!areAllZero) {
-                            tableRows.push(html.Row(rowCells.join(""), discColors[0]));
-                            discColors.unshift(discColors.pop());
-                        }
-                    }
-
-                    // Trackers
-                    const trackerColors = colorScheme.trackers;
-                    tableRows.push(html.HeaderRow([
-                        html.Cell("TRACKERS:"),
-                        ...charObjs.map((x) => html.Cell(D.GetName(x, true)))
-                    ].join(""), trackerColors.pop()));
-                    trackerColors.pop();
-                    //      Health & Willpower
-                    for (const tracker of ["Health", "Willpower"]) {
-                        const rowCells = [html.Cell(tracker)];
-                        for (const charObj of charObjs) {
-                            const trackerLine = (new Array(17)).fill(false);
-                            let [aggDmg, supDmg, total] = [
-                                    D.GetStatVal(charObj, `${D.LCase(tracker)}_aggravated`),
-                                    D.GetStatVal(charObj, `${D.LCase(tracker)}_bashing`),
-                                    D.GetStatVal(charObj, `${D.LCase(tracker)}_max`)
-                                ],
-                                isTwoRows = false;
-                            for (let i = 0; i < trackerLine.length; i++)
-                                if (i === 5) {
-                                    trackerLine[i] = "&nbsp;";
-                                } else if (i === 11) {
-                                    trackerLine[i] = "<br>";
-                                    isTwoRows = true;
-                                } else if (aggDmg > 0) {
-                                    aggDmg--;
-                                    total--;
-                                    trackerLine[i] = html.Symbols.BoxAggro;
-                                } else if (supDmg > 0) {
-                                    supDmg--;
-                                    total--;
-                                    trackerLine[i] = html.Symbols.BoxSuper;
-                                } else if (total > 0) {
-                                    total--;
-                                    trackerLine[i] = html.Symbols.BoxEmpty;
-                                } else {
-                                    trackerLine.length = i;
-                                    break;
-                                }
-                            if (isTwoRows)
-                                trackerLine.forEach((x, i) => { trackerLine[i] = x.replace(/margin-top: 3px/gu, "margin-top: 2px;") });
-                            rowCells.push(html.TrackerCell([
-                                html.SymbolSpan(trackerLine.join("")).replace(/margin-top: 1px/gu, "margin-bottom: 2px;")
-                            ].join("")));
-                        }
-                        tableRows.push(html.Row(rowCells.join(""), trackerColors[0]));
-                        trackerColors.unshift(trackerColors.pop());
-                    }
-                    //      Blood Potency
-                    const rowCells = [html.Cell("Blood Potency")];
-                    for (const charObj of charObjs) {
-                        const [currentBP, maxBP] = [
-                            D.GetStatVal(charObj, "blood_potency"),
-                            D.GetStatVal(charObj, "blood_potency_max")
-                        ];
-                        rowCells.push(html.TrackerCell([
-                            html.SymbolSpan([
-                                html.Symbols.DotBPFull.repeat(currentBP),
-                                html.Symbols.DotBPEmpty.repeat(maxBP - currentBP)
-                            ].join(""))
-                        ].join("")));
-                    }
-                    tableRows.push(html.Row(rowCells.join(""), trackerColors[0]));
-                    trackerColors.unshift(trackerColors.pop());
-                    rowCells.length = 0;
-
-                    //      Humanity
-                    rowCells.push(html.Cell("Humanity"));
-                    for (const charObj of charObjs) {
-                        const [curHumanity, curStains] = [
-                            D.GetStatVal(charObj, "humanity"),
-                            D.GetStatVal(charObj, "stains")
-                        ];
-                        rowCells.push(html.TrackerCell([
-                            html.SymbolSpan([
-                                html.Symbols.BoxHumanity.repeat(curHumanity),
-                                html.Symbols.BoxHumStain.repeat(Math.max(0, curHumanity + curStains - 10)),
-                                html.Symbols.BoxEmpty.repeat(Math.max(0, 10 - curHumanity - curStains)),
-                                html.Symbols.BoxStain.repeat(curStains)
-                            ].join(""))
-                        ].join("")));
-                    }
-                    tableRows.push(html.Row(rowCells.join(""), trackerColors[0]));
-
-                    // Assemble Full Table Code
-                    const fullCode = html.Table(tableRows.join(""));
-                    Handouts.Set("Character Stat Summary", null, fullCode);
-                };
-                TraitSummaryTest();
+            case "repstats": {
+                let [charRef, section, statName, groupBy, pickProperty, rowFilter] = args;
+                if (!rowFilter) {
+                    D.Alert("<b>SYNTAX:</b><br>!test repstats &lt;charRef&gt; &lt;section&gt; &lt;statName&gt; &lt;groupBy&gt; &lt;pickProperty&gt; &lt;rowID&gt;<br><br>Can skip a parameter with 'null'.", "!test repstats");
+                    break;
+                }
+                charRef = charRef === "null" ? null : charRef;
+                section = section === "null" ? null : section;
+                statName = statName === "null" ? null : statName;
+                groupBy = groupBy === "null" ? null : groupBy;
+                pickProperty = pickProperty === "null" ? null : pickProperty;
+                rowFilter = rowFilter === "null" ? null : rowFilter;
+                const repStatData = D.GetRepStats(charRef, section, rowFilter, statName, groupBy, pickProperty);
+                D.Alert([
+                    "<h4>Call:</h4>",
+                    `D.GetRepStats(${D.JSL(charRef)}, ${D.JSL(section)}, ${D.JSL(rowFilter)}, ${D.JSL(statName)}, ${D.JSL(groupBy)}, ${D.JSL(pickProperty)}, null)`,
+                    "<h4>Return:</h4>",
+                    D.JS(repStatData, true)
+                ].join("<br>"), "Testing Repstats");
                 break;
             }
             case "jukeboxfolder": {

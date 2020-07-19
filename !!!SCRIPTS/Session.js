@@ -23,6 +23,9 @@ const Session = (() => {
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
+        STATE.REF.tokenRecord.Inactive = false;
+        STATE.REF.tokenRecord.Spotlight = false;
+        STATE.REF.tokenRecord.Complications = false;
         // STATE.REF.curLocation.DistrictCenter = ["DupontByTheCastle"];
         // STATE.REF.locationRecord.Active.DistrictCenter = ["DupontByTheCastle"];
         // STATE.REF.quadScene = {
@@ -110,11 +113,11 @@ const Session = (() => {
         STATE.REF.sceneChars = STATE.REF.sceneChars || [];
         STATE.REF.tokenRecord = STATE.REF.tokenRecord || {
             Active: {},
-            Inactive: {},
+            Inactive: false,
             Daylighter: {},
-            Downtime: {},
-            Complications: {},
-            Spotlight: {}
+            Downtime: false,
+            Complications: false,
+            Spotlight: false
         };
         STATE.REF.sceneTokenRecord = STATE.REF.sceneTokenRecord || {
             Active: {},
@@ -963,27 +966,30 @@ const Session = (() => {
         }
     };
     const logTokens = (mode) => {
-        const tokenObjs = findObjs({
-            _pageid: D.MAINPAGEID,
-            _type: "graphic",
-            _subtype: "token"
-        }).filter((x) => x.get("represents"));
-        STATE.REF.tokenRecord[mode] = {};
-        for (const tokenObj of tokenObjs)
-            STATE.REF.tokenRecord[mode][tokenObj.id] = {
-                charID: tokenObj.get("represents"),
-                left: tokenObj.get("left"),
-                top: tokenObj.get("top"),
-                layer: tokenObj.get("layer"),
-                src: (Media.TOKENS[D.GetName(tokenObj.get("represents"))] || {curSrc: "base"}).curSrc || "base"
-            };
+        if (STATE.REF.tokenRecord[mode] !== false) {
+            const tokenObjs = findObjs({
+                _pageid: D.MAINPAGEID,
+                _type: "graphic",
+                _subtype: "token"
+            }).filter((x) => x.get("represents"));
+            STATE.REF.tokenRecord[mode] = {};
+            for (const tokenObj of tokenObjs)
+                STATE.REF.tokenRecord[mode][tokenObj.id] = {
+                    charID: tokenObj.get("represents"),
+                    left: tokenObj.get("left"),
+                    top: tokenObj.get("top"),
+                    layer: tokenObj.get("layer"),
+                    src: (Media.TOKENS[D.GetName(tokenObj.get("represents"))] || {curSrc: "base"}).curSrc || "base"
+                };
+        }
     };
     const restoreTokens = (mode) => {
-        for (const [tokenID, tokenData] of Object.entries(STATE.REF.tokenRecord[mode])) {
-            Media.SetToken(tokenData.charID, tokenData.src);
-            Media.SetImgTemp(tokenID, _.omit(tokenData, "src"));
-            Media.ToggleToken(tokenData.charID, tokenData.layer === "objects");
-        }
+        if (STATE.REF.tokenRecord[mode] !== false)
+            for (const [tokenID, tokenData] of Object.entries(STATE.REF.tokenRecord[mode])) {
+                Media.SetToken(tokenData.charID, tokenData.src);
+                Media.SetImgTemp(tokenID, _.omit(tokenData, "src"));
+                Media.ToggleToken(tokenData.charID, tokenData.layer === "objects");
+            }
     };
     // #endregion
 

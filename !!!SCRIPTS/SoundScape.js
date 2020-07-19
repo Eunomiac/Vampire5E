@@ -361,11 +361,11 @@ const Soundscape = (() => {
     // #region GETTERS: Track & Playlist Data
     const parseKeyFromTitle = (trackRef) => {
         const origTrackRef = trackRef;
-        trackRef =
-            (D.IsID(trackRef) && (getObj("jukeboxtrack", trackRef) || {get: () => false}).get("title")) ||
-            (VAL({obj: trackRef}) && trackRef.get("title")) ||
-            (VAL({string: trackRef}) && trackRef) ||
-            false;
+        trackRef
+            = (D.IsID(trackRef) && (getObj("jukeboxtrack", trackRef) || {get: () => false}).get("title"))
+            || (VAL({obj: trackRef}) && trackRef.get("title"))
+            || (VAL({string: trackRef}) && trackRef)
+            || false;
         DB({origTrackRef, trackRef}, "parseKeyFromTitle");
         return VAL({string: trackRef}) && trackRef.replace(/\s*[([{].*[)\]}]\s*/gu, "").replace(/[^A-Za-z0-9]*/gu, "");
     };
@@ -408,10 +408,10 @@ const Soundscape = (() => {
         if (isTrack(soundRef)) {
             const trackKey = getTrackKey(soundRef);
             return (
-                OFFSTACK(funcID) &&
-                ((Object.values(REGISTRY.Playlists).find((x) => x.trackKeys.includes(trackKey)) || {name: false}).name ||
-                    getTrackData(trackKey).playlists[0] ||
-                    false)
+                OFFSTACK(funcID)
+                && ((Object.values(REGISTRY.Playlists).find((x) => x.trackKeys.includes(trackKey)) || {name: false}).name
+                    || getTrackData(trackKey).playlists[0]
+                    || false)
             );
         } else if (isPlaylist(soundRef)) {
             return OFFSTACK(funcID) && getSoundKey(soundRef);
@@ -443,8 +443,8 @@ const Soundscape = (() => {
             Cust: STATE.REF.volumeMults[trackKey] || STATE.REF.volumeMults[playlistKey] || 1
         };
         if (!isIgnoringLocation) {
-            let indoorMultKey = (STATE.REF.outsideOverride === null && !Session.IsOutside && "in") ||
-                                (STATE.REF.outsideOverride === false && "inO");
+            let indoorMultKey = (STATE.REF.outsideOverride === null && !Session.IsOutside && "in")
+                                || (STATE.REF.outsideOverride === false && "inO");
             if (indoorMultKey) {
                 if (trackKey in STATE.REF.VOLUME.MULTS.Inside)
                     indoorMultKey += "-T";
@@ -479,7 +479,7 @@ const Soundscape = (() => {
         // const baseVolume = STATE.REF.VOLUME[trackKey] || STATE.REF.VOLUME[playlistKey] || STATE.REF.VOLUME.base;
         // const isOutside = STATE.REF.outsideOverride === null ? Session.IsOutside : STATE.REF.outsideOverride;
         // if (Session.Mode === "Inactive")
-        //     return D.Int(volumeMults.filter((x) => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume));
+        //     return D.Float(volumeMults.filter((x) => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume), 2);
         // if (!isOutside)
         //     volumeMults.push(
         //         STATE.REF.VOLUME.MULTS.Inside[trackKey] || STATE.REF.VOLUME.MULTS.Inside[playlistKey] || STATE.REF.VOLUME.MULTS.Inside.base
@@ -520,20 +520,23 @@ const Soundscape = (() => {
 
         // WIND:
         const windPrefix = `Wind${TimeTracker.TempC <= 0 ? "Winter" : ""}`;
-        switch (weatherCode.charAt(4)) {
-            case "b":
-                weatherSounds.push(`${windPrefix}Low`);
-                break; // Breezy / Biting Wind
-            case "w":
-            case "g":
-                weatherSounds.push(`${windPrefix}Med`);
-                break; // Blustery / High Winds, High Winds / Driving Winds
-            case "h":
-            case "v":
-                weatherSounds.push(`${windPrefix}Max`);
-                break; // Howling Winds, Roaring Winds
-            // no default
-        }
+        if (weatherCode.charAt(0) === "b")
+            weatherSounds.push(`${windPrefix}Max`);
+        else
+            switch (weatherCode.charAt(4)) {
+                case "b":
+                    weatherSounds.push(`${windPrefix}Low`);
+                    break; // Breezy / Biting Wind
+                case "w":
+                case "g":
+                    weatherSounds.push(`${windPrefix}Med`);
+                    break; // Blustery / High Winds, High Winds / Driving Winds
+                case "h":
+                case "v":
+                    weatherSounds.push(`${windPrefix}Max`);
+                    break; // Howling Winds, Roaring Winds
+                // no default
+            }
         return OFFSTACK(funcID) && weatherSounds;
     };
     const getLocationSounds = () => {

@@ -49,8 +49,8 @@ const TimeTracker = (() => {
         STATE.REF.TweenDeferredAlarms = STATE.REF.TweenDeferredAlarms || [];
 
         STATE.REF.dateObj = STATE.REF.currentDate ? new Date(STATE.REF.currentDate) : null;
-        STATE.REF.nextSessionDate =
-            STATE.REF.nextSessionDate || new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"})).getTime();
+        STATE.REF.nextSessionDate
+            = STATE.REF.nextSessionDate || new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"})).getTime();
         STATE.REF.lastDate = STATE.REF.lastDate || 0;
         STATE.REF.weatherOverride = STATE.REF.weatherOverride || {};
         STATE.REF.timeZoneOffset = D.Int(new Date().toLocaleString("en-US", {hour: "2-digit", hour12: false, timeZone: "America/New_York"}));
@@ -356,14 +356,14 @@ const TimeTracker = (() => {
                         break;
                     case "datestring": {
                         const [dateStart, dateStrings] = args.join(" ").split("|");
-                        const dateObj =
-                            getDateObj(dateStart === "now" ? STATE.REF.dateObj : dateStart) ||
-                            addTime(STATE.REF.dateObj, ...parseToDeltaTime(dateStart), false);
+                        const dateObj
+                            = getDateObj(dateStart === "now" ? STATE.REF.dateObj : dateStart)
+                            || addTime(STATE.REF.dateObj, ...parseToDeltaTime(dateStart), false);
                         if (VAL({dateObj})) {
-                            const testCases =
-                                dateStrings === "all" ?
-                                    ["nextfullweek", "nextfullnight", "dawn", "dusk", "midnight", "noon", "nextweek", "endofweek"] :
-                                    dateStrings.split("@");
+                            const testCases
+                                = dateStrings === "all"
+                                    ? ["nextfullweek", "nextfullnight", "dawn", "dusk", "midnight", "noon", "nextweek", "endofweek"]
+                                    : dateStrings.split("@");
                             const reportLines = [];
                             for (const testCase of testCases)
                                 reportLines.push(
@@ -583,7 +583,7 @@ const TimeTracker = (() => {
         }
     };
     let [timeTimer, secTimer] = [null, null],
-        [isTweeningClock, isFastTweeningClock, isTickingClock, isCountdownFrozen, weatherDataMemo] = [false, false, false, false, false],
+        [isTweeningClock, isFastTweeningClock, isTickingClock, isCountdownFrozen, weatherDataMemo] = [false, false, true, false, false],
         isCountdownRunning = true,
         [secondsLeft, numReturns] = [0, 0],
         countdownRecord = [];
@@ -787,9 +787,9 @@ const TimeTracker = (() => {
                         }
                         case 2: {
                             year = year || D.PullOut(parsedDateString, (v) => v > 31);
-                            month =
-                                month ||
-                                D.PullOut(parsedDateString, (v) => VAL({string: v}) || (v <= 12 && parsedDateString.filter((x) => x <= 12).length === 1));
+                            month
+                                = month
+                                || D.PullOut(parsedDateString, (v) => VAL({string: v}) || (v <= 12 && parsedDateString.filter((x) => x <= 12).length === 1));
                             if (VAL({number: year}))
                                 day = day || D.PullOut(parsedDateString, (v) => v > 12);
                             if (parsedDateString.length === 2) {
@@ -880,8 +880,8 @@ const TimeTracker = (() => {
         const totHours = Math.floor(totMins / 60);
         if (isParsingString)
             return (
-                OFFSTACK(funcID) &&
-                `${totHours % 12 || 12}:${totMins - 60 * totHours < 10 ? "0" : ""}${totMins - 60 * totHours} ${totHours % 24 >= 12 ? "P.M." : "A.M."}`
+                OFFSTACK(funcID)
+                && `${totHours % 12 || 12}:${totMins - 60 * totHours < 10 ? "0" : ""}${totMins - 60 * totHours} ${totHours % 24 >= 12 ? "P.M." : "A.M."}`
             );
         return OFFSTACK(funcID) && [totHours % 24, totMins - 60 * totHours];
     };
@@ -954,8 +954,8 @@ const TimeTracker = (() => {
         const funcID = ONSTACK();
         date = (VAL({dateObj: date}) && date) || getDateObj(date);
         return (
-            OFFSTACK(funcID) &&
-            `${
+            OFFSTACK(funcID)
+            && `${
                 ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]
             } ${date.getUTCDate()}, ${date.getUTCFullYear()}${isIncludingTime ? `, ${formatTimeString(date).replace(/:(\d\s)/gu, ":0$1")}` : ""}`
         );
@@ -1118,8 +1118,8 @@ const TimeTracker = (() => {
             numTriggers--;
         }
         return (
-            OFFSTACK(funcID) &&
-            timeLine
+            OFFSTACK(funcID)
+            && timeLine
                 .join("")
                 .split("1")
                 .map((x) => (x.length + 1) * tickSpeed)
@@ -1271,18 +1271,18 @@ const TimeTracker = (() => {
     const isUpdatingChars = () => {
         const lastDate = new Date(STATE.REF.lastDate);
         return (
-            STATE.REF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
-            STATE.REF.dateObj.getMonth() !== lastDate.getMonth() ||
-            STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate()
+            STATE.REF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear()
+            || STATE.REF.dateObj.getMonth() !== lastDate.getMonth()
+            || STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate()
         );
     };
     const isUpdatingWeather = () => {
         const lastDate = new Date(STATE.REF.lastDate);
         return (
-            STATE.REF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
-            STATE.REF.dateObj.getMonth() !== lastDate.getMonth() ||
-            STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate() ||
-            STATE.REF.dateObj.getUTCHours() !== lastDate.getUTCHours()
+            STATE.REF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear()
+            || STATE.REF.dateObj.getMonth() !== lastDate.getMonth()
+            || STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate()
+            || STATE.REF.dateObj.getUTCHours() !== lastDate.getUTCHours()
         );
     };
     const continueClockTween = () => {
@@ -1446,9 +1446,9 @@ const TimeTracker = (() => {
         const maxSecs = Math.max((nextSessDateObj - lastSessDateObj) / 1000, 7 * 24 * 60 * 60, (nextSessDateObj - realDateObj) / 1000);
         const waitSecsMoon = maxSecs - MOON.daysToWaitTill * 24 * 60 * 60;
         const waitSecsWater = maxSecs - MOON.daysToWaitTillWater * 24 * 60 * 60;
-        const totalSecsLeft = VAL({list: isTesting, number: isTesting.daysIn}) ?
-            maxSecs - isTesting.daysIn * 24 * 60 * 60 :
-            (nextSessDateObj - realDateObj) / 1000 - 60;
+        const totalSecsLeft = VAL({list: isTesting, number: isTesting.daysIn})
+            ? maxSecs - isTesting.daysIn * 24 * 60 * 60
+            : (nextSessDateObj - realDateObj) / 1000 - 60;
         const totalSecsIn = maxSecs - totalSecsLeft;
         const moonUpPercent = Math.min(1, D.Float(Math.max(0, totalSecsIn - waitSecsMoon) / (maxSecs - waitSecsMoon)));
         const waterRedPercent = Math.min(1, D.Float(Math.max(0, totalSecsIn - waitSecsWater) / (maxSecs - waitSecsWater)));
@@ -1461,8 +1461,6 @@ const TimeTracker = (() => {
             STATE.REF.lastSessionDate = nextSessDateObj.getTime();
             secsLeft = setNextSessionDate();
         }
-        if (secsLeft < 60 && !isTesting)
-            Session.ToggleTesting(false);
 
         const daysLeft = Math.floor(secsLeft / (24 * 60 * 60));
         secsLeft -= daysLeft * 24 * 60 * 60;
@@ -1562,9 +1560,9 @@ const TimeTracker = (() => {
         D.Alert(`Converted data to '${weatherCodes}' = '${weatherData.weatherCode}'?<br><br>${D.JS(weatherData)}`, "BIG TEST");
         OFFSTACK(funcID);
     };
-    const getWeatherCode = (dateRefs) => (dateRefs ?
-        STATE.REF.weatherData[dateRefs[0]][dateRefs[1]][dateRefs[2]] :
-        STATE.REF.weatherData[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()]);
+    const getWeatherCode = (dateRefs) => (dateRefs
+        ? STATE.REF.weatherData[dateRefs[0]][dateRefs[1]][dateRefs[2]]
+        : STATE.REF.weatherData[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()]);
     const getWeatherData = (monthNum, dateNum, hourNum, numUpgrades = 0, isGettingRawData = false) => {
         const funcID = ONSTACK();
         const dateObj = new Date(STATE.REF.dateObj);
@@ -1687,10 +1685,10 @@ const TimeTracker = (() => {
         const horizonData = Media.GetImgData("Horizon_1");
         DB({horizonSrc}, "setHorizon");
         if (
-            (isFastTweeningClock &&
-                ((!horizonSrc.includes("day") && horizonData.curSrc.includes("day")) ||
-                    (horizonSrc.includes("day") && !horizonData.curSrc.includes("day")))) ||
-            !isFastTweeningClock
+            (isFastTweeningClock
+                && ((!horizonSrc.includes("day") && horizonData.curSrc.includes("day"))
+                    || (horizonSrc.includes("day") && !horizonData.curSrc.includes("day"))))
+            || !isFastTweeningClock
         ) {
             Media.SetImg("Horizon_1", horizonSrc);
             Media.SetImg("Foreground", D.Int(horizonSrc.replace(/\D/gu, "")) > 3 ? "dark" : "bright");
@@ -1884,8 +1882,8 @@ const TimeTracker = (() => {
                 };
         }
         return (
-            OFFSTACK(funcID) &&
-            _.values(weatherStrings)
+            OFFSTACK(funcID)
+            && _.values(weatherStrings)
                 .map((x) => `<div style="display: inline-block; width: 45%; margin: 2px 3% 0px 0px; height: auto;">${x.command} ${x.date}</div>`)
                 .join("")
         );
@@ -1924,12 +1922,12 @@ const TimeTracker = (() => {
                 weak: colorData[1]
             };
             eventSymbol = {
-                x: `${(weatherData.isFoggy && `<span style="color: ${C.COLORS.grey};">`) || "<span>"}${(weatherData.isDay &&
-                    "<span style=\"font-size: 12px;display: block;margin-bottom: -14px;\">◯</span>") ||
-                    "☽"}</span>`, // †▲▼†‡
-                f: `${(weatherData.isFoggy && `<span style="color: ${C.COLORS.grey};">`) || "<span>"}${(weatherData.isDay &&
-                    "<span style=\"font-size: 12px;display: block;margin-bottom: -14px;\">◯</span>") ||
-                    "☽"}</span>`,
+                x: `${(weatherData.isFoggy && `<span style="color: ${C.COLORS.grey};">`) || "<span>"}${(weatherData.isDay
+                    && "<span style=\"font-size: 12px;display: block;margin-bottom: -14px;\">◯</span>")
+                    || "☽"}</span>`, // †▲▼†‡
+                f: `${(weatherData.isFoggy && `<span style="color: ${C.COLORS.grey};">`) || "<span>"}${(weatherData.isDay
+                    && "<span style=\"font-size: 12px;display: block;margin-bottom: -14px;\">◯</span>")
+                    || "☽"}</span>`,
                 b: `<span style="
                             color: white;
                             text-shadow: 0px 0px 4px black, 0px 0px 4px black, 0px 0px 4px black, 0px 0px 4px black, 0px 0px 4px black, 0px 0px 4px black, 0px 0px 4px black, 0px 0px 4px black, 0px 0px 4px black, 0px 0px 4px black;
@@ -1955,8 +1953,8 @@ const TimeTracker = (() => {
             }[getGroundCover(weatherData.weatherCode)];
             groundCoverPercent = D.Int(groundCover * 2 - 10);
             return (
-                OFFSTACK(funcID) &&
-                `<div style="
+                OFFSTACK(funcID)
+                && `<div style="
                     display: inline-block;
                     height: 29px;
                     width: 29px;
@@ -1999,20 +1997,20 @@ const TimeTracker = (() => {
                         margin: 0px;
                         padding: 0px;
                     ">${eventSymbol}<br>${
-                    isUpgrading ?
-                        `<span style="font-size: 10px; display: block; ${
-                            dayScore >= 100 ?
-                                `font-family: 'Courier New'; font-size: 12px; font-weight: bold; color: ${C.COLORS.brightred};` :
-                                `color: ${C.COLORS.black};`
-                        }">${dayScore >= 100 ? "▲".repeat(Math.floor(dayScore / 100)) : dayScore}</span>` :
-                        `<span style="font-size: 10px; display: block; color: ${C.COLORS.black};">${weatherData.tempC}</span>`
+                    isUpgrading
+                        ? `<span style="font-size: 10px; display: block; ${
+                            dayScore >= 100
+                                ? `font-family: 'Courier New'; font-size: 12px; font-weight: bold; color: ${C.COLORS.brightred};`
+                                : `color: ${C.COLORS.black};`
+                        }">${dayScore >= 100 ? "▲".repeat(Math.floor(dayScore / 100)) : dayScore}</span>`
+                        : `<span style="font-size: 10px; display: block; color: ${C.COLORS.black};">${weatherData.tempC}</span>`
                 }</div></div>`
             );
         } catch (errObj) {
             DB({weatherData, groundCoverPercent, colors, eventSymbol}, "singleHourCell");
             return (
-                OFFSTACK(funcID) &&
-                `<div style="
+                OFFSTACK(funcID)
+                && `<div style="
                             display: inline-block;
                             height: 29px;
                             width: 29px;
@@ -2047,8 +2045,8 @@ const TimeTracker = (() => {
             return OFFSTACK(funcID) && "";
         const hourCells = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23].map((x) => singleHourCell(monthNum, dateNum, x, isUpgrading, isRaw));
         return (
-            OFFSTACK(funcID) &&
-            `<div style="
+            OFFSTACK(funcID)
+            && `<div style="
                     display: block;
                     height: 31px;
                     width: 100%;
@@ -2090,18 +2088,18 @@ const TimeTracker = (() => {
                     font-size: 12px;
                     line-height: 22px;
                     color: ${
-    x === " " ?
-        C.COLORS.black :
-        (isTimeInDay(monthNum, D.Int(x.replace(/ \w\w$/gu, "").replace(/12/gu, 0)) + ((x.includes("PM") && 12) || 0), 30) &&
-                                  C.COLORS.darkpurple) ||
-                              C.COLORS.gold
+    x === " "
+        ? C.COLORS.black
+        : (isTimeInDay(monthNum, D.Int(x.replace(/ \w\w$/gu, "").replace(/12/gu, 0)) + ((x.includes("PM") && 12) || 0), 30)
+                                  && C.COLORS.darkpurple)
+                              || C.COLORS.gold
     };
                     background-color: ${
-    x === " " ?
-        "transparent" :
-        (isTimeInDay(monthNum, D.Int(x.replace(/ \w\w$/gu, "").replace(/12/gu, 0)) + ((x.includes("PM") && 12) || 0), 30) &&
-                                  C.COLORS.palegold) ||
-                              C.COLORS.darkblue
+    x === " "
+        ? "transparent"
+        : (isTimeInDay(monthNum, D.Int(x.replace(/ \w\w$/gu, "").replace(/12/gu, 0)) + ((x.includes("PM") && 12) || 0), 30)
+                                  && C.COLORS.palegold)
+                              || C.COLORS.darkblue
     };
                     border-right: ${x === " " ? "1px solid white" : "1px solid black"};
                     border-left: ${x === " " ? "1px solid white" : "1px solid black"};
@@ -2116,8 +2114,8 @@ const TimeTracker = (() => {
         const dayRows = new Array(STATE.REF.weatherData[monthNum].length).fill("").map((x, i) => singleDayRow(monthNum, i, isUpgrading, isRaw));
         // dayRows = D.Clone(STATE.REF.weatherData[monthNum]).slice(1).map((x, i) => singleDayRow(monthNum, i))
         return (
-            OFFSTACK(funcID) &&
-            `<div style="
+            OFFSTACK(funcID)
+            && `<div style="
                     display: block;
                     width: 900px;
                     height: auto;
@@ -2287,8 +2285,8 @@ const TimeTracker = (() => {
                                 seekDay = 1;
                             }
                             if (
-                                theseStormScores[seekMonth][seekDay][seekHour] < 100 * multCount ||
-                                (multCount === 0 && theseStormScores[seekMonth][seekDay][seekHour] > thisHourScore)
+                                theseStormScores[seekMonth][seekDay][seekHour] < 100 * multCount
+                                || (multCount === 0 && theseStormScores[seekMonth][seekDay][seekHour] > thisHourScore)
                             ) {
                                 deltaScore = 0;
                                 break;
@@ -2381,8 +2379,8 @@ const TimeTracker = (() => {
                             )}%</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${D.Int(
                                 (100 * (curTally.event[k][0] + curTally.event[k][1])) / totCodes,
                                 true
-                            )}%</td><td style="text-align: right; width: 25px;">${v[0] +
-                                    v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${curTally
+                            )}%</td><td style="text-align: right; width: 25px;">${v[0]
+                                    + v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${curTally
                                 .event[k][0] + curTally.event[k][1]}</td><td style="text-align: right;">${
                                 v[1]
                             }</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right;">${
@@ -2405,8 +2403,8 @@ const TimeTracker = (() => {
                             )}%</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${D.Int(
                                 (100 * (curTally.wind[k][0] + curTally.wind[k][1])) / totCodes,
                                 true
-                            )}%</td><td style="text-align: right; width: 25px;">${v[0] +
-                                    v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${curTally
+                            )}%</td><td style="text-align: right; width: 25px;">${v[0]
+                                    + v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${curTally
                                 .wind[k][0] + curTally.wind[k][1]}</td><td style="text-align: right;">${
                                 v[1]
                             }</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right;">${
