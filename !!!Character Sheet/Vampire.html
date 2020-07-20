@@ -398,21 +398,34 @@
                     <div class="sheet-coltight1">
                         <textarea class="sheet-collapsibletitle" name="attr_bane_title" value=""
                             placeholder="Choose Your Clan!" readonly></textarea>
-                        <textarea class="sheet-collapsiblebody" name="attr_bane_text" value="" readonly></textarea>                        
-                        <input class="sheet-containerselector" type="radio" name="attr_bloodlinedetails_toggle" value="0" checked />
-                        <input class="sheet-containerselector" type="radio" name="attr_bloodlinedetails_toggle" value="1" />
-                        <input class="sheet-containerselector" type="radio" name="attr_bloodlinedetails_toggle" value="2" />
-                        <div class="sheet-right sheet-coltight1 sheet-leftcol sheet-titlesubheader sheet-contingentcontainer">
-                            <textarea class="sheet-collapsibletitle" name="attr_bloodline_title" value="" readonly></textarea>
-                            <textarea class="sheet-collapsiblebody" name="attr_bloodline_details" value="" readonly></textarea>
-                            <textarea class="sheet-collapsiblebody sheet-lineagetraits" name="attr_bloodline_virtues" value="" readonly></textarea>
-                            <textarea class="sheet-collapsiblebody sheet-lineagetraits" name="attr_bloodline_vices" value="" readonly></textarea>
-                            <textarea class="sheet-collapsiblebody" name="attr_bloodline_exemplar" value="" readonly></textarea>
-                        </div>                   
-                        <input class="sheet-containerselector" type="radio" name="attr_bloodlinedetails_toggle" value="3" />
-                        <div class="sheet-right sheet-coltight1 sheet-leftcol sheet-titlesubheader sheet-contingentcontainer">
-                            <textarea class="sheet-collapsibletitle" name="attr_bloodline_title" value="" readonly></textarea>
-                            <textarea class="sheet-collapsiblebody" name="attr_bloodline_details" value="" readonly></textarea>
+                        <textarea class="sheet-collapsiblebody" name="attr_bane_text" value="" readonly></textarea>
+                        <input class="sheet-containerselector" type="radio" name="attr_bloodlinedetails_toggle"
+                            value="0" checked />
+                        <input class="sheet-containerselector" type="radio" name="attr_bloodlinedetails_toggle"
+                            value="1" />
+                        <input class="sheet-containerselector" type="radio" name="attr_bloodlinedetails_toggle"
+                            value="2" />
+                        <div
+                            class="sheet-right sheet-coltight1 sheet-leftcol sheet-titlesubheader sheet-contingentcontainer">
+                            <textarea class="sheet-collapsibletitle" name="attr_bloodline_title" value=""
+                                readonly></textarea>
+                            <textarea class="sheet-collapsiblebody" name="attr_bloodline_details" value=""
+                                readonly></textarea>
+                            <textarea class="sheet-collapsiblebody sheet-lineagetraits" name="attr_bloodline_virtues"
+                                value="" readonly></textarea>
+                            <textarea class="sheet-collapsiblebody sheet-lineagetraits" name="attr_bloodline_vices"
+                                value="" readonly></textarea>
+                            <textarea class="sheet-collapsiblebody" name="attr_bloodline_exemplar" value=""
+                                readonly></textarea>
+                        </div>
+                        <input class="sheet-containerselector" type="radio" name="attr_bloodlinedetails_toggle"
+                            value="3" />
+                        <div
+                            class="sheet-right sheet-coltight1 sheet-leftcol sheet-titlesubheader sheet-contingentcontainer">
+                            <textarea class="sheet-collapsibletitle" name="attr_bloodline_title" value=""
+                                readonly></textarea>
+                            <textarea class="sheet-collapsiblebody" name="attr_bloodline_details" value=""
+                                readonly></textarea>
                         </div>
                     </div>
                     <div class="sheet-coltight1 sheet-leftcol">
@@ -445,9 +458,11 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                    <input class="sheet-containerselector" type="radio" name="attr_bloodline_toggle" value="0" checked />
+                    <input class="sheet-containerselector" type="radio" name="attr_bloodline_toggle" value="0"
+                        checked />
                     <input class="sheet-containerselector" type="radio" name="attr_bloodline_toggle" value="1" />
-                    <div class="sheet-right sheet-coltight1 sheet-leftcol sheet-titlesubheader sheet-contingentcontainer">
+                    <div
+                        class="sheet-right sheet-coltight1 sheet-leftcol sheet-titlesubheader sheet-contingentcontainer">
                         <select class="sheet-titlesubheader" name="attr_bloodline" value="">
                             <option value="" selected hidden disabled></option>
                             <option value="Giovanni">of the Giovanni</option>
@@ -458,7 +473,8 @@
                         </select>
                     </div>
                     <input class="sheet-containerselector" type="radio" name="attr_bloodline_toggle" value="2" />
-                    <div class="sheet-right sheet-coltight1 sheet-leftcol sheet-titlesubheader sheet-contingentcontainer">
+                    <div
+                        class="sheet-right sheet-coltight1 sheet-leftcol sheet-titlesubheader sheet-contingentcontainer">
                         <select class="sheet-titlesubheader" name="attr_bloodline" value="">
                             <option value="" selected hidden disabled></option>
                             <option value="Tinia">Descendant of Tinia</option>
@@ -474,7 +490,8 @@
                         </select>
                     </div>
                     <input class="sheet-containerselector" type="radio" name="attr_bloodline_toggle" value="3" />
-                    <div class="sheet-right sheet-coltight1 sheet-leftcol sheet-titlesubheader sheet-contingentcontainer">
+                    <div
+                        class="sheet-right sheet-coltight1 sheet-leftcol sheet-titlesubheader sheet-contingentcontainer">
                         <select class="sheet-titlesubheader" name="attr_bloodline" value="">
                             <option value="" selected hidden disabled></option>
                             <option value="Tremere">of House Tremere</option>
@@ -567,6 +584,7 @@
         <div class="sheet-coltight4 sheet-titleblock sheet-centered" style="margin-left:-7px;">
             <div class="sheet-header2">Health</div>
             <br />
+            <input type="hidden" name="attr_healthnull" />
             <input class="sheet-containertoggle" type="radio" name="attr_health_impair_toggle" value="0" checked />
             <input class="sheet-containertoggle" type="radio" name="attr_health_impair_toggle" value="1" />
             <div class="sheet-impairment">
@@ -582,6 +600,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_1" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_1" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="2" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -591,6 +610,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_2" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_2" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="3" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -600,6 +620,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_3" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_3" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="4" checked />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -609,6 +630,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_4" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_4" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="5" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -618,6 +640,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_5" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_5" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="6" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -627,6 +650,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_6" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_6" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="7" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -636,6 +660,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_7" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_7" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="8" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -645,6 +670,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_8" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_8" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="9" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -654,6 +680,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_9" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_9" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="10" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -663,6 +690,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_10" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_10" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="11" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox" style="margin-top: 5px;">
@@ -672,6 +700,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_11" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_11" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="12" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -681,6 +710,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_12" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_12" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="13" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -690,6 +720,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_13" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_13" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="14" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -699,6 +730,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_14" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_14" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="15" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -708,11 +740,13 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_health_15" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_15" value="3" /><span class="sheet-nulldot"></span>
                 </div>
             </div>
         </div>
         <div class="sheet-coltight4 sheet-titleblock sheet-centered">
             <div class="sheet-header2">Willpower</div>
+            <input type="hidden" name="attr_willpowernull" />
             <br />
             <input class="sheet-containertoggle" type="radio" name="attr_willpower_impair_toggle" value="0" checked />
             <input class="sheet-containertoggle" type="radio" name="attr_willpower_impair_toggle" value="1" />
@@ -729,6 +763,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_willpower_1" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_willpower_1" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_willpower_max" value="2" checked />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -738,6 +773,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_willpower_2" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_willpower_2" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_willpower_max" value="3" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -747,6 +783,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_willpower_3" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_willpower_3" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_willpower_max" value="4" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -756,6 +793,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_willpower_4" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_willpower_4" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_willpower_max" value="5" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -765,6 +803,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_willpower_5" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_willpower_5" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_willpower_max" value="6" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -774,6 +813,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_willpower_6" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_willpower_6" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_willpower_max" value="7" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -783,6 +823,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_willpower_7" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_willpower_7" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_willpower_max" value="8" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -792,6 +833,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_willpower_8" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_willpower_8" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_willpower_max" value="9" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -801,6 +843,7 @@
                         class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_willpower_9" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_willpower_9" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_willpower_max" value="10" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -810,12 +853,14 @@
                         value="1" /><span class="sheet-superficialdot"></span>
                     <input class="sheet-box sheet-aggravateddot" type="radio" name="attr_willpower_10" value="2" /><span
                         class="sheet-aggravateddot"></span>
+                    <input class="sheet-box sheet-nulldot" type="radio" name="attr_willpower_10" value="3" /><span class="sheet-nulldot"></span>
                 </div>
             </div>
         </div>
         <div class="sheet-coltight4 sheet-titleblock sheet-centered">
             <!-- style="z-index: 19;" -->
             <div class="sheet-coltight1 sheet-centered">
+				<input type="hidden" name="attr_blood_potencynull" />
                 <input class="sheet-hoverpopup" type="checkbox" value="1" style="margin-left: -25px;" /><span
                     style="margin-right: 5px;"></span>
                 <div class="sheet-coltight1 sheet-bppopup">
@@ -866,10 +911,21 @@
                 <input class="sheet-dot" type="radio" name="attr_blood_potency" value="9" /><span></span>
                 <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="10" />
                 <input class="sheet-dot" type="radio" name="attr_blood_potency" value="10" /><span></span>
+				<input class="sheet-nulldot sheet-bpnulldot" type="checkbox" name="attr_blood_potencynull_1" value="1" /><span></span>
+				<input class="sheet-nulldot sheet-bpnulldot" type="checkbox" name="attr_blood_potencynull_2" value="1" /><span></span>
+				<input class="sheet-nulldot sheet-bpnulldot" type="checkbox" name="attr_blood_potencynull_3" value="1" /><span></span>
+				<input class="sheet-nulldot sheet-bpnulldot" type="checkbox" name="attr_blood_potencynull_4" value="1" /><span></span>
+				<input class="sheet-nulldot sheet-bpnulldot" type="checkbox" name="attr_blood_potencynull_5" value="1" /><span></span>
+				<input class="sheet-nulldot sheet-bpnulldot" type="checkbox" name="attr_blood_potencynull_6" value="1" /><span></span>
+				<input class="sheet-nulldot sheet-bpnulldot" type="checkbox" name="attr_blood_potencynull_7" value="1" /><span></span>
+				<input class="sheet-nulldot sheet-bpnulldot" type="checkbox" name="attr_blood_potencynull_8" value="1" /><span></span>
+				<input class="sheet-nulldot sheet-bpnulldot" type="checkbox" name="attr_blood_potencynull_9" value="1" /><span></span>
+				<input class="sheet-nulldot sheet-bpnulldot" type="checkbox" name="attr_blood_potencynull_10" value="1" /><span></span>
             </div>
         </div>
         <div class="sheet-coltight4 sheet-titleblock sheet-centered">
             <div class="sheet-coltight1 sheet-centered">
+				<input type="hidden" name="attr_humanitynull" />
                 <input class="sheet-hoverpopup" type="checkbox" value="1" /><span></span>
                 <div class="sheet-coltight1 sheet-humanitypopup">
                     <div class="sheet-col1 sheet-humanitybox">
@@ -1038,6 +1094,8 @@
                     <input class="sheet-box sheet-noclick sheet-stainhumanitydot" type="radio" name="attr_humanity_1"
                         value="4" />
                     <span class="sheet-stainhumanitydot"></span>
+                    <input class="sheet-box sheet-noclick sheet-nulldot" type="radio" name="attr_humanity_1" value="5" />
+                    <span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_humanity_max" value="2" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -1052,6 +1110,8 @@
                     <input class="sheet-box sheet-noclick sheet-stainhumanitydot" type="radio" name="attr_humanity_2"
                         value="4" />
                     <span class="sheet-stainhumanitydot"></span>
+                    <input class="sheet-box sheet-noclick sheet-nulldot" type="radio" name="attr_humanity_2" value="5" />
+                    <span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_humanity_max" value="3" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -1066,6 +1126,8 @@
                     <input class="sheet-box sheet-noclick sheet-stainhumanitydot" type="radio" name="attr_humanity_3"
                         value="4" />
                     <span class="sheet-stainhumanitydot"></span>
+                    <input class="sheet-box sheet-noclick sheet-nulldot" type="radio" name="attr_humanity_3" value="5" />
+                    <span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_humanity_max" value="4" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -1080,6 +1142,8 @@
                     <input class="sheet-box sheet-noclick sheet-stainhumanitydot" type="radio" name="attr_humanity_4"
                         value="4" />
                     <span class="sheet-stainhumanitydot"></span>
+                    <input class="sheet-box sheet-noclick sheet-nulldot" type="radio" name="attr_humanity_4" value="5" />
+                    <span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_humanity_max" value="5" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -1094,6 +1158,8 @@
                     <input class="sheet-box sheet-noclick sheet-stainhumanitydot" type="radio" name="attr_humanity_5"
                         value="4" />
                     <span class="sheet-stainhumanitydot"></span>
+                    <input class="sheet-box sheet-noclick sheet-nulldot" type="radio" name="attr_humanity_5" value="5" />
+                    <span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_humanity_max" value="6" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -1108,6 +1174,8 @@
                     <input class="sheet-box sheet-noclick sheet-stainhumanitydot" type="radio" name="attr_humanity_6"
                         value="4" />
                     <span class="sheet-stainhumanitydot"></span>
+                    <input class="sheet-box sheet-noclick sheet-nulldot" type="radio" name="attr_humanity_6" value="5" />
+                    <span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_humanity_max" value="7" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -1122,6 +1190,8 @@
                     <input class="sheet-box sheet-noclick sheet-stainhumanitydot" type="radio" name="attr_humanity_7"
                         value="4" />
                     <span class="sheet-stainhumanitydot"></span>
+                    <input class="sheet-box sheet-noclick sheet-nulldot" type="radio" name="attr_humanity_7" value="5" />
+                    <span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_humanity_max" value="8" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -1136,6 +1206,8 @@
                     <input class="sheet-box sheet-noclick sheet-stainhumanitydot" type="radio" name="attr_humanity_8"
                         value="4" />
                     <span class="sheet-stainhumanitydot"></span>
+                    <input class="sheet-box sheet-noclick sheet-nulldot" type="radio" name="attr_humanity_8" value="5" />
+                    <span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_humanity_max" value="9" />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -1150,6 +1222,8 @@
                     <input class="sheet-box sheet-noclick sheet-stainhumanitydot" type="radio" name="attr_humanity_9"
                         value="4" />
                     <span class="sheet-stainhumanitydot"></span>
+                    <input class="sheet-box sheet-noclick sheet-nulldot" type="radio" name="attr_humanity_9" value="5" />
+                    <span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_humanity_max" value="10" checked />
                 <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -1164,6 +1238,8 @@
                     <input class="sheet-box sheet-noclick sheet-stainhumanitydot" type="radio" name="attr_humanity_10"
                         value="4" />
                     <span class="sheet-stainhumanitydot"></span>
+                    <input class="sheet-box sheet-noclick sheet-nulldot" type="radio" name="attr_humanity_10" value="5" />
+                    <span class="sheet-nulldot"></span>
                 </div>
             </div>
         </div>
@@ -1278,6 +1354,7 @@
             </div>
             <input class="sheet-attr" type="checkbox" name="attr_strength_flag" value="1" />
             <span>Strength</span>
+            <input type="hidden" name="attr_strengthnull" value="0" />
             <div class="sheet-dotline">
                 <input type="radio" class="sheet-dot" name="attr_strength" value="1" checked /><span></span>
                 <input type="radio" class="sheet-dot" name="attr_strength" value="2" /><span></span>
@@ -1289,20 +1366,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_strength" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_strength" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_strength" value="10" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_strengthEffect"
-                    value="-5" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_strengthEffect"
-                    value="-4" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_strengthEffect"
-                    value="-3" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_strengthEffect"
-                    value="-2" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_strengthEffect"
-                    value="-1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_strengthnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_strengthnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_strengthnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_strengthnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_strengthnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_dexterity_flag" value="1" />
             <span>Dexterity</span>
+            <input type="hidden" name="attr_dexteritynull" value="0" />
             <div class="sheet-dotline">
                 <input type="radio" class="sheet-dot" name="attr_dexterity" value="1" checked /><span></span>
                 <input type="radio" class="sheet-dot" name="attr_dexterity" value="2" /><span></span>
@@ -1314,19 +1392,20 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_dexterity" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_dexterity" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_dexterity" value="10" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_dexterityEffect"
-                    value="-5" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_dexterityEffect"
-                    value="-4" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_dexterityEffect"
-                    value="-3" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_dexterityEffect"
-                    value="-2" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_dexterityEffect"
-                    value="-1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_dexteritynull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_dexteritynull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_dexteritynull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_dexteritynull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_dexteritynull_5"
+                    value="1" /><span></span>
             </div>
             <input class="sheet-attr" type="checkbox" name="attr_stamina_flag" value="1" />
             <span>Stamina</span>
+            <input type="hidden" name="attr_staminanull" value="0" />
             <div class="sheet-dotline">
                 <input type="radio" class="sheet-dot" name="attr_stamina" value="1" checked /><span></span>
                 <input type="radio" class="sheet-dot" name="attr_stamina" value="2" /><span></span>
@@ -1338,11 +1417,16 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_stamina" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_stamina" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_stamina" value="10" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_staminaEffect" value="-5" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_staminaEffect" value="-4" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_staminaEffect" value="-3" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_staminaEffect" value="-2" /><span></span>
-                <input type="radio" class="sheet-dot sheet-nulldot" name="attr_staminaEffect" value="-1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_staminanull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_staminanull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_staminanull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_staminanull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_staminanull_5"
+                    value="1" /><span></span>
             </div>
         </div>
         <div class="sheet-col3 sheet-attributes">
@@ -1351,6 +1435,7 @@
             </div>
             <input class="sheet-attr" type="checkbox" name="attr_charisma_flag" value="1" />
             <span>Charisma</span>
+            <input type="hidden" name="attr_charismanull" value="0" />
             <div class="sheet-dotline">
                 <input type="radio" class="sheet-dot" name="attr_charisma" value="1" checked /><span></span>
                 <input type="radio" class="sheet-dot" name="attr_charisma" value="2" /><span></span>
@@ -1362,10 +1447,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_charisma" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_charisma" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_charisma" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_charismanull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_charismanull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_charismanull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_charismanull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_charismanull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_manipulation_flag" value="1" />
             <span>Manipulation</span>
+            <input type="hidden" name="attr_manipulationnull" value="0" />
             <div class="sheet-dotline">
                 <input type="radio" class="sheet-dot" name="attr_manipulation" value="1" checked /><span></span>
                 <input type="radio" class="sheet-dot" name="attr_manipulation" value="2" /><span></span>
@@ -1377,9 +1473,20 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_manipulation" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_manipulation" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_manipulation" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_manipulationnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_manipulationnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_manipulationnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_manipulationnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_manipulationnull_5"
+                    value="1" /><span></span>
             </div>
             <input class="sheet-attr" type="checkbox" name="attr_composure_flag" value="1" />
             <span>Composure</span>
+            <input type="hidden" name="attr_composurenull" value="0" />
             <div class="sheet-dotline">
                 <input type="radio" class="sheet-dot" name="attr_composure" value="1" checked /><span></span>
                 <input type="radio" class="sheet-dot" name="attr_composure" value="2" /><span></span>
@@ -1391,6 +1498,16 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_composure" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_composure" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_composure" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_composurenull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_composurenull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_composurenull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_composurenull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_composurenull_5"
+                    value="1" /><span></span>
             </div>
         </div>
         <div class="sheet-col3 sheet-attributes">
@@ -1399,6 +1516,7 @@
             </div>
             <input class="sheet-attr" type="checkbox" name="attr_intelligence_flag" value="1" />
             <span>Intelligence</span>
+            <input type="hidden" name="attr_intelligencenull" value="0" />
             <div class="sheet-dotline">
                 <input type="radio" class="sheet-dot" name="attr_intelligence" value="1" checked /><span></span>
                 <input type="radio" class="sheet-dot" name="attr_intelligence" value="2" /><span></span>
@@ -1410,10 +1528,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_intelligence" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_intelligence" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_intelligence" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_intelligencenull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_intelligencenull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_intelligencenull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_intelligencenull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_intelligencenull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_wits_flag" value="1" />
             <span>Wits</span>
+            <input type="hidden" name="attr_witsnull" value="0" />
             <div class="sheet-dotline">
                 <input type="radio" class="sheet-dot" name="attr_wits" value="1" checked /><span></span>
                 <input type="radio" class="sheet-dot" name="attr_wits" value="2" /><span></span>
@@ -1425,9 +1554,15 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_wits" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_wits" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_wits" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_witsnull_1" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_witsnull_2" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_witsnull_3" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_witsnull_4" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_witsnull_5" value="1" /><span></span>
             </div>
             <input class="sheet-attr" type="checkbox" name="attr_resolve_flag" value="1" />
             <span>Resolve</span>
+            <input type="hidden" name="attr_resolvenull" value="0" />
             <div class="sheet-dotline">
                 <input type="radio" class="sheet-dot" name="attr_resolve" value="1" checked /><span></span>
                 <input type="radio" class="sheet-dot" name="attr_resolve" value="2" /><span></span>
@@ -1439,6 +1574,16 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_resolve" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_resolve" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_resolve" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_resolvenull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_resolvenull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_resolvenull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_resolvenull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_resolvenull_5"
+                    value="1" /><span></span>
             </div>
         </div>
         <!--SKILLS-->
@@ -1448,6 +1593,7 @@
         <div class="sheet-col3 sheet-skills">
             <input class="sheet-attr" type="checkbox" name="attr_athletics_flag" value="1" />
             <span>Athletics</span>
+            <input type="hidden" name="attr_athleticsnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_athletics_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_athletics" value="0" checked /><span></span>
@@ -1461,10 +1607,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_athletics" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_athletics" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_athletics" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_athleticsnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_athleticsnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_athleticsnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_athleticsnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_athleticsnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_brawl_flag" value="1" />
             <span>Brawl</span>
+            <input type="hidden" name="attr_brawlnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_brawl_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_brawl" value="0" checked /><span></span>
@@ -1478,10 +1635,16 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_brawl" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_brawl" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_brawl" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_brawlnull_1" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_brawlnull_2" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_brawlnull_3" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_brawlnull_4" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_brawlnull_5" value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_craft_flag" value="1" />
             <span>Craft</span>
+            <input type="hidden" name="attr_craftnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_craft_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_craft" value="0" checked /><span></span>
@@ -1495,10 +1658,16 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_craft" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_craft" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_craft" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_craftnull_1" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_craftnull_2" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_craftnull_3" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_craftnull_4" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_craftnull_5" value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_drive_flag" value="1" />
             <span>Drive</span>
+            <input type="hidden" name="attr_drivenull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_drive_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_drive" value="0" checked /><span></span>
@@ -1512,10 +1681,16 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_drive" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_drive" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_drive" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_drivenull_1" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_drivenull_2" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_drivenull_3" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_drivenull_4" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_drivenull_5" value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_firearms_flag" value="1" />
             <span>Firearms</span>
+            <input type="hidden" name="attr_firearmsnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_firearms_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_firearms" value="0" checked /><span></span>
@@ -1529,10 +1704,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_firearms" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_firearms" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_firearms" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_firearmsnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_firearmsnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_firearmsnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_firearmsnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_firearmsnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_melee_flag" value="1" />
             <span>Melee</span>
+            <input type="hidden" name="attr_meleenull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_melee_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_melee" value="0" checked /><span></span>
@@ -1546,10 +1732,16 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_melee" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_melee" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_melee" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_meleenull_1" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_meleenull_2" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_meleenull_3" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_meleenull_4" value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_meleenull_5" value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_larceny_flag" value="1" />
             <span>Larceny</span>
+            <input type="hidden" name="attr_larcenynull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_larceny_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_larceny" value="0" checked /><span></span>
@@ -1563,10 +1755,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_larceny" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_larceny" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_larceny" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_larcenynull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_larcenynull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_larcenynull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_larcenynull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_larcenynull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_stealth_flag" value="1" />
             <span>Stealth</span>
+            <input type="hidden" name="attr_stealthnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_stealth_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_stealth" value="0" checked /><span></span>
@@ -1580,10 +1783,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_stealth" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_stealth" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_stealth" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_stealthnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_stealthnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_stealthnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_stealthnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_stealthnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_survival_flag" value="1" />
             <span>Survival</span>
+            <input type="hidden" name="attr_survivalnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_survival_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_survival" value="0" checked /><span></span>
@@ -1597,11 +1811,22 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_survival" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_survival" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_survival" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_survivalnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_survivalnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_survivalnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_survivalnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_survivalnull_5"
+                    value="1" /><span></span>
             </div>
         </div>
         <div class="sheet-col3 sheet-skills">
             <input class="sheet-attr" type="checkbox" name="attr_animal_ken_flag" value="1" />
             <span>Animal Ken</span>
+            <input type="hidden" name="attr_animal_kennull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_animal_ken_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_animal_ken" value="0"
@@ -1616,10 +1841,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_animal_ken" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_animal_ken" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_animal_ken" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_animal_kennull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_animal_kennull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_animal_kennull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_animal_kennull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_animal_kennull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_etiquette_flag" value="1" />
             <span>Etiquette</span>
+            <input type="hidden" name="attr_etiquettenull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_etiquette_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_etiquette" value="0" checked /><span></span>
@@ -1633,10 +1869,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_etiquette" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_etiquette" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_etiquette" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_etiquettenull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_etiquettenull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_etiquettenull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_etiquettenull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_etiquettenull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_insight_flag" value="1" />
             <span>Insight</span>
+            <input type="hidden" name="attr_insightnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_insight_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_insight" value="0" checked /><span></span>
@@ -1650,10 +1897,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_insight" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_insight" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_insight" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_insightnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_insightnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_insightnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_insightnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_insightnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_intimidation_flag" value="1" />
             <span>Intimidation</span>
+            <input type="hidden" name="attr_intimidationnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_intimidation_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_intimidation" value="0"
@@ -1668,10 +1926,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_intimidation" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_intimidation" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_intimidation" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_intimidationnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_intimidationnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_intimidationnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_intimidationnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_intimidationnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_leadership_flag" value="1" />
             <span>Leadership</span>
+            <input type="hidden" name="attr_leadershipnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_leadership_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_leadership" value="0"
@@ -1686,10 +1955,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_leadership" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_leadership" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_leadership" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_leadershipnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_leadershipnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_leadershipnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_leadershipnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_leadershipnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_performance_flag" value="1" />
             <span>Performance</span>
+            <input type="hidden" name="attr_performancenull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_performance_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_performance" value="0"
@@ -1704,10 +1984,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_performance" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_performance" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_performance" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_performancenull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_performancenull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_performancenull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_performancenull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_performancenull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_persuasion_flag" value="1" />
             <span>Persuasion</span>
+            <input type="hidden" name="attr_persuasionnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_persuasion_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_persuasion" value="0"
@@ -1722,10 +2013,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_persuasion" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_persuasion" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_persuasion" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_persuasionnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_persuasionnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_persuasionnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_persuasionnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_persuasionnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_streetwise_flag" value="1" />
             <span>Streetwise</span>
+            <input type="hidden" name="attr_streetwisenull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_streetwise_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_streetwise" value="0"
@@ -1740,10 +2042,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_streetwise" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_streetwise" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_streetwise" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_streetwisenull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_streetwisenull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_streetwisenull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_streetwisenull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_streetwisenull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_subterfuge_flag" value="1" />
             <span>Subterfuge</span>
+            <input type="hidden" name="attr_subterfugenull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_subterfuge_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_subterfuge" value="0"
@@ -1758,11 +2071,22 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_subterfuge" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_subterfuge" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_subterfuge" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_subterfugenull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_subterfugenull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_subterfugenull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_subterfugenull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_subterfugenull_5"
+                    value="1" /><span></span>
             </div>
         </div>
         <div class="sheet-col3 sheet-skills">
             <input class="sheet-attr" type="checkbox" name="attr_academics_flag" value="1" />
             <span>Academics</span>
+            <input type="hidden" name="attr_academicsnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_academics_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_academics" value="0" checked /><span></span>
@@ -1776,10 +2100,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_academics" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_academics" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_academics" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_academicsnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_academicsnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_academicsnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_academicsnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_academicsnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_awareness_flag" value="1" />
             <span>Awareness</span>
+            <input type="hidden" name="attr_awarenessnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_awareness_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_awareness" value="0" checked /><span></span>
@@ -1793,10 +2128,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_awareness" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_awareness" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_awareness" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_awarenessnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_awarenessnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_awarenessnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_awarenessnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_awarenessnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_finance_flag" value="1" />
             <span>Finance</span>
+            <input type="hidden" name="attr_financenull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_finance_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_finance" value="0" checked /><span></span>
@@ -1810,10 +2156,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_finance" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_finance" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_finance" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_financenull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_financenull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_financenull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_financenull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_financenull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_investigation_flag" value="1" />
             <span>Investigation</span>
+            <input type="hidden" name="attr_investigationnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_investigation_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_investigation" value="0"
@@ -1828,10 +2185,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_investigation" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_investigation" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_investigation" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_investigationnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_investigationnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_investigationnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_investigationnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_investigationnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_medicine_flag" value="1" />
             <span>Medicine</span>
+            <input type="hidden" name="attr_medicinenull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_medicine_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_medicine" value="0" checked /><span></span>
@@ -1845,10 +2213,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_medicine" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_medicine" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_medicine" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_medicinenull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_medicinenull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_medicinenull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_medicinenull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_medicinenull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_occult_flag" value="1" />
             <span>Occult</span>
+            <input type="hidden" name="attr_occultnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_occult_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_occult" value="0" checked /><span></span>
@@ -1862,10 +2241,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_occult" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_occult" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_occult" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_occultnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_occultnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_occultnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_occultnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_occultnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_politics_flag" value="1" />
             <span>Politics</span>
+            <input type="hidden" name="attr_politicsnull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_politics_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_politics" value="0" checked /><span></span>
@@ -1879,10 +2269,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_politics" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_politics" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_politics" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_politicsnull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_politicsnull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_politicsnull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_politicsnull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_politicsnull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_science_flag" value="1" />
             <span>Science</span>
+            <input type="hidden" name="attr_sciencenull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_science_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_science" value="0" checked /><span></span>
@@ -1896,10 +2297,21 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_science" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_science" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_science" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_sciencenull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_sciencenull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_sciencenull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_sciencenull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_sciencenull_5"
+                    value="1" /><span></span>
             </div>
             <br />
             <input class="sheet-attr" type="checkbox" name="attr_technology_flag" value="1" />
             <span>Technology</span>
+            <input type="hidden" name="attr_technologynull" value="0" />
             <input class="sheet-specialty" value="" type="text" name="attr_technology_spec" />
             <div class="sheet-dotline">
                 <input class="sheet-dot sheet-zero" type="radio" name="attr_technology" value="0"
@@ -1914,6 +2326,16 @@
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_technology" value="8" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_technology" value="9" /><span></span>
                 <input type="radio" class="sheet-dot sheet-highdot" name="attr_technology" value="10" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_technologynull_1"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_technologynull_2"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_technologynull_3"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_technologynull_4"
+                    value="1" /><span></span>
+                <input type="checkbox" class="sheet-nulldot" name="attr_technologynull_5"
+                    value="1" /><span></span>
             </div>
         </div>
         <!--DISCIPLINES-->
@@ -1926,6 +2348,7 @@
                 <input class="sheet-containertoggle" type="radio" name="attr_disc1_toggle" value="1" />
                 <div class="sheet-contingentcontainer">
                     <input class="sheet-attr sheet-statictrait" type="checkbox" name="attr_disc1_flag" value="1" />
+                    <input type="hidden" name="attr_disc1null" value="0" />
                     <textarea class="sheet-customtrait" name="attr_disc1_name" value="@{disc1_name}" readonly
                         style="padding: 0px 0px;"></textarea>
                     <div class="sheet-dotline sheet-customtrait">
@@ -1936,6 +2359,11 @@
                         <input class="sheet-dot" type="radio" name="attr_disc1" value="3" /><span></span>
                         <input class="sheet-dot" type="radio" name="attr_disc1" value="4" /><span></span>
                         <input class="sheet-dot" type="radio" name="attr_disc1" value="5" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc1null_1" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc1null_2" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc1null_3" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc1null_4" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc1null_5" value="1" /><span></span>
                     </div>
                     <div class="sheet-powerlist">
                         <input class="sheet-containertoggle" type="radio" name="attr_disc1power_toggle" value="0"
@@ -1956,7 +2384,7 @@
             <fieldset class="repeating_discleft">
                 <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_disc_flag"
                     value="1" />
-
+                <input type="hidden" name="attr_discnull" value="0" />
                 <select class="sheet-customtrait" name="attr_disc_name" value="0">
                     <option value="0" selected hidden disabled></option>
                     <option value="Animalism">Animalism</option>
@@ -1981,6 +2409,11 @@
                     <input class="sheet-dot" type="radio" name="attr_disc" value="3" /><span></span>
                     <input class="sheet-dot" type="radio" name="attr_disc" value="4" /><span></span>
                     <input class="sheet-dot" type="radio" name="attr_disc" value="5" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_1" value="1" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_2" value="1" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_3" value="1" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_4" value="1" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_5" value="1" /><span></span>
                 </div>
                 <div class="sheet-powerlist">
                     <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="0" checked />
@@ -2003,6 +2436,7 @@
                 <input class="sheet-containertoggle" type="radio" name="attr_disc2_toggle" value="1" />
                 <div class="sheet-contingentcontainer">
                     <input class="sheet-attr sheet-statictrait" type="checkbox" name="attr_disc2_flag" value="1" />
+                    <input type="hidden" name="attr_disc2null" value="0" />
                     <textarea class="sheet-customtrait" name="attr_disc2_name" value="@{disc2_name}" readonly
                         style="padding: 0px 0px;"></textarea>
                     <div class="sheet-dotline sheet-customtrait">
@@ -2013,6 +2447,11 @@
                         <input class="sheet-dot" type="radio" name="attr_disc2" value="3" /><span></span>
                         <input class="sheet-dot" type="radio" name="attr_disc2" value="4" /><span></span>
                         <input class="sheet-dot" type="radio" name="attr_disc2" value="5" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc2null_1" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc2null_2" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc2null_3" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc2null_4" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc2null_5" value="1" /><span></span>
                     </div>
                     <div class="sheet-powerlist">
                         <input class="sheet-containertoggle" type="radio" name="attr_disc2power_toggle" value="0"
@@ -2033,7 +2472,7 @@
             <fieldset class="repeating_discmid">
                 <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_disc_flag"
                     value="1" />
-
+                    <input type="hidden" name="attr_discnull" value="0" />
                 <select class="sheet-customtrait" name="attr_disc_name" value="0">
                     <option value="0" selected hidden disabled></option>
                     <option value="Animalism">Animalism</option>
@@ -2058,6 +2497,11 @@
                     <input class="sheet-dot" type="radio" name="attr_disc" value="3" /><span></span>
                     <input class="sheet-dot" type="radio" name="attr_disc" value="4" /><span></span>
                     <input class="sheet-dot" type="radio" name="attr_disc" value="5" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_1" value="1" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_2" value="1" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_3" value="1" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_4" value="1" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_5" value="1" /><span></span>
                 </div>
                 <div class="sheet-powerlist">
                     <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="0" checked />
@@ -2080,6 +2524,7 @@
                 <input class="sheet-containertoggle" type="radio" name="attr_disc3_toggle" value="1" />
                 <div class="sheet-contingentcontainer">
                     <input class="sheet-attr sheet-statictrait" type="checkbox" name="attr_disc3_flag" value="1" />
+                    <input type="hidden" name="attr_disc3null" value="0" />
                     <textarea class="sheet-customtrait" name="attr_disc3_name" value="@{disc3_name}" readonly
                         style="padding: 0px 0px;"></textarea>
                     <div class="sheet-dotline sheet-customtrait">
@@ -2090,6 +2535,11 @@
                         <input class="sheet-dot" type="radio" name="attr_disc3" value="3" /><span></span>
                         <input class="sheet-dot" type="radio" name="attr_disc3" value="4" /><span></span>
                         <input class="sheet-dot" type="radio" name="attr_disc3" value="5" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc3null_1" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc3null_2" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc3null_3" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc3null_4" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_disc3null_5" value="1" /><span></span>
                     </div>
                     <div class="sheet-powerlist">
                         <input class="sheet-containertoggle" type="radio" name="attr_disc3power_toggle" value="0"
@@ -2110,7 +2560,7 @@
             <fieldset class="repeating_discright">
                 <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_disc_flag"
                     value="1" />
-
+                <input type="hidden" name="attr_discnull" value="0" />
                 <select class="sheet-customtrait" name="attr_disc_name" value="0">
                     <option value="0" selected hidden disabled></option>
                     <option value="Animalism">Animalism</option>
@@ -2135,6 +2585,11 @@
                     <input class="sheet-dot" type="radio" name="attr_disc" value="3" /><span></span>
                     <input class="sheet-dot" type="radio" name="attr_disc" value="4" /><span></span>
                     <input class="sheet-dot" type="radio" name="attr_disc" value="5" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_1" value="1" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_2" value="1" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_3" value="1" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_4" value="1" /><span></span>
+                    <input class="sheet-nulldot" type="checkbox" name="attr_discnull_5" value="1" /><span></span>
                 </div>
                 <div class="sheet-powerlist">
                     <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="0" checked />
@@ -2346,6 +2801,7 @@
                     <div class="sheet-coltight1">
                         <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox"
                             name="attr_advantage_flag" value="1" />
+                        <input type="hidden" name="attr_advantagenull" value="0" />
                         <input type="text" name="attr_advantage_name" />
                     </div>
                     <div class="sheet-dotline sheet-customtrait">
@@ -2366,6 +2822,11 @@
                         <span></span>
                         <input type="radio" class="sheet-dot sheet-highdot" name="attr_advantage" value="10" />
                         <span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_attr_advantagenull_1" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_attr_advantagenull_2" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_attr_advantagenull_3" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_attr_advantagenull_4" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_attr_advantagenull_5" value="1" /><span></span>
                     </div>
                 </div>
             </fieldset>
@@ -2393,6 +2854,7 @@
                     <div class="sheet-coltight1">
                         <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox"
                             name="attr_negadvantage_flag" value="1" />
+                        <input type="hidden" name="attr_negadvantagenull" value="0" />
                         <input type="text" name="attr_negadvantage_name" />
                     </div>
                     <div class="sheet-dotline sheet-customtrait">
@@ -2413,6 +2875,11 @@
                         <span></span>
                         <input type="radio" class="sheet-dot sheet-highdot" name="attr_negadvantage" value="10" />
                         <span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_attr_negadvantagenull_1" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_attr_negadvantagenull_2" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_attr_negadvantagenull_3" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_attr_negadvantagenull_4" value="1" /><span></span>
+                        <input class="sheet-nulldot" type="checkbox" name="attr_attr_negadvantagenull_5" value="1" /><span></span>
                     </div>
                 </div>
             </fieldset>
@@ -3758,7 +4225,7 @@
             Malkavian:
                 "Your afflicted Malkavian lineage is cursed with one or more mental derangements:  You may experience delusions, visions of terrible clarity, or something entirely different. When you suffer a Bestial Failure or a Compulsion, your deranged nature manifests and you suffer a penalty equal to your Bane Severity to one category of dice pools (Physical, Social, or Mental) for the entire scene.",
             Nosferatu:
-                "Your cursed Nosferatu Blood afflicts you with physical ugliness:  You have the Repulsive (••) Flaw at all times, and can never purchase dots in the Looks Merit.  In addition, any attempt to disguise yourself as human suffers a dice pool penalty equal to your Bane Severity (this includes applicable uses of Obfuscate).",
+                "Your cursed Nosferatu Blood afflicts you with physical ugliness:  You have the Repulsive (••) Flaw at all times, and can never purchase dots in the Looks Merit.  In addition, any attempt to disguise your deformities suffers a dice pool penalty equal to your Bane Severity (this includes applicable uses of Obfuscate).",
             Toreador:
                 "Your Toreador Blood desires beauty so intensely that you suffer in its absence.  While you find yourself in less than beautiful surroundings, lose the equivalent of your Bane Severity in dice from dice pools to use Disciplines. The Storyteller decides specifically how the beauty or ugliness of your environment (including clothing, blood dolls, etc.) penalizes you, based on your aesthetics.",
             Tremere:
@@ -4538,13 +5005,13 @@
         // #region Repeating Field Configuration
         const DISCENUMS = ["disc1", "disc2", "disc3"];
         const DISCREPREFS = {
-            discLeft: ["disc", "disc_name", "disc_flag", "discpower_toggle"],
-            discMid: ["disc", "disc_name", "disc_flag", "discpower_toggle"],
-            discRight: ["disc", "disc_name", "disc_flag", "discpower_toggle"]
+            discleft: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discnull"],
+            discmid: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discnull"],
+            discright: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discnull"]
         };
         const ADVREPREFS = {
-            advantage: ["advantage", "advantage_name", "advantage_flag", "advantage_type", "advantage_details"],
-            negadvantage: ["negadvantage", "negadvantage_name", "negadvantage_flag", "negadvantage_type", "negadvantage_details"]
+            advantage: ["advantage", "advantage_name", "advantage_flag", "advantage_type", "advantage_details", "advantagenull"],
+            negadvantage: ["negadvantage", "negadvantage_name", "negadvantage_flag", "negadvantage_type", "negadvantage_details", "negadvantagenull"]
         };
         const DOMCONREPREFS = {
             domaincontrolleft: ["district", "level", "details"],
@@ -4617,9 +5084,10 @@
         // #endregion
     
         // #region Derivative Stats
-        const BASICATTRS = _.map(_.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS]), (v) => v.toLowerCase());
-        const BASICFLAGS = _.map(_.omit(BASICATTRS, TRACKERS), (v) => `${v}_flag`);
-        const ALLATTRS = _.map([...ROLLFLAGS.all, ...BASICATTRS, ...BASICFLAGS, ..._.map(DISCENUMS, (v) => `${v}_name`)], (v) => v.replace(/\s/gu, "_").toLowerCase());
+        const BASICATTRS = _.map(_.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS]), (v) => v.toLowerCase().replace(/ /gu, "_"));
+        const BASICFLAGS = _.map(_.omit(BASICATTRS, TRACKERS), (v) => `${v.toLowerCase().replace(/ /gu, "_")}_flag`);
+        const BASICNULLS = BASICATTRS.map((x) => `${x}null`);
+        const ALLATTRS = [...ROLLFLAGS.all, ...BASICATTRS, ...BASICFLAGS, ..._.map(DISCENUMS, (v) => `${v}_name`)];
         const ATTRDISPNAMES = _.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS]);
         // #endregion
     
@@ -4660,11 +5128,16 @@
             || ATTRS[`${trimAttr(attr)}_name`]
             || trimAttr(attr);
         // getTriggers (attrs, prefix, gN, sections): Returns "on:..." event listener string for simple attributes (in attrs) or repeating sections (in sections). RETURNS string
-        const getTriggers = (attrs, prefix = "", repSecs) => {
+        
+        const getTriggers = (attrs, prefix = "", repSecs, repSecStats = []) => {
             const triggerStrings = [];
+            repSecStats = _.flatten([repSecStats]);
             if (attrs)
                 triggerStrings.push(_.map(attrs, (v) => `change:${prefix}${v}`).join(" "));
-            if (repSecs && _.isArray(repSecs))
+            if (repSecs && _.isArray(repSecs) && repSecStats.length)
+                for (const repStat of repSecStats)
+                    triggerStrings.push(...repSecs.map((x) => `change:repeating_${prefix}${x}:${repStat}`));
+            else if (repSecs && _.isArray(repSecs))
                 triggerStrings.push(
                     _.map(repSecs, (v) => `change:_reporder_repeating_${prefix}${v} change:repeating_${prefix}${v} remove:repeating_${prefix}${v}`).join(
                         " "
@@ -4899,7 +5372,7 @@
                         // Bloodline Text Entries:
                         if (attrList.bloodline_toggle)
                             Object.assign(attrList, (bloodlineText[ATTRS.clan] || {})[ATTRS.bloodline] || {bloodline_detailstoggle: 0});
-                       
+    
                         log(`[DOCLANS ATTRLIST = ${JSON.stringify(attrList)}]`);
     
                         // Clan/Bloodline Bane:
@@ -6512,11 +6985,55 @@
             };
             getRepAttrs(repSecs.shift());
         };
+        const updateNullDots = (sourceAttr) => {
+            const [repAttrs, attrList] = [[], {}];
+            const repStatData = Object.assign({}, DOMCONREPREFS);
+            const repSecs = Object.keys(repStatData);
+            const getRepAttrs = (repSec) => {
+                if (repSec)
+                    getSectionIDs(repSec, (rowIDs) => {
+                        repAttrs.push(
+                            ...rowIDs.map((rowID) => _.flatten(
+                                repStatData[repSec]
+                                    .filter((repStat) => !repStat.endsWith("_details"))
+                                    .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
+                            ))
+                        );
+                        log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                        
+                        ... mapped to: ${JSON.stringify(repAttrs)}`);
+                        getRepAttrs(repSecs.shift());
+                    });
+                else
+                    getAttrs(["domaincontrolbenefits", ..._.flatten(repAttrs)], (ATTRS) => {
+                        log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
+                        const filteredAttrs = _.pick(ATTRS, (v, k) => k.includes("level"));
+                        const domainBenefits = [];
+                        for (const levelTrait of Object.keys(filteredAttrs)) {
+                            const [, p, pV, pI] = pFuncs(levelTrait, ATTRS);
+                            const district = pV("district");
+                            const level = pI("level") - 1;
+                            if (district && level <= 3)
+                                domainBenefits.push(DOMAINCONTROL[district][level] || false);
+                        }
+                        if (_.compact(domainBenefits).length)
+                            attrList.domaincontrolbenefits = _.compact(domainBenefits).join(", ");
+                        else
+                            attrList.domaincontrolbenefits = " ";
+                        setAttrs(attrList);
+                    });
+            };
+            getRepAttrs(repSecs.shift());
+        };
         on("sheet:opened change:stateffects", (eInfo) => {
             doStatEffects();
         });
         on(getTriggers(["stateffects"], "", [..._.keys(DOMCONREPREFS)]), (eInfo) => {
             doDomainControl();
+        });
+        on(getTriggers(BASICNULLS, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)], ["discnull", "advantagenull", "negadvantagenull"]), (eInfo) => {
+            log(`NULL TRIGGER: ${JSON.stringify(eInfo)}`);
+            // updateNullDots(eInfo.sourceAttribute);
         });
         // #endregion
     

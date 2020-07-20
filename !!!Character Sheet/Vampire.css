@@ -703,61 +703,95 @@
 	.charsheet div.sheet-dotline input {
 		height: 16px;
 		width: 16px;
-		margin: 2px 0px;
-		padding: 0px 0px;
+		margin: 0px;
+		padding: 0px;
 
 		cursor: pointer;
 		opacity: 0;
 	}
 
 	.charsheet div.sheet-dotline span {
-		height: 14px;
-		width: 14px;
-		margin: 3px 0px 3px -15px;
+		height: 16px;
+		width: 16px;
+		margin: 0px;
+		margin-left: -16px;
 		line-height: 14px;
 
 		display: inline-block;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-highdot {
+	.charsheet div.sheet-dotline input.sheet-highdot,
+	.charsheet div.sheet-dotline input.sheet-nulldot {
 		pointer-events: none;
 	}
 
-	.charsheet div.sheet-dotline input:not(.sheet-highdot) + span::before {
-		line-height: 14px;
-
-		display: inline-block;
-		text-align: center;
-		text-align-last: center;
-		vertical-align: middle;
+	.charsheet div.sheet-dotline input.sheet-dot + span::before,
+	.charsheet div.sheet-dotline input.sheet-nulldot + span::before {
+		display: block;
+		height: 12px;
+		width: 12px;
 
 		content: "";
-		color: black;
-		font-size: 16px;
-
-		box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc;
-	}
-
-	.charsheet div.sheet-dotline input.sheet-dot:not(.sheet-highdot) + span::before {
-		height: 10px;
-		width: 10px;
-		margin: -2px 0px 2px 0px;
-		background: #0a0a0a;
-		background: -moz-radial-gradient(#444, #0a0a0a);
-		background: -webkit-radial-gradient(#444, #0a0a0a);
-		background: radial-gradient(#444, #0a0a0a);
-
-		content: "";
-
-		border: solid 2px black;
 
 		-moz-border-radius: 50%;
 		-webkit-border-radius: 50%;
 		border-radius: 50%;
 
-		box-shadow: 1px 1px 2px black, 1px 1px 2px black;
+		box-shadow: 1px 1px 2px black;
 	}
 
+	.charsheet div.sheet-dotline input.sheet-dot:not(.sheet-highdot) + span::before {
+		background: #0a0a0a;
+		background: -moz-radial-gradient(#444, #0a0a0a);
+		background: -webkit-radial-gradient(#444, #0a0a0a);
+		background: radial-gradient(#444, #0a0a0a);
+
+		border: solid 2px black;
+	}
+
+	.charsheet div.sheet-dotline input.sheet-nulldot + span::before {
+		height: 16px; 
+		width: 16px;
+		background: url('https://i.imgur.com/fimds5A.png') -2px -2px/20px 20px no-repeat;
+		border: none;
+		box-shadow: -1px -1px 1px #666, 1px 1px 1px #ccc;
+		opacity: 0;
+	}
+
+	.charsheet div.sheet-dotline input.sheet-highdot + span::before {
+		/* line-height: 14px; */
+
+		/* display: inline-block; */
+		/* text-align: center; */
+		/* text-align-last: center; */
+		/* vertical-align: middle; */
+
+		/* content: ""; */
+		/* color: black; */
+		/* font-size: 16px; */
+
+		/* box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc; */
+	}
+
+	.charsheet div.sheet-dotline input.sheet-dot.sheet-highdot + span::before {
+		height: 16px;
+		width: 16px;
+		background: url("https://i.imgur.com/U5ZW214.png") no-repeat center;
+		/* margin: -2px 0px 2px -1px; */
+
+		/* content: ""; */
+
+		/* box-sizing: border-box; */
+
+		/* -moz-border-radius: 50%;
+		-webkit-border-radius: 50%;
+		border-radius: 50%; */
+
+		/* box-shadow: 1px 1px 2px black, 1px 1px 2px black; */
+	}
+
+
+	
 	.charsheet div.sheet-dotline input.sheet-box + span::before {
 		height: 16px;
 		width: 16px;
@@ -768,14 +802,10 @@
 		content: "";
 	}
 
-	.charsheet div.sheet-dotline input:checked:not(.sheet-highdot) ~ input + span::before {
-		content: "";
-	}
-
 	.charsheet div.sheet-dotline input.sheet-dot:checked:not(.sheet-highdot) ~ input.sheet-dot + span::before {
-		height: 12px;
-		width: 12px;
-		margin: -2px 1px 2px 1px;
+		height: 14px;
+		width: 14px;
+		margin: 1px;
 		background: rgba(150, 150, 150, 0.4);
 
 		border: none;
@@ -783,15 +813,7 @@
 		box-shadow: -1px -1px 0px #000, 0px -1px 0px #999, 1px -1px 0px #aaa, 0px 0px 2px #000, 1px 0px 0px #fff, 0px 1px 0px #ccc, 1px 1px 0px #fff;
 	}
 
-		.charsheet div.sheet-dotline input.sheet-zero:checked:not(.sheet-highdot) + span::before {
-		opacity: 0;
-	}
-
-	.charsheet div.sheet-dotline input.sheet-zero:hover:not(.sheet-highdot) + span::before {
-		opacity: 1;
-	}
-
-	.charsheet div.sheet-dotline input.sheet-zero:not(.sheet-highdot) + span::before {
+	.charsheet div.sheet-dotline input.sheet-dot.sheet-zero + span::before {
 		line-height: 12px;
 		background-image: linear-gradient(45deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 60%), linear-gradient(-45deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 60%);
 		opacity: 0.25;
@@ -799,36 +821,12 @@
 		text-shadow: none;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-highdot + span::before {
-		line-height: 14px;
-
-		display: inline-block;
-		text-align: center;
-		text-align-last: center;
-		vertical-align: middle;
-
-		content: "";
-		color: black;
-		font-size: 16px;
-
-		box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc;
+	.charsheet div.sheet-dotline input.sheet-dot.sheet-zero:checked + span::before {
+		opacity: 0;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-dot.sheet-highdot + span::before {
-		height: 16px;
-		width: 16px;
-		margin: -2px 0px 2px -1px;
-		background: url("https://i.imgur.com/U5ZW214.png") no-repeat center;
-
-		content: "";
-
-		box-sizing: border-box;
-
-		-moz-border-radius: 50%;
-		-webkit-border-radius: 50%;
-		border-radius: 50%;
-
-		box-shadow: 1px 1px 2px black, 1px 1px 2px black;
+	.charsheet div.sheet-dotline input.sheet-dot.sheet-zero:hover + span::before {
+		opacity: 1;
 	}
 
 	.charsheet div.sheet-dotline input.sheet-dot:checked ~ input.sheet-highdot + span {
@@ -848,8 +846,14 @@
 		opacity: 0;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-highdot:nth-last-of-type(5) {
-		margin-left: -75px;
+	.charsheet div.sheet-dotline input.sheet-nulldot:checked + span,
+	.charsheet div.sheet-dotline input.sheet-nulldot:checked + span::before {
+		opacity: 1;
+	}
+
+	.charsheet div.sheet-dotline input.sheet-highdot:nth-last-of-type(5n),
+	.charsheet div.sheet-dotline input.sheet-nulldot:nth-last-of-type(5n) {
+		margin-left: -80px;
 	}
 
 /* 		#endregion*/
@@ -880,10 +884,7 @@
 	.charsheet input.sheet-containerselector:not(:checked) + span {
 		display: none !important;
 	}
-	.charsheet div.sheet-dotline input.sheet-dot.sheet-nulldot,
-	.charsheet div.sheet-dotline input.sheet-dot.sheet-nulldot + span::before {
-		display: none !important;
-	}
+
 
 /* 		#endregion */
 /* 		#region Multi-Dot Lines & Multi-Box Lines */
@@ -1592,30 +1593,13 @@
 	}
 
 	.charsheet div.sheet-hungercol div.sheet-dotline input.sheet-hungerdot + span::before {
-		height: 14px;
-		width: 14px;
-		margin-bottom: 2px;
+		height: 16px;
+		width: 16px;
 
 		background: url("https://i.imgur.com/U5ZW214.png");
 		background-size: 100%;
 
-		/*background: #74121e;
-	background: -moz-radial-gradient(red, #74121e);
-	background: -webkit-radial-gradient(red, #74121e);
-	background: radial-gradient(red, #74121e);*/
-
-		content: "";
-
-		/*border: solid 2px #74121e;*/
-		/*border: solid 1px ${C.COLORS.brightred};*/
 		border: none;
-
-		-moz-border-radius: 50%;
-		-webkit-border-radius: 50%;
-		border-radius: 50%;
-
-		box-shadow: 1px 1px 1px black;
-
 	}
 
 	.charsheet div.sheet-dicebuttonblock {
@@ -2029,31 +2013,21 @@
 		margin-bottom: 10px;
 	}
 
-	.charsheet div.sheet-titleblock div.sheet-dotline input {
-		height: 24px !important;
-		width: 20px !important;
-		margin: 0px 0px;
-	}
-
-	.charsheet div.sheet-titleblock div.sheet-dotline span {
-		height: 18px !important;
-		width: 18px !important;
-		margin: 3px 0px 3px -19px;
+	.charsheet div.sheet-titleblock div.sheet-dotline input,
+	.charsheet div.sheet-titleblock div.sheet-dotline span,
+	.charsheet div.sheet-titleblock div.sheet-dotline input + span::before {
+		height: 18px;
+		width: 18px;
 		line-height: 18px;
+		margin: 0px;
 	}
 
+	.charsheet div.sheet-titleblock div.sheet-dotline span,
 	.charsheet div.sheet-titleblock div.sheet-dotline div.sheet-multibox span {
-		height: 18px !important;
-		width: 18px !important;
-		margin: 3px 0px 3px -19px;
-		line-height: 18px;
+		margin-left: -18px;
 	}
 
-	.charsheet div.sheet-titleblock div.sheet-dotline input.sheet-dot + span::before {
-		height: 18px !important;
-		width: 18px !important;
-		line-height: 18px;
-
+	.charsheet div.sheet-titleblock div.sheet-dotline.sheet-variabledotline input.sheet-dot + span::before {
 		background: url("https://i.imgur.com/U5ZW214.png") no-repeat center;
 		background-size: 100%;
 
@@ -2063,9 +2037,9 @@
 	}
 
 	.charsheet div.sheet-titleblock div.sheet-dotline input.sheet-dot:checked ~ input.sheet-dot + span:not(.sheet-smalldot)::before {
-		height: 16px !important;
-		width: 16px !important;
-		margin: -2px 0px 0px 0px;
+		height: 16px;
+		width: 16px;
+		margin: 1px;
 	}
 	
 	.charsheet div.sheet-titleblock input.sheet-hoverpopup + span + div.sheet-bppopup {

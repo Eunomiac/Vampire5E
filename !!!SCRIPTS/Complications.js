@@ -708,9 +708,9 @@ const Complications = (() => {
             action: (charRef, spot) => {
                 ONALL.activate.push(() => {
                     if (
-                        STATE.REF.MAT[spot].name === "MilesToGo" &&
-                        isCardActive(STATE.REF.MAT[spot]) &&
-                        (!STATE.REF.MAT[spot].isEnhanced || STATE.REF.MAT[spot].value < 0)
+                        STATE.REF.MAT[spot].name === "MilesToGo"
+                        && isCardActive(STATE.REF.MAT[spot])
+                        && (!STATE.REF.MAT[spot].isEnhanced || STATE.REF.MAT[spot].value < 0)
                     )
                         revalueCard(spot, STATE.REF.MAT[spot].value + 1);
                 });
@@ -1252,10 +1252,10 @@ const Complications = (() => {
     const getCardQtyForDeck = (card) => CARDQTYS[card.rarity] + CARDQTYS.overrides.map((x) => (x.check(card) ? x.qty : 0)).reduce((tot, x) => tot + x, 0);
     const getActiveCards = () => _.filter(STATE.REF.MAT, (v) => isCardActive(v));
     const getUsedCategories = (omitSpots = []) => _.uniq(_.compact(_.map(getActiveCards(), (v) => !omitSpots.includes(v.spot) && v.category)));
-    const isCardValidForDeck = (card) => VAL({list: card}) &&
-        card.name &&
-        (STATE.REF.isRepeatMistakes || !getUsedCategories().includes(card.category)) &&
-        !_.map(getActiveCards(), (v) => v.name).includes(card.name);
+    const isCardValidForDeck = (card) => VAL({list: card})
+        && card.name
+        && (STATE.REF.isRepeatMistakes || !getUsedCategories().includes(card.category))
+        && !_.map(getActiveCards(), (v) => v.name).includes(card.name);
     const isCardActive = (card) => VAL({list: card}) && card.isFaceUp && !card.isNegated;
     const getCardName = (spot, isReturningFullName = false) => (isReturningFullName && STATE.REF.MAT[spot].displayName) || STATE.REF.MAT[spot].name;
     const getRandomSpot = (modes) => {
@@ -1332,10 +1332,10 @@ const Complications = (() => {
                 `- ${cardData.U.length}x Uncommon (${cardData.U.length * CARDQTYS.U})`,
                 `- ${cardData.R.length}x Rare (${cardData.R.length * CARDQTYS.R})`,
                 "",
-                `Total in Deck: ${cardData.V.length * CARDQTYS.V +
-                    cardData.C.length * CARDQTYS.C +
-                    cardData.U.length * CARDQTYS.U +
-                    cardData.R.length * CARDQTYS.R}`,
+                `Total in Deck: ${cardData.V.length * CARDQTYS.V
+                    + cardData.C.length * CARDQTYS.C
+                    + cardData.U.length * CARDQTYS.U
+                    + cardData.R.length * CARDQTYS.R}`,
                 "<h4>Cards in Each Rarity</h4>",
                 D.JS(cardData)
             ].join("<br>"),

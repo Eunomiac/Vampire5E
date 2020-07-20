@@ -960,13 +960,13 @@
     // #region Repeating Field Configuration
     const DISCENUMS = ["disc1", "disc2", "disc3"];
     const DISCREPREFS = {
-        discLeft: ["disc", "disc_name", "disc_flag", "discpower_toggle"],
-        discMid: ["disc", "disc_name", "disc_flag", "discpower_toggle"],
-        discRight: ["disc", "disc_name", "disc_flag", "discpower_toggle"]
+        discleft: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discnull"],
+        discmid: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discnull"],
+        discright: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discnull"]
     };
     const ADVREPREFS = {
-        advantage: ["advantage", "advantage_name", "advantage_flag", "advantage_type", "advantage_details"],
-        negadvantage: ["negadvantage", "negadvantage_name", "negadvantage_flag", "negadvantage_type", "negadvantage_details"]
+        advantage: ["advantage", "advantage_name", "advantage_flag", "advantage_type", "advantage_details", "advantagenull"],
+        negadvantage: ["negadvantage", "negadvantage_name", "negadvantage_flag", "negadvantage_type", "negadvantage_details", "negadvantagenull"]
     };
     const DOMCONREPREFS = {
         domaincontrolleft: ["district", "level", "details"],
@@ -1039,9 +1039,10 @@
     // #endregion
 
     // #region Derivative Stats
-    const BASICATTRS = _.map(_.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS]), (v) => v.toLowerCase());
-    const BASICFLAGS = _.map(_.omit(BASICATTRS, TRACKERS), (v) => `${v}_flag`);
-    const ALLATTRS = _.map([...ROLLFLAGS.all, ...BASICATTRS, ...BASICFLAGS, ..._.map(DISCENUMS, (v) => `${v}_name`)], (v) => v.replace(/\s/gu, "_").toLowerCase());
+    const BASICATTRS = _.map(_.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS]), (v) => v.toLowerCase().replace(/ /gu, "_"));
+    const BASICFLAGS = _.map(_.omit(BASICATTRS, TRACKERS), (v) => `${v.toLowerCase().replace(/ /gu, "_")}_flag`);
+    const BASICNULLS = BASICATTRS.map((x) => `${x}null`);
+    const ALLATTRS = [...ROLLFLAGS.all, ...BASICATTRS, ...BASICFLAGS, ..._.map(DISCENUMS, (v) => `${v}_name`)];
     const ATTRDISPNAMES = _.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS]);
     // #endregion
 
@@ -1082,11 +1083,16 @@
         || ATTRS[`${trimAttr(attr)}_name`]
         || trimAttr(attr);
     // getTriggers (attrs, prefix, gN, sections): Returns "on:..." event listener string for simple attributes (in attrs) or repeating sections (in sections). RETURNS string
-    const getTriggers = (attrs, prefix = "", repSecs) => {
+    
+    const getTriggers = (attrs, prefix = "", repSecs, repSecStats = []) => {
         const triggerStrings = [];
+        repSecStats = _.flatten([repSecStats]);
         if (attrs)
             triggerStrings.push(_.map(attrs, (v) => `change:${prefix}${v}`).join(" "));
-        if (repSecs && _.isArray(repSecs))
+        if (repSecs && _.isArray(repSecs) && repSecStats.length)
+            for (const repStat of repSecStats)
+                triggerStrings.push(...repSecs.map((x) => `change:repeating_${prefix}${x}:${repStat}`));
+        else if (repSecs && _.isArray(repSecs))
             triggerStrings.push(
                 _.map(repSecs, (v) => `change:_reporder_repeating_${prefix}${v} change:repeating_${prefix}${v} remove:repeating_${prefix}${v}`).join(
                     " "
@@ -2934,11 +2940,58 @@
         };
         getRepAttrs(repSecs.shift());
     };
+    const updateNullDots = (sourceAttr) => {
+        /* Hidden Attribute "strengthnull" -> number of strength dots nullified ** must go outside of div for nth-last css to work **
+           JS figures out which full dots need to be covered up, toggles those strengthnull_X dots ON.
+           This is STRICTLY DISPLAY --- the actual penalty must be covered in a roll effect (e.g. resolve/0.5/-(<.>) Redemption House) */
+        const [repAttrs, attrList] = [[], {}];
+        const repStatData = Object.assign({}, DOMCONREPREFS);
+        const repSecs = Object.keys(repStatData);
+        const getRepAttrs = (repSec) => {
+            if (repSec)
+                getSectionIDs(repSec, (rowIDs) => {
+                    repAttrs.push(
+                        ...rowIDs.map((rowID) => _.flatten(
+                            repStatData[repSec]
+                                .filter((repStat) => !repStat.endsWith("_details"))
+                                .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
+                        ))
+                    );
+                    log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                    
+                    ... mapped to: ${JSON.stringify(repAttrs)}`);
+                    getRepAttrs(repSecs.shift());
+                });
+            else
+                getAttrs(["domaincontrolbenefits", ..._.flatten(repAttrs)], (ATTRS) => {
+                    log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
+                    const filteredAttrs = _.pick(ATTRS, (v, k) => k.includes("level"));
+                    const domainBenefits = [];
+                    for (const levelTrait of Object.keys(filteredAttrs)) {
+                        const [, p, pV, pI] = pFuncs(levelTrait, ATTRS);
+                        const district = pV("district");
+                        const level = pI("level") - 1;
+                        if (district && level <= 3)
+                            domainBenefits.push(DOMAINCONTROL[district][level] || false);
+                    }
+                    if (_.compact(domainBenefits).length)
+                        attrList.domaincontrolbenefits = _.compact(domainBenefits).join(", ");
+                    else
+                        attrList.domaincontrolbenefits = " ";
+                    setAttrs(attrList);
+                });
+        };
+        getRepAttrs(repSecs.shift());
+    };
     on("sheet:opened change:stateffects", (eInfo) => {
         doStatEffects();
     });
     on(getTriggers(["stateffects"], "", [..._.keys(DOMCONREPREFS)]), (eInfo) => {
         doDomainControl();
+    });
+    on(getTriggers(BASICNULLS, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)], ["discnull", "advantagenull", "negadvantagenull"]), (eInfo) => {
+        log(`NULL TRIGGER: ${JSON.stringify(eInfo)}`);
+        // updateNullDots(eInfo.sourceAttribute);
     });
     // #endregion
 

@@ -1045,191 +1045,191 @@ const Char = (() => {
     // #endregion
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ END BOILERPLATE INITIALIZATION & CONFIGURATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // #region CLASS DEFINITIONS
-    class Effect {
-        /* SETTING UP CLASS TEMPLATE: Replace "Effect" with name of class (e.g. "Asset") */
-        // #region ~ STATIC METHODS, GETTERS & SETTERS
-        static get ReqCats() {
-            return { // initial arrays are OR.  Internal arrays are AND.
-                attrcat: [], // valid attrCats = physical, social, mental, discipline
-                attrval: [
-                    [
-                        ["attrName"]: "", // name of sheet attribute: checkFunc
-                    ]                    
-                ],
-                charids: [], // list of valid chars this applies to
-                location: [
-                    [Districts: [], Sites: []]
-                ],
-                domaincontrol: [
-                    ["District"]: [1, 2, 3]
-                } 
-            }
-        }
-        // #region Instance Storage Libraries (Indexed by "id" property on Instance)
-        static get LIB() {
-            return this._EffectLIB;
-        }
-        static set LIB(effectInstance) {
-            this._EffectLIB = Object.assign(this._EffectLIB || {}, {[effectInstance.id]: effectInstance});
-        }
-        // #endregion
-        // #endregion
+    // class Effect {
+    //     /* SETTING UP CLASS TEMPLATE: Replace "Effect" with name of class (e.g. "Asset") */
+    //     // #region ~ STATIC METHODS, GETTERS & SETTERS
+    //     static get ReqCats() {
+    //         return { // initial arrays are OR.  Internal arrays are AND.
+    //             attrcat: [], // valid attrCats = physical, social, mental, discipline
+    //             attrval: [
+    //                 [
+    //                     ["attrName"]: "", // name of sheet attribute: checkFunc
+    //                 ]                    
+    //             ],
+    //             charids: [], // list of valid chars this applies to
+    //             location: [
+    //                 [Districts: [], Sites: []]
+    //             ],
+    //             domaincontrol: [
+    //                 ["District"]: [1, 2, 3]
+    //             } 
+    //         }
+    //     }
+    //     // #region Instance Storage Libraries (Indexed by "id" property on Instance)
+    //     static get LIB() {
+    //         return this._EffectLIB;
+    //     }
+    //     static set LIB(effectInstance) {
+    //         this._EffectLIB = Object.assign(this._EffectLIB || {}, {[effectInstance.id]: effectInstance});
+    //     }
+    //     // #endregion
+    //     // #endregion
 
-        // #region ~ BASIC GETTERS & SETTERS
+    //     // #region ~ BASIC GETTERS & SETTERS
 
-        // #endregion
+    //     // #endregion
 
-        // #region ~ CONSTRUCTOR
-        constructor(effectID) {
-            this._id = effectID;
-            Effect.LIB = this;
-            this._checks = [];
-        }
-        // #endregion
+    //     // #region ~ CONSTRUCTOR
+    //     constructor(effectID) {
+    //         this._id = effectID;
+    //         Effect.LIB = this;
+    //         this._checks = [];
+    //     }
+    //     // #endregion
 
-        // #region ~ GETTERS
-        // READ-ONLY
+    //     // #region ~ GETTERS
+    //     // READ-ONLY
 
-        // GENERAL
-        get Checks() { return this._checks) }; 
-        // #endregion
+    //     // GENERAL
+    //     get Checks() { return this._checks) }; 
+    //     // #endregion
 
-        // #region ~ SETTERS
+    //     // #region ~ SETTERS
 
-        // #endregion
+    //     // #endregion
 
-        // #region ~ PRIVATE METHODS
-        addReq(reqCat, checkData, groupID) {
-            reqCat = D.LCase(reqCat);
-            groupID = _.isNaN(groupID) ? this.effectGroups.length - 1 : D.Int(groupID);
-            if (Object.keys(Effect.ReqCats).includes(reqCat)) {
-                this.checks[groupID].push({[reqCat]: checkData});    
-        }
+    //     // #region ~ PRIVATE METHODS
+    //     addReq(reqCat, checkData, groupID) {
+    //         reqCat = D.LCase(reqCat);
+    //         groupID = _.isNaN(groupID) ? this.effectGroups.length - 1 : D.Int(groupID);
+    //         if (Object.keys(Effect.ReqCats).includes(reqCat)) {
+    //             this.checks[groupID].push({[reqCat]: checkData});    
+    //     }
 
-        // #endregion
+    //     // #endregion
 
-        // #region ~ PUBLIC METHODS
+    //     // #region ~ PUBLIC METHODS
 
-        // #endregion
-    }
-    class RollEffect extends Effect {
-        /* SETTING UP CLASS TEMPLATE: Replace "Effect" with name of class (e.g. "Asset") */
-        // #region ~ STATIC METHODS, GETTERS & SETTERS
-        // #region Instance Storage Libraries (Indexed by "id" property on Instance)
-        static get LIB() {
-            return this._EffectLIB;
-        }
-        static set LIB(effectInstance) {
-            this._EffectLIB = Object.assign(this._EffectLIB || {}, {[effectInstance.id]: effectInstance});
-        }
-        // #endregion
-        // #endregion
+    //     // #endregion
+    // }
+    // class RollEffect extends Effect {
+    //     /* SETTING UP CLASS TEMPLATE: Replace "Effect" with name of class (e.g. "Asset") */
+    //     // #region ~ STATIC METHODS, GETTERS & SETTERS
+    //     // #region Instance Storage Libraries (Indexed by "id" property on Instance)
+    //     static get LIB() {
+    //         return this._EffectLIB;
+    //     }
+    //     static set LIB(effectInstance) {
+    //         this._EffectLIB = Object.assign(this._EffectLIB || {}, {[effectInstance.id]: effectInstance});
+    //     }
+    //     // #endregion
+    //     // #endregion
 
-        // #region ~ BASIC GETTERS & SETTERS
+    //     // #region ~ BASIC GETTERS & SETTERS
 
-        // #endregion
+    //     // #endregion
 
-        // #region ~ CONSTRUCTOR
-        constructor(effectID) {
-            this._id = effectID;
-            Effect.LIB = this;
-        }
-        // #endregion
+    //     // #region ~ CONSTRUCTOR
+    //     constructor(effectID) {
+    //         this._id = effectID;
+    //         Effect.LIB = this;
+    //     }
+    //     // #endregion
 
-        // #region ~ GETTERS
-        // READ-ONLY
+    //     // #region ~ GETTERS
+    //     // READ-ONLY
 
-        // GENERAL
+    //     // GENERAL
 
-        // #endregion
+    //     // #endregion
 
-        // #region ~ SETTERS
+    //     // #region ~ SETTERS
 
-        // #endregion
+    //     // #endregion
 
-        // #region ~ PRIVATE METHODS
+    //     // #region ~ PRIVATE METHODS
 
-        // #endregion
+    //     // #endregion
 
-        // #region ~ PUBLIC METHODS
+    //     // #region ~ PUBLIC METHODS
 
-        // #endregion
-    }
-    class StatEffect extends Effect {
-        // #region ~ STATIC METHODS, GETTERS & SETTERS
-        static get ReqCats() {
-            return [...super.ReqCats(), ""
-        }
-        // #region Instance Storage Libraries (Indexed by "id" property on Instance)
-        // #endregion
-        // #endregion
+    //     // #endregion
+    // }
+    // class StatEffect extends Effect {
+    //     // #region ~ STATIC METHODS, GETTERS & SETTERS
+    //     static get ReqCats() {
+    //         return [...super.ReqCats(), ""
+    //     }
+    //     // #region Instance Storage Libraries (Indexed by "id" property on Instance)
+    //     // #endregion
+    //     // #endregion
 
-        // #region ~ BASIC GETTERS & SETTERS
+    //     // #region ~ BASIC GETTERS & SETTERS
 
 
-        // #endregion
+    //     // #endregion
 
-        // #region ~ CONSTRUCTOR
-        constructor(statEffectID) {
-            super(statEffectID);
-        }
-        // #endregion
+    //     // #region ~ CONSTRUCTOR
+    //     constructor(statEffectID) {
+    //         super(statEffectID);
+    //     }
+    //     // #endregion
 
-        // #region ~ GETTERS
-        // READ-ONLY
-        get doesApply() {
-            return doesEffectApply();
-        }
-        get name() {
-            return this.data.fullName;
-        }
-        get resonance() {
-            return this.data.resonance;
-        }
+    //     // #region ~ GETTERS
+    //     // READ-ONLY
+    //     get doesApply() {
+    //         return doesEffectApply();
+    //     }
+    //     get name() {
+    //         return this.data.fullName;
+    //     }
+    //     get resonance() {
+    //         return this.data.resonance;
+    //     }
 
-        // GENERAL
-        get data() {
-            return this._data;
-        }
-        get rollEffects() {
-            return this.data.rollEffects;
-        }
-        get statEffects() {
-            return this.data.statEffects;
-        }
+    //     // GENERAL
+    //     get data() {
+    //         return this._data;
+    //     }
+    //     get rollEffects() {
+    //         return this.data.rollEffects;
+    //     }
+    //     get statEffects() {
+    //         return this.data.statEffects;
+    //     }
 
-        // #endregion
+    //     // #endregion
 
-        // #region ~ SETTERS
-        set effectReqs(v) {
-            this._effectReqs = Object.assign({}, this._effectReqs, )
-        }
-        set position(v) {
-            this._position = v; /* (subclasses will validate for proper position) */
-        }
+    //     // #region ~ SETTERS
+    //     set effectReqs(v) {
+    //         this._effectReqs = Object.assign({}, this._effectReqs, )
+    //     }
+    //     set position(v) {
+    //         this._position = v; /* (subclasses will validate for proper position) */
+    //     }
 
-        // #endregion
+    //     // #endregion
 
-        // #region ~ PRIVATE METHODS
-        doesEffectApply() {
+    //     // #region ~ PRIVATE METHODS
+    //     doesEffectApply() {
 
-        }
+    //     }
 
-        // #endregion
+    //     // #endregion
 
-        // #region ~ PUBLIC METHODS
+    //     // #region ~ PUBLIC METHODS
 
-        Enter() {
-            if (this.onEntryCall)
-                D.Call(this.onEntryCall);
-            // setSoundScape();
-            // findCharsInLoc();
-            // activateRollEffects();
-            // activateStatEffects();
-        }
+    //     Enter() {
+    //         if (this.onEntryCall)
+    //             D.Call(this.onEntryCall);
+    //         // setSoundScape();
+    //         // findCharsInLoc();
+    //         // activateRollEffects();
+    //         // activateStatEffects();
+    //     }
 
-        // #endregion
-    }
+    //     // #endregion
+    // }
     // #endregion
     
     const REGISTRY = STATE.REF.registry;
