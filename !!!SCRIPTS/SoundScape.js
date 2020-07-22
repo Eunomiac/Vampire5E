@@ -32,6 +32,9 @@ const Soundscape = (() => {
         STATE.REF.playSoundLog = STATE.REF.playSoundLog || [];
         STATE.REF.playSoundLog.push("~~~ NEW INITIALIZATION ~~~");
 
+        STATE.REF.scoreOverride = "ScoreMain";
+        D.Flag("Score Override: ScoreMain");
+
         // syncSoundscape(true);
     };
     // #endregion

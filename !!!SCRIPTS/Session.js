@@ -23,91 +23,9 @@ const Session = (() => {
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
-        STATE.REF.tokenRecord.Inactive = false;
-        STATE.REF.tokenRecord.Spotlight = false;
-        STATE.REF.tokenRecord.Complications = false;
-        // STATE.REF.curLocation.DistrictCenter = ["DupontByTheCastle"];
-        // STATE.REF.locationRecord.Active.DistrictCenter = ["DupontByTheCastle"];
-        // STATE.REF.quadScene = {
-        //     isActive: false,
-        //     locData: {},
-        //     focus: false
-        // };
-        // STATE.REF.SpotlightPrompts.A = [
-        //     {
-        //         prompt:
-        //             "Every Vampire has a relationship with their beast. What is yours? Do you attempt self control? Or are you embracing your beast? Does this existence bring you great pride? Or shame?",
-        //         author: false,
-        //         id: "QRUl0oCKwq"
-        //     }
-        // ];
-        // state.VAMPIRE.Char.registry.TopLeft.spotlightPrompt = false;
-
-        // delete STATE.REF.curLocation
-        // delete STATE.REF.locationRecord
-        // delete STATE.REF.sceneFocusRecord;
-        // delete STATE.REF.tokenRecord
-        // delete STATE.REF.SceneAlarms
-        // STATE.REF.SceneAlarms = []
-        // delete STATE.REF.SpotlightPrompts;
-        // setMacro(D.GetChar("A"), "Review-Prompts", "!prompt review");
-        // setMacro(D.GetChar("N"), "Review-Prompts", "!prompt review");
-        // setMacro(D.GetChar("R"), "Review-Prompts", "!prompt review");
-        // setMacro(D.GetChar("L"), "Review-Prompts", "!prompt review");
-        // setMacro(D.GetChar("B"), "Review-Prompts", "!prompt review");
-
-        // STATE.REF.SessionScribes = ["TeatimeRationale", "Thaumaterge", "PixelPuzzler", "banzai", "Hastur"]
-        // STATE.REF.customLocs["Queen's Landing Hallway"].district = "Cabbagetown"
-        // STATE.REF.customLocs["Queen's Landing Lobby"].district = "Cabbagetown"
-        /*
-            STATE.REF.customLocs = {
-                ["Site: Orchid"]: {
-                    district: "YongeStreet",
-                    site: "SiteLotus",
-                    siteName: "Site: Orchid",
-                    subLocs: {
-                        TopLeft: "SiteLotus_LockeQuarters",
-                        Left: "Security",
-                        BotLeft: "SiteLotus_RoyQuarters",
-                        TopRight: "SiteLotus_NapierQuarters",
-                        Right: "Laboratory",
-                        BotRight: "SiteLotus_AvaQuarters"
-                    },
-                    pointerPos: {left: 1001, top: 1995}
-                },
-                ["Locke's BMW"]: {
-                    district: "CityStreets",
-                    site: "Vehicle5",
-                    siteName: "Locke's BMW"
-                },
-                ["Bookies' Booty"]: {
-                    district: "HarbordVillage",
-                    site: "StripClub",
-                    siteName: "Bookies' Booty",
-                    pointerPos: {left: 588, top: 2145}
-                },
-                ["The Cat & Adder"]: {
-                    district: "Wychwood",
-                    site: "WychwoodPub",
-                    siteName: "The Cat & Adder",
-                    pointerPos: {left: 233, top: 1534}
-                },
-                SiteLotus: {
-                    district: "YongeStreet",
-                    site: "SiteLotus",
-                    subLocs: {
-                        TopLeft: "SiteLotus_LockeQuarters",
-                        Left: "Security",
-                        BotLeft: "SiteLotus_RoyQuarters",
-                        TopRight: "SiteLotus_NapierQuarters",
-                        Right: "Laboratory",
-                        BotRight: "SiteLotus_AvaQuarters"
-                    },
-                    pointerPos: {left: 1001, top: 1995}
-                }
-            } */
-
+        STATE.REF.isPromptingGeneric = false;
         PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND);
+
         STATE.REF.isTestingActive = STATE.REF.isTestingActive || false;
         STATE.REF.isFullTest = STATE.REF.isFullTest || false;
         STATE.REF.sceneChars = STATE.REF.sceneChars || [];
@@ -163,8 +81,6 @@ const Session = (() => {
                 (k, v) => v.initial,
                 () => []
             );
-        STATE.REF.isPromptingGeneric = false;
-
         STATE.REF.SceneAlarms = STATE.REF.SceneAlarms || [];
 
         if (!STATE.REF.locationRecord) {
@@ -183,6 +99,7 @@ const Session = (() => {
                 STATE.REF.sceneFocusRecord[mode] = "DistrictLeft" in locData ? "l" : "c";
             }
         }
+
         setPlayerPage();
         verifyStateIntegrity();
         buildLocationMenus();

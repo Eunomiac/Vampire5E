@@ -169,7 +169,7 @@ const Handouts = (() => {
     // #endregion
 
     // #region SETTERS: Setting Notes, Deleting Handouts, Appending to Handouts
-    const makeHandoutObj = (title, category, contents, isWritingGM = false, isVerbose = false) => {
+    const makeHandoutObj = (title, category, contents, isWritingGM = false, isVerbose = false, isRawCode = false) => {
         if (category) {
             STATE.REF.categoryLogs[category] = STATE.REF.categoryLogs[category] || [];
             while (getCount(category) >= (categoryMax[category] || categoryMax["default"]))
@@ -181,14 +181,14 @@ const Handouts = (() => {
         }
         const noteObj = createObj("handout", {name: title});
         if (contents)
-            updateHandout(title, category, contents, isWritingGM, isVerbose);
+            updateHandout(title, category, contents, isWritingGM, isVerbose, isRawCode);
         return noteObj;
     };
     const makeSimpleHandoutObj = (title, contents, isVerbose = false) => makeHandoutObj(title, false, contents, true, isVerbose);
-    const updateHandout = (title, category, contents, isWritingGM = false, isVerbose = false) => {
+    const updateHandout = (title, category, contents, isWritingGM = false, isVerbose = false, isRawCode = false) => {
         const handoutObj = getHandoutObj(title);
         const noteData = {
-            notes: C.HANDOUTHTML.main(D.JS(contents, isVerbose)),
+            notes: isRawCode ? C.HANDOUTHTML.main(contents) : C.HANDOUTHTML.main(D.JS(contents, isVerbose)),
             gmnotes: typeof contents === "string" ? contents : JSON.stringify(contents)
         };
         if (handoutObj) {
@@ -196,7 +196,7 @@ const Handouts = (() => {
             if (isWritingGM)
                 handoutObj.set("gmnotes", noteData.gmnotes);
         } else {
-            makeHandoutObj(title, category, contents, isWritingGM, isVerbose);
+            makeHandoutObj(title, category, contents, isWritingGM, isVerbose, isRawCode);
         }
     };
     const delHandoutObjs = (titleRef, category) => {

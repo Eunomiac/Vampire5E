@@ -858,6 +858,7 @@ const TimeTracker = (() => {
         }
         return OFFSTACK(funcID) && false;
     };
+    const getRealDateObj = () => new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"}));
     const parseToDeltaTime = (...args) => {
         const funcID = ONSTACK(); // Takes a number and a unit of time and converts it to the standard [delta (digit), unit (y/mo/w/d/h/m)] format for adding time.
         const matchPatterns = [new RegExp("-?\\d+(\\.?\\d+)?", "gu"), new RegExp("[A-Za-z]{1,2}", "u")];
@@ -940,15 +941,15 @@ const TimeTracker = (() => {
         }
         return OFFSTACK(funcID) && dateObj;
     };
-    const formatTimeString = (date) => {
-        const funcID = ONSTACK();
-        const [hours, minutes] = [date.getUTCHours(), date.getUTCMinutes()];
+    const formatTimeString = (date, isGettingUTCTime = true) => {
+        // const funcID = ONSTACK();
+        const [hours, minutes] = isGettingUTCTime ? [date.getUTCHours(), date.getUTCMinutes()] : [date.getHours(), date.getMinutes()];
         if (hours === 0 || hours === 12)
-            return OFFSTACK(funcID) && `12:${minutes < 10 ? "0" : ""}${minutes} ${hours === 0 ? "A.M." : "P.M."}`;
+            return /* OFFSTACK(funcID) && */ `12:${minutes < 10 ? "0" : ""}${minutes} ${hours === 0 ? "A.M." : "P.M."}`;
         else if (hours > 12)
-            return OFFSTACK(funcID) && `${hours - 12}:${minutes < 10 ? "0" : ""}${minutes} P.M.`;
+            return /* OFFSTACK(funcID) && */ `${hours - 12}:${minutes < 10 ? "0" : ""}${minutes} P.M.`;
         else
-            return OFFSTACK(funcID) && `${hours}:${minutes < 10 ? "0" : ""}${minutes} A.M.`;
+            return /* OFFSTACK(funcID) && */ `${hours}:${minutes < 10 ? "0" : ""}${minutes} A.M.`;
     };
     const formatDateString = (date, isIncludingTime = false) => {
         const funcID = ONSTACK();
@@ -1066,7 +1067,7 @@ const TimeTracker = (() => {
     const setNextSessionDate = (dateOverride = {}) => {
         const funcID = ONSTACK();
         DB({dateOverride}, "setNextSessionDate"); // {day: 1, hour: 3, minute: 30}
-        const curRealDateObj = new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"}));
+        const curRealDateObj = getRealDateObj();
         const sessDateObj = new Date(curRealDateObj);
         const daysOut = 7 - (curRealDateObj.getDay() === 0 ? 7 : curRealDateObj.getDay());
         sessDateObj.setDate(curRealDateObj.getDate() + daysOut);
@@ -2629,6 +2630,7 @@ const TimeTracker = (() => {
             return new Date(STATE.REF.dateObj);
         },
         GetDate: getDateObj,
+        GetRealDate: getRealDateObj,
         get TempC() {
             return getTempFromCode(MONTHTEMP[STATE.REF.dateObj.getUTCMonth()]) + getTempFromCode(getWeatherCode().charAt(2));
         },

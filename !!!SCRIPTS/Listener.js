@@ -132,6 +132,7 @@ const Listener = (() => {
                 "!char": {script: Char, gmOnly: true, singleCall: true},
                 "!data": {script: D, gmOnly: true, singleCall: false},
                 "!reply": {script: D, gmOnly: true, singleCall: false},
+                "!note": {script: D, gmOnly: true, singleCall: false, needsObjects: false},
                 "!dpad": {script: DragPads, gmOnly: true, singleCall: true},
                 "!fuzzy": {script: Fuzzy, gmOnly: true, singleCall: true},
                 "!handouts": {script: Handouts, gmOnly: true, singleCall: true},

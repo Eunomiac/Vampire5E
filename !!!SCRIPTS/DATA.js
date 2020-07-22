@@ -46,6 +46,7 @@ const D = (() => {
         STATE.REF.TRACELOGSTOPS = {};
         STATE.REF.ISDEBUGGING = STATE.REF.ISDEBUGGING !== false;
         STATE.REF.TRACELASTTIME = 0;
+        STATE.REF.SessionNotes = STATE.REF.SessionNotes || {};
 
         // Initialize STATSDICT Fuzzy Dictionary
         try {
@@ -92,6 +93,20 @@ const D = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const onChatCall = (call, args, objects, msg) => {
         switch (call) {
+            case "!note": {
+                let noteString = msg.content.replace(/^!note /gu, "");
+                const [noteCategory] = noteString.match(/^!([^ ]*)/gu) || ["general"];
+                noteString = noteString.replace(/^![^ ]* */gu, "");
+                STATE.REF.SessionNotes[Session.SessionNum] = STATE.REF.SessionNotes[Session.SessionNum] || {};
+                STATE.REF.SessionNotes[Session.SessionNum][noteCategory] = STATE.REF.SessionNotes[Session.SessionNum][noteCategory] || [];
+                STATE.REF.SessionNotes[Session.SessionNum][noteCategory].push({
+                    time: (new Date()).getTime() - 1000 * 60 * 60 * 4,
+                    normalString: (new Date()).toString(),
+                    localeString: (new Date()).toLocaleString("en-US", {timezone: "America/New_York"}),
+                    content: _.escape(noteString)
+                });
+                break;
+            }
             case "!data": {
                 switch (D.LCase((call = args.shift()))) {
                     case "add":
@@ -128,6 +143,10 @@ const D = (() => {
                     }
                     case "get": {
                         switch (D.LCase((call = args.shift()))) {
+                            case "notes": {
+                                printSessionNotes();
+                                break;
+                            }
                             case "sites": {
                                 sendToGM(jStr(C.SITES));
                                 break;
@@ -156,6 +175,12 @@ const D = (() => {
                     case "clear":
                     case "reset": {
                         switch (D.LCase((call = args.shift()))) {
+                            case "notes": {
+                                const sessNum = D.Int(args[0] || Session.SessionNum);
+                                printSessionNotes(sessNum);
+                                delete STATE.REF.SessionNotes[sessNum];
+                                break;
+                            }
                             case "watch":
                             case "dbwatch":
                             case "watchlist":
@@ -1158,7 +1183,7 @@ const D = (() => {
     };
     // #endregion
 
-    // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
+    // #region MESSAGES: Formatting and sending chat messages and report handouts to players & Storyteller
     const formatTitle = (funcName, scriptName, prefix = "") => `[${prefix}${VAL({string: funcName}) || VAL({string: scriptName}) ? " " : ""}${
         VAL({string: scriptName}) ? `${scriptName.toUpperCase()}` : ""
     }${VAL({string: [scriptName, funcName]}, null, true) ? ": " : ""}${funcName || ""}]`;
@@ -1342,6 +1367,25 @@ const D = (() => {
             }, throttle);
         }
         sendChatMessage(getGMID(), msg, title, isPureCode);
+    };    
+    const printSessionNotes = (sessionNum) => {
+        sessionNum = sessionNum || Session.SessionNum;
+        if ((sessionNum - 1) in STATE.REF.SessionNotes) {
+            printSessionNotes(sessionNum - 1);
+            delete STATE.REF.SessionNotes[sessionNum - 1];
+        }
+        if (sessionNum in STATE.REF.SessionNotes) {
+            
+            const sessNotes = kvpMap(STATE.REF.SessionNotes[sessionNum], null, (v) => _.sortBy(v, (vv) => vv.time).map((x) => `[${TimeTracker.FormatTime(new Date(new Date(x.time).toLocaleString("en-US", {timezone: "America/New_York"})), false)}] ${x.content}<br>`));
+            const sessStrings = [...sessNotes.general, "<br>"];
+            for (const [cat, notes] of Object.entries(_.omit(sessNotes, "general")))
+                sessStrings.push(...[
+                    `<h3>${D.UCase(cat)}</h3>`,
+                    ...notes,
+                    "<br>"
+                ]);
+            Handouts.Make(`Session Notes: ${sessionNum}`, null, sessStrings.join(""), false, false, true);
+        }
     };
     // #endregion
 
