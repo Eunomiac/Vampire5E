@@ -262,7 +262,7 @@ const D = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    let PROMPTFUNC, ISTRACING;
+    let PROMPTFUNC, ISTRACING, TEMPWATCHLIST = [];
     const STACKLOG = [];
     const FUNCSONSTACK = [];
     // #region DECLARATIONS: Reference Variables, Temporary Storage Variables
@@ -382,7 +382,7 @@ const D = (() => {
         const done = (empty, ...args) => {
             const end = () => {
                 const newArgs = args ? [].concat(empty, args) : [empty];
-                if (STATE.REF.WATCHLIST.includes("runFuncQueue"))
+                if ([...TEMPWATCHLIST, ...STATE.REF.WATCHLIST].includes("runFuncQueue"))
                     D.Chat(
                         "Storyteller",
                         C.HTML.Block(
@@ -411,7 +411,7 @@ const D = (() => {
             if (++current >= FunctionQueue[queueName].length || empty) {
                 done(empty, args);
             } else {
-                if (STATE.REF.WATCHLIST.includes("runFuncQueue"))
+                if ([...TEMPWATCHLIST, ...STATE.REF.WATCHLIST].includes("runFuncQueue"))
                     D.Chat(
                         "Storyteller",
                         C.HTML.Block(
@@ -1936,7 +1936,7 @@ const D = (() => {
                             if (charArray.length) {
                                 errorCheck = [];
                                 _.each(charArray, (charObj) => {
-                                    if (!getStat(charObj, v, true))
+                                    if (!getStat(charObj, v))
                                         errorCheck.push(charObj.get("name"));
                                 });
                                 if (errorCheck.length)
@@ -2002,9 +2002,10 @@ const D = (() => {
     // #endregion
 
     // #region DEBUGGING & ERROR MANAGEMENT
-    const setWatchList = (keywords) => {
+    const setWatchList = (keywords, isSilent = false) => {
         if (keywords === "clear") {
-            STATE.REF.WATCHLIST = [];
+            STATE.REF.WATCHLIST.length = 0;
+            TEMPWATCHLIST.length = 0;
         } else {
             const watchwords = _.flatten([keywords]);
             _.each(watchwords, (v) => {
@@ -2014,12 +2015,25 @@ const D = (() => {
                     STATE.REF.WATCHLIST = _.uniq([...STATE.REF.WATCHLIST, v]);
             });
         }
-        sendToGM(
-            `Currently displaying debug information tagged with:<br><br>${jStr(STATE.REF.WATCHLIST.join("<br>"))}`,
-            formatTitle("setWatchList", SCRIPTNAME)
-        );
+        if (!isSilent)
+            sendToGM(
+                `Currently displaying debug information tagged with:<br><br>${jStr(STATE.REF.WATCHLIST.join("<br>"))}`,
+                formatTitle("setWatchList", SCRIPTNAME)
+            );
     };
-    const getWatchList = () => sendToGM(`${jStr(STATE.REF.WATCHLIST)}`, "DEBUG WATCH LIST");
+    const setTempWatchList = (keywords, delay = 2000) => {
+        for (const watchWord of _.flatten([keywords]))
+            if (watchWord.startsWith("!")) {
+                TEMPWATCHLIST = _.without(TEMPWATCHLIST, watchWord.slice(1));
+            } else {
+                TEMPWATCHLIST = _.uniq([...TEMPWATCHLIST, watchWord]);
+                setTimeout(() => setTempWatchList([`!${watchWord}`]), delay);
+            }
+    };
+    const getWatchList = (isSilent = false) => {
+        sendToGM(`${jStr(STATE.REF.WATCHLIST)}`, "DEBUG WATCH LIST");
+        return STATE.REF.WATCHLIST;
+    };
     const setBlackList = (keywords) => {
         if (keywords === "clear") {
             STATE.REF.BLACKLIST = [];
@@ -2041,15 +2055,15 @@ const D = (() => {
     const logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
         msg = formatMsgContents(msg, false);
         if (STATE.REF.ISDEBUGGING && (Session.IsTesting || !Session.IsSessionActive)) {
-            if (funcName) {
-                STATE.REF.DEBUGLOG.push({
-                    timeStamp: new Date().getTime(),
-                    title: formatTitle(funcName, scriptName, prefix),
-                    contents: msg
-                });
-                if (STATE.REF.DEBUGLOG.length > 100)
-                    getDebugRecord("... DBLog");
-            }
+            // if (funcName) {
+            //     STATE.REF.DEBUGLOG.push({
+            //         timeStamp: new Date().getTime(),
+            //         title: formatTitle(funcName, scriptName, prefix),
+            //         contents: msg
+            //     });
+            //     if (STATE.REF.DEBUGLOG.length > 100)
+            //         getDebugRecord("... DBLog");
+            // }
             log(formatLogLine(msg, funcName, scriptName, prefix));
         }
     };
@@ -2074,16 +2088,16 @@ const D = (() => {
     const sendDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
         if (
             (!Session.IsSessionActive || Session.IsTesting)
-            && (STATE.REF.WATCHLIST.includes(funcName) || !STATE.REF.BLACKLIST.includes(funcName))
-            && (STATE.REF.WATCHLIST.includes(funcName) || STATE.REF.WATCHLIST.includes(scriptName) || !STATE.REF.BLACKLIST.includes(scriptName))
+            && ([...TEMPWATCHLIST, ...STATE.REF.WATCHLIST].includes(funcName) || !STATE.REF.BLACKLIST.includes(funcName))
+            && ([...TEMPWATCHLIST, ...STATE.REF.WATCHLIST].includes(funcName) || [...TEMPWATCHLIST, ...STATE.REF.WATCHLIST].includes(scriptName) || !STATE.REF.BLACKLIST.includes(scriptName))
         ) {
             logDebugAlert(msg, funcName, scriptName, prefix);
             if (
-                (funcName && STATE.REF.WATCHLIST.includes(funcName))
-                || (scriptName && STATE.REF.WATCHLIST.includes(scriptName))
+                (funcName && [...TEMPWATCHLIST, ...STATE.REF.WATCHLIST].includes(funcName))
+                || (scriptName && [...TEMPWATCHLIST, ...STATE.REF.WATCHLIST].includes(scriptName))
                 || (!funcName && !scriptName)
             )
-                sendToGM(formatMsgContents(msg, true, true), formatTitle(funcName, scriptName, prefix));
+                sendToGM(formatMsgContents(msg, true, false), formatTitle(funcName, scriptName, prefix));
         }
     };
     const getDebugRecord = (title = "Debug Log") => {
@@ -2390,19 +2404,27 @@ const D = (() => {
             propData[char.id] = getCharData(char, funcName)[property];
         return propData;
     };
-    const getStat = (charRef, statName, funcName = false) => {
+    const getStat = (charRef, statName, repRowStatName = false) => {
+        // repRowStatName is the value of the name attribute on the repeating section row that you want to retrieve statName from.
+        //    E.g. statName = "advantage_type", repRowStatName = "Status (Anarchs)"
         const charObj = getChar(charRef);
         const isGettingMax = statName.endsWith("_max");
         const stat = statName.replace(/_max$/gu, "");
         let attrValueObj = null,
             attrValue = null;
-        if (VAL({charObj, string: stat}, (VAL({string: funcName}) && `${D.JSL(funcName)} > getStat`) || null)) {
-            // STEP ONE: LOOK THROUGH NON-REPEATING ATTRIBUTES:
+        if (VAL({charObj, string: stat})) {
             const attrObjs = _.filter(
                 findObjs({_type: "attribute", _characterid: charObj.id}),
                 (v) => !v.get("name").includes("repeating") || stat.includes("repeating")
             ); // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
-            // D.Alert(`All Attr Objs: ${D.JS(_.map(allAttrObjs, v => v.get("name")))}<br><br>Filtered Attr Objs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
+            // IF REPROWSTATNAME GIVEN, SEEK A REPEATING STAT THAT MATCHES
+            if (repRowStatName) {
+                const repStatData = getRepStats(charObj, null, {name: repRowStatName}, null, "rowID");
+                if (repStatData)
+                    attrValueObj = ((Object.values(repStatData)[0] || []).find((x) => x.name === stat) || {obj: false}).obj;
+                DB({repStatData: Object.values(repStatData), find: (Object.values(repStatData) || [])[0].find((x) => x.name === stat), stat, attrValueObj}, "getStat");
+            }
+            // STEP ONE: LOOK THROUGH NON-REPEATING ATTRIBUTES, IF NO REPROWSTATNAME GIVEN:
             attrValueObj = _.find(attrObjs, (v) => v.get("name").toLowerCase() === stat.toLowerCase());
 
             // STEP TWO: LOOK THROUGH NON-REPEATING ATTRIBUTES FOR NAME/VAL PAIRS (e.g. "disc1_name, disc1")
@@ -2422,7 +2444,7 @@ const D = (() => {
             if (!attrValueObj)
                 for (const repSec of C.TRAITREPSECS) {
                     const repValData = getRepStats(charObj, repSec, null, stat);
-                    attrValueObj = repValData && repValData[0] && repValData[0].obj;
+                    attrValueObj = repValData && repValData[0] && repValData[0].obj && repValData[0].obj.get("name").endsWith(stat) && repValData[0].obj;
                     if (attrValueObj)
                         break;
                 }
@@ -2431,7 +2453,6 @@ const D = (() => {
                 if (!_.isNaN(parseInt(attrValue)))
                     attrValue = parseInt(attrValue);
             }
-
             DB(
                 `StatName: ${D.JSL(stat)}
                 AttrValueObj: ${D.JSL(attrValueObj, true)}
@@ -2443,7 +2464,7 @@ const D = (() => {
         }
         return attrValueObj ? [attrValue, attrValueObj] : null;
     };
-    const getStatVal = (charRef, statName, funcName = false) => (getStat(charRef, statName, funcName) || [false])[0];
+    const getStatVal = (charRef, statName, repRowStatName = false) => (getStat(charRef, statName, repRowStatName) || [false])[0];
     const getRepIDs = (charRef, section, rowFilter, funcName = false) => {
         // rowRef: rowID (string), stat:value (list, with special "name" entry for shortname), array of either (array), or null (all)
         DB(`GetRepIDs(${jStrL(charRef, true)}, ${section}, ${jStrL(rowFilter)})`, "getRepIDs");
@@ -2555,10 +2576,11 @@ const D = (() => {
     };
     const getRepStats = (charRef, section, rowFilter = {}, statName, groupBy, pickProperty, funcName = false) => {
         const charObj = getChar(charRef);
+        section = section || "*";
         // D.Alert(`CharRef: ${D.JS(charRef)}, CharObj: ${D.JS(charObj)}`)
         DB(`getRepStats(${jStrL([charObj.get("name"), section, rowFilter, statName, groupBy, pickProperty])})`, "getRepStats");
         let finalRepData = [];
-        if (VAL({charObj, string: section}, "getRepStats")) {
+        if (VAL({charObj}, "getRepStats")) {
             // STEP ONE: USE THE ROW FILTER TO GET VALID ROW IDS TO SEARCH
             const filter = VAL({string: statName, list: rowFilter}) ? Object.assign({[statName]: "*"}, rowFilter) : rowFilter;
             const rowIDs = _.compact(getRepIDs(charObj, section, filter, funcName));
@@ -3113,6 +3135,7 @@ const D = (() => {
 
         SetDebugWatchList: setWatchList,
         GetDebugWatchList: getWatchList,
+        SetTempDebugWatch: setTempWatchList,
         get WatchList() {
             return STATE.REF.WATCHLIST;
         },

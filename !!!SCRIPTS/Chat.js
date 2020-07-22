@@ -561,10 +561,10 @@ const Chat = (() => {
         <div style="display: inline-block; height: 10px; margin-right: 2px; line-height: 12px; width: 30px; background-color: rgba(0, 0, 255, 0.3); border: 1px solid blue; text-align: center; text-align-last: center;">
         <a style="display: inline-block; width: 100%; color: black; padding: 0px; border: none; background-color: transparent;" href="${keyButtonPrefix} ${x}">KEYS</a>
         </div>
-        <div style="display: inline-block; height: 10px; margin-right: 6px; line-height: 12px; width: 30px; background-color: rgba(255, 0, 0, 0.3); border: 1px solid red; text-align: center; text-align-last: center;">
+        <div style="display: inline-block; height: 10px; margin-right: 2px; line-height: 12px; width: 30px; background-color: rgba(255, 0, 0, 0.3); border: 1px solid red; text-align: center; text-align-last: center;">
         <a style="display: inline-block; width: 100%; color: black; padding: 0px; border: none; background-color: transparent;" href="${valButtonPrefix} ${x}">FULL</a>
         </div>
-        <div style="display: inline-block; width: 189px; font-weight: bold; background-color: transparent; height: 14px; line-height: 14px;">${x}</div>
+        <div style="display: inline-block; width: 182px; font-weight: bold; background-color: transparent; height: 14px; line-height: 14px;">${x}</div>
         </div>`).join(""), title);
     };
     const getStateData = (namespace, returnVals) => {

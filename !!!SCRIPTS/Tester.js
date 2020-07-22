@@ -31,6 +31,7 @@ const Tester = (() => {
     const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
+            case "casalomaactive": D.Alert(D.JS(Session.IsCasaLomaActive)); break;
             case "tokens": {
                 const allTokens = _.sortBy(findObjs({
                     // _pageid: C.PAGES.GAME,
@@ -52,22 +53,68 @@ const Tester = (() => {
                 D.Alert(reportLines.join("<br>"), "Media Data");
                 break;
             }
-            case "repstats": {
-                let [charRef, section, statName, groupBy, pickProperty, rowFilter] = args;
-                if (!rowFilter) {
-                    D.Alert("<b>SYNTAX:</b><br>!test repstats &lt;charRef&gt; &lt;section&gt; &lt;statName&gt; &lt;groupBy&gt; &lt;pickProperty&gt; &lt;rowID&gt;<br><br>Can skip a parameter with 'null'.", "!test repstats");
+            case "getstat": case "getstatval": {
+                let [charRef, statName, repRowStatName] = args;
+                if (!statName) {
+                    D.Alert([
+                        "<b>SYNTAX:</b>",
+                        "<br>!test getstat &lt;charRef&gt; &lt;statName&gt; &lt;repRowStatName&gt;"
+                    ].join("<br>"), "!test getstat/getstatval");
                     break;
                 }
-                charRef = charRef === "null" ? null : charRef;
+                repRowStatName = repRowStatName === "null" ? null : repRowStatName;
+                D.SetTempDebugWatch(["getStat"]);
+                const statData = call === "getstatval" ? D.GetStatVal(charRef, statName, repRowStatName) : D.GetStat(charRef, statName, repRowStatName);
+                D.Alert([
+                    "<h4>Call:</h4>",
+                    "D.GetStat(",
+                    `     charRef: ${D.JS(charRef)}`,
+                    `     statName: ${D.JS(statName)}`,
+                    `     repRowStatName: ${D.JS(repRowStatName)}`,
+                    ")",
+                    "<h4>Return:</h4>",
+                    D.JS(statData, true)
+                ].join("<br>"), "Testing GetStat/GetStatVal");
+                break;
+            }
+            case "repstats": {
+                let [charRef, section, rowFilter, statName, groupBy, pickProperty] = args;
+                if (!rowFilter) {
+                    D.Alert([
+                        "<b>SYNTAX:</b>",
+                        "<br>!test repstats &lt;charRef&gt; &lt;section&gt; &lt;rowFilter&gt; &lt;statName&gt; &lt;groupBy&gt; &lt;pickProperty&gt;",
+                        " ",
+                        "Can skip a parameter with 'null'.",
+                        "Array Syntax: ' &quot;[&lt;item1&gt;, &lt;item2&gt;, &lt;item3&gt;]&quot; '",
+                        "List Syntax: ' &quot;&lt;key&gt;:&lt;val&gt;, &lt;key&gt;:&lt;val&gt;&quot; '"
+                    ].join("<br>"), "!test repstats");
+                    break;
+                }
+                D.SetTempDebugWatch(["getRepStats", "getRepIDs"]);
+                charRef = charRef === "null" ? null : D.GetChar(charRef);
                 section = section === "null" ? null : section;
                 statName = statName === "null" ? null : statName;
                 groupBy = groupBy === "null" ? null : groupBy;
                 pickProperty = pickProperty === "null" ? null : pickProperty;
+                rowFilter = rowFilter.startsWith("[") ? rowFilter.replace(/[\[\]]/gu, "").split(/, ?/gu) : rowFilter;
+                rowFilter = rowFilter.includes(":") ? D.ParseParams(rowFilter, ",") : rowFilter;
                 rowFilter = rowFilter === "null" ? null : rowFilter;
-                const repStatData = D.GetRepStats(charRef, section, rowFilter, statName, groupBy, pickProperty);
+                let repStatData = D.GetRepStats(charRef, section, rowFilter, statName, groupBy, pickProperty);
+                if (!pickProperty)
+                    if (VAL({array: repStatData}))
+                        repStatData = repStatData.map((x) => _.omit(x, "obj"));
+                    else if (VAL({list: repStatData}))
+                        repStatData = D.KeyMapObj(repStatData, null, (v) => v.map((x) => _.omit(x, "obj")));
                 D.Alert([
                     "<h4>Call:</h4>",
-                    `D.GetRepStats(${D.JSL(charRef)}, ${D.JSL(section)}, ${D.JSL(rowFilter)}, ${D.JSL(statName)}, ${D.JSL(groupBy)}, ${D.JSL(pickProperty)}, null)`,
+                    "D.GetRepStats(",
+                    `     charRef: ${D.JS(charRef)}`,
+                    `     section: ${D.JS(section)}`,
+                    `     rowFilter: ${D.JS(rowFilter)}`,
+                    `     statName: ${D.JS(statName)}`,
+                    `     groupBy: ${D.JS(groupBy)}`,
+                    `     pickProperty: ${D.JS(pickProperty)}`,
+                    ")",
                     "<h4>Return:</h4>",
                     D.JS(repStatData, true)
                 ].join("<br>"), "Testing Repstats");

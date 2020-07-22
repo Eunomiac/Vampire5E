@@ -42,7 +42,7 @@ const airLog = (logMsg, chatMsg, dbMsg) => {
 
 // HTML Styles for Reporting
 const airbagHTML = {
-    ChatBox: content => `<div style='${[
+    ChatBox: content => `<div style="${[
             "display: block;",
             "width: auto;",
             "padding: 5px 5px;",
@@ -50,8 +50,8 @@ const airbagHTML = {
             "border: 3px outset rgb(255, 0, 0);",
             "background-color: rgb(120, 0, 0);",
             "position: relative;"
-        ].join(" ")}'>${content}</div>`,
-    TitleBox: content => `<div style='${[
+        ].join(" ")}">${content}</div>`,
+    TitleBox: content => `<div style="${[
             "display: block;",
             "height: auto;",
             "width: 90%;",
@@ -65,8 +65,8 @@ const airbagHTML = {
             "background-color: rgb(80, 80, 80);",
             "color: rgb(255, 255, 255);",
             "position: relative;"
-        ].join(" ")}'>${content}</div>`,
-    StackBox: content => `<div style='${[
+        ].join(" ")}">${content}</div>`,
+    StackBox: content => `<div style="${[
             "display: block;",
             "width: auto;",
             "padding: 5px 0px 5px 3px;",
@@ -76,8 +76,8 @@ const airbagHTML = {
             "border: 2px solid rgb(0,0,0);",
             "line-height: 14px;",
             "position: relative;"
-        ].join(" ")}'>${content}</div>`,
-    MessageBox: content => `<div style='${[
+        ].join(" ")}">${content}</div>`,
+    MessageBox: content => `<div style="${[
             "display: block;",
             "width: auto;",
             "padding: 5px 0px 5px 3px;",
@@ -90,7 +90,7 @@ const airbagHTML = {
             "line-height: 14px;",
             "color: black;",
             "position: relative;"
-        ].join(" ")}'>${content}</div>`
+        ].join(" ")}">${content}</div>`
 }
 
 // ===========================================================================

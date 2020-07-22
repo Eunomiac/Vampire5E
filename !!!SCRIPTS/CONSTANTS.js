@@ -28,6 +28,7 @@ state = state || {};
 state[GAMENAME] = state[GAMENAME] || {};
 for (const scriptName of SCRIPTS)
     state[GAMENAME][scriptName] = state[GAMENAME][scriptName] || {};
+
 // #endregion
 // #endregion
 
@@ -3658,5 +3659,114 @@ on("ready", () => {
     InitCommands.PreInitialization();
     C.CheckInstall();
     D.Log("CONSTANTS Ready!");
+
+    const resetProblemStateVals = () => {        
+        state.VAMPIRE.D.DEBUGLOG = [];
+        /* state.VAMPIRE.D.STATSDICT = {gramSizeLower: 2, gramSizeUpper: 3, useLevenshtein: true, exactSet: {}, matchDict: {}, items: {}};
+        state.VAMPIRE.D.PCDICT = {gramSizeLower: 2, gramSizeUpper: 3, useLevenshtein: true, exactSet: {}, matchDict: {}, items: {}};
+        state.VAMPIRE.D.PCLIST = {gramSizeLower: 2, gramSizeUpper: 3, useLevenshtein: true, exactSet: {}, matchDict: {}, items: {}};
+        state.VAMPIRE.D.NPCDICT = {gramSizeLower: 2, gramSizeUpper: 3, useLevenshtein: true, exactSet: {}, matchDict: {}, items: {}};
+        state.VAMPIRE.D.NPCLIST = {gramSizeLower: 2, gramSizeUpper: 3, useLevenshtein: true, exactSet: {}, matchDict: {}, items: {}};
+        state.VAMPIRE.Char.customStakes = {
+            coterie: [],
+            personal: {
+                A: [],
+                B: [
+                    ["Ava's Ally (Harker)", 2, 2, "Aug 17, 2020"],
+                    ["Napier's Herd (Mobile Clinic)", 2, 5, "Aug 17, 2020"]
+                ],
+                L: [],
+                N: [],
+                R: [
+                    ["Ava's Contacts (Anarchs)", 2, 2, "Sep 5, 2020"]
+                ]
+            }
+        };
+        state.VAMPIRE.Media.IMGDICT = {};
+        state.VAMPIRE.Media.TEXTDICT = {};
+        state.VAMPIRE.Media.AREADICT = {}; */
+    };
+    const checkStateStability = () => {
+        const okayStateRefs = [
+            ["D", "WATCHLIST"],
+            ["D", "BLACKLIST"],
+            ["D", "CHARWIDTH"],
+            ["D", "ALERTTHROTTLE"],
+            ["D", "DEBUGLOG"],
+            ["D", "STATSDICT"],
+            ["D", "PCDICT"],
+            ["D", "PCLIST"],
+            ["D", "NPCDICT"],
+            ["D", "NPCLIST"],
+            ["D", "isReportingListener"],
+            ["D", "FuncQueueName"],
+            ["D", "MissingChars"],
+            ["D", "PROMPTCLOCK"],
+            ["D", "flexSpace"],
+            ["D", "MissingTextChars"],
+            ["D", "isFullDebug"],
+            ["D", "isThrottlingStackLog"],
+            ["D", "RULESREFERENCE"],
+            ["D", "TRACELOG"],
+            ["D", "TRACENESTCOUNTER"],
+            ["D", "TRACESTARTTIME"],
+            ["D", "TRACELOGSTOPS"],
+            ["D", "ISDEBUGGING"],
+            ["D", "TRACELASTTIME"],
+            ["D", "AlertLineLength"],
+            ["Listener", "isLocked"],
+            ["Listener", "objectLog"],
+            ["Listener", "GMPlayerSpoof"],
+            ["Listener", "callLog"],
+            ["Listener", "callLogBlacklist"],
+            ["Fuzzy", "minMatchScore"],
+            ["Char", "registry"],
+            ["Char", "weeklyResources"],
+            ["Char", "customStakes"],
+            ["Char", "traitSelection"],
+            ["Char", "tokenRecord"],
+            ["Char", "projectDetails"],
+            ["Char", "tokenPowerData"],
+            ["Char", "charAlarms"],
+            ["Media", "imgregistry"],
+            ["Media", "textregistry"],
+            ["Media", "idregistry"],
+            ["Media", "areas"],
+            ["Media", "tokenregistry"],
+            ["Media", "soundregistry"],
+            ["Media", "TokenSrcs"],
+            ["Media", "imgResizeDims"],
+            ["Media", "activeAnimations"],
+            ["Media", "activeSounds"],
+            ["Media", "curLocation"]
+        ];
+        const stateRefs = [];
+        const lengthVals = [];
+        for (const [key, value] of Object.entries(state.VAMPIRE)) {
+            lengthVals[`*** ${key} ***`] = JSON.stringify(value).length;
+            for (const [kkey, vvalue] of Object.entries(value)) {
+                lengthVals[`${key}.${kkey}`] = JSON.stringify(vvalue).length;
+                if (!_.any(okayStateRefs, (x) => x[0] === key && x[1] === kkey))
+                    stateRefs.push([key, kkey]);
+            }
+        }
+        D.Flag("Beginning State Report in 5 Seconds...");
+        setTimeout(() => {
+            resetProblemStateVals();
+            const delayedReport = () => {
+                const [key, kkey] = stateRefs.shift();
+                if (key) {
+                    sendChat("Report", `/w Storyteller Reporting ${key}.${kkey}...`);
+                    sendChat("Report", `/w Storyteller ${JSON.stringify(state.VAMPIRE[key][kkey])}`);
+                    sendChat("Report", `/w Storyteller ... Reported ${key}.${kkey}`);
+                    setTimeout(delayedReport, 3000);
+                } else {
+                    D.Alert("FINISHED!");
+                }
+            };
+            delayedReport();
+        }, 5000);
+    };
+    resetProblemStateVals();
 });
 void MarkStop("C");

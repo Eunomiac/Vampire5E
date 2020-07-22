@@ -1,4 +1,11 @@
-﻿/* #region REFERENCE */
+﻿@import url('https://fonts.googleapis.com/css?family=Alice&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Carrois+Gothic+SC&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Economica:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Marcellus+SC&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Voltaire&display=swap');
+
+/* #region REFERENCE */
 /*		#region === Fonts ===				
 			DEFAULT:			'Cormorant Garamond'
 			TITLE:				'Trajan Pro 3'
@@ -721,12 +728,14 @@
 	}
 
 	.charsheet div.sheet-dotline input.sheet-highdot,
-	.charsheet div.sheet-dotline input.sheet-nulldot {
+	.charsheet div.sheet-dotline input.sheet-nulldot,
+	.charsheet div.sheet-dotline input.sheet-bonusdot {
 		pointer-events: none;
 	}
 
 	.charsheet div.sheet-dotline input.sheet-dot + span::before,
-	.charsheet div.sheet-dotline input.sheet-nulldot + span::before {
+	.charsheet div.sheet-dotline input.sheet-nulldot + span::before,
+	.charsheet div.sheet-dotline input.sheet-bonusdot + span::before {
 		display: block;
 		height: 12px;
 		width: 12px;
@@ -750,11 +759,44 @@
 	}
 
 	.charsheet div.sheet-dotline input.sheet-nulldot + span::before {
-		height: 16px; 
-		width: 16px;
-		background: url('https://i.imgur.com/fimds5A.png') -2px -2px/20px 20px no-repeat;
-		border: none;
-		box-shadow: -1px -1px 1px #666, 1px 1px 1px #ccc;
+		content: "–";
+		text-align: center;
+		text-align-last: center;
+		text-indent: 1px;
+		color: red;
+		font-weight: bold;
+		font-size: 14px;
+		font-family: Arial;
+		line-height: 13px;
+		height: 14px;
+		width: 14px;
+		background: radial-gradient(#fff, #444);
+		border: 1px inset red;
+		box-shadow: none;
+		/* text-shadow: 0.5px 0.5px 1px #ddd, -0.5px -0.5px 1px black; */
+		text-shadow: none;
+		text-indent: 0px;
+		line-height: 12px;
+		color: darkred;
+		
+		opacity: 0;
+	}
+
+	.charsheet div.sheet-dotline input.sheet-bonusdot + span::before {
+		background: radial-gradient(#444, #0a0a0a);
+		border: solid 2px black;
+		opacity: 0.7;
+		content: "+";
+		text-shadow: none;
+		font-family: Arial;
+		text-align: center;
+		text-align-last: center;
+		color: rgba(255,255,255,0.6);
+		font-size: 15px;
+		font-weight: bold;
+		line-height: 12px;
+		text-indent: 0px;
+		
 		opacity: 0;
 	}
 
@@ -833,9 +875,9 @@
 		opacity: 0;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-highdot:checked ~ input + span::before {
+	/* .charsheet div.sheet-dotline input.sheet-highdot:checked ~ input + span::before {
 		content: "";
-	}
+	} */
 
 	.charsheet div.sheet-dotline input.sheet-highdot:checked ~ input.sheet-dot + span::before {
 		height: 14px;
@@ -851,8 +893,15 @@
 		opacity: 1;
 	}
 
+	
+	.charsheet div.sheet-dotline input.sheet-bonusdot:checked + span,
+	.charsheet div.sheet-dotline input.sheet-bonusdot:checked + span::before {
+		opacity: 0.7;
+	}
+
 	.charsheet div.sheet-dotline input.sheet-highdot:nth-last-of-type(5n),
-	.charsheet div.sheet-dotline input.sheet-nulldot:nth-last-of-type(5n) {
+	.charsheet div.sheet-dotline input.sheet-nulldot:nth-last-of-type(5n),
+	.charsheet div.sheet-dotline input.sheet-bonusdot:nth-last-of-type(5n) {
 		margin-left: -80px;
 	}
 
@@ -898,7 +947,7 @@
 	}
 
 	.charsheet div.sheet-dotline div.sheet-multidot.sheet-multibox {
-		height: 100%;
+		height: 20px;
 		width: 20px;
 		margin: 0px 0px;
 	}
@@ -911,17 +960,19 @@
 	.charsheet div.sheet-dotline div.sheet-multidot input,
 	.charsheet div.sheet-dotline div.sheet-multidot span,
 	.charsheet div.sheet-dotline div.sheet-multidot:not(.sheet-oneclicker) input:checked ~ input + span::before {
-		height: 100% !important;
-		width: 100% !important;
+		height: 100%;
+		width: 100%;
 		display: none;
 		margin-top: -2px;
 		margin-bottom: 2px;
 	}
 
 	.charsheet div.sheet-dotline div.sheet-multidot input + span::before {
+		display: block;
 		height: 18px;
 		width: 18px;
-		margin: -2px 0px 2px 0px;
+		margin: 1px;
+		box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc;
 	}
 
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-whitedot + span::before {
@@ -946,46 +997,30 @@
 	}
 
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-humanitydot + span::before {
-		/*height: 18px;
-	width: 18px;*/
-		margin-bottom: 1px;
 		content: "";
 
 		background: url("https://i.imgur.com/9ZoSd0Z.jpg") no-repeat center;
 		background-size: 120%;
 
 		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;
-		/*box-shadow: none;*/
 	}
 
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-staindot + span::before {
-		/*height: 18px;
-	width: 18px;*/
-		margin-top: 0px;
 		content: "";
 
 		background: url("https://i.imgur.com/IVia33U.jpg") no-repeat center;
 		background-size: 110%;
-		/*background-color: black;*/
 
-		/*box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #900, -1px -1px 0px #900, -1px -1px 2px #fff;*/
 		box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc;
-		/*box-shadow: none;*/
 	}
 
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-stainhumanitydot + span::before {
-		/*height: 18px;
-	width: 18px;*/
-		margin-top: 0px;
 		content: "";
 
 		background: url("https://i.imgur.com/MmbObrq.jpg") no-repeat center;
 		background-size: 110%;
-		/*background-color: black;*/
-
-		/*box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #900, -1px -1px 0px #900, -1px -1px 2px #fff;*/
+		
 		box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc;
-		/*box-shadow: none;*/
 	}
 
 	.charsheet div.sheet-dotline div.sheet-multidot:not(.sheet-oneclicker) input.sheet-whitedot {
@@ -1004,6 +1039,8 @@
 	.charsheet div.sheet-dotline div.sheet-multidot:not(.sheet-oneclicker) input.sheet-whitedot:checked ~ span.sheet-whitedot,
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-superficialdot:checked ~ span.sheet-superficialdot,
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-aggravateddot:checked ~ span.sheet-aggravateddot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-nulldot:checked ~ span.sheet-nulldot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-bonusdot:checked ~ span.sheet-bonusdot,
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-finaldot:checked ~ span.sheet-finaldot {
 		display: inline-block !important;
 	}
@@ -1024,6 +1061,47 @@
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-stainhumanitydot:checked ~ span.sheet-stainhumanitydot {
 		display: inline-block !important;
 	}
+
+	.charsheet div.sheet-dotline div.sheet-multidot.sheet-multibox input.sheet-nulldot + span::before {
+		content: "–";
+		border-radius: unset;
+		border: none;
+		text-shadow: none;
+		color: rgba(150,150,150,1);
+		font-size: 26px;
+		font-family: Arial;
+		font-weight: bold;
+		line-height: 12px;
+		text-align: center;
+		text-align-last: center;
+		box-shadow: -1px -1px 2px #999, 1px 1px 2px #eee, -1px -1px 2px #999, 1px 1px 2px #eee, -1px -1px 2px #999, 1px 1px 2px #eee, -1px -1px 2px #999, 1px 1px 2px #eee;
+		height: 18px;
+		width: 18px;
+		margin: 1px;
+		background: transparent;
+		background-color: rgba(150,150,150,0.2);
+	}
+	.charsheet div.sheet-dotline div.sheet-multidot.sheet-multibox input.sheet-bonusdot + span::before {
+		content: "+";
+		border-radius: unset;
+		border: none;
+		text-shadow: none;
+		color: rgba(150,150,150,1);
+		font-size: 26px;
+		font-family: Arial;
+		font-weight: bold;
+		line-height: 12px;
+		text-align: center;
+		text-align-last: center;
+		/* box-shadow: -2px -2px 3px #333, -2px -2px 3px #333, -3px -3px 4px #666, 2px 2px 3px #fff, 2px 2px 3px #fff, 3px 3px 4px #ccc; */
+		box-shadow: -1px -1px 0px #999, -1px -1px 0px #999, -1px -1px 2px #aaa, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc, 0px 0px 4px #fff, 0px 0px 4px #fff, 0px 0px 6px #fff, 0px 0px 4px #fff, 0px 0px 4px #fff, 0px 0px 6px #fff, inset 0px 0px 6px white, inset 0px 0px 6px white, inset 0px 0px 6px white;
+		height: 18px;
+		width: 18px;
+		margin: 1px;
+		background: transparent;
+		background-color: rgba(150, 150, 150, 0.4);
+	}
+
 /* 		#endregion */
 /* 		#region Collapsible & Pop-Up Divs */
 	.charsheet input.sheet-hoverpopup,
@@ -1921,7 +1999,7 @@
 	.charsheet div.sheet-toptitleblock span.sheet-titleheader,
 	.charsheet div.sheet-toptitleblock select {
 		width: calc(33% - 15px);
-		line-height: px;
+		line-height: 20px;
 
 		display: inline-block;
 
@@ -1957,11 +2035,11 @@
 	}
 
 	.charsheet div.sheet-titleblock div.sheet-header2 {
-		/* margin-bottom: 10px; */
+		margin-bottom: 10px; /* make room for the impairment flag */
 	}
 
 	.charsheet div.sheet-toptitleblock span.sheet-titleheader {
-		margin-top: -1px;
+		margin-top: 3px;
 	}
 
 	.charsheet div.sheet-toptitleblock input.sheet-hoverpopup {
@@ -2014,32 +2092,38 @@
 	}
 
 	.charsheet div.sheet-titleblock div.sheet-dotline input,
-	.charsheet div.sheet-titleblock div.sheet-dotline span,
-	.charsheet div.sheet-titleblock div.sheet-dotline input + span::before {
-		height: 18px;
-		width: 18px;
-		line-height: 18px;
+	.charsheet div.sheet-titleblock div.sheet-dotline span {
+	/* .charsheet div.sheet-titleblock div.sheet-dotline input + span::before { */
+		height: 20px;
+		width: 20px;
+		line-height: 20px;
+		text-indent: 0px;
 		margin: 0px;
 	}
 
 	.charsheet div.sheet-titleblock div.sheet-dotline span,
 	.charsheet div.sheet-titleblock div.sheet-dotline div.sheet-multibox span {
-		margin-left: -18px;
+		margin-left: -20px;
+	}
+
+	.charsheet div.sheet-titleblock div.sheet-dotline.sheet-variabledotline input.sheet-dot {
+		margin-left: -2px;
 	}
 
 	.charsheet div.sheet-titleblock div.sheet-dotline.sheet-variabledotline input.sheet-dot + span::before {
+		height: 18px;
+		width: 18px;
+		margin: 1px;
 		background: url("https://i.imgur.com/U5ZW214.png") no-repeat center;
 		background-size: 100%;
 
 		border: none;
-
-		box-shadow: 1px 1px 2px black, 1px 1px 2px black;
 	}
 
 	.charsheet div.sheet-titleblock div.sheet-dotline input.sheet-dot:checked ~ input.sheet-dot + span:not(.sheet-smalldot)::before {
 		height: 16px;
 		width: 16px;
-		margin: 1px;
+		margin: 2px;
 	}
 	
 	.charsheet div.sheet-titleblock input.sheet-hoverpopup + span + div.sheet-bppopup {

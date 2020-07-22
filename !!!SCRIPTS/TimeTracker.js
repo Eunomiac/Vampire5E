@@ -2587,7 +2587,7 @@ const TimeTracker = (() => {
     // },
     // #endregion
 
-    const fixTimeStatus = () => {
+    const fixTimeStatus = (isFixingTimeOnly = false) => {
         const funcID = ONSTACK();
         isCountdownFrozen = false;
         isTweeningClock = false;
@@ -2606,7 +2606,8 @@ const TimeTracker = (() => {
         setHorizon(setWeather());
         syncCountdown();
         toggleClock(isTickingClock, STATE.REF.secsPerMin || 60);
-        Char.RefreshDisplays();
+        if (!isFixingTimeOnly)
+            Char.RefreshDisplays();
         OFFSTACK(funcID);
     };
 

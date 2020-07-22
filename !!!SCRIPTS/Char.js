@@ -42,13 +42,14 @@ const Char = (() => {
     // #region LOCAL INITIALIZATION
     const initialize = () => {
         // PENDINGCHARCOMMAND = D.Clone(BLANKPENDINGCHARCOMMAND)
+
         STATE.REF.registry = STATE.REF.registry || {};
         STATE.REF.weeklyResources = STATE.REF.weeklyResources || {};
         STATE.REF.customStakes = STATE.REF.customStakes || {};
         STATE.REF.customStakes.coterie = STATE.REF.customStakes.coterie || [];
-        STATE.REF.customStakes.personal =
-            STATE.REF.customStakes.personal ||
-            D.KeyMapObj(
+        STATE.REF.customStakes.personal
+            = STATE.REF.customStakes.personal
+            || D.KeyMapObj(
                 STATE.REF.registry,
                 (k, v) => v.initial,
                 () => []
@@ -658,6 +659,12 @@ const Char = (() => {
                         setCharNPC(charObj, npcObj || "base");
                         break;
                     }
+                    case "tempstat": {
+                        const [charObj] = charObjs;
+                        const [statName, delta, repRowStatName] = args;
+                        adjustTempStat(charObj, statName, D.Int(delta), repRowStatName);
+                        break;
+                    }
                     case "stat":
                     case "stats":
                     case "attr":
@@ -1054,7 +1061,7 @@ const Char = (() => {
     //             attrval: [
     //                 [
     //                     ["attrName"]: "", // name of sheet attribute: checkFunc
-    //                 ]                    
+    //                 ]
     //             ],
     //             charids: [], // list of valid chars this applies to
     //             location: [
@@ -1062,7 +1069,7 @@ const Char = (() => {
     //             ],
     //             domaincontrol: [
     //                 ["District"]: [1, 2, 3]
-    //             } 
+    //             }
     //         }
     //     }
     //     // #region Instance Storage Libraries (Indexed by "id" property on Instance)
@@ -1091,7 +1098,7 @@ const Char = (() => {
     //     // READ-ONLY
 
     //     // GENERAL
-    //     get Checks() { return this._checks) }; 
+    //     get Checks() { return this._checks) };
     //     // #endregion
 
     //     // #region ~ SETTERS
@@ -1103,7 +1110,7 @@ const Char = (() => {
     //         reqCat = D.LCase(reqCat);
     //         groupID = _.isNaN(groupID) ? this.effectGroups.length - 1 : D.Int(groupID);
     //         if (Object.keys(Effect.ReqCats).includes(reqCat)) {
-    //             this.checks[groupID].push({[reqCat]: checkData});    
+    //             this.checks[groupID].push({[reqCat]: checkData});
     //     }
 
     //     // #endregion
@@ -1231,13 +1238,13 @@ const Char = (() => {
     //     // #endregion
     // }
     // #endregion
-    
+
     const REGISTRY = STATE.REF.registry;
     const MENUHTML = {};
 
     // #region JSON Text Blocks
-    const NPCSTATS =
-        "{\"Frederik Scheer, Seneschal\": { \"base\": {\"clan\": \"Tremere\", \"faction\": \"Camarilla\", \"blood_potency\": 6, \"humanity\": 3, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 2, \"stamina\": 3, \"charisma\": 3, \"manipulation\": 3, \"composure\": 4, \"intelligence\": 6, \"wits\": 4, \"resolve\": 4 }, \"skills\": { \"6\": \"OCC\", \"5\": \"AWA INT POL INS SUB\", \"4\": \"MEL ACA INV\", \"3\": \"BRA LED ETI\", \"2\": \"PER\", \"1\": \"SCI\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 4], \"disc2\": [\"Dominate\", 5], \"disc3\": [\"Blood Sorcery\", 5] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"PRE OBF\", \"2\": \"\", \"1\": \"\" } },\"Baroness Monika Eulenberg\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 1, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 2, \"intelligence\": 4, \"wits\": 5, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"INS AWA\", \"4\": \"SUB LED INV\", \"3\": \"LAR SUR POL\", \"2\": \"PER TEC ETI\", \"1\": \"ATH BRA MEL FIN\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 4], \"disc2\": [\"Dominate\", 3], \"disc3\": [\"Obfuscate\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"CEL\", \"1\": \"\" } },\"Ben Blinker\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 3, \"intelligence\": 2, \"wits\": 2, \"resolve\": 1 }, \"skills\": { \"6\": \"\", \"5\": \"PER\", \"4\": \"SUB\", \"3\": \"INS ATH\", \"2\": \"INV AWA STR\", \"1\": \"BRA STL DRV\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 0], \"disc2\": [\"Dominate\", 4], \"disc3\": [\"Obfuscate\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Jane 'JD' Doe\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 3, \"composure\": 2, \"intelligence\": 2, \"wits\": 1, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"BRA\", \"4\": \"\", \"3\": \"SUB INS\", \"2\": \"PRF STR ATH ETI LAR ACA POL PER\", \"1\": \"AWA MEL TEC FIN SUR FIR DRV MED INV\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 1], \"disc2\": [\"Presence\", 3], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Sage Sam\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 5, \"humanity\": 8, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 4, \"stamina\": 2, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 5, \"wits\": 4, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"OCC INS\", \"3\": \"STL ACA POL STR\", \"2\": \"ATH SUB FIN MED SCI\", \"1\": \"BRA LAR MEL INT LED PER SUR DRV TEC ETI\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 4], \"disc2\": [\"Dominate\", 1], \"disc3\": [\"Obfuscate\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"FOR\" } },\"Laz, Sheriff\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 3, \"humanity\": 8, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 4, \"charisma\": 1, \"manipulation\": 1, \"composure\": 3, \"intelligence\": 3, \"wits\": 3, \"resolve\": 5 }, \"skills\": { \"6\": \"\", \"5\": \"INV\", \"4\": \"AWA BRA INS\", \"3\": \"MEL STR\", \"2\": \"STE TEC ANK INT POL LED\", \"1\": \"ATH FIR SUR SUB\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 2], \"disc2\": [\"Obfuscate\", 4], \"disc3\": [\"Potence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Rosie\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Anarch\", \"blood_potency\": 4, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 1, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 5, \"intelligence\": 2, \"wits\": 4, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"INS PER POL\", \"4\": \"SUB ACA ETI\", \"3\": \"ANK LED\", \"2\": \"STL\", \"1\": \"ATH MEL\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 4], \"disc2\": [\"Obfuscate\", 3], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"PRE\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Wesley Richardson\": { \"base\": {\"clan\": \"Thin-Blooded\", \"faction\": \"Anarch\", \"blood_potency\": 0, \"humanity\": 9, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 2, \"manipulation\": 2, \"composure\": 1, \"intelligence\": 4, \"wits\": 3, \"resolve\": 3 }, \"skills\": { \"6\": \"\", \"5\": \"OCC\", \"4\": \"SCI\", \"3\": \"TEC INS\", \"2\": \"AWA BRA STL\", \"1\": \"PER LED POL\" }, \"clandiscs\": { \"disc1\": [\"Alchemy\", 3], \"disc2\": [], \"disc3\": [] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Calvin Wallace\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 3, \"charisma\": 4, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 2, \"wits\": 1, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"\", \"3\": \"PRF PER LED\", \"2\": \"INT AWA MEL POL SUB\", \"1\": \"ACA ETI INS STR BRA FIR INV\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 1], \"disc2\": [\"Presence\", 2], \"disc3\": [\"Potence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Professor Ethan Keen\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 1, \"charisma\": 1, \"manipulation\": 4, \"composure\": 2, \"intelligence\": 4, \"wits\": 2, \"resolve\": 4 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"INS\", \"3\": \"ACA OCC POL\", \"2\": \"FIN MED INV\", \"1\": \"STR SUB SUR\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 1], \"disc2\": [\"Dominate\", 1], \"disc3\": [\"Obfuscate\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"SOR PTN\" } },\"Damien Abanda\": { \"base\": {\"clan\": \"Toreador\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 4, \"manipulation\": 4, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 1 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"ETI\", \"3\": \"PER SUB POL\", \"2\": \"INS LED INV FIN\", \"1\": \"ATH BRA MEL LAR INT AWA TEC\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 1], \"disc2\": [\"Celerity\", 2], \"disc3\": [\"Presence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"J\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 3, \"wits\": 2, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"BRA\", \"3\": \"ATH STR LED\", \"2\": \"AWA INV MEL STL\", \"1\": \"DRV FIR LAR POL INS INT SUR\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Presence\", 1], \"disc3\": [\"Potence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Stalker Todd\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"ATH\", \"3\": \"MEL STR INV\", \"2\": \"BRA STL SUR\", \"1\": \"ANK INT AWA\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 1], \"disc2\": [\"Fortitude\", 0], \"disc3\": [\"Protean\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Reaper\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 5, \"stamina\": 2, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"skills\": { \"6\": \"\", \"5\": \"MEL\", \"4\": \"ATH\", \"3\": \"STR LAR\", \"2\": \"INS INT ANK\", \"1\": \"INV MED SUR\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 2], \"disc2\": [\"Fortitude\", 0], \"disc3\": [\"Protean\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Leah Hawk\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 3, \"intelligence\": 2, \"wits\": 1, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"\", \"3\": \"PRF SUB INS\", \"2\": \"ATH MEL ANK INT INV\", \"1\": \"BRA LAR STL SUR PER AWA POL\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 2], \"disc2\": [\"Fortitude\", 1], \"disc3\": [\"Protean\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Old Quentin\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 4, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 4, \"manipulation\": 6, \"composure\": 5, \"intelligence\": 3, \"wits\": 3, \"resolve\": 5 }, \"skills\": { \"6\": \"SUB\", \"5\": \"INS STL\", \"4\": \"ETI STR ACA AWA OCC\", \"3\": \"BRA MEL ATH INV\", \"2\": \"FIN POL LAR SUR ANK TEC\", \"1\": \"CRA MED LED SCI FIR DRV\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 4], \"disc2\": [\"Dominate\", 5], \"disc3\": [\"Obfuscate\", 5] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"PTN\", \"3\": \"FOR\", \"2\": \"CEL\", \"1\": \"ANI\" } },\"Maxwell 'Max' Floyd\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 4, \"manipulation\": 2, \"composure\": 4, \"intelligence\": 2, \"wits\": 1, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Presence\", 2], \"disc3\": [\"Potence\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Mr. Easy\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 4, \"wits\": 3, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Auspex\", 1], \"disc2\": [\"Dominate\", 0], \"disc3\": [\"Obfuscate\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"ANI\", \"1\": \"POT\" } },\"Twist\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 3, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 3, \"wits\": 2, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 1], \"disc2\": [\"Obfuscate\", 1], \"disc3\": [\"Potence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"PTN\" } },\"Jason\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Fortitude\", 2], \"disc3\": [\"Protean\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"POT\", \"1\": \"\" } },\"Wallflower\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 4, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Fortitude\", 3], \"disc3\": [\"Protean\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Kit Edwards\": { \"base\": {\"clan\": \"Thin-Blooded\", \"faction\": \"Anarch\", \"blood_potency\": 0, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 3, \"composure\": 2, \"intelligence\": 1, \"wits\": 2, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Alchemy\", 1], \"disc2\": [], \"disc3\": [] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Toni Gomez\": { \"base\": {\"clan\": \"Thin-Blooded\", \"faction\": \"Anarch\", \"blood_potency\": 0, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 3, \"charisma\": 3, \"manipulation\": 3, \"composure\": 2, \"intelligence\": 2, \"wits\": 4, \"resolve\": 1 }, \"clandiscs\": { \"disc1\": [\"Alchemy\", 1], \"disc2\": [], \"disc3\": [] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Ren\": { \"base\": {\"clan\": \"Ministry\", \"faction\": \"Anarch\", \"blood_potency\": 5, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 1, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 5, \"manipulation\": 3, \"composure\": 4, \"intelligence\": 2, \"wits\": 4, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"INS PER SUB STR\", \"4\": \"STL ETI LED\", \"3\": \"OCC\", \"2\": \"SUR\", \"1\": \"POL MEL\" }, \"clandiscs\": { \"disc1\": [\"Obfuscate\", 2], \"disc2\": [\"Presence\", 4], \"disc3\": [\"Protean\", 3] }, \"otherdiscs\": { \"5\": \"AUS\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"CEL\" } },\"Tyler\": { \"base\": {\"clan\": \"Ministry\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 1, \"charisma\": 4, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 3, \"wits\": 2, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"INS\", \"4\": \"PER SUB\", \"3\": \"STL MEL\", \"2\": \"STR SUR\", \"1\": \"ATH BRA DRV\" }, \"clandiscs\": { \"disc1\": [\"Obfuscate\", 1], \"disc2\": [\"Presence\", 3], \"disc3\": [\"Protean\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Alexandra\": { \"base\": {\"clan\": \"Ministry\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 4, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 1, \"charisma\": 4, \"manipulation\": 5, \"composure\": 3, \"intelligence\": 4, \"wits\": 2, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"SUB ETI PER\", \"4\": \"INS STL\", \"3\": \"INT LAR\", \"2\": \"ATH STR\", \"1\": \"POL SUR\" }, \"clandiscs\": { \"disc1\": [\"Obfuscate\", 1], \"disc2\": [\"Presence\", 4], \"disc3\": [\"Protean\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"AUS\", \"2\": \"\", \"1\": \"\" } },\"Kai\": { \"base\": {\"clan\": \"Ministry\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 9, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 4, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 2, \"wits\": 2, \"resolve\": 1 }, \"skills\": { \"6\": \"\", \"5\": \"PER\", \"4\": \"PRF \", \"3\": \"ETI INS\", \"2\": \"AWA SUB STL\", \"1\": \"BRA FIR DRV\" }, \"clandiscs\": { \"disc1\": [\"Obfuscate\", 0], \"disc2\": [\"Presence\", 4], \"disc3\": [\"Protean\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Kingston 'King' Black\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 9, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 4 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"MEL\", \"3\": \"INT ATH OCC\", \"2\": \"STR LED PER FIR\", \"1\": \"BRA ACA AWA ETI ANI TEC INV SUB\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Presence\", 1], \"disc3\": [\"Potence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Mason Schmidt\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Presence\", 1], \"disc3\": [\"Potence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Jack-be-Nimble\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 4, \"stamina\": 3, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 2, \"wits\": 3, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Obfuscate\", 3], \"disc3\": [\"Potence\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"CEL\" } },\"Amos Jax\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 3, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 2, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 3, \"wits\": 1, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 1], \"disc2\": [\"Fortitude\", 1], \"disc3\": [\"Protean\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Yusef Shamsin\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 3, \"manipulation\": 2, \"composure\": 3, \"intelligence\": 6, \"wits\": 3, \"resolve\": 4 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 4], \"disc2\": [\"Obfuscate\", 2], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Drake\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 5, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 4, \"stamina\": 3, \"charisma\": 3, \"manipulation\": 3, \"composure\": 4, \"intelligence\": 6, \"wits\": 2, \"resolve\": 4 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Obfuscate\", 5], \"disc3\": [\"Potence\", 3] }, \"otherdiscs\": { \"5\": \"CEL\", \"4\": \"SOR\", \"3\": \"FOR\", \"2\": \"\", \"1\": \"\" } },\"Alistair Etrata\": { \"base\": {\"clan\": \"Banu Haqim\", \"faction\": \"Camarilla\", \"blood_potency\": 6, \"humanity\": 4, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 5, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 4, \"wits\": 2, \"resolve\": 1 }, \"skills\": { \"6\": \"\", \"5\": \"MEL INS AWA POL\", \"4\": \"STL ACA OCC LED\", \"3\": \"ATH SUR INV SUB\", \"2\": \"ETI ANK\", \"1\": \"LAR\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 5], \"disc2\": [\"Obfuscate\", 3], \"disc3\": [\"Blood Sorcery\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"POT\", \"1\": \"FOR DOM\" } },\"Sinclair Rodriguez\": { \"base\": {\"clan\": \"Banu Haqim\", \"faction\": \"Camarilla\", \"blood_potency\": 4, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 5, \"manipulation\": 3, \"composure\": 4, \"intelligence\": 3, \"wits\": 1, \"resolve\": 4 }, \"skills\": { \"6\": \"\", \"5\": \"LED POL SUB INS\", \"4\": \"PER ETI FIR\", \"3\": \"AWA\", \"2\": \"INT\", \"1\": \"MEL ATH\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 1], \"disc2\": [\"Obfuscate\", 0], \"disc3\": [\"Blood Sorcery\", 0] }, \"otherdiscs\": { \"5\": \"PRE\", \"4\": \"DOM\", \"3\": \"FOR\", \"2\": \"AUS\", \"1\": \"\" } },\"Prince Osborne Lowell\": { \"base\": {\"clan\": \"Ventrue\", \"faction\": \"Camarilla\", \"blood_potency\": 4, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 5, \"dexterity\": 4, \"stamina\": 2, \"charisma\": 2, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 3, \"wits\": 1, \"resolve\": 4 }, \"skills\": { \"6\": \"\", \"5\": \"MEL\", \"4\": \"OCC INT STL\", \"3\": \"INS STR SUB INV\", \"2\": \"SUR ETI POL\", \"1\": \"ATH BRA LAR AWA\" }, \"clandiscs\": { \"disc1\": [\"Dominate\", 4], \"disc2\": [\"Fortitude\", 0], \"disc3\": [\"Presence\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"CEL\", \"2\": \"SOR\", \"1\": \"AUS POT\" } },\"Raphael Bishop\": { \"base\": {\"clan\": \"Tremere\", \"faction\": \"Camarilla\", \"blood_potency\": 4, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 5, \"stamina\": 3, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 4, \"wits\": 4, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"MEL ATH STL\", \"4\": \"INS SUB AWA\", \"3\": \"INV STR\", \"2\": \"LAR\", \"1\": \"SUR BRA\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 0], \"disc2\": [\"Dominate\", 0], \"disc3\": [\"Blood Sorcery\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"OBF\", \"3\": \"ANI POT\", \"2\": \"\", \"1\": \"CEL FOR PTN\" } },\"Emily, the Dusk Rose\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 3, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 1, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 5, \"manipulation\": 2, \"composure\": 3, \"intelligence\": 2, \"wits\": 4, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 2], \"disc2\": [\"Obfuscate\", 3], \"disc3\": [\"Potence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"PRE\", \"1\": \"DOM\" } },\"The Aristocrat\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 2, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 1, \"charisma\": 4, \"manipulation\": 3, \"composure\": 2, \"intelligence\": 3, \"wits\": 3, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 1], \"disc2\": [\"Obfuscate\", 1], \"disc3\": [\"Potence\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"PRE\", \"2\": \"AUS\", \"1\": \"\" } },\"Christianne\": { \"base\": {\"clan\": \"Toreador\", \"faction\": \"Camarilla\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 3, \"intelligence\": 3, \"wits\": 2, \"resolve\": 1 }, \"clandiscs\": { \"disc1\": [\"Auspex\", 0], \"disc2\": [\"Celerity\", 0], \"disc3\": [\"Presence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"DOM\", \"3\": \"\", \"2\": \"\", \"1\": \"FOR\" } },\"Xavier Whitchurch\": { \"base\": {\"clan\": \"Ventrue\", \"faction\": \"Camarilla\", \"blood_potency\": 2 }, \"clandiscs\": { \"disc1\": [\"Dominate\", 3], \"disc2\": [\"Fortitude\", 0], \"disc3\": [\"Presence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Ian Rammond\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 2 } },\"Terry\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 2 } },\"Tommy\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 1 } },\"I.Q.\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 3, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 2, \"manipulation\": 3, \"composure\": 1, \"intelligence\": 4, \"wits\": 3, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"OCC\", \"3\": \"MEL STL SUB\", \"2\": \"ATH LAR INT AWA\", \"1\": \"BRA SUR ETI INS STR INV POL\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Obfuscate\", 0], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"OBV\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Alexander\": { \"base\": {\"clan\": \"Lasombra\", \"faction\": \"Sabbat\", \"blood_potency\": 4, \"humanity\": 3, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Dominate\", 0], \"disc2\": [\"Oblivion\", 0], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"OBF\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Sang-Froid\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Sabbat\", \"blood_potency\": 3, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 6, \"stamina\": 5, \"charisma\": 2, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 5, \"wits\": 3, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Obfuscate\", 4], \"disc3\": [\"Potence\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"FOR\", \"2\": \"AUS\", \"1\": \"PTN\" } },\"The Piece-Taker\": { \"base\": {\"clan\": \"Banu Haqim\", \"faction\": \"Autarkis\", \"blood_potency\": 7, \"humanity\": 1, \"stains\": 0 }, \"attributes\": { \"strength\": 6, \"dexterity\": 5, \"stamina\": 5, \"charisma\": 3, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 2, \"wits\": 3, \"resolve\": 4 }, \"skills\": { \"6\": \"MEL STL\", \"5\": \"ATH BRA SUB OCC INT STR\", \"4\": \"INV AWA\", \"3\": \"SUR ANK\", \"2\": \"LAR\", \"1\": \"INS\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Obfuscate\", 5], \"disc3\": [\"Blood Sorcery\", 0] }, \"otherdiscs\": { \"5\": \"POT ANI\", \"4\": \"PTN\", \"3\": \"FOR\", \"2\": \"\", \"1\": \"\" } },\"The Island Devil\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Autarkis\" } },\"Anita Morris\": { \"base\": {\"clan\": \"Tremere\", \"faction\": \"Camarilla\", \"blood_potency\": 1, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 4, \"wits\": 3, \"resolve\": 3 }, \"skills\": { \"6\": \"\", \"5\": \"SCI\", \"4\": \"OCC\", \"3\": \"ACA TEC\", \"2\": \"INV AWA MED\", \"1\": \"PER SUB STR\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 2], \"disc2\": [\"Dominate\", 0], \"disc3\": [\"Blood Sorcery\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Agnes Bellanger\": { \"base\": {\"clan\": \"Toreador\", \"faction\": \"Camarilla\", \"blood_potency\": 5, \"humanity\": 5, \"stains\": 0 }, \"clandiscs\": { \"disc1\": [\"Auspex\", 5], \"disc2\": [\"Celerity\", 5], \"disc3\": [\"Presence\", 5] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"POT\", \"3\": \"FOR\", \"2\": \"DOM\", \"1\": \"\" } },\"Mylene 'the Puck' Hamelin\": { \"base\": {\"clan\": \"Ventrue\", \"faction\": \"Camarilla\", \"blood_potency\": 3, \"humanity\": 5, \"stains\": 0 }, \"clandiscs\": { \"disc1\": [\"Dominate\", 4], \"disc2\": [\"Fortitude\", 5], \"disc3\": [\"Presence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"AUS\", \"2\": \"\", \"1\": \"ANI\" } }}";
+    const NPCSTATS
+        = "{\"Frederik Scheer, Seneschal\": { \"base\": {\"clan\": \"Tremere\", \"faction\": \"Camarilla\", \"blood_potency\": 6, \"humanity\": 3, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 2, \"stamina\": 3, \"charisma\": 3, \"manipulation\": 3, \"composure\": 4, \"intelligence\": 6, \"wits\": 4, \"resolve\": 4 }, \"skills\": { \"6\": \"OCC\", \"5\": \"AWA INT POL INS SUB\", \"4\": \"MEL ACA INV\", \"3\": \"BRA LED ETI\", \"2\": \"PER\", \"1\": \"SCI\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 4], \"disc2\": [\"Dominate\", 5], \"disc3\": [\"Blood Sorcery\", 5] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"PRE OBF\", \"2\": \"\", \"1\": \"\" } },\"Baroness Monika Eulenberg\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 1, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 2, \"intelligence\": 4, \"wits\": 5, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"INS AWA\", \"4\": \"SUB LED INV\", \"3\": \"LAR SUR POL\", \"2\": \"PER TEC ETI\", \"1\": \"ATH BRA MEL FIN\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 4], \"disc2\": [\"Dominate\", 3], \"disc3\": [\"Obfuscate\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"CEL\", \"1\": \"\" } },\"Ben Blinker\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 3, \"intelligence\": 2, \"wits\": 2, \"resolve\": 1 }, \"skills\": { \"6\": \"\", \"5\": \"PER\", \"4\": \"SUB\", \"3\": \"INS ATH\", \"2\": \"INV AWA STR\", \"1\": \"BRA STL DRV\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 0], \"disc2\": [\"Dominate\", 4], \"disc3\": [\"Obfuscate\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Jane 'JD' Doe\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 3, \"composure\": 2, \"intelligence\": 2, \"wits\": 1, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"BRA\", \"4\": \"\", \"3\": \"SUB INS\", \"2\": \"PRF STR ATH ETI LAR ACA POL PER\", \"1\": \"AWA MEL TEC FIN SUR FIR DRV MED INV\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 1], \"disc2\": [\"Presence\", 3], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Sage Sam\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 5, \"humanity\": 8, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 4, \"stamina\": 2, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 5, \"wits\": 4, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"OCC INS\", \"3\": \"STL ACA POL STR\", \"2\": \"ATH SUB FIN MED SCI\", \"1\": \"BRA LAR MEL INT LED PER SUR DRV TEC ETI\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 4], \"disc2\": [\"Dominate\", 1], \"disc3\": [\"Obfuscate\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"FOR\" } },\"Laz, Sheriff\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 3, \"humanity\": 8, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 4, \"charisma\": 1, \"manipulation\": 1, \"composure\": 3, \"intelligence\": 3, \"wits\": 3, \"resolve\": 5 }, \"skills\": { \"6\": \"\", \"5\": \"INV\", \"4\": \"AWA BRA INS\", \"3\": \"MEL STR\", \"2\": \"STE TEC ANK INT POL LED\", \"1\": \"ATH FIR SUR SUB\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 2], \"disc2\": [\"Obfuscate\", 4], \"disc3\": [\"Potence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Rosie\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Anarch\", \"blood_potency\": 4, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 1, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 5, \"intelligence\": 2, \"wits\": 4, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"INS PER POL\", \"4\": \"SUB ACA ETI\", \"3\": \"ANK LED\", \"2\": \"STL\", \"1\": \"ATH MEL\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 4], \"disc2\": [\"Obfuscate\", 3], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"PRE\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Wesley Richardson\": { \"base\": {\"clan\": \"Thin-Blooded\", \"faction\": \"Anarch\", \"blood_potency\": 0, \"humanity\": 9, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 2, \"manipulation\": 2, \"composure\": 1, \"intelligence\": 4, \"wits\": 3, \"resolve\": 3 }, \"skills\": { \"6\": \"\", \"5\": \"OCC\", \"4\": \"SCI\", \"3\": \"TEC INS\", \"2\": \"AWA BRA STL\", \"1\": \"PER LED POL\" }, \"clandiscs\": { \"disc1\": [\"Alchemy\", 3], \"disc2\": [], \"disc3\": [] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Calvin Wallace\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 3, \"charisma\": 4, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 2, \"wits\": 1, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"\", \"3\": \"PRF PER LED\", \"2\": \"INT AWA MEL POL SUB\", \"1\": \"ACA ETI INS STR BRA FIR INV\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 1], \"disc2\": [\"Presence\", 2], \"disc3\": [\"Potence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Professor Ethan Keen\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 1, \"charisma\": 1, \"manipulation\": 4, \"composure\": 2, \"intelligence\": 4, \"wits\": 2, \"resolve\": 4 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"INS\", \"3\": \"ACA OCC POL\", \"2\": \"FIN MED INV\", \"1\": \"STR SUB SUR\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 1], \"disc2\": [\"Dominate\", 1], \"disc3\": [\"Obfuscate\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"SOR PTN\" } },\"Damien Abanda\": { \"base\": {\"clan\": \"Toreador\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 4, \"manipulation\": 4, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 1 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"ETI\", \"3\": \"PER SUB POL\", \"2\": \"INS LED INV FIN\", \"1\": \"ATH BRA MEL LAR INT AWA TEC\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 1], \"disc2\": [\"Celerity\", 2], \"disc3\": [\"Presence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"J\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 3, \"wits\": 2, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"BRA\", \"3\": \"ATH STR LED\", \"2\": \"AWA INV MEL STL\", \"1\": \"DRV FIR LAR POL INS INT SUR\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Presence\", 1], \"disc3\": [\"Potence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Stalker Todd\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"ATH\", \"3\": \"MEL STR INV\", \"2\": \"BRA STL SUR\", \"1\": \"ANK INT AWA\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 1], \"disc2\": [\"Fortitude\", 0], \"disc3\": [\"Protean\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Reaper\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 5, \"stamina\": 2, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"skills\": { \"6\": \"\", \"5\": \"MEL\", \"4\": \"ATH\", \"3\": \"STR LAR\", \"2\": \"INS INT ANK\", \"1\": \"INV MED SUR\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 2], \"disc2\": [\"Fortitude\", 0], \"disc3\": [\"Protean\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Leah Hawk\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 3, \"intelligence\": 2, \"wits\": 1, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"\", \"3\": \"PRF SUB INS\", \"2\": \"ATH MEL ANK INT INV\", \"1\": \"BRA LAR STL SUR PER AWA POL\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 2], \"disc2\": [\"Fortitude\", 1], \"disc3\": [\"Protean\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Old Quentin\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 4, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 4, \"manipulation\": 6, \"composure\": 5, \"intelligence\": 3, \"wits\": 3, \"resolve\": 5 }, \"skills\": { \"6\": \"SUB\", \"5\": \"INS STL\", \"4\": \"ETI STR ACA AWA OCC\", \"3\": \"BRA MEL ATH INV\", \"2\": \"FIN POL LAR SUR ANK TEC\", \"1\": \"CRA MED LED SCI FIR DRV\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 4], \"disc2\": [\"Dominate\", 5], \"disc3\": [\"Obfuscate\", 5] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"PTN\", \"3\": \"FOR\", \"2\": \"CEL\", \"1\": \"ANI\" } },\"Maxwell 'Max' Floyd\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 4, \"manipulation\": 2, \"composure\": 4, \"intelligence\": 2, \"wits\": 1, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Presence\", 2], \"disc3\": [\"Potence\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Mr. Easy\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 4, \"wits\": 3, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Auspex\", 1], \"disc2\": [\"Dominate\", 0], \"disc3\": [\"Obfuscate\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"ANI\", \"1\": \"POT\" } },\"Twist\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 3, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 3, \"wits\": 2, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 1], \"disc2\": [\"Obfuscate\", 1], \"disc3\": [\"Potence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"PTN\" } },\"Jason\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Fortitude\", 2], \"disc3\": [\"Protean\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"POT\", \"1\": \"\" } },\"Wallflower\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 4, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Fortitude\", 3], \"disc3\": [\"Protean\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Kit Edwards\": { \"base\": {\"clan\": \"Thin-Blooded\", \"faction\": \"Anarch\", \"blood_potency\": 0, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 3, \"composure\": 2, \"intelligence\": 1, \"wits\": 2, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Alchemy\", 1], \"disc2\": [], \"disc3\": [] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Toni Gomez\": { \"base\": {\"clan\": \"Thin-Blooded\", \"faction\": \"Anarch\", \"blood_potency\": 0, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 3, \"charisma\": 3, \"manipulation\": 3, \"composure\": 2, \"intelligence\": 2, \"wits\": 4, \"resolve\": 1 }, \"clandiscs\": { \"disc1\": [\"Alchemy\", 1], \"disc2\": [], \"disc3\": [] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Ren\": { \"base\": {\"clan\": \"Ministry\", \"faction\": \"Anarch\", \"blood_potency\": 5, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 1, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 5, \"manipulation\": 3, \"composure\": 4, \"intelligence\": 2, \"wits\": 4, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"INS PER SUB STR\", \"4\": \"STL ETI LED\", \"3\": \"OCC\", \"2\": \"SUR\", \"1\": \"POL MEL\" }, \"clandiscs\": { \"disc1\": [\"Obfuscate\", 2], \"disc2\": [\"Presence\", 4], \"disc3\": [\"Protean\", 3] }, \"otherdiscs\": { \"5\": \"AUS\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"CEL\" } },\"Tyler\": { \"base\": {\"clan\": \"Ministry\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 1, \"charisma\": 4, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 3, \"wits\": 2, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"INS\", \"4\": \"PER SUB\", \"3\": \"STL MEL\", \"2\": \"STR SUR\", \"1\": \"ATH BRA DRV\" }, \"clandiscs\": { \"disc1\": [\"Obfuscate\", 1], \"disc2\": [\"Presence\", 3], \"disc3\": [\"Protean\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Alexandra\": { \"base\": {\"clan\": \"Ministry\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 4, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 1, \"charisma\": 4, \"manipulation\": 5, \"composure\": 3, \"intelligence\": 4, \"wits\": 2, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"SUB ETI PER\", \"4\": \"INS STL\", \"3\": \"INT LAR\", \"2\": \"ATH STR\", \"1\": \"POL SUR\" }, \"clandiscs\": { \"disc1\": [\"Obfuscate\", 1], \"disc2\": [\"Presence\", 4], \"disc3\": [\"Protean\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"AUS\", \"2\": \"\", \"1\": \"\" } },\"Kai\": { \"base\": {\"clan\": \"Ministry\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 9, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 4, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 2, \"wits\": 2, \"resolve\": 1 }, \"skills\": { \"6\": \"\", \"5\": \"PER\", \"4\": \"PRF \", \"3\": \"ETI INS\", \"2\": \"AWA SUB STL\", \"1\": \"BRA FIR DRV\" }, \"clandiscs\": { \"disc1\": [\"Obfuscate\", 0], \"disc2\": [\"Presence\", 4], \"disc3\": [\"Protean\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Kingston 'King' Black\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 9, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 4 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"MEL\", \"3\": \"INT ATH OCC\", \"2\": \"STR LED PER FIR\", \"1\": \"BRA ACA AWA ETI ANI TEC INV SUB\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Presence\", 1], \"disc3\": [\"Potence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Mason Schmidt\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Presence\", 1], \"disc3\": [\"Potence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Jack-be-Nimble\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 4, \"stamina\": 3, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 2, \"wits\": 3, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Obfuscate\", 3], \"disc3\": [\"Potence\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"CEL\" } },\"Amos Jax\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 3, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 2, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 3, \"wits\": 1, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 1], \"disc2\": [\"Fortitude\", 1], \"disc3\": [\"Protean\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Yusef Shamsin\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 3, \"manipulation\": 2, \"composure\": 3, \"intelligence\": 6, \"wits\": 3, \"resolve\": 4 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 4], \"disc2\": [\"Obfuscate\", 2], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Drake\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 5, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 4, \"stamina\": 3, \"charisma\": 3, \"manipulation\": 3, \"composure\": 4, \"intelligence\": 6, \"wits\": 2, \"resolve\": 4 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Obfuscate\", 5], \"disc3\": [\"Potence\", 3] }, \"otherdiscs\": { \"5\": \"CEL\", \"4\": \"SOR\", \"3\": \"FOR\", \"2\": \"\", \"1\": \"\" } },\"Alistair Etrata\": { \"base\": {\"clan\": \"Banu Haqim\", \"faction\": \"Camarilla\", \"blood_potency\": 6, \"humanity\": 4, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 5, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 4, \"wits\": 2, \"resolve\": 1 }, \"skills\": { \"6\": \"\", \"5\": \"MEL INS AWA POL\", \"4\": \"STL ACA OCC LED\", \"3\": \"ATH SUR INV SUB\", \"2\": \"ETI ANK\", \"1\": \"LAR\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 5], \"disc2\": [\"Obfuscate\", 3], \"disc3\": [\"Blood Sorcery\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"POT\", \"1\": \"FOR DOM\" } },\"Sinclair Rodriguez\": { \"base\": {\"clan\": \"Banu Haqim\", \"faction\": \"Camarilla\", \"blood_potency\": 4, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 5, \"manipulation\": 3, \"composure\": 4, \"intelligence\": 3, \"wits\": 1, \"resolve\": 4 }, \"skills\": { \"6\": \"\", \"5\": \"LED POL SUB INS\", \"4\": \"PER ETI FIR\", \"3\": \"AWA\", \"2\": \"INT\", \"1\": \"MEL ATH\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 1], \"disc2\": [\"Obfuscate\", 0], \"disc3\": [\"Blood Sorcery\", 0] }, \"otherdiscs\": { \"5\": \"PRE\", \"4\": \"DOM\", \"3\": \"FOR\", \"2\": \"AUS\", \"1\": \"\" } },\"Prince Osborne Lowell\": { \"base\": {\"clan\": \"Ventrue\", \"faction\": \"Camarilla\", \"blood_potency\": 4, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 5, \"dexterity\": 4, \"stamina\": 2, \"charisma\": 2, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 3, \"wits\": 1, \"resolve\": 4 }, \"skills\": { \"6\": \"\", \"5\": \"MEL\", \"4\": \"OCC INT STL\", \"3\": \"INS STR SUB INV\", \"2\": \"SUR ETI POL\", \"1\": \"ATH BRA LAR AWA\" }, \"clandiscs\": { \"disc1\": [\"Dominate\", 4], \"disc2\": [\"Fortitude\", 0], \"disc3\": [\"Presence\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"CEL\", \"2\": \"SOR\", \"1\": \"AUS POT\" } },\"Raphael Bishop\": { \"base\": {\"clan\": \"Tremere\", \"faction\": \"Camarilla\", \"blood_potency\": 4, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 5, \"stamina\": 3, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 4, \"wits\": 4, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"MEL ATH STL\", \"4\": \"INS SUB AWA\", \"3\": \"INV STR\", \"2\": \"LAR\", \"1\": \"SUR BRA\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 0], \"disc2\": [\"Dominate\", 0], \"disc3\": [\"Blood Sorcery\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"OBF\", \"3\": \"ANI POT\", \"2\": \"\", \"1\": \"CEL FOR PTN\" } },\"Emily, the Dusk Rose\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 3, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 1, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 5, \"manipulation\": 2, \"composure\": 3, \"intelligence\": 2, \"wits\": 4, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 2], \"disc2\": [\"Obfuscate\", 3], \"disc3\": [\"Potence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"PRE\", \"1\": \"DOM\" } },\"The Aristocrat\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 2, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 1, \"charisma\": 4, \"manipulation\": 3, \"composure\": 2, \"intelligence\": 3, \"wits\": 3, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 1], \"disc2\": [\"Obfuscate\", 1], \"disc3\": [\"Potence\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"PRE\", \"2\": \"AUS\", \"1\": \"\" } },\"Christianne\": { \"base\": {\"clan\": \"Toreador\", \"faction\": \"Camarilla\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 3, \"intelligence\": 3, \"wits\": 2, \"resolve\": 1 }, \"clandiscs\": { \"disc1\": [\"Auspex\", 0], \"disc2\": [\"Celerity\", 0], \"disc3\": [\"Presence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"DOM\", \"3\": \"\", \"2\": \"\", \"1\": \"FOR\" } },\"Xavier Whitchurch\": { \"base\": {\"clan\": \"Ventrue\", \"faction\": \"Camarilla\", \"blood_potency\": 2 }, \"clandiscs\": { \"disc1\": [\"Dominate\", 3], \"disc2\": [\"Fortitude\", 0], \"disc3\": [\"Presence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Ian Rammond\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 2 } },\"Terry\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 2 } },\"Tommy\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 1 } },\"I.Q.\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 3, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 2, \"manipulation\": 3, \"composure\": 1, \"intelligence\": 4, \"wits\": 3, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"OCC\", \"3\": \"MEL STL SUB\", \"2\": \"ATH LAR INT AWA\", \"1\": \"BRA SUR ETI INS STR INV POL\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Obfuscate\", 0], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"OBV\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Alexander\": { \"base\": {\"clan\": \"Lasombra\", \"faction\": \"Sabbat\", \"blood_potency\": 4, \"humanity\": 3, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Dominate\", 0], \"disc2\": [\"Oblivion\", 0], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"OBF\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Sang-Froid\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Sabbat\", \"blood_potency\": 3, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 6, \"stamina\": 5, \"charisma\": 2, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 5, \"wits\": 3, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Obfuscate\", 4], \"disc3\": [\"Potence\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"FOR\", \"2\": \"AUS\", \"1\": \"PTN\" } },\"The Piece-Taker\": { \"base\": {\"clan\": \"Banu Haqim\", \"faction\": \"Autarkis\", \"blood_potency\": 7, \"humanity\": 1, \"stains\": 0 }, \"attributes\": { \"strength\": 6, \"dexterity\": 5, \"stamina\": 5, \"charisma\": 3, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 2, \"wits\": 3, \"resolve\": 4 }, \"skills\": { \"6\": \"MEL STL\", \"5\": \"ATH BRA SUB OCC INT STR\", \"4\": \"INV AWA\", \"3\": \"SUR ANK\", \"2\": \"LAR\", \"1\": \"INS\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Obfuscate\", 5], \"disc3\": [\"Blood Sorcery\", 0] }, \"otherdiscs\": { \"5\": \"POT ANI\", \"4\": \"PTN\", \"3\": \"FOR\", \"2\": \"\", \"1\": \"\" } },\"The Island Devil\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Autarkis\" } },\"Anita Morris\": { \"base\": {\"clan\": \"Tremere\", \"faction\": \"Camarilla\", \"blood_potency\": 1, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 4, \"wits\": 3, \"resolve\": 3 }, \"skills\": { \"6\": \"\", \"5\": \"SCI\", \"4\": \"OCC\", \"3\": \"ACA TEC\", \"2\": \"INV AWA MED\", \"1\": \"PER SUB STR\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 2], \"disc2\": [\"Dominate\", 0], \"disc3\": [\"Blood Sorcery\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Agnes Bellanger\": { \"base\": {\"clan\": \"Toreador\", \"faction\": \"Camarilla\", \"blood_potency\": 5, \"humanity\": 5, \"stains\": 0 }, \"clandiscs\": { \"disc1\": [\"Auspex\", 5], \"disc2\": [\"Celerity\", 5], \"disc3\": [\"Presence\", 5] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"POT\", \"3\": \"FOR\", \"2\": \"DOM\", \"1\": \"\" } },\"Mylene 'the Puck' Hamelin\": { \"base\": {\"clan\": \"Ventrue\", \"faction\": \"Camarilla\", \"blood_potency\": 3, \"humanity\": 5, \"stains\": 0 }, \"clandiscs\": { \"disc1\": [\"Dominate\", 4], \"disc2\": [\"Fortitude\", 5], \"disc3\": [\"Presence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"AUS\", \"2\": \"\", \"1\": \"ANI\" } }}";
     // #endregion
 
     // #region Register Characters & Token Image Alternates,
@@ -1417,8 +1424,8 @@ const Char = (() => {
         });
     };
     const charSelectMenu = (isGettingNPCs = false) => {
-        const npcButtonCode = isGettingNPCs ?
-            _.chain(Session.SceneChars.filter((x) => VAL({npc: x})))
+        const npcButtonCode = isGettingNPCs
+            ? _.chain(Session.SceneChars.filter((x) => VAL({npc: x})))
                 .map((x) => {
                     const charName = D.GetName(x, true);
                     return {
@@ -1436,8 +1443,8 @@ const Char = (() => {
                     contents: x.length < 3 ? [0, ...x, 0] : x
                 }))
                 .value()
-                .join("") :
-            "";
+                .join("")
+            : "";
         const menuCode = MENUHTML.CharSelect.replace(new RegExp("~~~bgColor:.*?~~~", "gui"), C.COLORS.black).replace(
             new RegExp("~~~npcbuttonrows~~~", "gui"),
             npcButtonCode
@@ -1606,8 +1613,8 @@ const Char = (() => {
                     .groupBy((x, i) => Math.floor(i / 3))
                     .map((x) => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.gold, color: C.COLORS.black}}))
                     .value(),
-                argString === "select trait" ?
-                    {
+                argString === "select trait"
+                    ? {
                         type: "ButtonLine",
                         contents: [
                             0,
@@ -1620,8 +1627,8 @@ const Char = (() => {
                             0,
                             0
                         ]
-                    } :
-                    {type: "ButtonLine", contents: [0]}
+                    }
+                    : {type: "ButtonLine", contents: [0]}
             ],
             blockStyles: {padding: "0px 10px 0px 10p" /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */}
         });
@@ -1634,11 +1641,11 @@ const Char = (() => {
             if (traitVal || traitVal === 0) {
                 const [name, value] = [
                     VAL({pc: charObj}) ? `<b>${D.GetName(charObj, true).toUpperCase()}</b>` : D.GetName(charObj, true),
-                    VAL({number: traitVal}) ?
-                        (D.Int(traitVal) === 0 && "~") ||
-                          (D.Int(traitVal) > 10 && D.Int(traitVal)) ||
-                          `${(D.Int(traitVal) >= 5 && "●●●●● ") || ""}${"●".repeat(D.Int(traitVal) % 5)}` :
-                        D.JSL(traitVal)
+                    VAL({number: traitVal})
+                        ? (D.Int(traitVal) === 0 && "~")
+                          || (D.Int(traitVal) > 10 && D.Int(traitVal))
+                          || `${(D.Int(traitVal) >= 5 && "●●●●● ") || ""}${"●".repeat(D.Int(traitVal) % 5)}`
+                        : D.JSL(traitVal)
                 ];
                 returnLines.push(`<div style="
                         display: inline-block;
@@ -1754,7 +1761,7 @@ const Char = (() => {
     };
     // #endregion
 
-    // #region Sandbox Displays: Desires, Advantages, Hunger & Weekly Resources
+    // #region Handouts & Displays: Desires, Advantages, Hunger & Weekly Resources
     const displayDesires = (addAttrData) => {
         for (const charData of _.values(Char.REGISTRY)) {
             const desireObj = Media.GetText(`${charData.shortName}Desire`);
@@ -1840,9 +1847,9 @@ const Char = (() => {
                     [
                         C.HTML.Header("Weekly Resource Updated", C.STYLES.whiteMarble.header),
                         C.HTML.Body(
-                            amount < 0 ?
-                                `${entry[0]} restored by ${-1 * amount} to ${entry[2] - entry[1]}/${entry[2]}` :
-                                `${Math.abs(amount)} ${entry[0]} spent, ${entry[2] - entry[1]} remaining.`,
+                            amount < 0
+                                ? `${entry[0]} restored by ${-1 * amount} to ${entry[2] - entry[1]}/${entry[2]}`
+                                : `${Math.abs(amount)} ${entry[0]} spent, ${entry[2] - entry[1]} remaining.`,
                             C.STYLES.whiteMarble.body
                         )
                     ],
@@ -1901,29 +1908,6 @@ const Char = (() => {
         //     Media.SetTextData("stakedAdvantages", {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height})
         //     displayStakes() */
     };
-    const sortCoterieStakes = (charRef) => {
-        const charObj = D.GetChar(charRef);
-        const coterieRows = Object.keys(_.omit(D.GetRepStats(charObj, "advantage", null, "advantage_type", "rowID", "val"), (v) => v[0] !== "Coterie"));
-        const advData = D.GetRepStats(charObj, "advantage", null, null, "rowID");
-        const charAdvData = _.object(
-            _.map(
-                _.flatten(
-                    _.map(_.values(_.omit(advData, ...coterieRows)), (v) => _.filter(v, (vv) => vv.attrName === "advantage" && vv.name !== "advantage"))
-                ),
-                (v) => [v.name, v.val]
-            )
-        );
-        const coterieAdvData = _.object(
-            _.map(
-                _.flatten(
-                    _.map(_.values(_.pick(advData, ...coterieRows)), (v) => _.filter(v, (vv) => vv.attrName === "advantage" && vv.name !== "advantage"))
-                ),
-                (v) => [v.name, v.val]
-            )
-        );
-        DB(`<b>CHARACTER STAKES</b>: ${D.JSL(charAdvData, true)}<br><br><b>COTERIE STAKES:</b> ${D.JSL(coterieAdvData, true)}`, "sortCoterieStakes");
-        return [charAdvData, coterieAdvData];
-    };
     const updateAssetsDoc = () => {
         const [stakeData, coterieStakes] = [[], {}];
         const nameLookup = {};
@@ -1936,32 +1920,22 @@ const Char = (() => {
             ),
             "initial"
         );
+        const coterieAdvantages = D.GetRepStats("A", "advantage", {advantage_type: "Coterie"}, null, "rowID", null);
+        const coterieAdvs = D.KeyMapObj(coterieAdvantages, (k, v) => v.find((x) => x.name === "advantage_name").val, (v, k) => v.find((x) => x.name === "advantage").val);
+        DB({coterieAdvs}, "updateAssetsDoc");
         // D.Alert(`Initials Sort: ${D.JS(initials)}`)
         for (const charData of sortedCharData) {
             const {initial, charObj} = charData;
+            DB({"===== STARTING CHARACTER =====": D.JS(charObj)}, "updateAssetsDoc");
             const projectStakes = [];
-            const [, coterieAdvs] = sortCoterieStakes(charObj);
             for (const attrName of ["projectstake1", "projectstake2", "projectstake3"])
                 projectStakes.push(...D.GetRepStats(charObj, "project", {projectstakes_toggle: "1"}, attrName));
-            DB(
-                {
-                    projectStakes: D.JSL(
-                        projectStakes.map((x) => D.JSL(x)),
-                        true
-                    )
-                },
-                "displayStakes"
-            );
+            DB({charObj, projectStakes}, "updateAssetsDoc");
             for (const stake of projectStakes) {
                 const advMax = (D.GetRepStat(charObj, "advantage", null, stake.name) || {val: null}).val;
                 const endDate = (D.GetRepStat(charObj, "project", stake.rowID, "projectenddate") || {val: null}).val;
-                DB({advMax, endDate, cotRepStats: Object.keys(coterieAdvs)}, "displayStakes");
-                /* DB(`... AdvMax: ${advMax}, EndDate: ${endDate
-                    }<br>... RepStats (Coterie): ${D.JS(Object.keys(coterieAdvs), true)
-                    }<br>... Parsed End Date (${D.JS(TimeTracker.GetDate(endDate).getTime())}) vs. Current Date (${TimeTracker.CurrentDate.getTime()
-                    }<br>... Comparing: ${TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime()}`, "displayStakes") */
                 if (advMax && D.Int(stake.val) > 0 && TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime())
-                    if (Object.keys(coterieAdvs).includes(stake.name))
+                    if (stake.name in coterieAdvs) {
                         coterieStakes[stake.name] = {
                             name: stake.name,
                             total: ((coterieStakes[stake.name] && coterieStakes[stake.name].total) || 0) + D.Int(stake.val),
@@ -1971,15 +1945,21 @@ const Char = (() => {
                             endDate,
                             max: D.Int(advMax)
                         };
-                    else
+                        DB(Object.assign({}, coterieStakes[stake.name], {TYPE: "COTERIE STAKE"}), "updateAssetsDoc");
+                    } else {
                         stakeData.push([initial, stake.name, Math.min(D.Int(stake.val), advMax), D.Int(advMax), endDate, []]);
+                        DB({initial, name: stake.name, val: Math.min(D.Int(stake.val), advMax), max: D.Int(advMax), endDate, TYPE: "PERSONAL STAKE"}, "updateAssetsDoc");
+                    }
             }
             for (const stake of STATE.REF.customStakes.personal[initial]) {
                 const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])];
                 if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime())
                     stakeData.push([initial, name, val, max, TimeTracker.FormatDate(dateStamp), []]);
+                DB({initial, name, val, max, endDate: TimeTracker.FormatDate(dateStamp), TYPE: "CUSTOM STAKE"}, "updateAssetsDoc");
             }
+            DB({"===== ENDING CHARACTER =====": D.JS(charObj)}, "updateAssetsDoc");
         }
+        DB({"===== FINISHED ITERATING CHARACTERS =====": true}, "updateAssetsDoc");
 
         // Sorting Coterie Stakes
         stakeData.sort((a, b) => {
@@ -2012,7 +1992,7 @@ const Char = (() => {
 
         // FIRST: if the initials are different, sort by those: initials always sort first.
 
-        DB({coterieStakes, stakeData, filteredStakes}, "displayStakes");
+        DB({coterieStakes, stakeData, filteredStakes}, "updateAssetsDoc");
         // Check for combining already-entered coterie stakes.
         for (const stake of STATE.REF.customStakes.coterie) {
             const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])];
@@ -2032,7 +2012,8 @@ const Char = (() => {
         }
         // Now, check for repeat personal stakes
 
-        // DB(`Coterie Stakes: ${D.JSL(Object.keys(coterieStakes), true)}`, "displayStakes")
+
+        // DB(`Coterie Stakes: ${D.JSL(Object.keys(coterieStakes), true)}`, "updateAssetsDoc")
         // COTERIE STAKES
         const stakeLines = [];
         for (const cotData of Object.values(coterieStakes))
@@ -2070,9 +2051,9 @@ const Char = (() => {
                         }),
                         C.HANDOUTHTML.EyesOnlyDoc.LineBody(persData[1], {width: "190px", vertAlign: "middle"}),
                         C.HANDOUTHTML.EyesOnlyDoc.LineBody(
-                            "●".repeat(Math.max(0, persData[3] - persData[2] - _.reduce(persData[5], (tot = 0, n) => tot + n))) +
-                                "○".repeat(Math.max(0, persData[2])) +
-                                persData[5].map((x) => `/${"○".repeat(Math.max(0, x))}`).join(""),
+                            "●".repeat(Math.max(0, persData[3] - persData[2] - _.reduce(persData[5], (tot = 0, n) => tot + n)))
+                                + "○".repeat(Math.max(0, persData[2]))
+                                + persData[5].map((x) => `/${"○".repeat(Math.max(0, x))}`).join(""),
                             {width: "60px", fontFamily: "Courier New", fontSize: "12px", vertAlign: "middle"}
                         ),
                         C.HANDOUTHTML.EyesOnlyDoc.LineBody(persData[4], {
@@ -2202,21 +2183,21 @@ const Char = (() => {
             }
             const chatStyles = {
                 block:
-                    (trait === "humanity" && amount > 0) || (trait !== "humanity" && amount < 0) ?
-                        Object.assign(C.STYLES.whiteMarble.block, {}) :
-                        Object.assign(C.STYLES.blackMarble.block, {}), // {width: "275px"},
+                    (trait === "humanity" && amount > 0) || (trait !== "humanity" && amount < 0)
+                        ? Object.assign(C.STYLES.whiteMarble.block, {})
+                        : Object.assign(C.STYLES.blackMarble.block, {}), // {width: "275px"},
                 body:
-                    (trait === "humanity" && amount > 0) || (trait !== "humanity" && amount < 0) ?
-                        Object.assign(C.STYLES.whiteMarble.body, {fontSize: "12px"}) :
-                        Object.assign(C.STYLES.blackMarble.body, {fontSize: "12px"}), // {fontFamily: "Voltaire", fontSize: "14px", color: "rgb(255,50,50)"},
+                    (trait === "humanity" && amount > 0) || (trait !== "humanity" && amount < 0)
+                        ? Object.assign(C.STYLES.whiteMarble.body, {fontSize: "12px"})
+                        : Object.assign(C.STYLES.blackMarble.body, {fontSize: "12px"}), // {fontFamily: "Voltaire", fontSize: "14px", color: "rgb(255,50,50)"},
                 banner:
-                    (trait === "humanity" && amount > 0) || (trait !== "humanity" && amount < 0) ?
-                        Object.assign(C.STYLES.whiteMarble.header, {fontSize: "12px"}) :
-                        Object.assign(C.STYLES.blackMarble.header, {fontSize: "12px"}), // {fontSize: "12px"},
+                    (trait === "humanity" && amount > 0) || (trait !== "humanity" && amount < 0)
+                        ? Object.assign(C.STYLES.whiteMarble.header, {fontSize: "12px"})
+                        : Object.assign(C.STYLES.blackMarble.header, {fontSize: "12px"}), // {fontSize: "12px"},
                 alert:
-                    (trait === "humanity" && amount > 0) || (trait !== "humanity" && amount < 0) ?
-                        Object.assign(C.STYLES.whiteMarble.header, {}) :
-                        Object.assign(C.STYLES.blackMarble.header, {}) // {}
+                    (trait === "humanity" && amount > 0) || (trait !== "humanity" && amount < 0)
+                        ? Object.assign(C.STYLES.whiteMarble.header, {})
+                        : Object.assign(C.STYLES.blackMarble.header, {}) // {}
             };
             const initTraitVal = VAL({number: D.Int(D.GetStatVal(charObj, trait))}) ? D.Int(D.GetStatVal(charObj, trait)) : defaultTraitVal || 0;
             const finalTraitVal = Math.min(max, Math.max(min, initTraitVal + D.Int(amount)));
@@ -2415,9 +2396,9 @@ const Char = (() => {
                             C.HTML.Header(bannerString, Object.assign({}, chatStyles.banner, {height: "25px", lineHeight: "25px"})),
                             bodyString ? C.HTML.Body(bodyString, chatStyles.body) : null,
                             trackerString || null,
-                            alertString ?
-                                C.HTML.Header(alertString, Object.assign(chatStyles.alert, alertString.includes("<br>") ? {height: "40px"} : {})) :
-                                null
+                            alertString
+                                ? C.HTML.Header(alertString, Object.assign(chatStyles.alert, alertString.includes("<br>") ? {height: "40px"} : {}))
+                                : null
                         ]),
                         chatStyles.block
                     )
@@ -2606,8 +2587,8 @@ const Char = (() => {
         }
     };
     const adjustDamage = (charRef, trait, dType, delta, isChatting = true, messageOverride) => {
-        const amount =
-            D.Int(delta) + (D.Int(delta) > 0 && charHasFlag(`inc${D.Capitalize(D.LCase(trait).replace(/wp/gu, "willpower"))}DmgTaken`) ? 1 : 0);
+        const amount
+            = D.Int(delta) + (D.Int(delta) > 0 && charHasFlag(`inc${D.Capitalize(D.LCase(trait).replace(/wp/gu, "willpower"))}DmgTaken`) ? 1 : 0);
         const charObj = D.GetChar(charRef);
         const dmgType = dType;
         let [minVal, maxVal, targetVal, defaultVal, traitName, deltaType] = [0, 5, D.Int(amount), 0, "", ""];
@@ -2629,9 +2610,9 @@ const Char = (() => {
                         Infinity,
                         D.Int(amount) >= 0 && dmgType.endsWith("superficial") ? D.Int(Math.ceil(amount / 2)) : D.Int(amount),
                         0,
-                        trait.toLowerCase() +
-                            (["superficial", "superficial+", "spent"].includes(dmgType.replace(/social_/gu, "")) ? "_sdmg" : "_admg") +
-                            (dmgType.includes("social") ? "_social" : ""),
+                        trait.toLowerCase()
+                            + (["superficial", "superficial+", "spent"].includes(dmgType.replace(/social_/gu, "")) ? "_sdmg" : "_admg")
+                            + (dmgType.includes("social") ? "_social" : ""),
                         dmgType.replace(/social_/gu, "")
                     ];
                     break;
@@ -2659,6 +2640,25 @@ const Char = (() => {
                 isChatting
             );
         return false;
+    };
+    const adjustTempStat = (charRef, statName, delta, repRowStatName) => {
+        /*  ********************
+            - Will have to log active temp stats in STATE, and include what they're from
+                - So you don't keep increasing the delta by repeat calls every time Fielded Assets is updated
+                - This func should include an "id" value to log the temp stat change to: that way it will overwrite when needed
+                - Then another func can handle going through the STATE records, totalling the temp deltas, and setting the final charsheet value.
+        *************************** */
+        const charObj = D.GetChar(charRef);
+        statName = `${statName}temp`.replace(/temptemp$/gu, "temp");
+        const curStatDelta = D.Int(D.GetStatVal(charObj, statName, repRowStatName));
+        const [curStatVal, masterStatAttr] = D.GetStat(charObj, statName.replace(/temp$/gu, ""), repRowStatName);
+        DB({charObj, statName, delta, repRowStatName, curStatDelta, curStatVal, masterStatAttr}, "adjustTempStat");
+        if (masterStatAttr) {
+            const masterStatName = masterStatAttr.get("name");
+            const tempStatName = `${masterStatName}temp`;
+            const newTempStat = curStatDelta + delta;
+            setAttrs(charObj.id, {[tempStatName]: newTempStat});
+        }
     };
     const sortTimeline = (charRef) => {
         D.SortRepSec(charRef, "timeline", "tlsortby", true, (val) => val || -200);
@@ -3107,6 +3107,7 @@ const Char = (() => {
         Damage: adjustDamage,
         AdjustTrait: adjustTrait,
         AdjustHunger: adjustHunger,
+        AdjustStatMod: adjustTempStat,
         RefreshWillpower: refreshWillpower,
         DaySleep: daysleep,
         AwardXP: awardXP,

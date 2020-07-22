@@ -28,7 +28,7 @@ const InitCommands = (() => {
         setTimeout(() => {
             D.Flag("... Fixing TimeTracker ...");
             if (TimeTracker && TimeTracker.Fix)
-                TimeTracker.Fix();
+                TimeTracker.Fix(true);
             setTimeout(() => {
                 D.Flag("... Fixing Soundscape ...");
                 if (Soundscape && Soundscape.Sync)

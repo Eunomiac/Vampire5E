@@ -1,7 +1,8 @@
 ﻿(() => {
     // #region Variable Declarations
     let APIROWID = null,
-        ISOFFLINE = false;
+        ISOFFLINE = false,
+        TEMPTHROTTLE = [];
     const isDebug = true;
     const LOGOPTIONS = {
         isMuted: false
@@ -33,7 +34,12 @@
     ];
     const TRACKERS = ["Health", "Willpower", "Blood Potency", "Humanity"];
     // HUMSEQUENCES = ["BSH", "HBHXS", "SBS", "XHB"],
-    const ATTRBLACKLIST = ["toggle", "inccounter"];
+    const REGEXPBLACKLIST = [
+        "toggle",
+        "inccounter",
+        "bonus_\\d*$",
+        "null_\\d*$"
+    ];
     const ROLLFLAGS = {
         all: [
             "rolldiff",
@@ -960,13 +966,13 @@
     // #region Repeating Field Configuration
     const DISCENUMS = ["disc1", "disc2", "disc3"];
     const DISCREPREFS = {
-        discleft: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discnull"],
-        discmid: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discnull"],
-        discright: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discnull"]
+        discleft: ["disc", "disc_name", "disc_flag", "discpower_toggle", "disctemp"],
+        discmid: ["disc", "disc_name", "disc_flag", "discpower_toggle", "disctemp"],
+        discright: ["disc", "disc_name", "disc_flag", "discpower_toggle", "disctemp"]
     };
     const ADVREPREFS = {
-        advantage: ["advantage", "advantage_name", "advantage_flag", "advantage_type", "advantage_details", "advantagenull"],
-        negadvantage: ["negadvantage", "negadvantage_name", "negadvantage_flag", "negadvantage_type", "negadvantage_details", "negadvantagenull"]
+        advantage: ["advantage", "advantage_name", "advantage_flag", "advantage_type", "advantage_details", "advantagetemp"],
+        negadvantage: ["negadvantage", "negadvantage_name", "negadvantage_flag", "negadvantage_type", "negadvantage_details", "negadvantagetemp"]
     };
     const DOMCONREPREFS = {
         domaincontrolleft: ["district", "level", "details"],
@@ -1041,7 +1047,7 @@
     // #region Derivative Stats
     const BASICATTRS = _.map(_.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS]), (v) => v.toLowerCase().replace(/ /gu, "_"));
     const BASICFLAGS = _.map(_.omit(BASICATTRS, TRACKERS), (v) => `${v.toLowerCase().replace(/ /gu, "_")}_flag`);
-    const BASICNULLS = BASICATTRS.map((x) => `${x}null`);
+    const BASICTEMPATTRS = BASICATTRS.map((x) => `${x}temp`);
     const ALLATTRS = [...ROLLFLAGS.all, ...BASICATTRS, ...BASICFLAGS, ..._.map(DISCENUMS, (v) => `${v}_name`)];
     const ATTRDISPNAMES = _.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS]);
     // #endregion
@@ -1057,7 +1063,31 @@
                 console[isWarn ? "warn" : "log"]([logTitle, msg].join(" "));
         }
     };
-    const isBlacklisted = (attr = "") => _.filter(ATTRBLACKLIST, (bannedAttr) => attr.toLowerCase().includes(bannedAttr.toLowerCase())) > 0;
+    const isBlacklisted = (attr = "") => {
+        if (TEMPTHROTTLE.includes(attr)) {
+            log(`[${attr}] THROTTLED: RETURNING TRUE`);
+            return true;
+        }
+        for (const regex of REGEXPBLACKLIST) {
+            const regExp = new RegExp(regex, "gui");
+            if (regExp.test(attr)) {
+                log(`[${attr}] BLACKLISTED by REGEXP: RETURNING TRUE`);
+                return true;
+            }
+        }
+        log(`[${attr}] NOT BLACKLISTED`);
+        return false;
+    };
+    // const testArray = [
+    //     "repeating_advantage_-LztYtoq0EdnqpgldSJ0_advantagenull_3bonus_2bonus_8",
+    //     "repeating_advantage_-LztYtoq0EdnqpgldSJ0_advantagenull_3",
+    //     "repeating_advantage_-LztYtoq0EdnqpgldSJ0_advantagenull_32"
+    // ];
+    // console.log(testArray.map((x) => isBlacklisted(x)));
+    const throttle = (funcName, delay = 2000) => {
+        TEMPTHROTTLE = _.uniq([...TEMPTHROTTLE, funcName]);
+        setTimeout(() => { TEMPTHROTTLE = _.without(TEMPTHROTTLE, funcName) }, delay);
+    };
     // trimAttr(attr):  Removes "_flag", "_type" or "_name" suffix from a given attribute.  Returns trimmed attribute.
     const trimAttr = (attr) => (_.isString(attr) ? attr.replace(/(_flag|_type|_name)/gu, "") : JSON.stringify(attr));
     const isIn = (needle, haystack) => {
@@ -1083,7 +1113,7 @@
         || ATTRS[`${trimAttr(attr)}_name`]
         || trimAttr(attr);
     // getTriggers (attrs, prefix, gN, sections): Returns "on:..." event listener string for simple attributes (in attrs) or repeating sections (in sections). RETURNS string
-    
+
     const getTriggers = (attrs, prefix = "", repSecs, repSecStats = []) => {
         const triggerStrings = [];
         repSecStats = _.flatten([repSecStats]);
@@ -1120,17 +1150,37 @@
     // nFuncs(ATTRS): Provides lookup & conversion functions (pV, pI, pF) for standard ATTRS object.
     const nFuncs = (attrs) => [(v) => attrs[v], (v) => parseInt(attrs[v]), (v) => parseFloat(attrs[v])];
     // pFuncs(repStatName, ATTRS): Provides prefix and repeating row parsing functions (p, pV, pI).  RETURNS [prefix, p, pV, pI] OR [prefix, p] if no ATTRS value given.
-    const pFuncs = (repStat, attrs) => {
-        const repRowSplit = repStat.split("_").slice(0, 3);
-        if (attrs)
-            return [
-                repRowSplit.join("_"),
-                (v) => `${repRowSplit.join("_")}_${v || ""}`,
-                (v) => attrs[`${repRowSplit.join("_")}_${v}`],
-                (v) => parseInt(attrs[`${repRowSplit.join("_")}_${v}`] || 0)
-            ];
-        else
-            return [repRowSplit.join("_"), (v) => `${repRowSplit.join("_")}_${v}`];
+    const pFuncs = (attrs, statName) => {
+        if (statName && statName.startsWith("repeating_")) {
+            const repRowSplit = statName.split("_").slice(0, 3);
+            if (attrs)
+                return [
+                    repRowSplit.join("_"), // prefix
+                    (v) => (v.startsWith("repeating_") ? v : `${repRowSplit.join("_")}_${v || ""}`), // p(x): full stat name
+                    (v) => (v.startsWith("repeating_") ? attrs[v] : attrs[`${repRowSplit.join("_")}_${v}`]), // pV(x): basic ATTRS lookup
+                    (v) => parseInt((v.startsWith("repeating_") ? attrs[v] : attrs[`${repRowSplit.join("_")}_${v}`]) || 0), // pI(x): integer ATTRS lookup
+                    (v) => parseFloat((v.startsWith("repeating_") ? attrs[v] : attrs[`${repRowSplit.join("_")}_${v}`]) || 0) // pF(x): float ATTRS lookup
+                ];
+            else
+                return [
+                    repRowSplit.join("_"), // prefix
+                    (v) => (v.startsWith("repeating_") ? v : `${repRowSplit.join("_")}_${v || ""}`) // p(x): full stat name
+                ];
+        } else {
+            if (attrs)
+                return [
+                    "", // prefix
+                    (v) => v, // p(x): full stat name
+                    (v) => attrs[v], // pV(x): basic ATTRS lookup
+                    (v) => parseInt(attrs[v] || 0), // pI(x): integer ATTRS lookup
+                    (v) => parseFloat(attrs[v] || 0) // pF(x): float ATTRS lookup
+                ];
+            else
+                return [
+                    "", // prefix
+                    (v) => v // p(x): full stat name
+                ];
+        }
     };
     const sFuncs = (sec, attrs) => {
         if (attrs)
@@ -1981,7 +2031,7 @@
                 // log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
                 // log(`Retrieved IDs: ${JSON.stringify(simpleRepAttrs(ids))}`, funcName)
                 _.each(ids, (rowID) => {
-                    const [, p, pV, pI] = pFuncs(`repeating_project_${rowID}`, ATTRS);
+                    const [, p, pV, pI] = pFuncs(ATTRS, `repeating_project_${rowID}`);
                     let counterPos = 11;
                     // log(`p-Test: p("projectinccounter) = ${JSON.stringify(p("projectinccounter"))}`, funcName)
                     const stakeRemaining
@@ -2097,8 +2147,8 @@
         const funcName = "doObjectiveRecord";
         log("", `████ ${funcName.toUpperCase()} CALLED ████`);
         getAttrs(attrArray, (ATTRS) => {
-            const [, p, pV] = pFuncs(_.keys(ATTRS)[1], ATTRS);
-            const [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`);
+            const [, p, pV] = pFuncs(ATTRS, _.keys(ATTRS)[1]);
+            const [, np] = pFuncs(null, `repeating_timeline_${newRowID}_stat`);
             log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
             log(`pV("objectivedate") = ${JSON.stringify(pV("objectivedate"))}`);
             log(`p("objectivedate") = ${JSON.stringify(p("objectivedate"))}`);
@@ -2144,8 +2194,8 @@
         const funcName = "doProjectRecord";
         log("", `████ ${funcName.toUpperCase()} CALLED ████`);
         getAttrs(attrArray, (ATTRS) => {
-            const [, , pV, pI] = pFuncs(_.keys(ATTRS)[1], ATTRS);
-            const [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`);
+            const [, , pV, pI] = pFuncs(ATTRS, _.keys(ATTRS)[1]);
+            const [, np] = pFuncs(null, `repeating_timeline_${newRowID}_stat`);
             log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
             attrList[np("tlstartdate")] = pV("projectstartdate");
             attrList[np("tlenddate")] = `— ${pV("projectenddate")}`;
@@ -2176,8 +2226,8 @@
         const funcName = "doMemoriamRecord";
         log("", `████ ${funcName.toUpperCase()} CALLED ████`);
         getAttrs(attrArray, (ATTRS) => {
-            const [, , pV, pI] = pFuncs(_.keys(ATTRS)[1], ATTRS);
-            const [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`);
+            const [, , pV, pI] = pFuncs(ATTRS, _.keys(ATTRS)[1]);
+            const [, np] = pFuncs(null, `repeating_timeline_${newRowID}_stat`);
             log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
             attrList[np("tlstartdate")] = pV("memoriamdate");
             attrList[np("tlenddate")] = "";
@@ -2207,8 +2257,8 @@
         const funcName = "doEventRecord";
         log("", `████ ${funcName.toUpperCase()} CALLED ████`);
         getAttrs(attrArray, (ATTRS) => {
-            const [, , pV] = pFuncs(_.keys(ATTRS)[1], ATTRS);
-            const [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`);
+            const [, , pV] = pFuncs(ATTRS, _.keys(ATTRS)[1]);
+            const [, np] = pFuncs(null, `repeating_timeline_${newRowID}_stat`);
             log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
             attrList[np("tlstartdate")] = pV("eventdate");
             attrList[np("tlenddate")] = "";
@@ -2434,7 +2484,7 @@
                         log(`Earned Total: ${JSON.stringify(attrList.xp_earnedtotal)}`, funcName);
                         let spentTotal = 0;
                         _.each(ids.spentxp, (rowID) => {
-                            const [, p, pV, pI] = pFuncs(`repeating_spentxp_${rowID}_dummyStat`, ATTRS);
+                            const [, p, pV, pI] = pFuncs(ATTRS, `repeating_spentxp_${rowID}_dummyStat`);
                             const cat = pV("xp_category");
                             const colRef = XPPARAMS[cat] ? XPPARAMS[cat].colToggles : null;
                             if (colRef)
@@ -2770,17 +2820,27 @@
             doRollRepRefs();
     });
     on(getTriggers(ALLATTRS, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)]), (eInfo) => {
-        if (!ISOFFLINE) {
-            log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ STAT ROLLER TRIGGERED @@@`);
-            if (eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute))
-                doRolls(eInfo.sourceAttribute, {
-                    silent: true
-                });
+        if (!ISOFFLINE && !isBlacklisted(eInfo.sourceAttribute)) {
+            if (eInfo.sourceType !== "sheetworker") {
+                log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ STAT ROLLER TRIGGERED @@@`);
+                doRolls(eInfo.sourceAttribute, {silent: true});
+            }
+            log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ TEMP DOTS TRIGGERED (ROLL) @@@`);
+            updateTempDots(eInfo.sourceAttribute);
         }
     });
     // #endregion
 
     // #region UPDATE: Temporary Stat Effects
+    /* Bonus/Nullified stats are DISPLAY ONLY --- the actual stat value remains unchanged.
+        D.GetStat needs to also look for {stat}temp and make the appropriate changes.
+            Try to get all attempts to grab stat values to go through GetStat.
+        Need to also go through scripts to look for other places where stats are referenced, to ensure they're getting the modified value
+        Ditto sheetworker scripts for things like blood potency, humanity popups, roller, projects, tracker damage
+        Need to turn OFF clickable input for trackers (Willpower, Health)
+    */
+
+
     const doDomainControl = () => {
         const [repAttrs, attrList] = [[], {}];
         const repStatData = Object.assign({}, DOMCONREPREFS);
@@ -2806,7 +2866,7 @@
                     const filteredAttrs = _.pick(ATTRS, (v, k) => k.includes("level"));
                     const domainBenefits = [];
                     for (const levelTrait of Object.keys(filteredAttrs)) {
-                        const [, p, pV, pI] = pFuncs(levelTrait, ATTRS);
+                        const [, p, pV, pI] = pFuncs(ATTRS, levelTrait);
                         const district = pV("district");
                         const level = pI("level") - 1;
                         if (district && level <= 3)
@@ -2845,7 +2905,7 @@
                     log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
                     if (ATTRS.stateffects === ATTRS.prevstateffects)
                         return;
-                    const [pV, pI, pF] = nFuncs(ATTRS);
+                    const [, , pV, pI, pF] = pFuncs(ATTRS);
                     const statEffects = pV("stateffects").split("|");
                     const prevStatEffects = pV("prevstateffects").split("|");
                     const newStatEffects = _.without(statEffects, prevStatEffects);
@@ -2940,12 +3000,37 @@
         };
         getRepAttrs(repSecs.shift());
     };
-    const updateNullDots = (sourceAttr) => {
-        /* Hidden Attribute "strengthnull" -> number of strength dots nullified ** must go outside of div for nth-last css to work **
-           JS figures out which full dots need to be covered up, toggles those strengthnull_X dots ON.
+    const updateTempDots = (sourceAttr) => {
+        /* Hidden Attribute "strengthtemp" -> amount by which strength has been modified **
+           JS figures out which null and bonusdots need to be activated, and toggles strengthnull_X / strengthbonus_X dots ON.
            This is STRICTLY DISPLAY --- the actual penalty must be covered in a roll effect (e.g. resolve/0.5/-(<.>) Redemption House) */
+        // if (TEMPTHROTTLE.includes("updateTempDots")) {
+        //     log(`updateTempDots(${sourceAttr}) THROTTLED.`);
+        // } else {
+        const repStatData = {};
         const [repAttrs, attrList] = [[], {}];
-        const repStatData = Object.assign({}, DOMCONREPREFS);
+        const statsList = [];
+        const masterStat = sourceAttr.replace(/temp$/gu, "");
+        log(`updateTempDots CALLED: ${sourceAttr}\nMaster Stat: ${JSON.stringify(masterStat)}`);
+        throttle("updateTempDots", 2000);
+        statsList.push(sourceAttr, masterStat);
+        if (sourceAttr.includes("health"))
+            statsList.push([11, 12, 13, 14, 15].map((x) => `health_${x}`));
+        if (sourceAttr.includes("health") || sourceAttr.includes("willpower")) {
+            statsList.push([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((x) => `${masterStat}_${x}`));
+            statsList.push(`${masterStat}_max`, `${masterStat}`, `${masterStat}_bashing`, `${masterStat}_aggravated`);
+        } else if (sourceAttr.includes("blood_potency")) {
+            statsList.push("blood_potency_max", "blood_potency");
+        } else if (sourceAttr.includes("humanity")) {
+            statsList.push("humanity", "stains");
+        } else if (masterStat.endsWith("_disc")) {
+            Object.assign(repStatData, DISCREPREFS);
+        } else if (sourceAttr.includes("negadvantage")) {
+            Object.assign(repStatData, _.pick(ADVREPREFS, "negadvantage"));
+        } else if (sourceAttr.includes("advantage")) {
+            Object.assign(repStatData, _.pick(ADVREPREFS, "advantage"));
+        }
+        log(`STATSLIST: ${JSON.stringify(statsList)}\n\nREPSTATDATA: ${JSON.stringify(repStatData)}`);
         const repSecs = Object.keys(repStatData);
         const getRepAttrs = (repSec) => {
             if (repSec)
@@ -2958,40 +3043,84 @@
                         ))
                     );
                     log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
-                    
-                    ... mapped to: ${JSON.stringify(repAttrs)}`);
+                        
+                        ... mapped to: ${JSON.stringify(repAttrs)}`);
                     getRepAttrs(repSecs.shift());
                 });
             else
-                getAttrs(["domaincontrolbenefits", ..._.flatten(repAttrs)], (ATTRS) => {
+                getAttrs([..._.flatten(statsList), ..._.flatten(repAttrs)], (ATTRS) => {
                     log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
-                    const filteredAttrs = _.pick(ATTRS, (v, k) => k.includes("level"));
-                    const domainBenefits = [];
-                    for (const levelTrait of Object.keys(filteredAttrs)) {
-                        const [, p, pV, pI] = pFuncs(levelTrait, ATTRS);
-                        const district = pV("district");
-                        const level = pI("level") - 1;
-                        if (district && level <= 3)
-                            domainBenefits.push(DOMAINCONTROL[district][level] || false);
+                    const [prefix, p, pV, pI, pF] = pFuncs(ATTRS, sourceAttr);
+                    // ONE: DETERMINE WHETHER ACTIVATING BONUS DOTS (POSITIVE sourceAttr) OR NULL DOTS
+                    //      will also have to deactivate the others
+                    //      must also account for tempDelta = zero
+                    const tempDelta = pI(sourceAttr);
+                    const [bonusAttrsList, nullAttrsList] = [[], []];
+                    const [bonusAttrPrefix, nullAttrPrefix] = [`${p(masterStat)}bonus_`, `${p(masterStat)}null_`];
+                    if (_.isNaN(tempDelta)) {
+                        log(`ERROR: tempDelta '${JSON.stringify(ATTRS[sourceAttr])}' parses to '${JSON.stringify(tempDelta)}' --> not a number.`);
+                        return;
                     }
-                    if (_.compact(domainBenefits).length)
-                        attrList.domaincontrolbenefits = _.compact(domainBenefits).join(", ");
-                    else
-                        attrList.domaincontrolbenefits = " ";
+                    if (sourceAttr.includes("health")) {
+                        log(`HEALTHTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`);
+                    } else if (sourceAttr.includes("willpower")) {
+                        log(`WILLPOWERTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`);
+                    } else if (sourceAttr.includes("blood_potency")) {
+                        log(`BPTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`);
+                    } else if (sourceAttr.includes("humanity")) {
+                        log(`HUMANITYTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`);
+                    } else {
+                        nullAttrsList.push(...[1, 2, 3, 4, 5].map((x) => p(`${nullAttrPrefix}${x}`)));
+                        bonusAttrsList.push(...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((x) => p(`${bonusAttrPrefix}${x}`)));
+                        const validNullAttrs = nullAttrsList.slice(0, pI(masterStat));
+                        validNullAttrs.reverse();
+                        const validBonusAttrs = bonusAttrsList.slice(pI(masterStat));
+                        // ======= IF POSITIVE: =========
+                        if (tempDelta > 0) {
+                            // Turn off all null boxes:
+                            nullAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
+                            // Turn on appropriate bonus boxes:  (max = 10 - masterStat)
+                            for (let i = 0; i < Math.min(10 - pI(masterStat), Math.abs(tempDelta)); i++)
+                                attrList[validBonusAttrs.shift()] = 1;
+                                // Turn off other bonus boxes:
+                            bonusAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
+                            // ======= IF ZERO: =========
+                        } else if (tempDelta === 0) {
+                            // Turn off all bonus boxes:
+                            bonusAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
+                            // Turn off all null boxes:
+                            nullAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
+                            // ======= IF NEGATIVE: =========
+                        } else if (tempDelta < 0) {
+                            // Turn off all bonus boxes:
+                            bonusAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
+                            // Turn on appropriate null boxes:
+                            for (let i = 0; i < Math.min(Math.abs(tempDelta), pI(masterStat)); i++)
+                                attrList[validNullAttrs.shift()] = 1;
+                                // Turn off other null boxes:
+                            nullAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
+                        }
+                    }
+                    log(`DELTA ATTRS: ${JSON.stringify(attrList)}`);
                     setAttrs(attrList);
                 });
         };
         getRepAttrs(repSecs.shift());
+        // }
     };
     on("sheet:opened change:stateffects", (eInfo) => {
-        doStatEffects();
+        if (!isBlacklisted(eInfo.sourceAttribute))
+            doStatEffects();
     });
     on(getTriggers(["stateffects"], "", [..._.keys(DOMCONREPREFS)]), (eInfo) => {
-        doDomainControl();
+        if (!isBlacklisted(eInfo.sourceAttribute))
+            doDomainControl();
     });
-    on(getTriggers(BASICNULLS, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)], ["discnull", "advantagenull", "negadvantagenull"]), (eInfo) => {
-        log(`NULL TRIGGER: ${JSON.stringify(eInfo)}`);
-        // updateNullDots(eInfo.sourceAttribute);
+    on(getTriggers(BASICTEMPATTRS, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)], ["disctemp", "advantagetemp", "negadvantagetemp"]), (eInfo) => {
+        if (!isBlacklisted(eInfo.sourceAttribute)) {
+            log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ TEMP DOTS TRIGGERED (DIRECT) @@@`);
+            updateTempDots(eInfo.sourceAttribute);
+        }
     });
     // #endregion
 

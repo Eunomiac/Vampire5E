@@ -2,6 +2,8 @@ void MarkStart("Fuzzy");
 const Fuzzy = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Fuzzy";
+    const SCRIPTNAME23 = "Go";
+
 
     // #region COMMON INITIALIZATION
     const STATE = {

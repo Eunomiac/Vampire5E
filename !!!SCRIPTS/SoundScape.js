@@ -828,12 +828,15 @@ const Soundscape = (() => {
         }
         let activeSounds;
         if (Session.IsCasaLomaActive) {
+            DB({casaLomaActive: Session.IsCasaLomaActive}, "syncSoundscape");
             const [activeSite] = Session.Site;
-            activeSounds = Object.keys(CASALOMASOUNDS[activeSite].activeSounds);
-            STATE.REF.outsideOverride = CASALOMASOUNDS[activeSite].isOutside;
-            STATE.REF.volumeMults = CASALOMASOUNDS[activeSite].activeSounds;
-            if (STATE.REF.outsideOverride)
-                activeSounds.push(...getWeatherSounds(true));
+            activeSounds = activeSite in CASALOMASOUNDS ? Object.keys(CASALOMASOUNDS[activeSite].activeSounds) : [];
+            if (activeSounds.length) {
+                STATE.REF.outsideOverride = CASALOMASOUNDS[activeSite].isOutside;
+                STATE.REF.volumeMults = CASALOMASOUNDS[activeSite].activeSounds;
+                if (STATE.REF.outsideOverride)
+                    activeSounds.push(...getWeatherSounds(true));
+            }
             activeSounds = _.compact(activeSounds);
         } else {
             STATE.REF.outsideOverride = null;
