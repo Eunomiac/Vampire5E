@@ -1110,7 +1110,7 @@
 
 	.charsheet input.sheet-hoverpopup + span + div + div > input[type="text"],.charsheet input.sheet-hoverpopup + span + div + div > textarea,.charsheet input.sheet-hoverpopup + span + div + div > select {
 		height: 100%;
-		width: 100%;
+		width: calc(100% + 10px);
 	}
 
 	.charsheet input.sheet-hoverpopup + span + div + div > input[type="text"] {
@@ -2236,8 +2236,8 @@
 
 	.charsheet div.sheet-disciplines input.sheet-statictrait,.charsheet div.sheet-disciplines input.sheet-editableflag.sheet-customtrait {
 		height: 20px;
-		width: calc(100% - 96px - 30px);
-		margin: 0px 30px 10px 0px;
+		width: calc(100% - 96px);
+		margin: 0px 0px 10px 0px;
 		line-height: 22px;
 	}
 

@@ -388,6 +388,11 @@ const Char = (() => {
             ]
         });
 
+        // STATE.REF.registry.BotLeft.spotlightPrompt.isAwardingXP = true;
+        // STATE.REF.registry.BotRight.spotlightPrompt.isAwardingXP = true;
+        // STATE.REF.registry.MidRight.spotlightPrompt.isAwardingXP = true;
+        // STATE.REF.registry.TopRight.spotlightPrompt.isAwardingXP = true;
+
         // awareness/intelligence+investigation/wits+investigation;postrait:Auspex;+ Heightened Senses (<.>)
         //
 
