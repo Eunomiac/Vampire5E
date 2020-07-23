@@ -101,6 +101,7 @@
         <img src="https://i.imgur.com/ZbV5LXR.png" />
         <img src="https://i.imgur.com/c29Guhd.png" />
         <img src="https://i.imgur.com/cEhqqBG.png" />
+        <img src="https://i.imgur.com/SxjNfvl.png" />
         <img src="https://i.imgur.com/cU3uPjZ.png" />
         <img src="https://i.imgur.com/d0pbZns.png" />
         <img src="https://i.imgur.com/dzHHTvd.png" />
@@ -394,7 +395,7 @@
             <div class="sheet-coltight3x4">
                 <div class="sheet-col2 sheet-titleblock sheet-toptitleblock" style="line-height: 35px; z-index: 2;">
                     <input class="sheet-hoverpopup" type="checkbox" value="1" style="margin-left: -25px;" /><span
-                        style="margin-top: 5px; margin-right: 5px;"></span>
+                        style="margin-top: 2px; margin-right: 5px;"></span>
                     <div class="sheet-coltight1">
                         <textarea class="sheet-collapsibletitle" name="attr_bane_title" value=""
                             placeholder="Choose Your Clan!" readonly></textarea>
@@ -565,14 +566,22 @@
             </div>
             <div>
                 <input class="sheet-containerselector" type="checkbox" name="attr_dyscrasias_toggle" value="1" />
-                <div class="sheet-coltight1 sheet-dyscrasiasdisplay sheet-engravedFrame">
-                    <span class="sheet-header2">Dyscrasia:</span><textarea type="text" name="attr_dyscrasias" value=""
-                        readonly></textarea>
-                </div>
+                <div class="sheet-coltight1 sheet-engravedFrame sheet-topdisplay sheet-dyscrasiadisplay">
+                    <div class="sheet-coltight1">
+                        <span class="sheet-header2">Dyscrasia:</span>
+                    </div>
+                    <div class="sheet-coltight1">
+                        <textarea type="text" name="attr_dyscrasias" value="" readonly></textarea>
+                    </div>
+                </div>                
                 <input class="sheet-containerselector" type="checkbox" name="attr_compulsion_toggle" value="1" />
-                <div class="sheet-coltight1 sheet-compulsiondisplay sheet-engravedFrame">
-                    <span class="sheet-header2">Compulsion:</span><textarea type="text" name="attr_compulsion" value=""
-                        readonly></textarea>
+                <div class="sheet-coltight1 sheet-engravedFrame sheet-topdisplay sheet-compulsiondisplay">
+                    <div class="sheet-coltight1">
+                        <span class="sheet-header2">Compulsion:</span>
+                    </div>
+                    <div class="sheet-coltight1">
+                        <textarea type="text" name="attr_compulsion" value="" readonly></textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -883,7 +892,7 @@
                         <textarea class="sheet-centered" name="attr_bp_slaketext" value="" readonly></textarea>
                     </div>
                 </div>
-                <div class="sheet-coltight1 sheet-header2" style="width: 135px; height: 24px;">Blood Potency</div>
+                <div class="sheet-coltight1 sheet-header2" style="width: 137px; height: 24px;">Blood Potency</div>
             </div>
             <br />
             <div class="sheet-dotline sheet-variabledotline sheet-centered">
@@ -1319,7 +1328,7 @@
                     <textarea type="text" name="attr_rollpooldisplay" style="color: grey;" value="" readonly></textarea>
                 </div>
                 <div class="sheet-coltight1 sheet-rollParamsblock">
-                    <span class="sheet-coltight1 sheet-header2" style="width: 73px;">Modifier: </span>
+                    <span class="sheet-coltight1 sheet-header2">Modifier: </span>
                     <input name="attr_rollmod" type="number" value="0">
                     <input class="sheet-attr sheet-diffspan" type="radio" name="attr_rolldiff" value="0" /><span
                         class="sheet-coltight1 sheet-header2 sheet-nohighlight">Difficulty: </span>
@@ -1330,8 +1339,6 @@
                     <input class="sheet-attr" type="radio" name="attr_rolldiff" value="5" /><span> 5 </span>
                     <input class="sheet-attr" type="radio" name="attr_rolldiff" value="6" /><span> 6 </span>
                     <input class="sheet-attr" type="radio" name="attr_rolldiff" value="7" /><span> 7 </span>
-                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="8" /><span> 8 </span>
-                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="9" /><span> 9 </span>
                 </div>
             </div>
         </div>
@@ -2372,10 +2379,9 @@
                 <input class="sheet-containertoggle" type="radio" name="attr_disc1_toggle" value="0" />
                 <input class="sheet-containertoggle" type="radio" name="attr_disc1_toggle" value="1" />
                 <div class="sheet-contingentcontainer">
-                    <input class="sheet-attr sheet-statictrait" type="checkbox" name="attr_disc1_flag" value="1" />
                     <input type="hidden" name="attr_disc1temp" value="0" />
-                    <textarea class="sheet-customtrait" name="attr_disc1_name" value="@{disc1_name}" readonly
-                        style="padding: 0px 0px;"></textarea>
+                    <input class="sheet-attr sheet-statictrait" type="checkbox" name="attr_disc1_flag" value="1" />
+                    <textarea class="sheet-customtrait" name="attr_disc1_name" value="@{disc1_name}" readonly></textarea>
                     <div class="sheet-dotline sheet-customtrait">
                         <input class="sheet-dot sheet-zero" type="radio" name="attr_disc1" value="0"
                             checked /><span></span>
@@ -2412,9 +2418,8 @@
                 </div>
             </div>
             <fieldset class="repeating_discleft">
-                <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_disc_flag"
-                    value="1" />
                 <input type="hidden" name="attr_disctemp" value="0" />
+                <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_disc_flag" value="1" />
                 <select class="sheet-customtrait" name="attr_disc_name" value="0">
                     <option value="0" selected hidden disabled></option>
                     <option value="Animalism">Animalism</option>
@@ -2470,10 +2475,9 @@
                 <input class="sheet-containertoggle" type="radio" name="attr_disc2_toggle" value="0" />
                 <input class="sheet-containertoggle" type="radio" name="attr_disc2_toggle" value="1" />
                 <div class="sheet-contingentcontainer">
-                    <input class="sheet-attr sheet-statictrait" type="checkbox" name="attr_disc2_flag" value="1" />
                     <input type="hidden" name="attr_disc2temp" value="0" />
-                    <textarea class="sheet-customtrait" name="attr_disc2_name" value="@{disc2_name}" readonly
-                        style="padding: 0px 0px;"></textarea>
+                    <input class="sheet-attr sheet-statictrait" type="checkbox" name="attr_disc2_flag" value="1" />
+                    <textarea class="sheet-customtrait" name="attr_disc2_name" value="@{disc2_name}" readonly></textarea>
                     <div class="sheet-dotline sheet-customtrait">
                         <input class="sheet-dot sheet-zero" type="radio" name="attr_disc2" value="0"
                             checked /><span></span>
@@ -2510,9 +2514,8 @@
                 </div>
             </div>
             <fieldset class="repeating_discmid">
-                <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_disc_flag"
-                    value="1" />
-                    <input type="hidden" name="attr_disctemp" value="0" />
+                <input type="hidden" name="attr_disctemp" value="0" />
+                <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_disc_flag" value="1" />
                 <select class="sheet-customtrait" name="attr_disc_name" value="0">
                     <option value="0" selected hidden disabled></option>
                     <option value="Animalism">Animalism</option>
@@ -2568,10 +2571,9 @@
                 <input class="sheet-containertoggle" type="radio" name="attr_disc3_toggle" value="0" />
                 <input class="sheet-containertoggle" type="radio" name="attr_disc3_toggle" value="1" />
                 <div class="sheet-contingentcontainer">
-                    <input class="sheet-attr sheet-statictrait" type="checkbox" name="attr_disc3_flag" value="1" />
                     <input type="hidden" name="attr_disc3temp" value="0" />
-                    <textarea class="sheet-customtrait" name="attr_disc3_name" value="@{disc3_name}" readonly
-                        style="padding: 0px 0px;"></textarea>
+                    <input class="sheet-attr sheet-statictrait" type="checkbox" name="attr_disc3_flag" value="1" />
+                    <textarea class="sheet-customtrait" name="attr_disc3_name" value="@{disc3_name}" readonly></textarea>
                     <div class="sheet-dotline sheet-customtrait">
                         <input class="sheet-dot sheet-zero" type="radio" name="attr_disc3" value="0"
                             checked /><span></span>
@@ -2608,9 +2610,8 @@
                 </div>
             </div>
             <fieldset class="repeating_discright">
-                <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_disc_flag"
-                    value="1" />
                 <input type="hidden" name="attr_disctemp" value="0" />
+                <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_disc_flag" value="1" />
                 <select class="sheet-customtrait" name="attr_disc_name" value="0">
                     <option value="0" selected hidden disabled></option>
                     <option value="Animalism">Animalism</option>
@@ -2854,9 +2855,8 @@
                         <textarea class="sheet-collapsiblebody sheet-editable" name="attr_advantage_details"></textarea>
                     </div>
                     <div class="sheet-coltight1">
-                        <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox"
-                            name="attr_advantage_flag" value="1" />
                         <input type="hidden" name="attr_advantagemod" value="0" />
+                        <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_advantage_flag" value="1" />
                         <input type="text" name="attr_advantage_name" />
                     </div>
                     <div class="sheet-dotline sheet-customtrait">
@@ -2912,9 +2912,8 @@
                             name="attr_negadvantage_details"></textarea>
                     </div>
                     <div class="sheet-coltight1">
-                        <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox"
-                            name="attr_negadvantage_flag" value="1" />
                         <input type="hidden" name="attr_negadvantagemod" value="0" />
+                        <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_negadvantage_flag" value="1" />
                         <input type="text" name="attr_negadvantage_name" />
                     </div>
                     <div class="sheet-dotline sheet-customtrait">
@@ -6695,9 +6694,9 @@
                                     .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
                             ))
                         );
-                        log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                        // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
                                 
-                                ... mapped to: ${JSON.stringify(repAttrs)}`);
+                        //         ... mapped to: ${JSON.stringify(repAttrs)}`);
                         getRepAttrs(repSecs.shift());
                     });
                 else
@@ -6965,9 +6964,9 @@
                                     .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
                             ))
                         );
-                        log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                        // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
                         
-                        ... mapped to: ${JSON.stringify(repAttrs)}`);
+                        // ... mapped to: ${JSON.stringify(repAttrs)}`);
                         getRepAttrs(repSecs.shift());
                     });
                 else
@@ -7005,9 +7004,9 @@
                                     .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
                             ))
                         );
-                        log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                        // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
                                 
-                                ... mapped to: ${JSON.stringify(repAttrs)}`);
+                        //         ... mapped to: ${JSON.stringify(repAttrs)}`);
                         getRepAttrs(repSecs.shift());
                     });
                 else
@@ -7121,26 +7120,27 @@
             const [repAttrs, attrList] = [[], {}];
             const statsList = [];
             const masterStat = sourceAttr.replace(/temp$/gu, "");
-            log(`updateTempDots CALLED: ${sourceAttr}\nMaster Stat: ${JSON.stringify(masterStat)}`);
-            throttle("updateTempDots", 2000);
-            statsList.push(sourceAttr, masterStat);
-            if (sourceAttr.includes("health"))
+            const tempStat = `${masterStat}temp`;
+            log(`updateTempDots CALLED: ${sourceAttr}\nMaster Stat: ${JSON.stringify(masterStat)}\nTemp Stat: ${JSON.stringify(tempStat)}`, "UTD");
+            // throttle("updateTempDots", 2000);
+            statsList.push(tempStat, masterStat);
+            if (tempStat.includes("health"))
                 statsList.push([11, 12, 13, 14, 15].map((x) => `health_${x}`));
-            if (sourceAttr.includes("health") || sourceAttr.includes("willpower")) {
+            if (tempStat.includes("health") || tempStat.includes("willpower")) {
                 statsList.push([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((x) => `${masterStat}_${x}`));
                 statsList.push(`${masterStat}_max`, `${masterStat}`, `${masterStat}_bashing`, `${masterStat}_aggravated`);
-            } else if (sourceAttr.includes("blood_potency")) {
+            } else if (tempStat.includes("blood_potency")) {
                 statsList.push("blood_potency_max", "blood_potency");
-            } else if (sourceAttr.includes("humanity")) {
+            } else if (tempStat.includes("humanity")) {
                 statsList.push("humanity", "stains");
             } else if (masterStat.endsWith("_disc")) {
                 Object.assign(repStatData, DISCREPREFS);
-            } else if (sourceAttr.includes("negadvantage")) {
+            } else if (tempStat.includes("negadvantage")) {
                 Object.assign(repStatData, _.pick(ADVREPREFS, "negadvantage"));
-            } else if (sourceAttr.includes("advantage")) {
+            } else if (tempStat.includes("advantage")) {
                 Object.assign(repStatData, _.pick(ADVREPREFS, "advantage"));
             }
-            log(`STATSLIST: ${JSON.stringify(statsList)}\n\nREPSTATDATA: ${JSON.stringify(repStatData)}`);
+            log(`STATSLIST: ${JSON.stringify(statsList)}\n\nREPSTATDATA: ${JSON.stringify(repStatData)}`, "UTD");
             const repSecs = Object.keys(repStatData);
             const getRepAttrs = (repSec) => {
                 if (repSec)
@@ -7152,39 +7152,59 @@
                                     .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
                             ))
                         );
-                        log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                        // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
                             
-                            ... mapped to: ${JSON.stringify(repAttrs)}`);
+                        //     ... mapped to: ${JSON.stringify(repAttrs)}`);
                         getRepAttrs(repSecs.shift());
                     });
                 else
                     getAttrs([..._.flatten(statsList), ..._.flatten(repAttrs)], (ATTRS) => {
-                        log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
+                        log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, "UTD");
                         const [prefix, p, pV, pI, pF] = pFuncs(ATTRS, sourceAttr);
-                        // ONE: DETERMINE WHETHER ACTIVATING BONUS DOTS (POSITIVE sourceAttr) OR NULL DOTS
-                        //      will also have to deactivate the others
-                        //      must also account for tempDelta = zero
-                        const tempDelta = pI(sourceAttr);
+                        const tempDelta = pI(tempStat);
                         const [bonusAttrsList, nullAttrsList] = [[], []];
                         const [bonusAttrPrefix, nullAttrPrefix] = [`${p(masterStat)}bonus_`, `${p(masterStat)}null_`];
                         if (_.isNaN(tempDelta)) {
-                            log(`ERROR: tempDelta '${JSON.stringify(ATTRS[sourceAttr])}' parses to '${JSON.stringify(tempDelta)}' --> not a number.`);
+                            log(`ERROR: tempDelta '${JSON.stringify(ATTRS[tempStat])}' parses to '${JSON.stringify(tempDelta)}' --> not a number.`, "UTD");
                             return;
                         }
-                        if (sourceAttr.includes("health")) {
-                            log(`HEALTHTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`);
-                        } else if (sourceAttr.includes("willpower")) {
-                            log(`WILLPOWERTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`);
-                        } else if (sourceAttr.includes("blood_potency")) {
-                            log(`BPTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`);
-                        } else if (sourceAttr.includes("humanity")) {
-                            log(`HUMANITYTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`);
+                        if (tempStat.includes("health")) {
+                            log(`HEALTHTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
+                        } else if (tempStat.includes("willpower")) {
+                            log(`WILLPOWERTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
+                        } else if (tempStat.includes("blood_potency")) {
+                            log(`BPTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
+                        } else if (tempStat.includes("humanity")) {
+                            log(`HUMANITYTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
                         } else {
                             nullAttrsList.push(...[1, 2, 3, 4, 5].map((x) => p(`${nullAttrPrefix}${x}`)));
                             bonusAttrsList.push(...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((x) => p(`${bonusAttrPrefix}${x}`)));
                             const validNullAttrs = nullAttrsList.slice(0, pI(masterStat));
                             validNullAttrs.reverse();
                             const validBonusAttrs = bonusAttrsList.slice(pI(masterStat));
+    
+    
+                            /*
+                            const nullAttrsList = [];
+                            const bonusAttrsList = [];
+                            const nullAttrPrefix = "statnull_";
+                            const bonusAttrPrefix = "statbonus_";
+                            const p = (v) => `repeating_section_id_${v}`;
+                            const pI = (v) => parseInt(v) || 0;
+                            const masterStat = 3;
+                            nullAttrsList.push(...[1, 2, 3, 4, 5].map((x) => p(`${nullAttrPrefix}${x}`)));
+                            bonusAttrsList.push(...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((x) => p(`${bonusAttrPrefix}${x}`)));
+                            const validNullAttrs = nullAttrsList.slice(0, pI(masterStat));
+                            validNullAttrs.reverse();
+                            const validBonusAttrs = bonusAttrsList.slice(pI(masterStat));
+                            console.log([
+                                "Valid Null Attrs:",
+                                validNullAttrs,
+                                "Valid Bonus Attrs:",
+                                validBonusAttrs
+                            ]);
+                            */
+    
                             // ======= IF POSITIVE: =========
                             if (tempDelta > 0) {
                                 // Turn off all null boxes:
@@ -7211,7 +7231,7 @@
                                 nullAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
                             }
                         }
-                        log(`DELTA ATTRS: ${JSON.stringify(attrList)}`);
+                        log(`DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
                         setAttrs(attrList);
                     });
             };

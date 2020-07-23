@@ -2585,9 +2585,9 @@
                                 .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
                         ))
                     );
-                    log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                    // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
                             
-                            ... mapped to: ${JSON.stringify(repAttrs)}`);
+                    //         ... mapped to: ${JSON.stringify(repAttrs)}`);
                     getRepAttrs(repSecs.shift());
                 });
             else
@@ -2855,9 +2855,9 @@
                                 .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
                         ))
                     );
-                    log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                    // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
                     
-                    ... mapped to: ${JSON.stringify(repAttrs)}`);
+                    // ... mapped to: ${JSON.stringify(repAttrs)}`);
                     getRepAttrs(repSecs.shift());
                 });
             else
@@ -2895,9 +2895,9 @@
                                 .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
                         ))
                     );
-                    log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                    // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
                             
-                            ... mapped to: ${JSON.stringify(repAttrs)}`);
+                    //         ... mapped to: ${JSON.stringify(repAttrs)}`);
                     getRepAttrs(repSecs.shift());
                 });
             else
@@ -3011,26 +3011,27 @@
         const [repAttrs, attrList] = [[], {}];
         const statsList = [];
         const masterStat = sourceAttr.replace(/temp$/gu, "");
-        log(`updateTempDots CALLED: ${sourceAttr}\nMaster Stat: ${JSON.stringify(masterStat)}`);
-        throttle("updateTempDots", 2000);
-        statsList.push(sourceAttr, masterStat);
-        if (sourceAttr.includes("health"))
+        const tempStat = `${masterStat}temp`;
+        log(`updateTempDots CALLED: ${sourceAttr}\nMaster Stat: ${JSON.stringify(masterStat)}\nTemp Stat: ${JSON.stringify(tempStat)}`, "UTD");
+        // throttle("updateTempDots", 2000);
+        statsList.push(tempStat, masterStat);
+        if (tempStat.includes("health"))
             statsList.push([11, 12, 13, 14, 15].map((x) => `health_${x}`));
-        if (sourceAttr.includes("health") || sourceAttr.includes("willpower")) {
+        if (tempStat.includes("health") || tempStat.includes("willpower")) {
             statsList.push([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((x) => `${masterStat}_${x}`));
             statsList.push(`${masterStat}_max`, `${masterStat}`, `${masterStat}_bashing`, `${masterStat}_aggravated`);
-        } else if (sourceAttr.includes("blood_potency")) {
+        } else if (tempStat.includes("blood_potency")) {
             statsList.push("blood_potency_max", "blood_potency");
-        } else if (sourceAttr.includes("humanity")) {
+        } else if (tempStat.includes("humanity")) {
             statsList.push("humanity", "stains");
         } else if (masterStat.endsWith("_disc")) {
             Object.assign(repStatData, DISCREPREFS);
-        } else if (sourceAttr.includes("negadvantage")) {
+        } else if (tempStat.includes("negadvantage")) {
             Object.assign(repStatData, _.pick(ADVREPREFS, "negadvantage"));
-        } else if (sourceAttr.includes("advantage")) {
+        } else if (tempStat.includes("advantage")) {
             Object.assign(repStatData, _.pick(ADVREPREFS, "advantage"));
         }
-        log(`STATSLIST: ${JSON.stringify(statsList)}\n\nREPSTATDATA: ${JSON.stringify(repStatData)}`);
+        log(`STATSLIST: ${JSON.stringify(statsList)}\n\nREPSTATDATA: ${JSON.stringify(repStatData)}`, "UTD");
         const repSecs = Object.keys(repStatData);
         const getRepAttrs = (repSec) => {
             if (repSec)
@@ -3042,39 +3043,59 @@
                                 .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
                         ))
                     );
-                    log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                    // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
                         
-                        ... mapped to: ${JSON.stringify(repAttrs)}`);
+                    //     ... mapped to: ${JSON.stringify(repAttrs)}`);
                     getRepAttrs(repSecs.shift());
                 });
             else
                 getAttrs([..._.flatten(statsList), ..._.flatten(repAttrs)], (ATTRS) => {
-                    log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
+                    log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, "UTD");
                     const [prefix, p, pV, pI, pF] = pFuncs(ATTRS, sourceAttr);
-                    // ONE: DETERMINE WHETHER ACTIVATING BONUS DOTS (POSITIVE sourceAttr) OR NULL DOTS
-                    //      will also have to deactivate the others
-                    //      must also account for tempDelta = zero
-                    const tempDelta = pI(sourceAttr);
+                    const tempDelta = pI(tempStat);
                     const [bonusAttrsList, nullAttrsList] = [[], []];
                     const [bonusAttrPrefix, nullAttrPrefix] = [`${p(masterStat)}bonus_`, `${p(masterStat)}null_`];
                     if (_.isNaN(tempDelta)) {
-                        log(`ERROR: tempDelta '${JSON.stringify(ATTRS[sourceAttr])}' parses to '${JSON.stringify(tempDelta)}' --> not a number.`);
+                        log(`ERROR: tempDelta '${JSON.stringify(ATTRS[tempStat])}' parses to '${JSON.stringify(tempDelta)}' --> not a number.`, "UTD");
                         return;
                     }
-                    if (sourceAttr.includes("health")) {
-                        log(`HEALTHTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`);
-                    } else if (sourceAttr.includes("willpower")) {
-                        log(`WILLPOWERTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`);
-                    } else if (sourceAttr.includes("blood_potency")) {
-                        log(`BPTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`);
-                    } else if (sourceAttr.includes("humanity")) {
-                        log(`HUMANITYTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`);
+                    if (tempStat.includes("health")) {
+                        log(`HEALTHTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
+                    } else if (tempStat.includes("willpower")) {
+                        log(`WILLPOWERTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
+                    } else if (tempStat.includes("blood_potency")) {
+                        log(`BPTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
+                    } else if (tempStat.includes("humanity")) {
+                        log(`HUMANITYTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
                     } else {
                         nullAttrsList.push(...[1, 2, 3, 4, 5].map((x) => p(`${nullAttrPrefix}${x}`)));
                         bonusAttrsList.push(...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((x) => p(`${bonusAttrPrefix}${x}`)));
                         const validNullAttrs = nullAttrsList.slice(0, pI(masterStat));
                         validNullAttrs.reverse();
                         const validBonusAttrs = bonusAttrsList.slice(pI(masterStat));
+
+
+                        /*
+                        const nullAttrsList = [];
+                        const bonusAttrsList = [];
+                        const nullAttrPrefix = "statnull_";
+                        const bonusAttrPrefix = "statbonus_";
+                        const p = (v) => `repeating_section_id_${v}`;
+                        const pI = (v) => parseInt(v) || 0;
+                        const masterStat = 3;
+                        nullAttrsList.push(...[1, 2, 3, 4, 5].map((x) => p(`${nullAttrPrefix}${x}`)));
+                        bonusAttrsList.push(...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((x) => p(`${bonusAttrPrefix}${x}`)));
+                        const validNullAttrs = nullAttrsList.slice(0, pI(masterStat));
+                        validNullAttrs.reverse();
+                        const validBonusAttrs = bonusAttrsList.slice(pI(masterStat));
+                        console.log([
+                            "Valid Null Attrs:",
+                            validNullAttrs,
+                            "Valid Bonus Attrs:",
+                            validBonusAttrs
+                        ]);
+                        */
+
                         // ======= IF POSITIVE: =========
                         if (tempDelta > 0) {
                             // Turn off all null boxes:
@@ -3101,7 +3122,7 @@
                             nullAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
                         }
                     }
-                    log(`DELTA ATTRS: ${JSON.stringify(attrList)}`);
+                    log(`DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
                     setAttrs(attrList);
                 });
         };
