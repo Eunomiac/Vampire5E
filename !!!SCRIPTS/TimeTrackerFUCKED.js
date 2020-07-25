@@ -41,9 +41,18 @@ const TimeTracker = (() => {
     // #region LOCAL INITIALIZATION
     const initialize = () => {
         const funcID = ONSTACK();
+        
+        STATE.REF.SessionDate = {
+            start: [0, 19, 30],
+            end: [0, 22, 30]
+        };
 
-        delete STATE.REF.nextSessionDate;
-        delete STATE.REF.lastSessionDate;
+        const nextSessDate = getNextSessionDate();
+        const lastSessDate = getNextSessionDate();
+        lastSessDate.setUTCDate(lastSessDate.getUTCDate() - 7);
+
+        STATE.REF.lastSessionDate = lastSessDate.getTime();
+        STATE.REF.nextSessionDate = nextSessDate.getTime();
 
         STATE.REF.TweenStart = 0;
         STATE.REF.TweenTarget = 0;
@@ -52,8 +61,7 @@ const TimeTracker = (() => {
         STATE.REF.TweenDeferredAlarms = STATE.REF.TweenDeferredAlarms || [];
 
         STATE.REF.dateObj = STATE.REF.currentDate ? new Date(STATE.REF.currentDate) : null;
-        STATE.REF.nextSessionDate
-            = STATE.REF.nextSessionDate || new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"})).getTime();
+        STATE.REF.nextSessionDate = STATE.REF.nextSessionDate || getNextSessionDate();
         STATE.REF.lastDate = STATE.REF.lastDate || 0;
         STATE.REF.weatherOverride = STATE.REF.weatherOverride || {};
         STATE.REF.timeZoneOffset = D.Int(new Date().toLocaleString("en-US", {hour: "2-digit", hour12: false, timeZone: "America/New_York"}));
@@ -254,10 +262,10 @@ const TimeTracker = (() => {
                         const params = Listener.ParseParams(args);
                         const lastDateObj = new Date(STATE.REF.nextSessionDate);
                         if (VAL({dateObj: lastDateObj})) {
-                            lastDateObj.setMonth(D.Int(params.month));
-                            lastDateObj.setDate(D.Int(params.date || params.day));
-                            lastDateObj.setHours(D.Int(params.hour));
-                            lastDateObj.setMinutes(D.Int(params.minute || 0));
+                            lastDateObj.setUTCMonth(D.Int(params.month));
+                            lastDateObj.setUTCDate(D.Int(params.date || params.day));
+                            lastDateObj.setUTCHours(D.Int(params.hour));
+                            lastDateObj.setUTCMinutes(D.Int(params.minute || 0));
                             STATE.REF.lastSessionDate = lastDateObj.getTime();
                             D.Alert(
                                 `Next Session Date: <b>${D.JS(
@@ -386,10 +394,10 @@ const TimeTracker = (() => {
                     case "date": {
                         const curDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"}));
                         const sessDateObj = new Date(curDateObj);
-                        sessDateObj.setDate(curDateObj.getDate() - curDateObj.getDay() + 7);
-                        sessDateObj.setHours(19);
-                        sessDateObj.setMinutes(30);
-                        sessDateObj.setSeconds(0);
+                        sessDateObj.setUTCDate(curDateObj.getUTCDate() - curDateObj.getUTCDay() + 7);
+                        sessDateObj.setUTCHours(19);
+                        sessDateObj.setUTCMinutes(30);
+                        sessDateObj.setUTCSeconds(0);
 
                         let secsLeft = (sessDateObj - curDateObj) / 1000;
 
@@ -425,7 +433,7 @@ const TimeTracker = (() => {
                 const transitionStrings = [
                     "<tr><td style=\"width:100px; text-align:right; text-align-last:right;\"></td><td style=\"width:60px; text-align:right; text-align-last:right;\"></td></tr>",
                     `<tr><td style="text-align:right; text-align-last:right;">DAY -> Night1</td><td style="text-align:right; text-align-last:right;">${getTime(
-                        TWILIGHT[STATE.REF.dateObj.getMonth()][1],
+                        TWILIGHT[STATE.REF.dateObj.getUTCMonth()][1],
                         0,
                         true
                     )}</td></tr>`,
@@ -450,32 +458,32 @@ const TimeTracker = (() => {
                         true
                     )}</td></tr>`,
                     `<tr><td style="text-align:right; text-align-last:right;">-> Predawn5</td><td style="text-align:right; text-align-last:right;">${getTime(
-                        TWILIGHT[STATE.REF.dateObj.getMonth()][0],
+                        TWILIGHT[STATE.REF.dateObj.getUTCMonth()][0],
                         -120,
                         true
                     )}</td></tr>`,
                     `<tr><td style="text-align:right; text-align-last:right;">-> Predawn4</td><td style="text-align:right; text-align-last:right;">${getTime(
-                        TWILIGHT[STATE.REF.dateObj.getMonth()][0],
+                        TWILIGHT[STATE.REF.dateObj.getUTCMonth()][0],
                         -30,
                         true
                     )}</td></tr>`,
                     `<tr><td style="text-align:right; text-align-last:right;">-> Predawn3</td><td style="text-align:right; text-align-last:right;">${getTime(
-                        TWILIGHT[STATE.REF.dateObj.getMonth()][0],
+                        TWILIGHT[STATE.REF.dateObj.getUTCMonth()][0],
                         -20,
                         true
                     )}</td></tr>`,
                     `<tr><td style="text-align:right; text-align-last:right;">-> Predawn2</td><td style="text-align:right; text-align-last:right;">${getTime(
-                        TWILIGHT[STATE.REF.dateObj.getMonth()][0],
+                        TWILIGHT[STATE.REF.dateObj.getUTCMonth()][0],
                         -10,
                         true
                     )}</td></tr>`,
                     `<tr><td style="text-align:right; text-align-last:right;">-> Predawn1</td><td style="text-align:right; text-align-last:right;">${getTime(
-                        TWILIGHT[STATE.REF.dateObj.getMonth()][0],
+                        TWILIGHT[STATE.REF.dateObj.getUTCMonth()][0],
                         -5,
                         true
                     )}</td></tr>`,
                     `<tr><td style="text-align:right; text-align-last:right;">Predawn1 -> DAY</td><td style="text-align:right; text-align-last:right;">${getTime(
-                        TWILIGHT[STATE.REF.dateObj.getMonth()][0],
+                        TWILIGHT[STATE.REF.dateObj.getUTCMonth()][0],
                         0,
                         true
                     )}</td></tr>`
@@ -861,7 +869,19 @@ const TimeTracker = (() => {
         }
         return OFFSTACK(funcID) && false;
     };
-    const getRealDateObj = () => new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"}));
+    const getRealDateObj = (realDateRef) => { // Pass a date object through this function only ONCE or it'll be time-shifted again.
+        const dateObj = realDateRef ? getDateObj(realDateRef) : new Date();
+        return convertToLocalTime(dateObj);
+    };
+    const convertToLocalTime = (dateRef) => {
+        const dateObj = dateRef ? getDateObj(dateRef) : new Date();
+        const offset = dateObj.getTimezoneOffset() / 60;
+        const hours = dateObj.getUTCHours();
+        const newDateObj = new Date(dateObj.getTime() + dateObj.getTimezoneOffset() * 60 * 1000);
+        newDateObj.setUTCHours(hours - offset);
+        return newDateObj;
+    };
+
     const parseToDeltaTime = (...args) => {
         const funcID = ONSTACK(); // Takes a number and a unit of time and converts it to the standard [delta (digit), unit (y/mo/w/d/h/m)] format for adding time.
         const matchPatterns = [new RegExp("-?\\d+(\\.?\\d+)?", "gu"), new RegExp("[A-Za-z]{1,2}", "u")];
@@ -907,10 +927,10 @@ const TimeTracker = (() => {
                 }
                 // falls through
                 case "dawn":
-                    setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getMonth()][0]));
+                    setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getUTCMonth()][0]));
                     break;
                 case "dusk":
-                    setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getMonth()][1]));
+                    setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getUTCMonth()][1]));
                     break;
                 case "midnight":
                     setToFutureTime(workingDate, 0, 0);
@@ -944,15 +964,15 @@ const TimeTracker = (() => {
         }
         return OFFSTACK(funcID) && dateObj;
     };
-    const formatTimeString = (date, isGettingUTCTime = true) => {
-        // const funcID = ONSTACK();
-        const [hours, minutes] = isGettingUTCTime ? [date.getUTCHours(), date.getUTCMinutes()] : [date.getHours(), date.getMinutes()];
+    const formatTimeString = (date, isReturningSeconds = false) => {
+        const funcID = ONSTACK();
+        const [hours, minutes, seconds] = [date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()];
         if (hours === 0 || hours === 12)
-            return /* OFFSTACK(funcID) && */ `12:${minutes < 10 ? "0" : ""}${minutes} ${hours === 0 ? "A.M." : "P.M."}`;
+            return OFFSTACK(funcID) && `12:${D.Pad(minutes, 2)}${isReturningSeconds ? `:${D.Pad(seconds, 2)}` : ""} ${hours === 0 ? "A.M." : "P.M."}`;
         else if (hours > 12)
-            return /* OFFSTACK(funcID) && */ `${hours - 12}:${minutes < 10 ? "0" : ""}${minutes} P.M.`;
+            return OFFSTACK(funcID) && `${hours - 12}:${D.Pad(minutes, 2)}${isReturningSeconds ? `:${D.Pad(seconds, 2)}` : ""} P.M.`;
         else
-            return /* OFFSTACK(funcID) && */ `${hours}:${minutes < 10 ? "0" : ""}${minutes} A.M.`;
+            return OFFSTACK(funcID) && `${hours}:${D.Pad(minutes, 2)}${isReturningSeconds ? `:${D.Pad(seconds, 2)}` : ""} A.M.`;
     };
     const formatDateString = (date, isIncludingTime = false) => {
         const funcID = ONSTACK();
@@ -960,7 +980,7 @@ const TimeTracker = (() => {
         return (
             OFFSTACK(funcID)
             && `${
-                ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]
+                ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getUTCMonth()]
             } ${date.getUTCDate()}, ${date.getUTCFullYear()}${isIncludingTime ? `, ${formatTimeString(date).replace(/:(\d\s)/gu, ":0$1")}` : ""}`
         );
     };
@@ -1036,7 +1056,7 @@ const TimeTracker = (() => {
     const getHorizonTimeString = (dateRef) => {
         const funcID = ONSTACK();
         dateRef = getDateObj(dateRef || STATE.REF.dateObj);
-        const [dawn, dusk] = TWILIGHTMINS[dateRef.getMonth()];
+        const [dawn, dusk] = TWILIGHTMINS[dateRef.getUTCMonth()];
         const imgTimes = _.object(
             _.map(Object.keys(IMAGETIMES), (k) => {
                 const fID = ONSTACK();
@@ -1067,47 +1087,31 @@ const TimeTracker = (() => {
         return OFFSTACK(funcID) && totalMins >= dawnMins && totalMins < duskMins;
     };
     const getDaysInMonth = (monthNum) => STATE.REF.weatherData[monthNum].length - 1;
-    const setNextSessionDate = (dateOverride = {}) => {
+    const getNextSessionDate = () => {
         const funcID = ONSTACK();
-        DB({dateOverride}, "setNextSessionDate"); // {day: 1, hour: 3, minute: 30}
-        const curRealDateObj = getRealDateObj();
-        const sessDateObj = new Date(curRealDateObj);
-        const daysOut = 7 - (curRealDateObj.getDay() === 0 ? 7 : curRealDateObj.getDay());
-        sessDateObj.setDate(curRealDateObj.getDate() + daysOut);
-        sessDateObj.setHours(19);
-        sessDateObj.setMinutes(30);
-        sessDateObj.setSeconds(0);
-        sessDateObj.setMilliseconds(0);
-        for (const [k, v] of Object.entries(dateOverride))
-            switch (D.LCase(k)) {
-                case "year": {
-                    sessDateObj.setFullYear(v);
-                    break;
-                }
-                case "month": {
-                    sessDateObj.setMonth(v);
-                    break;
-                }
-                case "day":
-                case "date": {
-                    sessDateObj.setDate(v);
-                    break;
-                }
-                case "hour": {
-                    sessDateObj.setHours(v);
-                    break;
-                }
-                case "minute": {
-                    sessDateObj.setMinutes(v);
-                    break;
-                }
-                // no default
-            }
-        if (sessDateObj.getTime() <= curRealDateObj.getTime())
-            sessDateObj.setDate(sessDateObj.getDate() + 7);
+        const realDateObj = getRealDateObj();
+        const [startDay, startHour, startMin] = STATE.REF.SessionDate.start;
+        let daysOut = D.Cycle(startDay - realDateObj.getUTCDay(), 0, 7);
+        if (daysOut === 0) {
+            const dayMins = realDateObj.getUTCHours() * 60 + realDateObj.getUTCMinutes();
+            const startMins = startHour * 60 + startMin;
+            if (dayMins >= startMins)
+                daysOut = 7;
+        }
+        const sessDateObj = getRealDateObj();
+        sessDateObj.setUTCDate(realDateObj.getUTCDate() + daysOut);
+        sessDateObj.setUTCHours(startHour);
+        sessDateObj.setUTCMinutes(startMin);
+        return sessDateObj;
+    };
+    const setNextSessionDate = (weeksToSkip = 0) => {
+        const funcID = ONSTACK();
+        const sessDateObj = getNextSessionDate();
+        if (weeksToSkip)
+            sessDateObj.setUTCDate(sessDateObj.getUTCDate() + 7 * weeksToSkip);
         STATE.REF.nextSessionDate = sessDateObj.getTime();
         syncCountdown();
-        return OFFSTACK(funcID) && (sessDateObj - curRealDateObj) / 1000 - 60;
+        return OFFSTACK(funcID) && (sessDateObj - getRealDateObj()) / 1000 - 60;
     };
     const getRandomEventTriggers = (fullDuration, numTriggers, tickSpeed = 100) => {
         const funcID = ONSTACK();
@@ -1251,7 +1255,7 @@ const TimeTracker = (() => {
                 "TimeTracker",
                 `${DAYSOFWEEK[STATE.REF.dateObj.getUTCDay()]}, ${MONTHS[STATE.REF.dateObj.getUTCMonth()]} ${D.Ordinal(
                     STATE.REF.dateObj.getUTCDate()
-                )} ${STATE.REF.dateObj.getFullYear()}, ${(STATE.REF.dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
+                )} ${STATE.REF.dateObj.getUTCFullYear()}, ${(STATE.REF.dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
                     STATE.REF.dateObj.getUTCMinutes() < 10 ? "0" : ""
                 }${STATE.REF.dateObj.getUTCMinutes().toString()} ${Math.floor(STATE.REF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`
             );
@@ -1276,7 +1280,7 @@ const TimeTracker = (() => {
         const lastDate = new Date(STATE.REF.lastDate);
         return (
             STATE.REF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear()
-            || STATE.REF.dateObj.getMonth() !== lastDate.getMonth()
+            || STATE.REF.dateObj.getUTCMonth() !== lastDate.getUTCMonth()
             || STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate()
         );
     };
@@ -1284,7 +1288,7 @@ const TimeTracker = (() => {
         const lastDate = new Date(STATE.REF.lastDate);
         return (
             STATE.REF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear()
-            || STATE.REF.dateObj.getMonth() !== lastDate.getMonth()
+            || STATE.REF.dateObj.getUTCMonth() !== lastDate.getUTCMonth()
             || STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate()
             || STATE.REF.dateObj.getUTCHours() !== lastDate.getUTCHours()
         );
@@ -1444,8 +1448,8 @@ const TimeTracker = (() => {
         const funcID = ONSTACK();
         // if (isCountdownFrozen)
         //   return OFFSTACK(funcID) &&
-        const realDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"}));
-        const nextSessDateObj = new Date(STATE.REF.nextSessionDate || realDateObj);
+        const realDateObj = getRealDateObj();
+        const nextSessDateObj = new Date(STATE.REF.nextSessionDate || getNextSessionDate());
         const lastSessDateObj = new Date(STATE.REF.lastSessionDate || realDateObj);
         const maxSecs = Math.max((nextSessDateObj - lastSessDateObj) / 1000, 7 * 24 * 60 * 60, (nextSessDateObj - realDateObj) / 1000);
         const waitSecsMoon = maxSecs - MOON.daysToWaitTill * 24 * 60 * 60;
@@ -1599,10 +1603,10 @@ const TimeTracker = (() => {
     };
     const getNextWeatherEvent = (eventType, event) => {
         const funcID = ONSTACK();
-        const startMonth = STATE.REF.dateObj.getMonth();
-        let startYear = STATE.REF.dateObj.getFullYear(),
-            startDay = STATE.REF.dateObj.getDate(),
-            startHour = STATE.REF.dateObj.getHours();
+        const startMonth = STATE.REF.dateObj.getUTCMonth();
+        let startYear = STATE.REF.dateObj.getUTCFullYear(),
+            startDay = STATE.REF.dateObj.getUTCDate(),
+            startHour = STATE.REF.dateObj.getUTCHours();
         const matchFunc = (fullCode, monthNum) => {
             const fID = ONSTACK();
             switch (D.LCase(eventType)) {

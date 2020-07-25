@@ -1761,6 +1761,7 @@ const C = (() => {
             return this.width / 2;
         }
     };
+
     const QUADRANTS = {
         TopLeft: {},
         BotLeft: {},

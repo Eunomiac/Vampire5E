@@ -26,14 +26,23 @@ const Soundscape = (() => {
     const initialize = () => {
         STATE.REF.trackregistry = STATE.REF.trackregistry || {};
         STATE.REF.playlistregistry = STATE.REF.playlistregistry || {};
-        STATE.REF.isSoundscapeActive = VAL({bool: STATE.REF.isSoundscapeActive}) ? STATE.REF.isSoundscapeActive : true;
+        STATE.REF.isSoundscapeActive = STATE.REF.isSoundscapeActive !== false;
         STATE.REF.activeSounds = STATE.REF.activeSounds || [];
         STATE.REF.VOLUME = Object.assign({}, C.SOUNDVOLUME, STATE.REF.VOLUME || {});
-        STATE.REF.playSoundLog = STATE.REF.playSoundLog || [];
-        STATE.REF.playSoundLog.push("~~~ NEW INITIALIZATION ~~~");
+        STATE.REF.SoundscapeLog = STATE.REF.SoundscapeLog || [];
+        initSoundLog();
+
+        STATE.REF.soundsFading = STATE.REF.soundsFading || {};
+        STATE.REF.fadeStepTime = STATE.REF.fadeStepTime || 500;
+        STATE.REF.fadeDuration = STATE.REF.fadeDuration || 5000;
+        STATE.REF.fadeLeadTime = STATE.REF.fadeLeadTime || 5000;
+        STATE.REF.maxFadeStep = STATE.REF.maxFadeStep || 1;
 
         STATE.REF.scoreOverride = "ScoreMain";
         D.Flag("Score Override: ScoreMain");
+
+        for (const [trackKey, fadeData] of Object.entries(STATE.REF.soundsFading))
+            fadeTrackObj(trackKey, fadeData.targetVol, fadeData.startVol);
 
         // syncSoundscape(true);
     };
@@ -62,44 +71,25 @@ const Soundscape = (() => {
                 break;
             case "inc":
             case "increase": {
-                if (args[0] === "casaloma") {
-                    CASALOMASOUNDS.CLGreatHall.activeSounds.ScoreCasaLoma = D.Float(args[1], 2);
+                if (args[0] === "casaloma") { // !sound inc casaloma <scoreVolMult> <delayTillFade> <targetVol>
+                    args.shift();
+                    CASALOMASOUNDS.CLGreatHall.activeSounds.ScoreCasaLoma = D.Float(args.shift(), 2);
                     C.SITES.CLGreatHall.onEntryCall = null;
                     Media.ToggleText("HubAspectsNotice", true);
                     Media.ToggleText("HubAspectsTitle", true);
                     syncSoundscape();
-                    if (args[4]) {
-                        const delayTimeArg = D.Float(args[2] || 10, 2);
-                        const numStepsArg = D.Float(args[3] || 5, 2);
-                        const targetVol = D.Float(args[4] || 4, 3);
-                        const durationArg = D.Float(args[5] || 5, 2);
-                        const fadeOut = (soundRef, duration, delayTime, numSteps = 5, targetVolume = 0) => {
-                            duration = duration < 60 ? duration * 1000 : duration;
-                            delayTime = delayTime < 60 ? delayTime * 1000 : delayTime;
-                            const trackObj = getTrackObj(soundRef);
-                            const startVolume = trackObj.get("volume");
-                            const stepTime = D.Float(duration / numSteps, 3);
-                            const deltaVol = D.Float((targetVolume - startVolume) / numSteps, 4);
-                            let intervalTimer;
-                            setTimeout(() => {
-                                DB({"Timeout Started": [
-                                    `Starting Volume Decrease from ${startVolume} to ${targetVolume}`,
-                                    `Delay: ${delayTime}, Duration: ${duration}`,
-                                    `StepTime: ${stepTime}, DeltaVol: ${deltaVol}`
-                                ]}, "fadeOut");
-                                intervalTimer = setInterval(() => {
-                                    const curVol = trackObj.get("volume");
-                                    const newVol = D.Float(Math.max(targetVolume, curVol + deltaVol), 3);
-                                    trackObj.set({volume: newVol});
-                                    DB({step: newVol, target: targetVolume, realVol: trackObj.get("volume")}, "fadeOut");
-                                    if (newVol === targetVolume) {
-                                        clearInterval(intervalTimer);
-                                        intervalTimer = null;
-                                    }
-                                }, stepTime);
-                            }, delayTime);
-                        };
-                        fadeOut("ScoreCasaLoma", durationArg, delayTimeArg, numStepsArg, targetVol);
+                    if (args.length) {
+                        const [delayTimeArg, targetVolArg] = args.map((x) => D.Float(x, 2));
+                        const playlistData = getPlaylistData("ScoreCasaLoma");
+                        const trackKey = [...playlistData.currentTracks, ...playlistData.trackSequence, ...playlistData.trackKeys][0];
+                        let trackObj = getTrackObj(trackKey);
+                        if (isTrackObjPlaying(trackObj)) {
+                            fadeTrackObj(trackObj, targetVolArg, undefined, delayTimeArg * 1000);
+                        } else {
+                            playSound("ScoreCasaLoma");
+                            trackObj = getTrackObj(getPlaylistData("ScoreCasaLoma").currentTracks[0]);
+                            fadeTrackObj(trackObj, targetVolArg, undefined, (delayTimeArg + 3) * 1000);
+                        }
                         CASALOMASOUNDS.CLGreatHall.activeSounds.ScoreCasaLoma = 1;
                         CASALOMASOUNDS.CLVestibule.activeSounds.ScoreCasaLoma = 0.5;
                     }
@@ -107,6 +97,7 @@ const Soundscape = (() => {
                     const baseVolume = STATE.REF.VOLUME[args[0]] || STATE.REF.VOLUME.base;
                     const newVolume = Math.min(baseVolume + 10, baseVolume * 2);
                     setVolumeData(args[0], newVolume);
+                    updateVolume(args[0]);
                     D.Alert(`Volume of <b>${D.JS(args[0])}</b>: ${baseVolume} >>> ${newVolume}`, "Increase Volume");
                 }
                 break;
@@ -120,12 +111,14 @@ const Soundscape = (() => {
                     const baseVolume = STATE.REF.VOLUME[args[0]] || STATE.REF.VOLUME.base;
                     const newVolume = Math.max(baseVolume - 10, baseVolume / 2);
                     setVolumeData(args[0], newVolume);
+                    updateVolume(args[0]);
                     D.Alert(`Volume of <b>${D.JS(args[0])}</b>: ${baseVolume} >>> ${newVolume}`, "Decrease Volume");
                 }
                 break;
             }
             case "get": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "log": printSoundLog(); break;
                     case "tracks": {
                         D.Alert([
                             "<h3>Tracks Playing:</h3>",
@@ -166,9 +159,9 @@ const Soundscape = (() => {
                 sendVolumeAlert();
                 break;
             }
-            case "reset": {
+            case "reset": case "clear": {
                 if (args[0] === "log") {
-                    STATE.REF.playSoundLog = [];
+                    clearSoundLog();
                 } else if (args[0] === "volume") {
                     STATE.REF.VOLUME = D.Clone(C.SOUNDVOLUME);
                 } else if (args[0]) {
@@ -224,7 +217,8 @@ const Soundscape = (() => {
         },
         CLVestibule: {
             activeSounds: {
-                SoftIndoor: 1
+                SoftIndoor: 1,
+                ScoreCasaLoma: 0.5
             },
             isOutside: false
         },
@@ -306,7 +300,8 @@ const Soundscape = (() => {
                                     isLooping: ["s", "b"].includes(v),
                                     isRandom: ["s", "o"].includes(v),
                                     isTogether: v === "a",
-                                    isPlayingAll: ["s", "b"].includes(v)
+                                    isPlayingAll: ["s", "b"].includes(v),
+                                    isOverloopOK: v === "a"
                                 };
                             default:
                                 return v;
@@ -314,44 +309,40 @@ const Soundscape = (() => {
                     }
                 );
                 DB({xData}, "importFromJukebox");
-                switch ((xData.name.match(/\[([^\]]*)\]$/u) || []).pop()) {
-                    case "LoopEach": {
-                        xData.playModes = {
-                            isLooping: true,
-                            isRandom: false,
-                            isTogether: false,
-                            isPlayingAll: false
-                        };
-                        break;
+                const listTags = ((xData.name.match(/\[([^\]]*)\]$/u) || []).pop() || "").split(/, ?/gu);
+                for (const listTag of listTags)
+                    switch (listTag) {
+                        // for PLAYLISTS: {isRandom, isTogether, isLooping, isPlayingAll}
+                        // isRandom:                             Plays one track randomly, then stops. (= "Play Once" in jukeboxData)
+                        // isRandom + isLooping:                 Plays one track chosen at random repeatedly. (= Playlist Tags include "RandomOnce")
+                        // isRandom + isPlayingAll:              Plays each track once in a random order, then stops. (= Playlist Tags include "ShuffleOnce")
+                        // isRandom + isLooping + isPlayingAll:  Plays each track once in a random order, then repeats. (= "Shuffle" in jukeboxData)
+                        // isLooping:                            Sets all contained tracks to loop when manually selected. (= Playlist Tags include "LoopEach")
+                        // isLooping + isPlayingAll:             Plays each track in sequence, then repeats. (= "Loop" in jukeboxData)
+                        // isPlayingAll:                         Plays each track in sequence, then stops. (= Playlist Tags include "Sequence")
+                        // isTogether:                           Plays all tracks simultaneously once. (= "Simulplay" in jukeboxData)
+                        // isOverloopOK:                         OK for more than one track to play at a time (i.e. won't stop a sound just because another was played). (= Playlist Tags include "Overloop")
+                        case "LoopEach": {
+                            Object.assign(xData.playModes, {isLooping: true, isPlayingAll: false});
+                            break;
+                        }
+                        case "Sequence": {
+                            Object.assign(xData.playModes, {isRandom: false, isTogether: false, isPlayingAll: true});
+                            break;
+                        }
+                        case "RandomOnce": {
+                            Object.assign(xData.playModes, {isLooping: true, isRandom: true, isTogether: false, isPlayingAll: false});
+                            break;
+                        }
+                        case "ShuffleOnce": {
+                            Object.assign(xData.playModes, {isLooping: false, isRandom: true, isTogether: false, isPlayingAll: true});
+                            break;
+                        }
+                        case "Overloop": {
+                            Object.assign(xData.playModes, {isOverloopOK: true});
+                        }
+                        // no default
                     }
-                    case "Sequence": {
-                        xData.playModes = {
-                            isLooping: false,
-                            isRandom: false,
-                            isTogether: false,
-                            isPlayingAll: true
-                        };
-                        break;
-                    }
-                    case "RandomOnce": {
-                        xData.playModes = {
-                            isLooping: true,
-                            isRandom: true,
-                            isTogether: false,
-                            isPlayingAll: false
-                        };
-                        break;
-                    }
-                    case "ShuffleOnce": {
-                        xData.playModes = {
-                            isLooping: false,
-                            isRandom: true,
-                            isTogether: false,
-                            isPlayingAll: true
-                        };
-                    }
-                    // no default
-                }
                 return xData;
             }
             return false;
@@ -395,13 +386,15 @@ const Soundscape = (() => {
     };
     const isTrack = (soundRef) => getSoundKey(soundRef) in REGISTRY.Tracks;
     const isPlaylist = (soundRef) => getSoundKey(soundRef) in REGISTRY.Playlists;
-    const getTrackKey = (soundRef, isGettingAllTracks = false) => {
+    const getTrackKey = (soundRef, isGettingAllTracks = false, isGettingAllPlayingTracks = false) => {
         const funcID = ONSTACK();
         if (isTrack(soundRef))
             return OFFSTACK(funcID) && getSoundKey(soundRef);
         else if (isPlaylist(soundRef))
             if (isGettingAllTracks)
                 return OFFSTACK(funcID) && getSoundData(soundRef).trackKeys;
+            else if (isGettingAllPlayingTracks)
+                return OFFSTACK(funcID) && getSoundData(soundRef).currentTracks;
             else
                 return OFFSTACK(funcID) && getSoundData(soundRef).currentTracks[0]; // OK for only one UNLESS "isTogether"
         return OFFSTACK(funcID) && false;
@@ -424,6 +417,7 @@ const Soundscape = (() => {
     const getTrackData = (soundRef) => getSoundData(getTrackKey(soundRef));
     const getPlaylistData = (soundRef) => getSoundData(getPlaylistKey(soundRef));
     const getTrackObj = (soundRef) => getObj("jukeboxtrack", (getTrackData(soundRef) || {id: false}).id);
+    const getTrackObjs = (soundRef, isPlayingOnly = true) => _.flatten([getTrackKey(soundRef, !isPlayingOnly, isPlayingOnly)]).map((x) => getTrackObj(x));
     const getVolumeData = (soundRef, isIgnoringLocation = false) => {
         const trackKey = getTrackKey(soundRef);
         const playlistKey = getPlaylistKey(soundRef);
@@ -645,6 +639,46 @@ const Soundscape = (() => {
             REGISTRY.Tracks[trackKey].playlists.push(playlistKey);
         setPlayModes(playlistKey);
     };
+    const log = (logData) => {
+        if (STATE.REF.SoundscapeLog.length > 300)
+            STATE.REF.SoundscapeLog.length = 200;
+        const logIndex = STATE.REF.SoundscapeLog.length;
+        STATE.REF.SoundscapeLog[logIndex] = {
+            time: (new Date()).getTime() - 1000 * 60 * 60 * 4,
+            content: D.JS(logData).replace(/^("|&quot;)*/gu, "").replace(/("|&quot;)*$/gu, "")
+        };
+    };
+    const initSoundLog = () => {
+        STATE.REF.SoundscapeLog.push({
+            time: (new Date()).getTime() - 1000 * 60 * 60 * 4,
+            content: "FRESHREBOOT"
+        });
+    };
+    const printSoundLog = () => {
+        let lastTimeStamp = 0;
+        const logStrings = [];
+        for (let i = 0; i < STATE.REF.SoundscapeLog.length; i++) {
+            const {time, content} = STATE.REF.SoundscapeLog[i];
+            const dateObj = new Date(new Date(time).toLocaleString("en-US", {timezone: "America/New_York"}));
+            const secs = dateObj.getSeconds();
+            if ((time - lastTimeStamp) > 8 * 60 * 60 * 1000)
+                logStrings.push(`<h2 style="background-color: rgb(150, 150, 150); border-top: 1px solid black; border-bottom: 1px solid black;">${TimeTracker.FormatDate(dateObj, true)}</h2>`);
+            else if ((time - lastTimeStamp) > 60 * 60 * 1000 || content === "FRESHREBOOT")
+                logStrings.push(`<h3>${TimeTracker.FormatTime(dateObj, false)}</h3>`);
+            lastTimeStamp = time;
+            if (content !== "FRESHREBOOT")
+                logStrings.push(`<div style="display: block; background-color: rgba(0, 0, 0, ${i % 2 === 0 ? "0" : "0.2"}); border-bottom: 1px solid rgb(200, 200, 200);">[${
+                    TimeTracker.FormatTime(dateObj, false).replace(/ /u, `:${secs} `)
+                }]<br>${
+                    content
+                }</div>`);
+        }
+        Handouts.Make("Soundscape Log", null, logStrings.join(""), false, false, true);
+    };
+    const clearSoundLog = () => {
+        printSoundLog();
+        STATE.REF.SoundscapeLog = [];
+    };
     const setPlayModes = (soundRef, playModes = {}) => {
         // for TRACKS: {isLooping}
         // for PLAYLISTS: {isRandom, isTogether, isLooping, isPlayingAll}
@@ -656,12 +690,13 @@ const Soundscape = (() => {
         // isLooping + isPlayingAll:             Plays each track in sequence, then repeats. (= "Loop" in jukeboxData)
         // isPlayingAll:                         Plays each track in sequence, then stops. (= Playlist Name ends with "[SequenceOnce]")
         // isTogether:                           Plays all tracks simultaneously once. (= "Simulplay" in jukeboxData)
+        // isOverloopOK:                         OK for more than one track to play at a time (i.e. won't stop a sound just because another was played).
         const soundKey = getSoundKey(soundRef);
         if (isTrack(soundKey)) {
             const trackData = getTrackData(soundKey);
             const trackObj = getTrackObj(soundKey);
             Object.assign(trackData.playModes, C.SOUNDMODES[soundKey] || C.SOUNDMODES.TrackDefault, trackData.playModes, playModes);
-            trackObj.set({loop: Boolean(trackData.playModes.isLooping), volume: getVolume(trackData.name)});
+            trackObj.set({loop: Boolean(trackData.playModes.isLooping)});
         } else if (isPlaylist(soundKey)) {
             const playlistData = getPlaylistData(soundKey);
             playlistData.playModes = Object.assign(
@@ -674,25 +709,17 @@ const Soundscape = (() => {
                 playlistData.trackKeys.map((x) => setPlayModes(x, {isLooping: true}));
         }
     };
-    const updateVolume = (soundRef) => {
-        const volume = getVolume(soundRef);
-        const trackObjs = [];
-        if (isPlaylist(soundRef))
-            trackObjs.push(...getPlaylistData(soundRef).trackKeys.map((x) => getTrackObj(x)));
-        else if (isTrack(soundRef))
-            trackObjs.push(getTrackObj(soundRef));
-        for (const trackObj of trackObjs)
-            trackObj.set({volume});
-    };
     const setVolumeData = (soundRef, volume) => {
         if (soundRef === "base") {
             STATE.REF.VOLUME.base = D.Float(volume, 3);
+            syncSoundscape();
         } else {
             const soundKey = getSoundKey(soundRef);
-            if (soundKey)
+            if (soundKey) {
                 STATE.REF.VOLUME[soundKey] = D.Float(volume, 3);
+                updateVolume(soundRef);
+            }
         }
-        syncSoundscape();
     };
     const setMasterVolumeMult = (volumeMult) => {
         STATE.REF.VOLUME.MasterVolumeMult = D.Float(volumeMult, 2);
@@ -701,29 +728,33 @@ const Soundscape = (() => {
     const setInsideMult = (soundRef, volumeMult) => {
         if (soundRef === "base") {
             STATE.REF.VOLUME.MULTS.Inside.base = D.Float(volumeMult, 2);
+            syncSoundscape();
         } else {
             const soundKey = getSoundKey(soundRef);
-            if (soundKey)
+            if (soundKey) {
                 STATE.REF.VOLUME.MULTS.Inside[soundKey] = D.Float(volumeMult, 2);
+                updateVolume(soundRef);
+            }
         }
-        syncSoundscape();
     };
     const setRainMult = (soundRef, volumeMult) => {
         if (soundRef === "base") {
             STATE.REF.VOLUME.MULTS.Raining.base = D.Float(volumeMult, 2);
+            syncSoundscape();
         } else {
             const soundKey = getSoundKey(soundRef);
-            if (soundKey)
+            if (soundKey) {
                 STATE.REF.VOLUME.MULTS.Raining[soundKey] = D.Float(volumeMult, 2);
+                updateVolume(soundRef);
+            }
         }
-        syncSoundscape();
     };
     // #endregion
 
     // #region CONTROLLERS: Playing & Stopping Sounds, Playing Next Sound
-    const playSound = (soundRef, masterSound) => {
+    const playSound = (soundRef, masterSound, isCyclingToNext = false) => {
         // Initializes any playlist as if playing it for the first time. To preserve sequences, use playNextSound()
-        if (STATE.REF.isSoundscapeActive) {
+        if (STATE.REF.isSoundscapeActive !== false) {
             const soundKey = getSoundKey(soundRef);
             // DB(
             //     {
@@ -734,46 +765,83 @@ const Soundscape = (() => {
             //     },
             //     "playSound"
             // );
-            if (STATE.REF.playSoundLog.length > 100)
-                STATE.REF.playSoundLog.shift();
-            const logIndex = STATE.REF.playSoundLog.length;
-            STATE.REF.playSoundLog.push({"~~PARAMS~~": {soundRef, masterSound, soundKey}});
-            STATE.REF.playSoundLog[logIndex].timeStamp = `${new Date().toLocaleDateString("en-US")} ${new Date().toLocaleTimeString("en-US")}`;
+            const logPackage = {};
+            log({"~~PARAMS~~": {soundRef, masterSound, soundKey}});
             if (isPlaylist(soundKey)) {
-                STATE.REF.playSoundLog[logIndex].soundType = "PLAYLIST";
+                logPackage.soundType = "PLAYLIST";
                 const playlistData = getPlaylistData(soundKey);
                 const {trackKeys} = playlistData;
-                STATE.REF.playSoundLog[logIndex].playlistData = {fullData: playlistData};
+                logPackage.playlistData = {fullData: D.Clone(playlistData)};
+                // First, check to see if this playlist has any currentTracks playing:
+                if (playlistData.currentTracks.length) {
+                    const [topSound, ...otherSounds] = playlistData.currentTracks;
+                    logPackage.playlistData.topSound = topSound;
+                    logPackage.playlistData.otherSounds = D.Clone(otherSounds);
+                    // If MORE THAN ONE currentTrack in a playlist that can't do that, fix the problem.
+                    if (otherSounds.length && !playlistData.playModes.isOverloopOK) {
+                        logPackage["!!!STOPPING EXCESS SOUNDS!!!"] = ["ERROR: TOO MANY TRACKS PLAYING! STOPPING EXCESS...", ...otherSounds];
+                        otherSounds.forEach((x) => stopSound(playlistData.name, x));
+                    }
+                    // If isCyclingToNext, stop all current tracks then recur so a new one can be chosen.
+                    if (isCyclingToNext) {
+                        logPackage["!!!CYCLING TO NEXT: RECURRING after STOPPING ALL PLAYING TRACKS!!!"] = D.Clone(playlistData.currentTracks);
+                        playlistData.currentTracks.forEach((x) => stopSound(playlistData.name, x));
+                        log(logPackage);
+                        return playSound(soundKey, masterSound);
+                    } else {
+                        // Check to see if any of the sounds that are supposed to be playing aren't.
+                        const soundsToPlay = playlistData.currentTracks.filter((x) => !isTrackObjPlaying(getTrackObj(x)));
+                        logPackage["!!!PLAYLIST ALREADY PLAYING and NOT CYCLING TO NEXT: RECURRING THROUGH ACTIVE SOUNDS THAT AREN'T PLAYING!!!"] = [...soundsToPlay];
+                        soundsToPlay.forEach((x) => playSound(x, playlistData.name));
+                        // Finally, if Overlooping is okay, proceed to play another track. Otherwise, return without changing anything else.
+                        if (!playlistData.playModes.isOverloopOK) {
+                            logPackage["###-RETURN-### NOT CYCLING & OVERLOOP NOT OKAY; CURRENTTRACK SHOULD ONE, AND BE ENOUGH!"] = [...playlistData.currentTracks];
+                            log(logPackage);
+                            return false;
+                        }
+                    }
+                }
+                logPackage["PROCEEDING TO TRACKSEQUENCE: CURRENTTRACKS SHOULD BE OKAY"] = {
+                    ShouldBePlaying: [...playlistData.currentTracks],
+                    ShouldBeLength: playlistData.playModes.isOverloopOK ? "Overloop OK" : "ZERO"
+                };
                 if (!playlistData.trackSequence.length) {
-                    STATE.REF.playSoundLog[logIndex].playlistData.trackSequenceLength = "ZERO";
-                    // if (playlistData.cur rentTracks.length === playlistData.trackKeys.length)
-                    //     playlistData.cur rentTracks = [];
+                    logPackage.playlistData["TRACK SEQUENCE EMPTY"] = "REGENERATING...";
                     if (playlistData.playModes.isRandom) {
-                        STATE.REF.playSoundLog[logIndex].playlistData.playMode = "RANDOM";
+                        logPackage.playlistData.playMode = "RANDOM";
                         playlistData.trackSequence = _.shuffle(trackKeys).filter((x) => !playlistData.currentTracks.includes(x)); // OK for only one UNLESS "isTogether"
                     } else {
-                        STATE.REF.playSoundLog[logIndex].playlistData.playMode = "NOT RANDOM";
+                        logPackage.playlistData.playMode = "NOT RANDOM";
                         playlistData.trackSequence = D.Clone(trackKeys).filter((x) => !playlistData.currentTracks.includes(x)); // OK for only one UNLESS "isTogether"
                     }
-                    STATE.REF.playSoundLog[logIndex].playlistData.newTrackSequence = playlistData.trackSequence;
-                    STATE.REF.playSoundLog[logIndex]["###-RETURN-### !!!RECURRING ONCE!!!"] = {soundRef: playlistData.name, masterSound};
+                    if (playlistData.trackSequence.length === 0) {
+                        logPackage.playlistData["###-RETURN-### ERROR: ALL TRACKS ALREADY PLAYING! UNABLE TO PLAY SOUND!"] = {
+                            currentTracks: D.Clone(playlistData.currentTracks),
+                            trackKeys: D.Clone(trackKeys)
+                        };
+                        log(logPackage);
+                        return false;
+                    }
+                    logPackage.playlistData["NEW TRACK SEQUENCE OKAY!"] = [...playlistData.trackSequence];
+                    logPackage["###-RETURN-### !!!RECURRING with FULL TRACKSEQUENCE!!!"] = {soundRef: playlistData.name, masterSound};
+                    log(logPackage);
                     return playSound(playlistData.name, masterSound);
                 }
                 if (playlistData.playModes.isTogether) {
-                    STATE.REF.playSoundLog[logIndex].playlistData.playMode = "TOGETHER";
-                    STATE.REF.playSoundLog[logIndex]["!!!RECURRING ALL!!!"] = playlistData.trackKeys.map((x) => ({soundRef: x, masterSound: playlistData.name}));
+                    logPackage.playlistData.playMode = "TOGETHER";
+                    logPackage["!!!RECURRING THROUGH ALL TO PLAY TOGETHER!!!"] = playlistData.trackKeys.map((x) => ({soundRef: x, masterSound: playlistData.name}));
                     playlistData.trackKeys.map((x) => playSound(x, playlistData.name));
                 } else {
-                    STATE.REF.playSoundLog[logIndex].playlistData.playMode = "NOT TOGETHER";
-                    STATE.REF.playSoundLog[logIndex].playlistData["!!!RECURRING ONCE - PUSH TO currentTracks!!!"] = {soundRef: playlistData.trackSequence[0], masterSound: playlistData.name};
-                    playlistData.currentTracks = [playSound(playlistData.trackSequence.shift(), playlistData.name)];
-                    // playlistData.cur rentTracks.push(playSound(playlistData.trackSequence.shift(), playlistData.name));
+                    logPackage.playlistData.playMode = "NOT TOGETHER";
+                    logPackage.playlistData["!!!RECURRING THROUGH NEXT SOUND: PUSH TO CURRENTTRACKS!!!"] = {soundRef: playlistData.trackSequence[0], masterSound: playlistData.name};
+                    playlistData.currentTracks.push(playSound(playlistData.trackSequence.shift(), playlistData.name));
                 }
                 playlistData.isPlaying = true;
-                STATE.REF.playSoundLog[logIndex]["###-RETURN-### true"] = true;
+                logPackage["###-RETURN-### true"] = true;
+                log(logPackage);
                 return true;
             } else if (isTrack(soundKey)) {
-                STATE.REF.playSoundLog[logIndex].soundType = "TRACK";
+                logPackage.soundType = "TRACK";
                 // RE: PLAYING, LOOP, SOFTSTOP:
                 //      'softstop' MUST be false for track to play at all.
                 //      'softstop' will be set to TRUE when track finishes playing UNLESS 'loop' is set true.
@@ -787,12 +855,18 @@ const Soundscape = (() => {
                 const trackData = getTrackData(soundKey);
                 trackData.isPlaying = true;
                 trackData.masterPlaylist = masterSound || false;
-                getTrackObj(soundKey).set({playing: true, softstop: false, volume: getVolume(soundKey)});
+                const trackObj = getTrackObj(soundKey);
+                if (trackObj) {
+                    const trackVolume = isTrackObjPlaying(trackObj) ? trackObj.get("volume") : 0;
+                    fadeTrackObj(trackObj, getVolume(soundKey));
+                }
                 STATE.REF.activeSounds = _.uniq([...STATE.REF.activeSounds, masterSound || soundKey]);
-                STATE.REF.playSoundLog[logIndex]["###-RETURN-### soundKey"] = soundKey;
+                logPackage["###-RETURN-### soundKey"] = soundKey;
+                log(logPackage);
                 return soundKey;
             }
         }
+        log(`SOUNDSCAPE INACTIVE: IGNORING PLAYSOUND(${D.JS(soundRef)})`);
         return false;
     };
     const stopSound = (soundRef, trackKey) => {
@@ -809,7 +883,7 @@ const Soundscape = (() => {
             } else {
                 playlistData.currentTracks = [];
                 playlistData.isPlaying = false;
-                curTracks.map((x) => stopSound(x));
+                curTracks.forEach((x) => stopSound(x));
             }
         } else if (isTrack(soundKey)) {
             const trackData = getTrackData(soundKey);
@@ -818,9 +892,140 @@ const Soundscape = (() => {
             } else {
                 trackData.isPlaying = false;
                 trackData.masterPlaylist = false;
-                getTrackObj(soundKey).set({playing: false, softstop: false});
+                fadeTrackObj(trackData.name, 0);
             }
         }
+    };
+    const updateVolume = (soundRef) => {
+        const volume = getVolume(soundRef);
+        const trackObjs = [];
+        if (isPlaylist(soundRef))
+            trackObjs.push(...getPlaylistData(soundRef).currentTracks.map((x) => getTrackObj(x)));
+        else if (isTrack(soundRef))
+            trackObjs.push(getTrackObj(soundRef));
+        for (const trackObj of trackObjs)
+            fadeTrackObj(trackObj, volume);
+    };
+    const clearFade = (trackKey) => {
+        if (trackKey && (trackKey in STATE.REF.soundsFading))
+            delete STATE.REF.soundsFading[trackKey];
+    };
+    const fadeTrackObj = (soundRef, targetVol, startVol, fadeLeadTime) => {
+        const trackObj = getTrackObj(soundRef);
+        const trackKey = getTrackKey(soundRef);
+        const logPackage = {
+            [`### fadeTrackObj(${D.JS(soundRef)}, ${D.JS(targetVol)}, ${D.JS(startVol)}, ${D.JS(fadeLeadTime)}) ###`]: {
+                trackKey,
+                currentVolume: trackObj.get("volume"),
+                targetVol,
+                startVol
+            }
+        };
+        if (trackKey && trackObj) {
+            const curVol = D.Float(trackObj.get("volume"), 2);
+            startVol = (startVol || startVol === 0) ? startVol : curVol;
+            const isSoundFading = trackKey in STATE.REF.soundsFading && STATE.REF.soundsFading.timer;
+            STATE.REF.soundsFading[trackKey] = {targetVol, startVol};
+            // If trackObj is ALREADY PLAYING:
+            if (isTrackObjPlaying(trackObj)) {
+                // First check to see if a fade is even necessary.  If not, stop sound and delete from fade registry.
+                if (curVol === targetVol) {
+                    logPackage["NO FADE NEEDED: curVol === targetVol"] = {curVol, targetVol};
+                    if (targetVol === 0) {
+                        trackObj.set({playing: false, softstop: false});
+                        logPackage["STOPPING SOUND"] = D.JS(trackObj);
+                    }
+                    clearFade(trackKey);
+                    log(logPackage);
+                    return false;
+                }
+                // Second, check to see if the sound is already being faded.  If so, just change the fade registry data so
+                // the fadeStep function will update on its next iteration with the new data.
+                // Clear the timer, and set a new timer with a lead time equal to the standard step so it continues smoothly.
+                if (isSoundFading) {
+                    logPackage["SOUND ALREADY FADING: UPDATING STATE DATA, RESETTING FADE"] = {startVol: trackObj.get("volume"), targetVol, curVol};
+                    STATE.REF.soundsFading[trackKey] = {
+                        targetVol,
+                        startVol: trackObj.get("volume")
+                    };
+                    fadeLeadTime = STATE.REF.fadeStepTime;
+                } else {
+                    // If CHANGING VOLUME (i.e. not going to zero), SKIP the default lead time UNLESS one was specified in parameters.
+                    if (targetVol > 0)
+                        fadeLeadTime = fadeLeadTime || 0;
+                    else // OTHERWISE, apply ONE THIRD the default lead time if none specified in parameters.
+                        fadeLeadTime = (fadeLeadTime || fadeLeadTime === 0) ? fadeLeadTime : (STATE.REF.fadeLeadTime / 3);
+                }
+            } else {
+                // If trackObj is NOT PLAYING ...
+                if (targetVol > 0) {
+                    // ... and the target volume is greater than zero, START IT at MINIMAL VOLUME
+                    trackObj.set({playing: true, softstop: false, volume: 0.1});
+                    startVol = 0.1;
+                    STATE.REF.soundsFading[trackKey].startVol = startVol;
+                    // ... and set the lead time to the default, unless one specified
+                    fadeLeadTime = (fadeLeadTime || fadeLeadTime === 0) ? fadeLeadTime : STATE.REF.fadeLeadTime;
+                } else {
+                    // OTHERWISE, it's not playing and the target volume is zero: No fade necessary.
+                    clearFade(trackKey);
+                    log(logPackage);
+                    return false;
+                }
+            }
+            const fadeStep = (fadeID) => {
+                // Can't log timers to state. So, must create a random fadeID, log that, and pass it through each fadeStep timer.
+                // FadeStep checks state to see if its ID is the one set for the active timer.
+                // If not, it stops and does nothing.
+                if (trackKey && trackObj && (trackKey in STATE.REF.soundsFading)) {
+                    if (!fadeID) {
+                        fadeID = D.RandomString(10);
+                        STATE.REF.soundsFading[trackKey].timer = fadeID;
+                    }
+                    if (STATE.REF.soundsFading[trackKey].timer === fadeID) {
+                        const cVol = D.Float(trackObj.get("volume"), 2);
+                        targetVol = STATE.REF.soundsFading[trackKey].targetVol;
+                        startVol = STATE.REF.soundsFading[trackKey].startVol;
+                        const fullDeltaVol = targetVol - startVol;
+                        const deltaVolStep = Math.min(fullDeltaVol / (STATE.REF.fadeDuration / STATE.REF.fadeStepTime), STATE.REF.maxFadeStep);
+                        if (deltaVolStep > 0 && cVol < targetVol) {
+                            log(`... [${fadeID}] Fading ${trackKey}: ${cVol} -> ${cVol + deltaVolStep}`);
+                            trackObj.set({volume: Math.min(targetVol, cVol + deltaVolStep)});
+                        } else if (deltaVolStep < 0 && cVol > targetVol) {
+                            log(`... [${fadeID}] Fading ${trackKey}: ${cVol} -> ${cVol + deltaVolStep}`);
+                            trackObj.set({volume: Math.max(targetVol, cVol + deltaVolStep)});
+                        } else { // Either cVol equals targetVol OR fade has overstepped: Either way, end the fade.
+                            if (targetVol === 0) {
+                                log(`... [${fadeID}] ${trackKey} Fade Complete! (cVol = ${cVol}) : Stopping Track`);
+                                trackObj.set({playing: false, softstop: false});
+                            } else if (cVol !== targetVol) {
+                                log(`... [${fadeID}] ${trackKey} Fade Overstepped? (cVol = ${cVol}, tVol = ${targetVol}, sVol = ${startVol}, fDVol = ${fullDeltaVol}, vStep = ${deltaVolStep}) : Setting Volume to ${targetVol}`);
+                                trackObj.set({volume: targetVol});
+                            }
+                            clearFade(trackKey);
+                            return false;
+                        }
+                        // Fade is continuing; set timer.
+                        setTimeout(() => fadeStep(fadeID), STATE.REF.fadeStepTime);
+                        return true;
+                    } else {
+                        log(`... [${fadeID}] ID Mismatch: This Timer No Longer Valid, Replaced by ${STATE.REF.soundsFading[trackKey].timer}`);
+                    }
+                }
+                log(`... [${fadeID || "(NEW)"}] ${D.JS(trackKey)} Invalid or Not Registered in STATE.`);
+                return false;
+            };
+            logPackage[`INITIALIZING FADE in ${D.Float(fadeLeadTime / 1000, 2)} SECONDS`] = {startVol, targetVol, curVol};
+            log(logPackage);
+            if (fadeLeadTime > 0)
+                setTimeout(fadeStep, fadeLeadTime);
+            else
+                fadeStep();
+            return true;
+        }
+        logPackage["... TRACK NOT FOUND"] = [D.JS(trackKey), D.JS(trackObj, true)];
+        clearFade(trackKey);
+        log(logPackage);
+        return false;
     };
     const syncSoundscape = (isResetting = false) => {
         if (Session.Mode === "Complications")
@@ -854,15 +1059,27 @@ const Soundscape = (() => {
         soundsToPlay.map((x) => playSound(x));
         const volumeChanges = [];
         for (const soundKey of soundsToCheck) {
+            const trackObj = getTrackObj(soundKey);
+            if (!isTrackObjPlaying(trackObj)) {
+                if (isPlaylist(soundKey))
+                    playSound(trackObj, getPlaylistKey(soundKey));
+                else
+                    playSound(trackObj);
+            }
             updateVolume(soundKey);
-            // const trackObj = getTrackObj(soundKey);
-            // const newVolume = getVolume(soundKey);
-            // trackObj.set({volume: getVolume(soundKey)});
             volumeChanges.push({soundKey, trackObj: getTrackKey(soundKey), realVolume: getTrackObj(soundKey).get("volume")});
         }
         if (D.WatchList.includes("syncWatch"))
             sendVolumeAlert();
-        DB({volumeChanges: D.JS(volumeChanges.map((x) => D.JS(x))), CasaLoma: Session.IsCasaLomaActive, outsideOverride: STATE.REF.outsideOverride, activeSounds, volumeMults: STATE.REF.volumeMults, soundsToStop, soundsToPlay, soundsToCheck}, "syncSoundscape");
+        log([
+            {
+                volumeChanges: D.JS(volumeChanges.map((x) => D.JS(x))),
+                CasaLoma: Session.IsCasaLomaActive,
+                outsideOverride: STATE.REF.outsideOverride,
+                volumeMults: STATE.REF.volumeMults
+            },
+            {activeSounds, soundsToStop, soundsToPlay, soundsToCheck}
+        ]);
     };
     const startSoundscape = (isResetting = false) => {
         STATE.REF.isSoundscapeActive = true;
@@ -875,20 +1092,32 @@ const Soundscape = (() => {
     };
     const playNextSound = (trackRef) => {
         // Playlist must have been initialized for sequencing: First play should be with playSound()
-        if (STATE.REF.isSoundscapeActive) {
+        const logPackage = {};
+        if (STATE.REF.isSoundscapeActive !== false) {
             const trackData = getSoundData(trackRef);
+            logPackage[`PLAYNEXTSOUND(${VAL({obj: trackRef}) ? getSoundKey(trackRef) : D.JS(trackRef)})`] = D.Clone(trackData);
             if (trackData.playModes.isLooping && STATE.REF.activeSounds.includes(trackData.name)) {
-                playSound(trackData.name);
+                logPackage.PLAYING = "Sound Is Looping AND Active";
+                log(logPackage);
+                playSound(trackData.name, undefined, true);
             } else {
                 const playlistData = getPlaylistData(trackData.name);
-                if (playlistData && STATE.REF.activeSounds.includes(playlistData.name))
+                logPackage.playlistData = D.Clone(playlistData);
+                if (playlistData && STATE.REF.activeSounds.includes(playlistData.name)) {
                     if ((playlistData.playModes.isPlayingAll && playlistData.trackSequence.length) || playlistData.playModes.isLooping) {
-                        playSound(playlistData.name);
+                        logPackage.PLAYINGLIST = "Playlist isPlayingAll OR isLooping";
+                        log(logPackage);
+                        playSound(playlistData.name, undefined, true);
                     } else {
+                        logPackage.STOPPINGLIST = "Playlist NOT isPlayingAll AND NOT isLooping";
+                        log(logPackage);
                         stopSound(playlistData.name, trackData.name);
                     }
-                else
+                } else {
+                    logPackage.STOPPING = "Sound Not Looping, Not Looping Playlist";
+                    log(logPackage);
                     stopSound(trackData.name);
+                }
             }
         }
     };

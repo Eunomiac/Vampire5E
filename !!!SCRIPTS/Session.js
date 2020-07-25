@@ -154,12 +154,14 @@ const Session = (() => {
                             Media.SetTextData("playerPageAlertMessage", {top: 275});
                             Media.SetTextData("clockStatusNotice", {top: 316});
                             Media.SetTextData("TimeTracker", {top: 350});
-                            Media.ToggleText("HubAspectsNotice", false);
-                            Media.ToggleText("HubAspectsTitle", false);
                             STATE.REF.quadScene.isActive = false;
                             Media.SetImg("DistrictCenter", "DupontByTheCastle");
                             Media.SetImg("SiteCenter", "CLGrounds");
                             setLocation({DistrictCenter: ["DupontByTheCastle"], SiteCenter: ["CLGrounds"]});
+                            setTimeout(() => {
+                                Media.ToggleText("HubAspectsNotice", false);
+                                Media.ToggleText("HubAspectsTitle", false);
+                            }, 1000);
                         } else {
                             Media.ToggleImg("DistrictCenter", false);
                             Media.ToggleImg("SiteCenter", true);
@@ -200,6 +202,8 @@ const Session = (() => {
                             Media.SetTextData("playerPageAlertMessage", {top: 225});
                             Media.SetTextData("clockStatusNotice", {top: 290});
                             Media.SetTextData("TimeTracker", {top: 265});
+                            Media.ToggleText("HubAspectsNotice", true);
+                            Media.ToggleText("HubAspectsTitle", true);
                             STATE.REF.quadScene.isActive = true;
                             if (D.LCase(args[0]) in HUBFOCUS) {
                                 Media.SetImg("SiteFocusHub", HUBFOCUS[D.LCase(args[0])], true);
@@ -210,8 +214,8 @@ const Session = (() => {
                             // D.Call("!sound inc casaloma 5");
                             Soundscape.Sync();
                             // D.Call("!sound inc casaloma 5");
-                            C.SITES.CLGreatHall.onEntryCall = "!sound inc casaloma 10 10 20 6 7";
-                            C.SITES.CLGreatHall.onExitCall = "!sound inc casaloma 1.5";
+                            // C.SITES.CLGreatHall.onEntryCall = "!sound inc casaloma 10 0 20";
+                            // C.SITES.CLGreatHall.onExitCall = "!sound inc casaloma 1.5";
                         }
                         break;
                     }
@@ -793,35 +797,7 @@ const Session = (() => {
         else
             STATE.REF.dateRecord = null;
         if (STATE.REF.SessionScribes.length === 0) {
-            DB(
-                `Scribe: ${STATE.REF.SessionScribe}, SessionScribes: ${D.JSL(STATE.REF.SessionScribes)}
-                    PICK: ${D.JS(_.pick(Char.REGISTRY, (v) => v.playerName !== STATE.REF.SessionScribe))}
-                    PLUCK: ${D.JS(
-        _.pluck(
-            _.pick(Char.REGISTRY, (v) => v.playerName !== STATE.REF.SessionScribe),
-            "playerName"
-        )
-    )}
-                    WITHOUT: ${D.JS(
-        _.without(
-            _.pluck(
-                _.pick(Char.REGISTRY, (v) => v.playerName !== STATE.REF.SessionScribe),
-                "playerName"
-            ),
-            "Storyteller"
-        )
-    )}`,
-                "startSession"
-            );
-            const otherScribes = _.shuffle(
-                _.without(
-                    _.pluck(
-                        _.pick(Char.REGISTRY, (v) => v.playerName !== STATE.REF.SessionScribe),
-                        "playerName"
-                    ),
-                    "Storyteller"
-                )
-            );
+            const otherScribes = _.shuffle(Object.values(Char.REGISTRY).map((x) => x.playerName).filter((x) => x !== STATE.REF.SessionScribe));
             STATE.REF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, STATE.REF.SessionScribe]));
         }
         STATE.REF.SessionMonologues = _.shuffle(D.GetChars("registered").map((x) => D.GetCharData(x).name));
@@ -849,6 +825,10 @@ const Session = (() => {
     };
     const endSession = (isDoingMonologues = true) => {
         DB({mode: Session.Mode, spotlightChar: STATE.REF.spotlightChar, monologues: D.JS(STATE.REF.SessionMonologues)}, "endSession");
+        if (Session.IsCasaLomaActive) {
+            D.Flag("Toggle CasaLoma Off First!");
+            return;
+        }
         if (
             (STATE.REF.isTestingActive && !STATE.REF.isFullTest)
             || (isDoingMonologues && startSessionMonologue())
@@ -915,9 +895,12 @@ const Session = (() => {
     const restoreTokens = (mode) => {
         if (STATE.REF.tokenRecord[mode] !== false)
             for (const [tokenID, tokenData] of Object.entries(STATE.REF.tokenRecord[mode])) {
-                Media.SetToken(tokenData.charID, tokenData.src);
-                Media.SetImgTemp(tokenID, _.omit(tokenData, "src"));
-                Media.ToggleToken(tokenData.charID, tokenData.layer === "objects");
+                const tokenObj = getObj("graphic", tokenID);
+                if (tokenObj.get("layer") !== "gmlayer") {
+                    Media.SetToken(tokenData.charID, tokenData.src);
+                    Media.SetImgTemp(tokenID, _.omit(tokenData, "src"));
+                    Media.ToggleToken(tokenData.charID, tokenData.layer === "objects");
+                }
             }
     };
     // #endregion
@@ -2250,7 +2233,7 @@ const Session = (() => {
                     return false;
             }
             // OTHERWISE, only assign prompts if this is a GM call.
-            if (isGMCall) {
+            if (isGMCall)
             // if (Session.IsSessionActive || TimeTracker.ArePromptsOpen()) {
                 // FIRST: Look for prompts already assigned.
                 if (spotlightPrompt) {
@@ -2258,10 +2241,10 @@ const Session = (() => {
                     return spotlightPrompt;
                 } else {
                     let promptData;
-                    if (STATE.REF.SpotlightPrompts[initial].length) {
+                    if (STATE.REF.SpotlightPrompts[initial].length)
                         // If a prompt is being assigned by ID, assign that one.
                         if (assignByID) {
-                            promptData = D.PullOut(STATE.REF.SpotlightPrompts[initial], (v) => v.id === assignByID)
+                            promptData = D.PullOut(STATE.REF.SpotlightPrompts[initial], (v) => v.id === assignByID);
                             if (!promptData) {
                                 D.Alert(`Error: No prompt found for ${D.JS(D.GetName(initial))} with ID '${D.JS(assignByID)}'`, "assignSpotlightPrompt");
                                 return false;
@@ -2302,7 +2285,7 @@ const Session = (() => {
                                 }
                             }
                         }
-                    }
+
                     if (promptData) {
                         D.SetCharData(charRef, "spotlightPrompt", promptData);
                         DB({step: "Prompt Assigned. Recurring...", charData: D.JS(D.GetCharData(charRef))}, "assignSpotlightPrompt");
@@ -2329,7 +2312,7 @@ const Session = (() => {
                         );
                     }
                 }
-            } else if (!isSilent) {
+            else if (!isSilent)
                 if (TimeTracker.ArePromptsOpen()) {
                     D.Chat(
                         charRef,
@@ -2386,7 +2369,7 @@ const Session = (() => {
                         true
                     );
                 }
-            }
+
             DB(
                 {step: "Prompt Assignment FAILED", isSessionActive: Session.IsSessionActive, arePromptsAssignable: TimeTracker.ArePromptsOpen()},
                 "assignSpotlightPrompt"
@@ -2536,7 +2519,7 @@ const Session = (() => {
         const allLocations = getAllLocations();
         const activePositions = getActivePositions();
         const inactivePositions = Object.keys(getAllLocations(false)).filter((x) => !activePositions.includes(x));
-        const tokenObjs = Media.GetTokens();
+        const tokenObjs = Media.GetTokens().filter((x) => x.get("layer") !== "gmlayer");
         if (activePositions.includes("DistrictCenter") || locPos === "c") {
             Media.ToggleImg("DisableLocLeft", false);
             Media.ToggleImg("DisableLocRight", false);
@@ -2565,11 +2548,13 @@ const Session = (() => {
             for (const tokenObj of _.compact(
                 _.flatten(activePositions.map((x) => Media.GetContents(x, {padding: 25}, {layer: "walls", _subtype: "token"})))
             ))
-                Media.ToggleToken(tokenObj, true);
+                if (tokenObj.get("layer") !== "gmlayer")
+                    Media.ToggleToken(tokenObj, true);
             for (const tokenObj of _.compact(
                 _.flatten(inactivePositions.map((x) => Media.GetContents(x, {padding: 25}, {layer: "objects", _subtype: "token"})))
             ))
-                Media.ToggleToken(tokenObj, false);
+                if (tokenObj.get("layer") !== "gmlayer")
+                    Media.ToggleToken(tokenObj, false);
         }
         const [sitePos] = activePositions.filter((x) => x.startsWith("Site"));
         const siteName = sitePos in STATE.REF.curLocation && STATE.REF.curLocation[sitePos][1];

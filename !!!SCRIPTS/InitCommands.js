@@ -1,6 +1,7 @@
 void MarkStart("InitCommands");
 const InitCommands = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
+    const SKIPINITIALIZATION = false; // Set true to temporarily skip all initializations of scripts.
     const SCRIPTNAME = "InitCommands";
 
     // #region COMMON INITIALIZATION
@@ -22,28 +23,32 @@ const InitCommands = (() => {
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
-        D.Flag("Initializing API...");
-        const delayTime = Session.IsTesting ? 1 : 2000;
-        Listener.Lock();
-        setTimeout(() => {
-            D.Flag("... Fixing TimeTracker ...");
-            if (TimeTracker && TimeTracker.Fix)
-                TimeTracker.Fix(true);
+        if (!SKIPINITIALIZATION) {
+            D.Flag("Initializing API...");
+            const delayTime = Session.IsTesting ? 1 : 2000;
+            Listener.Lock();
             setTimeout(() => {
-                D.Flag("... Fixing Soundscape ...");
-                if (Soundscape && Soundscape.Sync)
-                    Soundscape.Sync();
+                D.Flag("... Fixing TimeTracker ...");
+                if (TimeTracker && TimeTracker.Fix)
+                    TimeTracker.Fix(true);
                 setTimeout(() => {
-                    D.Flag("... Fixing Character Displays ...");
-                    if (Char && Char.RefreshDisplays)
-                        Char.RefreshDisplays();
+                    D.Flag("... Fixing Soundscape ...");
+                    if (Soundscape && Soundscape.Sync)
+                        Soundscape.Sync();
                     setTimeout(() => {
-                        D.Flag("Initialization Complete!");
-                        Listener.Unlock();
+                        D.Flag("... Fixing Character Displays ...");
+                        if (Char && Char.RefreshDisplays)
+                            Char.RefreshDisplays();
+                        setTimeout(() => {
+                            D.Flag("Initialization Complete!");
+                            Listener.Unlock();
+                        }, delayTime);
                     }, delayTime);
                 }, delayTime);
             }, delayTime);
-        }, delayTime);
+        } else {
+            D.Flag("SKIPPING INITIALIZATION (SEE SCRIPT)");
+        }
     };
     // #endregion
 
@@ -59,7 +64,8 @@ const InitCommands = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     const preInitialization = () => {
-        Handouts.PreInitialize();
+        if (!SKIPINITIALIZATION)
+            Handouts.PreInitialize();
     };
 
     return {

@@ -3,8 +3,18 @@
     let APIROWID = null,
         ISOFFLINE = false,
         TEMPTHROTTLE = [];
-    const isDebug = true;
+    const SESSIONTIME = {
+        day: 0,
+        start: 19 * 60 + 30,
+        end: 22 * 60 + 30
+    };
     const LOGOPTIONS = {
+        get isDebugging() {
+            const curDate = new Date((new Date()).getTime());
+            const [day, hour, min] = [curDate.getDay(), curDate.getHours(), curDate.getMinutes()];
+            const dayMins = hour * 60 + min;
+            return !(day === SESSIONTIME.day && dayMins > (SESSIONTIME.start - 15) && dayMins < (SESSIONTIME.end + 120));
+        },
         isMuted: false
     };
     const ATTRIBUTES = {
@@ -405,17 +415,17 @@
     ];
     const humanityText = {
         mainText: [
-            "\tYou have become the Beast. Your last urges express themselves in a final Rötschreck called the wassail (see Losing the Last Drop, p. 241). A puppet of the Blood, you are a wight, under Storyteller control forever.",
-            "\tYou are only nominally sentient, a hair's breadth from giving into the Beast entirely, teetering precariously on the edge of oblivion.  Very little matters at all to you anymore, even your own desires beyond sustenance and rest. You might do anything at all, or nothing. Only a few tattered shreds of ego stand between you and complete devolution. You need no speech, no art, nothing but gibbers and splatters of dried gore.",
-            "\tNobody counts but you. Idiots try your patience; worms vie for your attention; mortal meat sacks get in your way and delay your feeding. Only servants and feeding stock exist, and everyone needs to decide which one they are before you decide for them. You fill your nights with twisted pleasures, decadent whims, perverse atrocities and callous murder. By now, every human and most Kindred recoil from your presence.",
-            "\tAt this level, cynical and jaded describes you on a good day. You callously step over anyone and anything, stopping only to indulge a new hobby for cruelty. You're a survivor who always take the safe route, the pragmatic route: kill witnesses and don’t risk trusting anyone you haven’t got your talons into somehow. Your mortal life is all but forgotten, and you genuinely look monstrous --- even under the most flattering light.",
-            "\tHey, some people gotta die. You have finally begun, even accepted, your inevitable slide into moral sloth and self-indulgence. Killing is more than fine:  Ask the elders, they’ve been around long enough to see whole genocides ignored. Destruction, theft, injury – these are all tools, not taboos. Physical changes become quite evident as “ashen pallor” shades more firmly into “corpse-like.”",
-            "\tYou’ve been around the block, and are as humane as a typical ancilla.  You’ve accepted pain and anguish, and are adapting to it as part of existence. You don’t care about most mortals one way or the other; after all, you’re never going to be mortal again, so why bother? You’re selfish, and you lie like its second nature. You may manifest some minor physical eeriness or malformation, such as an unnatural hue to the eyes.",
-            "\tHey, shit happens.  People die, stuff breaks, backs get stabbed. You have little difficulty with the fact that you need blood to survive and that you do what needs to be done to get it. Virtues are starting to feel like anchors: You might not go out of your way to wreck things or kill people, but you don’t cry bloody tears over it either. You're not automatically horrid, but you're not about to win any prizes for congeniality either.",
-            "\tYou can usually manage to pass for a human, as your moral code is on par with that of the average mortal.  You subscribe to typical social mores - sure, sin is wrong, but dodging taxes and speed limits are not sins. You feel some connection to other beings, even human beings, though more than a little selfishness shines through – just like everyone else in the world, whether they're mortal or not.",
-            "\tYou still feel pain for the hurts you and your kind inflict. Your human guise remains passable: either your memories remain fresh, or new instincts for community spring up like green shoots from your long-dead soul.  Something inside you still pines for the sunlight and for the mortal life you knew: only by losing them both did you come to realize just how much you took for granted.",
-            "\tYou act more humanely than most humans, and fit in naturally among the kine.  You think and act much as they do: Killing feels horrible, almost as gut-wrenchingly so as the Hunger in full cry.  You likely hold to codes more rigorous than you ever held in life, as a defense against becoming a predator.  Elder kindred scoff at your lofty behavior, either out of callous disdain or to muffle their own regrets.",
-            "\tRare even among the living, this degree of humanity is all but unheard of among vampires.  You lead a saintly, veritably ascetic life, one that you must tightly control with principles and codes of ethics painstakingly assembled and rigidly adhered to: The merest selfish deed or thought is enough to topple you from this state of grace.  You didn't get here by accident, and may even be in pursuit of the mythical state of Golconda."
+            "You have become your Beast.\n\nYour last urges express themselves in a final frenzy of unchecked, monstrous abandon (see Losing the Last Drop, p. 241).  You are a wight, a puppet of the Blood, under Storyteller control forever.",
+            "You are only nominally sentient, a hair's breadth from giving into the Beast entirely, teetering precariously on the edge of oblivion.  Very little matters at all to you anymore, even your own desires beyond sustenance and rest. You might do anything at all, or nothing. Only a few tattered shreds of ego stand between you and complete devolution. You need no speech, no art, nothing but gibbers and splatters of dried gore.",
+            "Nobody counts but you. Idiots try your patience; worms vie for your attention; mortal meat sacks get in your way and delay your feeding. Only servants and feeding stock exist, and everyone needs to decide which one they are before you decide for them. You fill your nights with twisted pleasures, decadent whims, perverse atrocities and callous murder. By now, every human and most Kindred recoil from your presence.",
+            "At this level, cynical and jaded describes you on a good day. You callously step over anyone and anything, stopping only to indulge a new hobby for cruelty. You're a survivor who always take the safe route, the pragmatic route: kill witnesses and don’t risk trusting anyone you haven’t got your talons into somehow. Your mortal life is all but forgotten, and you genuinely look monstrous—even under the most flattering light.",
+            "Hey, some people gotta die. You have finally begun, even accepted, your inevitable slide into moral sloth and self-indulgence. Killing is more than fine:  Ask the elders, they’ve been around long enough to see whole genocides ignored. Destruction, theft, injury—these are all tools, not taboos. Physical changes become quite evident as \"ashen pallor\" shades more firmly into \"corpse-like.\"",
+            "You’ve been around the block, and are as humane as a typical ancilla.  You’ve accepted pain and anguish, and are adapting to it as part of existence. You don’t care about most mortals one way or the other; after all, you’re never going to be mortal again, so why bother? You’re selfish, and you lie like its second nature. You may manifest some minor physical eeriness or malformation, such as an unnatural hue to the eyes.",
+            "Hey, shit happens.  People die, stuff breaks, backs get stabbed. You have little difficulty with the fact that you need blood to survive and that you do what needs to be done to get it. Virtues are starting to feel like anchors: You might not go out of your way to wreck things or kill people, but you don’t cry bloody tears over it either. You're not automatically horrid, but you're not about to win any prizes for congeniality either.",
+            "You can usually manage to pass for a human, as your moral code is on par with that of the average mortal.  You subscribe to typical social mores—sure, sin is wrong, but dodging taxes and speed limits are not sins. You feel some connection to other beings, even human beings, though more than a little selfishness shines through—just like everyone else in the world, whether they're mortal or not.",
+            "You still feel pain for the hurts you and your kind inflict. Your human guise remains passable: either your memories remain fresh, or new instincts for community spring up like green shoots from your long-dead soul.  Something inside you still pines for the sunlight and for the mortal life you knew: only by losing them both did you come to realize just how much you took for granted.",
+            "You act more humanely than most humans, and fit in naturally among the kine.  You think and act much as they do: Killing feels horrible, almost as gut-wrenchingly so as the Hunger in full cry.  You likely hold to codes more rigorous than you ever held in life, as a defense against becoming a predator.  Elder kindred scoff at your lofty behavior, either out of callous disdain or to muffle their own regrets.",
+            "Rare even among the living, this degree of humanity is all but unheard of among vampires.  You lead a saintly, veritably ascetic life, one that you must tightly control with principles and codes of ethics painstakingly assembled and rigidly adhered to: The merest selfish deed or thought is enough to topple you from this state of grace.  You didn't get here by accident, and may even be in pursuit of the mythical state of Golconda."
         ],
         bulletText: {
             neg: [
@@ -524,7 +534,7 @@
             ]
         },
         torporText: [
-            [],
+            ["GAME OVER"],
             ["Minimum Torpor Length: Five Hundred Years"],
             ["Minimum Torpor Length: One Hundred Years"],
             ["Minimum Torpor Length: Fifty Years"],
@@ -1052,14 +1062,12 @@
     const ATTRDISPNAMES = _.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS]);
     // #endregion
 
-    const isDebugging = true;
-
     // #region UTILITY: Debugging Decorator, Logging, Checks & String Formatting
 
     const log = (msg, titles, isWarn, isLoud) => {
-        if (isDebugging && !LOGOPTIONS.isMuted) {
+        if (LOGOPTIONS.isDebugging && !LOGOPTIONS.isMuted) {
             const logTitle = LOGOPTIONS.silent ? `  ([${_.compact([titles]).join(":")}])` : `[${_.compact([titles]).join(":")}]`;
-            if (isDebug && (isLoud || !LOGOPTIONS.silent))
+            if (isLoud || !LOGOPTIONS.silent)
                 console[isWarn ? "warn" : "log"]([logTitle, msg].join(" "));
         }
     };
@@ -1185,13 +1193,17 @@
     const sFuncs = (sec, attrs) => {
         if (attrs)
             return [
-                `repeating_${sec}`,
-                (v) => `repeating_${sec}_${v}`,
-                (v) => attrs[`repeating_${sec}_${v}`],
-                (v) => parseInt(attrs[`repeating_${sec}_${v}`] || 0)
+                `repeating_${sec}`, // prefix
+                (v) => `repeating_${sec}_${v}`, // p(x): full stat name
+                (v) => attrs[`repeating_${sec}_${v}`], // pV(x): basic ATTRS lookup
+                (v) => parseInt(attrs[`repeating_${sec}_${v}`] || 0), // pI(x): integer ATTRS lookup
+                (v) => parseFloat(attrs[`repeating_${sec}_${v}`] || 0) // pF(x): float ATTRS lookup
             ];
         else
-            return [`repeating_${sec}`, (v) => `repeating_${sec}_${v}`];
+            return [
+                `repeating_${sec}`, // prefix
+                (v) => `repeating_${sec}_${v}` // p(x): full stat name
+            ];
     };
     const simpleRepAttrs = (ATTRS) => {
         const newAttrs = {};
@@ -1695,6 +1707,7 @@
                             // humanity, hum_details, hum_posbullets_toggle, hum_posbullets, neutralbullets, negbullets
                             log(`... humText: ${JSON.stringify(humanityText.mainText)}`);
                             log(`... humDetails (humText[${JSON.stringify(humanity)}]): ${JSON.stringify(humanityText.mainText[humanity])}`);
+                            attrList.hum_title = `Humanity ${humanity}`;
                             attrList.hum_details = humanityText.mainText[humanity];
                             for (const bulletType of ["pos", "neutral", "neg"]) {
                                 log(`... ${bulletType}: : ${JSON.stringify(humanityText.bulletText[bulletType][humanity])}`);
@@ -1929,7 +1942,7 @@
         log("", `████ ${funcName.toUpperCase()} CALLED ████`);
         getAttrs(attrArray, (ATTRS) => {
             const [, p, , pI] = sFuncs("project", ATTRS);
-            let teamwork = [0, 0];
+            let teamwork = 0;
             log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName);
             _.each(
                 _.map([1, 2, 3], (v) => `projectteamwork${v}`),
@@ -2586,7 +2599,7 @@
                         ))
                     );
                     // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
-                            
+
                     //         ... mapped to: ${JSON.stringify(repAttrs)}`);
                     getRepAttrs(repSecs.shift());
                 });
@@ -2856,26 +2869,27 @@
                         ))
                     );
                     // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
-                    
+
                     // ... mapped to: ${JSON.stringify(repAttrs)}`);
                     getRepAttrs(repSecs.shift());
                 });
             else
                 getAttrs(["domaincontrolbenefits", ..._.flatten(repAttrs)], (ATTRS) => {
-                    log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
+                    log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, "DCB");
                     const filteredAttrs = _.pick(ATTRS, (v, k) => k.includes("level"));
                     const domainBenefits = [];
                     for (const levelTrait of Object.keys(filteredAttrs)) {
                         const [, p, pV, pI] = pFuncs(ATTRS, levelTrait);
                         const district = pV("district");
-                        const level = pI("level") - 1;
-                        if (district && level <= 3)
-                            domainBenefits.push(DOMAINCONTROL[district][level] || false);
+                        const level = pV("level") ? pI("level") : 0;
+                        if (district && level && level <= 3)
+                            domainBenefits.push(DOMAINCONTROL[district][level - 1] || false);
                     }
                     if (_.compact(domainBenefits).length)
                         attrList.domaincontrolbenefits = _.compact(domainBenefits).join(", ");
                     else
                         attrList.domaincontrolbenefits = " ";
+                    log(`SETTING ATTRS: ${JSON.stringify(attrList)}`, "DCB");
                     setAttrs(attrList);
                 });
         };
@@ -2896,7 +2910,7 @@
                         ))
                     );
                     // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
-                            
+
                     //         ... mapped to: ${JSON.stringify(repAttrs)}`);
                     getRepAttrs(repSecs.shift());
                 });
@@ -3044,7 +3058,7 @@
                         ))
                     );
                     // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
-                        
+
                     //     ... mapped to: ${JSON.stringify(repAttrs)}`);
                     getRepAttrs(repSecs.shift());
                 });

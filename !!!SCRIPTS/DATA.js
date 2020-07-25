@@ -100,9 +100,7 @@ const D = (() => {
                 STATE.REF.SessionNotes[Session.SessionNum] = STATE.REF.SessionNotes[Session.SessionNum] || {};
                 STATE.REF.SessionNotes[Session.SessionNum][noteCategory] = STATE.REF.SessionNotes[Session.SessionNum][noteCategory] || [];
                 STATE.REF.SessionNotes[Session.SessionNum][noteCategory].push({
-                    time: (new Date()).getTime() - 1000 * 60 * 60 * 4,
-                    normalString: (new Date()).toString(),
-                    localeString: (new Date()).toLocaleString("en-US", {timezone: "America/New_York"}),
+                    time: TimeTracker.GetRealDate(),
                     content: _.escape(noteString)
                 });
                 break;
@@ -820,20 +818,6 @@ const D = (() => {
                 .replace(/ /gu, "&nbsp;")
         );
     };
-
-    // const objJSON = `{"name":{"name":{"name":"marquee_lines_toggle","current":3,"max":"","_id":"-LU7dsbJVozvZe11IriX","_type":"attribute","_characterid":"-Lt3NXv8ES_NsYiwvYW8"},"current":3,"max":"","_id":"-LU7dsbJVozvZe11IriX","_type":"attribute","_characterid":"-Lt3NXv8ES_NsYiwvYW8"},"current":3,"max":"","_id":"-LU7dsbJVozvZe11IriX","_type":"attribute","_characterid":"-Lt3NXv8ES_NsYiwvYW8"}`
-    // const objTest = JSON.parse(objJSON);
-    // // const objTest = {
-    // //     A: [["Resources", 0, 3]],
-    // //     L: [["Resources", 0, 5]],
-    // //     B: [
-    // //         ["Resources", 0, 4],
-    // //         ['Herd ("Employees")', 0, 5]
-    // //     ],
-    // //     N: [["Herd (Mobile Clinic)", 0, 2]]
-    // // };
-
-    // console.log(jStrX(objTest));
     const pTimeInMS = (timeRef, minForSecs = 60) => { // Converts timeRef to number, multiplies by 1000 if less than minForSecs
         timeRef = D.Float(timeRef, 3);
         return timeRef * (timeRef <= minForSecs ? 1000 : 1);
@@ -895,6 +879,14 @@ const D = (() => {
         while (num < minVal)
             num += maxVal - minVal;
         return num;
+    };
+    const padNum = (num, numDigitsLeft, numDigitsRight) => {
+        let [leftDigits, rightDigits] = `${num}`.split(".");
+        leftDigits = `${"0".repeat(Math.max(0, numDigitsLeft - leftDigits.length))}${leftDigits}`;
+        rightDigits = VAL({number: rightDigits}) ? rightDigits : "";
+        if (VAL({number: numDigitsRight}))
+            rightDigits = `.${rightDigits}${"0".repeat(Math.max(0, numDigitsRight - rightDigits.length))}`;
+        return `${leftDigits}${rightDigits}`;
     };
     const pLowerCase = (strRef) => `${strRef || ""}`.toLowerCase();
     const pUpperCase = (strRef) => `${strRef || ""}`.toUpperCase();
@@ -1374,9 +1366,8 @@ const D = (() => {
             printSessionNotes(sessionNum - 1);
             delete STATE.REF.SessionNotes[sessionNum - 1];
         }
-        if (sessionNum in STATE.REF.SessionNotes) {
-            
-            const sessNotes = kvpMap(STATE.REF.SessionNotes[sessionNum], null, (v) => _.sortBy(v, (vv) => vv.time).map((x) => `[${TimeTracker.FormatTime(new Date(new Date(x.time).toLocaleString("en-US", {timezone: "America/New_York"})), false)}] ${x.content}<br>`));
+        if (sessionNum in STATE.REF.SessionNotes) {            
+            const sessNotes = kvpMap(STATE.REF.SessionNotes[sessionNum], null, (v) => _.sortBy(v, (vv) => vv.time).map((x) => `[${TimeTracker.FormatTime(TimeTracker.GetRealDate(x.time))}] ${x.content}<br>`));
             const sessStrings = [...sessNotes.general, "<br>"];
             for (const [cat, notes] of Object.entries(_.omit(sessNotes, "general")))
                 sessStrings.push(...[
@@ -3139,6 +3130,7 @@ const D = (() => {
         Round: roundSig,
         Bound: boundNum,
         Cycle: cycleNum,
+        Pad: padNum,
         NumToText: numToText,
         TextToNum: textToNum,
         Ordinal: ordinal,

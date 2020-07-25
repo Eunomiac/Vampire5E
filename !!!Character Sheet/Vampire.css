@@ -1,17 +1,14 @@
-﻿@import url('https://fonts.googleapis.com/css?family=Berkshire+Swash|IM+Fell+English+SC|Cinzel:wght@400;700;900|Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700|Marcellus+SC|Oswald:wght@200;300;400;500;600;700|Smythe|Voltaire&display=swap');
-
+﻿@import url('https://fonts.googleapis.com/css?family=Alice|Bebas+Neue|Big+Shoulders+Text|DM+Serif+Text|Della+Respira|Jacques+Francois|Poly|Vidaloka|Berkshire+Swash|IM+Fell+English+SC|Cinzel:wght@400;700;900|Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700|Marcellus+SC|Oswald:wght@200;300;400;500;600;700|Smythe|Voltaire&display=swap');
 
 /* #region FONT STORAGE */
+	/* #region BODY FONTS */
 		/*
-		font-family: 'Cinzel';
+		font-family: 'Alice';
 		font-style: normal;
-		font-variant: none;
 		font-variant: small-caps;
-		font-weight: 400;
-		font-weight: 700;
-		font-weight: 900;
-		font-size: 28px;
-		*/
+		font-variant: none;
+		font-weight: normal;
+		*/			
 		/*
 		font-family: 'Cormorant Garamond';
 		font-variant: small-caps;
@@ -23,67 +20,51 @@
 		font-weight: 700; 
 		font-style: italic;
 		font-style: normal;
-		font-size: 28px;
-		*/
+		*/	
 		/*
-		font-family: 'Marcellus SC';
+		font-family: 'Della Respira';
 		font-style: normal;
+		font-variant: small-caps;
 		font-variant: none;
 		font-weight: normal;
-		transform: scale(0.8, 1);
-		width: 120%;
-		margin-left: -12%;
-		line-height: 37px;
 		*/
+		/*
+		font-family: 'DM Serif Text';
+		font-style: normal;
+		font-variant: small-caps;
+		font-variant: none;
+		font-weight: normal;
+		*/
+		/*
+		font-family: 'Jacques Francois';
+		font-style: normal;
+		font-variant: small-caps;
+		font-variant: none;
+		font-weight: normal;
+		*/
+		/*
+		font-family: 'Poly';
+		font-style: normal;
+		font-variant: small-caps;
+		font-variant: none;
+		font-weight: normal;
+		*/
+		/*
+		font-family: 'Vidaloka';
+		font-style: normal;
+		font-variant: small-caps;
+		font-variant: none;
+		font-weight: normal;
+		*/			
 		/*
 		font-family: 'Voltaire';
 		font-style: normal;
 		font-variant: small-caps;
 		font-variant: none;
 		font-weight: normal;
-		font-size: 28px;
 		*/
-		/*
-		font-family: 'Berkshire Swash';
-		font-style: normal;
-		font-variant: small-caps;
-		font-variant: none;
-		font-weight: normal;
-		font-size: 28px;
-		*/
-		/*
-		font-family: 'IM Fell DW Pica SC';
-		font-style: normal;
-		font-variant: none;
-		font-weight: normal;
-		font-size: 28px;
-		*/
-		/*
-		font-family: 'IM Fell English SC';
-		font-style: normal;
-		font-variant: none;
-		font-variant: small-caps;
-		font-weight: normal;
-		font-size: 28px;
-		*/
-		/*
-		font-family: 'Pirata One';
-		font-style: normal;
-		font-variant: small-caps;
-		font-variant: none;
-		font-weight: normal;
-		font-size: 28px;
-		*/
-		/*
-		font-family: 'Uncial Antiqua';
-		font-style: normal;
-		font-variant: small-caps;
-		font-variant: none;
-		font-weight: normal;
-		font-size: 22px;
-		*/
-
-		
+	/* #endregion */
+	/* #region CONDENSED/NARROW FONTS */	
 		/*
 		font-family: 'Oswald';
 		font-style: normal;
@@ -95,23 +76,27 @@
 		font-weight: 500;
 		font-weight: 600;
 		font-weight: normal;
-		font-size: 24px;
 		*/
 		/*
-		font-family: 'Smythe';
+		font-family: 'Bebas Neue';
 		font-style: normal;
 		font-variant: small-caps;
 		font-variant: none;
 		font-weight: normal;
-		font-size: 30px;
-		*/
+		*/			
+		/*
+		font-family: 'Big Shoulders Text';
+		font-style: normal;
+		font-variant: small-caps;
+		font-variant: none;
+		font-weight: normal;
+		*/	
 		/*
 		font-family: 'Medula One';
 		font-style: normal;
 		font-variant: small-caps;
 		font-variant: none;
 		font-weight: normal;
-		font-size: 32px;
 		*/
 		/*
 		font-family: 'Tulpen One';
@@ -119,8 +104,56 @@
 		font-variant: small-caps;
 		font-variant: none;
 		font-weight: normal;
-		font-size: 28px;
 		*/
+	/* #endregion */
+	/* #region DISPLAY/HEADER FONTS */
+		/*
+		font-family: 'Cinzel';
+		font-style: normal;
+		font-variant: none;
+		font-variant: small-caps;
+		font-weight: 400;
+		font-weight: 700;
+		font-weight: 900;
+		*/
+		/*
+		font-family: 'Marcellus SC';
+		font-style: normal;
+		font-variant: none;
+		font-weight: normal;
+		transform: scale(0.8, 1);
+		width: 120%;
+		margin-left: -12%;
+		*/
+		/*
+		font-family: 'Voltaire';
+		font-style: normal;
+		font-variant: small-caps;
+		font-variant: none;
+		font-weight: normal;
+		*/
+		/*
+		font-family: 'Berkshire Swash';
+		font-style: normal;
+		font-variant: small-caps;
+		font-variant: none;
+		font-weight: normal;
+		*/
+		/*
+		font-family: 'IM Fell English SC';
+		font-style: normal;
+		font-variant: none;
+		font-variant: small-caps;
+		font-weight: normal;
+		*/		
+		/*
+		font-family: 'Smythe';
+		font-style: normal;
+		font-variant: small-caps;
+		font-variant: none;
+		font-weight: normal;
+		*/		
+	/* #endregion */
 /* #endregion */
 
 /* #region VARIABLES */
@@ -250,15 +283,10 @@
 		text-align-last: left;
 		text-indent: 0px;
 
-		font-variant: normal;
-		font-weight: normal !important;
-
-		text-shadow: none !important;
-
-		font-size: 12px !important;
-		font-family: 'Voltaire';
-
 		pointer-events: all;
+		
+		font-size: 12px;
+		font-family: 'Vidaloka';
 	}
 
 	.charsheet button[class^="sheet"] {
@@ -292,7 +320,12 @@
 		margin-left: -1px;
 	}
 
-	.charsheet .sheet-header1,.charsheet .sheet-header2,.charsheet input.sheet-header2,.charsheet .sheet-header3,.charsheet .sheet-header4,.charsheet .sheet-header5 {
+	.charsheet .sheet-header1,
+	.charsheet .sheet-header2,
+	.charsheet input.sheet-header2,
+	.charsheet .sheet-header3,
+	.charsheet .sheet-header4,
+	.charsheet .sheet-header5 {
 		display: inline-block;
 		text-align: center;
 		text-align-last: center;
@@ -319,19 +352,15 @@
 
 		display: block;
 
-		/* color: rgba(255, 255, 255, 0.5); */
 		font-variant: normal;
 	}
 
 	.charsheet .sheet-header4 {
 		margin-top: 5px;
-		/* color: rgba(255, 255, 255, 0.5); */
 	}
 
 	.charsheet .sheet-header5 {
-		/* color: rgba(255, 255, 255, 0.5); */
-
-		font-size: 16px !important;
+		font-size: 16px;
 	}
 
 	.charsheet .sheet-insetBox {
@@ -366,7 +395,11 @@
 	.charsheet .sheet-normal {
 		font-weight: normal !important;
 	}
-
+	.charsheet .sheet-darkredtext {
+		color: #800 !important;
+		font-family: 'Oswald' !important;
+		text-shadow: var(--engravedTextShadow) !important;
+	}
 	.charsheet .sheet-littlenote {
 		width: 130%;
 		height: 22px;
@@ -382,6 +415,9 @@
 		font-weight: normal;
 
 		/* text-shadow: none; */
+	}
+	.charsheet .sheet-cinzel {
+		font-family: "Cinzel" !important;
 	}
 
 	.charsheet .sheet-darkText {
@@ -505,11 +541,14 @@
 
 /* 		#endregion */
 /*		#region Navigation Bar & Page Control */
-	.charsheet input.sheet-tab0:not(:checked) ~ .sheet-settings,.charsheet input.sheet-tab0:not(:checked) ~ .sheet-settings + span {
+	.charsheet input.sheet-tab0:not(:checked) ~ .sheet-settings,
+	.charsheet input.sheet-tab0:not(:checked) ~ .sheet-settings + span {
 		display: none !important;
 	}
 
-	.charsheet div.sheet-pagecontainer:not(.sheet-marquee),.charsheet div.sheet-diceroller:not(:checked),.charsheet div.sheet-npcblock {
+	.charsheet div.sheet-pagecontainer:not(.sheet-marquee),
+	.charsheet div.sheet-diceroller:not(:checked),
+	.charsheet div.sheet-npcblock {
 		display: none;
 	}
 
@@ -534,11 +573,20 @@
 		background-size: 100%;
 	}
 
-	.charsheet input.sheet-tab1:checked ~ div.sheet-section-1,.charsheet input.sheet-tab1:checked ~ div.sheet-marquee,.charsheet input.sheet-tab1:checked ~ div.sheet-diceroller,.charsheet input.sheet-tab2:checked ~ div.sheet-section-2,.charsheet input.sheet-tab3:checked ~ div.sheet-section-3,.charsheet input.sheet-tab4:checked ~ div.sheet-section-4,.charsheet input.sheet-tab5:checked ~ div.sheet-section-5,.charsheet input.sheet-tab6:checked ~ div.sheet-section-6,.charsheet input.sheet-tab9:checked ~ div[class^="sheet-pagecontainer sheet-section"] {
+	.charsheet input.sheet-tab1:checked ~ div.sheet-section-1,
+	.charsheet input.sheet-tab1:checked ~ div.sheet-marquee,
+	.charsheet input.sheet-tab1:checked ~ div.sheet-diceroller,
+	.charsheet input.sheet-tab2:checked ~ div.sheet-section-2,
+	.charsheet input.sheet-tab3:checked ~ div.sheet-section-3,
+	.charsheet input.sheet-tab4:checked ~ div.sheet-section-4,
+	.charsheet input.sheet-tab5:checked ~ div.sheet-section-5,
+	.charsheet input.sheet-tab6:checked ~ div.sheet-section-6,
+	.charsheet input.sheet-tab9:checked ~ div[class^="sheet-pagecontainer sheet-section"] {
 		display: block;
 	}
 
-	.charsheet input.sheet-tab,.charsheet input.sheet-tab + span {
+	.charsheet input.sheet-tab,
+	.charsheet input.sheet-tab + span {
 		height: 46px;
 		width: 137px;
 		position: relative;
@@ -558,12 +606,14 @@
 		margin-left: -137px;
 	}
 
-	.charsheet input.sheet-blanktab,.charsheet input.sheet-blanktab + span {
+	.charsheet input.sheet-blanktab,
+	.charsheet input.sheet-blanktab + span {
 		pointer-events: none;
 		display: none;
 	}
 
-	.charsheet input.sheet-tab0,.charsheet input.sheet-tab0 + span {
+	.charsheet input.sheet-tab0,
+	.charsheet input.sheet-tab0 + span {
 		width: 30px;
 		top: 10px;
 		left: 10px;
@@ -646,7 +696,8 @@
 		opacity: 0;
 	}
 
-	.charsheet input.sheet-attr:not(.sheet-grouptab) + span:not(.sheet-nohighlight):not(.sheet-archive),.charsheet input.sheet-attr:not(.sheet-grouptab) + div.sheet-attr {
+	.charsheet input.sheet-attr:not(.sheet-grouptab) + span:not(.sheet-nohighlight):not(.sheet-archive),
+	.charsheet input.sheet-attr:not(.sheet-grouptab) + div.sheet-attr {
 		width: 75px;
 		height: 17px;
 		margin-left: -75px;
@@ -655,7 +706,11 @@
 		vertical-align: bottom;
 	}
 
-	.charsheet input.sheet-attr:not(:checked):hover + span:not(.sheet-nohighlight),.charsheet input.sheet-attr:not(:checked):hover + div.sheet-attr,.charsheet input.sheet-attr:not(:checked):hover + input[type="text"],.charsheet input.sheet-attr:not(:checked):hover + select,.charsheet input.sheet-attr:not(:checked):hover + textarea {
+	.charsheet input.sheet-attr:not(:checked):hover + span:not(.sheet-nohighlight),
+	.charsheet input.sheet-attr:not(:checked):hover + div.sheet-attr,
+	.charsheet input.sheet-attr:not(:checked):hover + input[type="text"],
+	.charsheet input.sheet-attr:not(:checked):hover + select,
+	.charsheet input.sheet-attr:not(:checked):hover + textarea {
 		color: var(--engravedTextHoverColor) !important;
 		text-shadow: var(--engravedTextHoverShadow) !important;
 	}
@@ -703,11 +758,15 @@
 		display: inline-block;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-highdot,.charsheet div.sheet-dotline input.sheet-nulldot,.charsheet div.sheet-dotline input.sheet-bonusdot {
+	.charsheet div.sheet-dotline input.sheet-highdot,
+	.charsheet div.sheet-dotline input.sheet-nulldot,
+	.charsheet div.sheet-dotline input.sheet-bonusdot {
 		pointer-events: none;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-dot + span::before,.charsheet div.sheet-dotline input.sheet-nulldot + span::before,.charsheet div.sheet-dotline input.sheet-bonusdot + span::before {
+	.charsheet div.sheet-dotline input.sheet-dot + span::before,
+	.charsheet div.sheet-dotline input.sheet-nulldot + span::before,
+	.charsheet div.sheet-dotline input.sheet-bonusdot + span::before {
 		display: block;
 		height: 12px;
 		width: 12px;
@@ -825,12 +884,16 @@
 		opacity: 0;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-nulldot:checked + span,.charsheet div.sheet-dotline input.sheet-nulldot:checked + span::before,
-	.charsheet div.sheet-dotline input.sheet-bonusdot:checked + span,.charsheet div.sheet-dotline input.sheet-bonusdot:checked + span::before {
+	.charsheet div.sheet-dotline input.sheet-nulldot:checked + span,
+	.charsheet div.sheet-dotline input.sheet-nulldot:checked + span::before,
+	.charsheet div.sheet-dotline input.sheet-bonusdot:checked + span,
+	.charsheet div.sheet-dotline input.sheet-bonusdot:checked + span::before {
 		opacity: 1;
 	}
 
-	.charsheet div:not(.sheet-titleblock) > div.sheet-dotline input.sheet-highdot:nth-last-of-type(5n),.charsheet div:not(.sheet-titleblock) > div.sheet-dotline input.sheet-nulldot:nth-last-of-type(5n),.charsheet div:not(.sheet-titleblock) > div.sheet-dotline input.sheet-bonusdot:nth-last-of-type(5n) {
+	.charsheet div:not(.sheet-titleblock) > div.sheet-dotline input.sheet-highdot:nth-last-of-type(5n),
+	.charsheet div:not(.sheet-titleblock) > div.sheet-dotline input.sheet-nulldot:nth-last-of-type(5n),
+	.charsheet div:not(.sheet-titleblock) > div.sheet-dotline input.sheet-bonusdot:nth-last-of-type(5n) {
 		margin-left: -80px;
 	}
 
@@ -853,7 +916,9 @@
 		width: 200px;
 	}
 
-	.charsheet input.sheet-containertoggle,.charsheet input.sheet-containerselector,.charsheet input.sheet-containeractivator {
+	.charsheet input.sheet-containertoggle,
+	.charsheet input.sheet-containerselector,
+	.charsheet input.sheet-containeractivator {
 		display: none;
 	}
 
@@ -866,11 +931,13 @@
 			display: none;
 	}
 
-	.charsheet input.sheet-containertoggle:checked ~ input.sheet-containertoggle:not(:checked) + div,.charsheet input.sheet-containertoggle:checked ~ input.sheet-containertoggle:not(:checked) + span {
+	.charsheet input.sheet-containertoggle:checked ~ input.sheet-containertoggle:not(:checked) + div,
+	.charsheet input.sheet-containertoggle:checked ~ input.sheet-containertoggle:not(:checked) + span {
 		display: none !important;
 	}
 
-	.charsheet input.sheet-containerselector:not(:checked) + div,.charsheet input.sheet-containerselector:not(:checked) + span {
+	.charsheet input.sheet-containerselector:not(:checked) + div,
+	.charsheet input.sheet-containerselector:not(:checked) + span {
 		display: none !important;
 	}
 
@@ -897,7 +964,9 @@
 
 	}
 
-	.charsheet div.sheet-dotline div.sheet-multidot input,.charsheet div.sheet-dotline div.sheet-multidot span,.charsheet div.sheet-dotline div.sheet-multidot:not(.sheet-oneclicker) input:checked ~ input + span::before {
+	.charsheet div.sheet-dotline div.sheet-multidot input,
+	.charsheet div.sheet-dotline div.sheet-multidot span,
+	.charsheet div.sheet-dotline div.sheet-multidot:not(.sheet-oneclicker) input:checked ~ input + span::before {
 		height: 100%;
 		width: 100%;
 		display: none;
@@ -948,13 +1017,20 @@
 		z-index: 101;
 	}
 
-	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-whitedot:checked ~ input.sheet-superficialdot,.charsheet div.sheet-dotline div.sheet-multidot input.sheet-superficialdot:checked ~ input.sheet-aggravateddot,.charsheet div.sheet-dotline div.sheet-multidot input.sheet-aggravateddot:checked ~ input.sheet-finaldot {
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-whitedot:checked ~ input.sheet-superficialdot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-superficialdot:checked ~ input.sheet-aggravateddot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-aggravateddot:checked ~ input.sheet-finaldot {
 		margin-left: -100% !important;
 		display: inline-block !important;
 		z-index: 102;
 	}
 
-	.charsheet div.sheet-dotline div.sheet-multidot:not(.sheet-oneclicker) input.sheet-whitedot:checked ~ span.sheet-whitedot,.charsheet div.sheet-dotline div.sheet-multidot input.sheet-superficialdot:checked ~ span.sheet-superficialdot,.charsheet div.sheet-dotline div.sheet-multidot input.sheet-aggravateddot:checked ~ span.sheet-aggravateddot,.charsheet div.sheet-dotline div.sheet-multidot input.sheet-nulldot:checked ~ span.sheet-nulldot,.charsheet div.sheet-dotline div.sheet-multidot input.sheet-bonusdot:checked ~ span.sheet-bonusdot,.charsheet div.sheet-dotline div.sheet-multidot input.sheet-finaldot:checked ~ span.sheet-finaldot {
+	.charsheet div.sheet-dotline div.sheet-multidot:not(.sheet-oneclicker) input.sheet-whitedot:checked ~ span.sheet-whitedot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-superficialdot:checked ~ span.sheet-superficialdot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-aggravateddot:checked ~ span.sheet-aggravateddot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-nulldot:checked ~ span.sheet-nulldot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-bonusdot:checked ~ span.sheet-bonusdot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-finaldot:checked ~ span.sheet-finaldot {
 		display: inline-block !important;
 	}
 
@@ -968,7 +1044,10 @@
 		pointer-events: none !important;
 	}
 
-	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-noclick.sheet-whitedot:checked ~ span.sheet-whitedot,.charsheet div.sheet-dotline div.sheet-multidot input.sheet-humanitydot:checked ~ span.sheet-humanitydot,.charsheet div.sheet-dotline div.sheet-multidot input.sheet-staindot:checked ~ span.sheet-staindot,.charsheet div.sheet-dotline div.sheet-multidot input.sheet-stainhumanitydot:checked ~ span.sheet-stainhumanitydot {
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-noclick.sheet-whitedot:checked ~ span.sheet-whitedot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-humanitydot:checked ~ span.sheet-humanitydot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-staindot:checked ~ span.sheet-staindot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-stainhumanitydot:checked ~ span.sheet-stainhumanitydot {
 		display: inline-block !important;
 	}
 
@@ -1029,7 +1108,9 @@
 
 /* 		#endregion */
 /* 		#region Collapsible & Pop-Up Divs */
-	.charsheet input.sheet-hoverpopup,.charsheet input.sheet-hoverpopup + span,.charsheet input.sheet-hoverpopup + span::before {
+	.charsheet input.sheet-hoverpopup,
+	.charsheet input.sheet-hoverpopup + span,
+	.charsheet input.sheet-hoverpopup + span::before {
 		height: 20px;
 		width: 20px;
 
@@ -1074,7 +1155,7 @@
 	.charsheet input.sheet-hoverpopup + span + div {
 		left: calc((-10%)/2);
 		bottom: 30px;
-		height: 190px !important;
+		height: 190px;
 		width: 150%;
 
 		display: none;
@@ -1091,16 +1172,15 @@
 		border-radius: 15px;
 	}
 
-	.charsheet input.sheet-hoverpopup + span + div div input[type="text"],.charsheet input.sheet-hoverpopup + span + div div textarea,.charsheet input.sheet-hoverpopup + span + div div select .charsheet input.sheet-hoverpopup + span + div div span {
-		color: white !important;
-
-		text-shadow: -1px -1px 0px #000, -1px -1px 0px #222, -1px -1px 2px #333, 1px 1px 0px #777, 1px 1px 0px #777, 1px 1px 0px #666;
+	.charsheet input.sheet-hoverpopup + span + div div input[type="text"],
+	.charsheet input.sheet-hoverpopup + span + div div textarea,
+	.charsheet input.sheet-hoverpopup + span + div div select .charsheet input.sheet-hoverpopup + span + div div span {
+		color: var(--onBlackTextColor);	
+		text-shadow: var(--onBlackTextShadow);
 	}
 
-
-
 	.charsheet input.sheet-hoverpopup + span + div div .sheet-header2 {
-		color: red !important;
+		color: red;
 	}
 
 	.charsheet input.sheet-hoverpopup + span + div + div {
@@ -1108,7 +1188,9 @@
 		width: calc(100% - 20px);
 	}
 
-	.charsheet input.sheet-hoverpopup + span + div + div > input[type="text"],.charsheet input.sheet-hoverpopup + span + div + div > textarea,.charsheet input.sheet-hoverpopup + span + div + div > select {
+	.charsheet input.sheet-hoverpopup + span + div + div > input[type="text"],
+.charsheet input.sheet-hoverpopup + span + div + div > textarea,
+.charsheet input.sheet-hoverpopup + span + div + div > select {
 		height: 100%;
 		width: calc(100% + 10px);
 	}
@@ -1120,7 +1202,6 @@
 	.charsheet input.sheet-hoverpopup + span + div > textarea {
 		height: 100%;
 		width: 100%;
-		padding: 8px;
 		line-height: 14px;
 
 		display: block;
@@ -1135,19 +1216,17 @@
 		box-sizing: border-box;
 		border-radius: 12px;
 
-		color: white;
-
-		text-shadow: -1px -1px 0px #000, -1px -1px 0px #222, -1px -1px 2px #333, 1px 1px 0px #777, 1px 1px 0px #777, 1px 1px 0px #666;
-
 		text-indent: 0px;
+		
+		color: var(--onBlackTextColor);
+		text-shadow: var(--onBlackTextShadow);
 	}
 
-	.charsheet input.sheet-hoverpopup + span + div > textarea.sheet-editable {
-
+	.charsheet input.sheet-hoverpopup + span + div textarea.sheet-editable {
 		pointer-events: auto;
 	}
 
-	.charsheet input.sheet-hoverpopup + span + div textarea.sheet-collapsibletitle {
+	.charsheet input.sheet-hoverpopup + span + div .sheet-collapsibletitle {
 		height: 22px;
 		padding: 0px;
 		margin: 0px;
@@ -1168,23 +1247,22 @@
 		border-bottom: 1px solid white;
 	}
 
-	.charsheet input.sheet-hoverpopup + span + div textarea.sheet-collapsibletitle ~ textarea.sheet-collapsiblebody {
+	.charsheet input.sheet-hoverpopup + span + div textarea.sheet-collapsiblebody {
 		height: calc(100% - 22px);
+		width: 100%;
+		padding: 8px;
 
 		border-radius: unset;
 		border-bottom-left-radius: 12px;
 		border-bottom-right-radius: 12px;
 
-		width: calc(100% - 10px);
 	}
 
-	.charsheet div.sheet-toptitleblock input.sheet-hoverpopup + span + div div textarea {
-		width: calc(100% - 10px);
-	}
-
-	.charsheet div.sheet-toptitleblock input.sheet-hoverpopup + span + div textarea.sheet-collapsibletitle ~ textarea.sheet-collapsiblebody {
+	.charsheet div.sheet-titleblock input.sheet-hoverpopup + span + div textarea.sheet-collapsiblebody {
 		height: 120px;
 		line-height: 16px;
+		font-size: 14px;
+		box-sizing: border-box;
 	}
 
 	.charsheet input.sheet-hoverpopup + span + div.sheet-coltight1 div textarea.sheet-lineagetraits {
@@ -1204,14 +1282,15 @@
 		left: calc(-150% + 96%);
 	}
 
-	.charsheet input.sheet-hoverpopup:checked + span + div,.charsheet input.sheet-hoverpopup:hover + span + div {
+	.charsheet input.sheet-hoverpopup:checked + span + div,
+	.charsheet input.sheet-hoverpopup:hover + span + div {
 		display: block;
 	}
 
-	.charsheet input.sheet-hoverpopup:checked + span + div .sheet-editable {
-		background: rgba(255, 255, 255, 0.5);
-		color: black;
-		text-shadow: 0px 0px 1px #000, 0px 0px 0px #000, 0px 0px 0px #000, 0px 0px 0px #000, 0px 0px 0px #000;
+	.charsheet input.sheet-hoverpopup:checked + span + div .sheet-editable {		
+		background: rgba(255, 0, 0, 0.2);
+		color: var(--onBlackTextColor);
+		text-shadow: var(--onBlackTextShadow);
 	}
 
 	.charsheet input.sheet-hoverentry {
@@ -1221,7 +1300,8 @@
 
 /* 		#endregion */
 /* 		#region Custom Trait Entry Fields */
-	.charsheet input.sheet-attr.sheet-customtrait,.charsheet input.sheet-attr.sheet-statictrait {
+	.charsheet input.sheet-attr.sheet-customtrait,
+	.charsheet input.sheet-attr.sheet-statictrait {
 		height: 25px;
 		width: calc(100% - 96px + 10px);
 		margin-top: -5px;
@@ -1231,7 +1311,9 @@
 		margin-left: -10px;
 	}
 
-	.charsheet textarea.sheet-customtrait,.charsheet select.sheet-customtrait,.charsheet input.sheet-attr.sheet-customtrait + input.sheet-customtrait {
+	.charsheet textarea.sheet-customtrait,
+	.charsheet select.sheet-customtrait,
+	.charsheet input.sheet-attr.sheet-customtrait + input.sheet-customtrait {
 		height: 25px;
 
 		display: inline-block;
@@ -1293,7 +1375,9 @@
 		opacity: 0.75;
 		/* text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc; */
 	}
-	.charsheet div.sheet-dotline input.sheet-dot:checked:not(.sheet-highdot) ~ input.sheet-dot:required:invalid + span::before,.charsheet select:required:invalid,.charsheet input:required:invalid {
+	.charsheet div.sheet-dotline input.sheet-dot:checked:not(.sheet-highdot) ~ input.sheet-dot:required:invalid + span::before,
+	.charsheet select:required:invalid,
+	.charsheet input:required:invalid {
 		border: 1px inset #990000;
 		background-color: rgba(150, 0, 0, 0.25);
 	}
@@ -1474,7 +1558,9 @@
 		margin-bottom: -20px;
 	}
 
-	.charsheet div.sheet-diceroller input.sheet-attr:checked + div.sheet-attr,.charsheet div.sheet-diceroller input.sheet-attr:checked + select,.charsheet div.sheet-diceroller input.sheet-attr:checked + textarea {
+	.charsheet div.sheet-diceroller input.sheet-attr:checked + div.sheet-attr,
+	.charsheet div.sheet-diceroller input.sheet-attr:checked + select,
+	.charsheet div.sheet-diceroller input.sheet-attr:checked + textarea {
 		background-size: 110% 140%;
 		background-position: center -5px;
 	}
@@ -1496,15 +1582,11 @@
 
 	.charsheet div.sheet-diceroller div.sheet-effectdisplay textarea {
 		overflow: hidden;
-		color: #800;
-		font-family: 'Oswald';
-		text-shadow: var(--engravedTextShadow);
 		padding: 0px 0px;
 		height: 100%;
 		text-align: right;
 		text-align-last: right;
 	}
-
 	.charsheet div.sheet-diceroller div.sheet-effectdisplay.sheet-bottomdisplay {
 		width: calc(100% - 210px);
 		margin: -20px 0px 0px 210px;
@@ -1628,7 +1710,10 @@
 		width: 508px;
 	}
 
-	.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input.sheet-attr:checked + span:not(.sheet-nohighlight),.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input.sheet-attr:checked + div.sheet-attr,.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input.sheet-attr:checked + select,.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input.sheet-attr:checked + textarea {
+	.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input.sheet-attr:checked + span:not(.sheet-nohighlight),
+	.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input.sheet-attr:checked + div.sheet-attr,
+	.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input.sheet-attr:checked + select,
+	.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input.sheet-attr:checked + textarea {
 		background: url('https://i.imgur.com/Rd9RGnX.png') center no-repeat;
 		background-size: 100%;
 		background-position: center;
@@ -1772,7 +1857,8 @@
 		margin-top: 17px;
 	}
 
-	.charsheet div.sheet-rollflagscol input,.charsheet div.sheet-rollflagscol input + span {
+	.charsheet div.sheet-rollflagscol input,
+	.charsheet div.sheet-rollflagscol input + span {
 		height: 20px !important;
 		width: 100% !important;
 		margin-bottom: 2px !important;
@@ -1879,7 +1965,8 @@
 		width: 42%;
 	}
 
-	.charsheet div.sheet-toptitleblock span.sheet-titleheader,.charsheet div.sheet-toptitleblock select {
+	.charsheet div.sheet-toptitleblock span.sheet-titleheader,
+	.charsheet div.sheet-toptitleblock select {
 		width: calc(33% - 15px);
 		line-height: 20px;
 
@@ -1976,7 +2063,8 @@
 		margin-bottom: 10px;
 	}
 
-	.charsheet div.sheet-titleblock div.sheet-dotline input,.charsheet div.sheet-titleblock div.sheet-dotline span {
+	.charsheet div.sheet-titleblock div.sheet-dotline input,
+	.charsheet div.sheet-titleblock div.sheet-dotline span {
 		height: 20px;
 		width: 20px;
 		line-height: 20px;
@@ -1984,7 +2072,8 @@
 		margin: 0px;
 	}
 
-	.charsheet div.sheet-titleblock div.sheet-dotline span,.charsheet div.sheet-titleblock div.sheet-dotline div.sheet-multibox span {
+	.charsheet div.sheet-titleblock div.sheet-dotline span,
+	.charsheet div.sheet-titleblock div.sheet-dotline div.sheet-multibox span {
 		margin-left: -20px;
 	}
 
@@ -2014,53 +2103,44 @@
 		left: -55px;
 	}
 
-	.charsheet div.sheet-bpdetails,.charsheet div.sheet-bpfeeding {
-		height: auto !important;
-	}
-
 	.charsheet div.sheet-bpdetails {
 		margin-top: 12px;
-	}
+	}	
 
-	.charsheet div.sheet-bpdetails span,.charsheet div.sheet-bpdetails span textarea,.charsheet div.sheet-bpfeeding textarea {
-		height: 20px;
-		width: 100%;
-		line-height: 14px;
-		text-align: left;
-		text-align-last: left;
-
-		color: red;
-		font-family: 'Bodoni SvtyTwo ITC TT';
-		font-variant: small-caps;
-		font-size: 14px;
-
-		text-shadow: -1px -1px 0px #000, -1px -1px 0px #200, -1px -1px 2px #300, 1px 1px 0px #700, 1px 1px 0px #700, 1px 1px 0px #600;
-	}
-
-	.charsheet div.sheet-bpdetails span textarea,.charsheet div.sheet-bpfeeding textarea {
+	.charsheet div.sheet-bpdetails span textarea,
+.charsheet div.sheet-bpfeeding textarea {
 		padding: 0px 0px;
-
-		color: black;
-
-		font-variant: normal;
 	}
+
+.charsheet div.sheet-bpdetails span.sheet-bpsubheader.sheet-bpsubheader,
+.charsheet div.sheet-bpdetails span.sheet-bpsubheader.sheet-bpsubheader textarea {
+	color: red;
+	text-shadow: -0.5px -0.5px 1px red, 0.5px 0.5px 1px black;
+	font-family: Oswald;
+	font-weight: bold;
+	text-transform: uppercase;
+	font-size: 14px;
+	line-height: 16px;
+}
+
+.charsheet div.sheet-bpdetails span.sheet-bpsubheader.sheet-bpsubheader textarea {
+	height: 20px;
+	font-size: 18px;
+	font-weight: bold;
+	color: var(--onBlackTextColor);
+	text-shadow: var(--onBlackTextShadow);
+}
 
 	.charsheet div.sheet-bpfeeding textarea {
 		height: calc(3 * 16px);
+		line-height: 16px;
 	}
 
-	.charsheet div.sheet-bpdetails,.charsheet div.sheet-bpfeeding {
-		height: auto !important;
-	}
-
-	.charsheet div.sheet-bpdetails {
-		margin-top: 12px;
-	}
 
 	.charsheet div.sheet-titleblock input.sheet-hoverpopup + span + div.sheet-humanitypopup {
-		height: auto !important;
-		left: -90%;
-		width: 200%;
+		height: auto;
+		left: -110%;
+		width: 210%;
 		bottom: 40px;
 	}
 
@@ -2069,59 +2149,17 @@
 		padding-bottom: 10px;
 	}
 
-	.charsheet div.sheet-humanitybox span.sheet-humheader,.charsheet div.sheet-humanitybox span.sheet-humheader textarea {
-		display: inline-block;
-		height: 24px;
-		line-height: 24px;
-		width: 50%;
-		color: white;
-		font-family: 'Bodoni SvtyTwo ITC TT';
-		font-variant: small-caps;
-		font-size: 20px;
-
-		text-shadow: -1px -1px 0px #000, -1px -1px 0px #200, -1px -1px 2px #300, 1px 1px 0px #700, 1px 1px 0px #700, 1px 1px 0px #600;
-		text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc;
-	}
-
-	.charsheet div.sheet-humanitybox span.sheet-humheader {
-		margin: 5px 0px;
-	}
-
-	.charsheet div.sheet-humanitybox span:not(.sheet-humheader),.charsheet div.sheet-humanitybox textarea {
-		height: 20px;
-		width: 100%;
-		line-height: 14px;
-		text-align: left;
-		text-align-last: left;
-
-		color: white;
-		font-family: 'Bodoni SvtyTwo ITC TT';
-		font-variant: small-caps;
-		font-size: 14px;
-
-		text-shadow: -1px -1px 0px #000, -1px -1px 0px #200, -1px -1px 2px #300, 1px 1px 0px #700, 1px 1px 0px #700, 1px 1px 0px #600;
-	}
-
 	.charsheet div.sheet-humanitybox textarea {
 		padding: 0px 0px;
-
-		color: white;
-
-		font-variant: normal;
-	}
-
-	.charsheet div.sheet-humanitybox div.sheet-humanitydetails textarea {
-		height: 120px;
-		line-height: unset;
 	}
 
 	.charsheet div.sheet-humanitybox div.sheet-humanitydetails {
 		margin-bottom: -10px;
 	}
 	.charsheet div.sheet-humanitybox div.sheet-humanitybullets {
-		margin-top: -17px;
+		margin-top: -18px;
 		margin-left: 20px;
-		margin-bottom: -17px;
+		margin-bottom: -18px;
 	}
 
 	.charsheet div.sheet-humanitybox div.sheet-humanitybullets.sheet-torportext {
@@ -2130,32 +2168,30 @@
 
 	.charsheet div.sheet-humanitybox div.sheet-humanitybullets textarea {
 		height: 100%;
-		line-height: 17px;
-		text-shadow: 1px 1px 1px black, 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black;
+		line-height: 16px;
+		font-size: 14px;
 	}
 
 	.charsheet div.sheet-humanitybox div.sheet-humanitybullets.sheet-posbullets textarea {
-		color: gold !important;
-	}	
-
-	.charsheet div.sheet-humanitybox div.sheet-humanitybullets.sheet-neutralbullets textarea {
-		color: white !important;
+		color: gold;
 	}	
 
 	.charsheet div.sheet-humanitybox div.sheet-humanitybullets.sheet-negbullets textarea {
-		color: #FF3333 !important;
+		color: #FF3333;
 		font-weight: bold;
+		text-shadow: -0.5px -0.5px 1px red, 0.5px 0.5px 1px black; 
 	}	
 	.charsheet div.sheet-humanitybox div.sheet-humanitybullets.sheet-torportext textarea {
-		color: #AAA !important;
 		font-weight: bold;
 		font-family: Voltaire;
 		margin-top: 3px;
 		margin-left: -20px;
 		font-size: 18px;
+		line-height: 20px;
 		text-align: center;
 		text-align-last: center;
 		font-variant: small-caps;
+		text-shadow: none;
 	}	
 
 /* 		#endregion */
@@ -2170,7 +2206,10 @@
 		margin-left: calc((50% - 96px)/2);
 	}
 
-	.charsheet div.sheet-attributes input.sheet-attr + span:not(.sheet-nohighlight):not(.sheet-projectarchive),.charsheet div.sheet-attributes input.sheet-attr:checked + div.sheet-attr,.charsheet div.sheet-attributes input.sheet-attr:checked + select,.charsheet div.sheet-attributes input.sheet-attr:checked + textarea {
+	.charsheet div.sheet-attributes input.sheet-attr + span:not(.sheet-nohighlight):not(.sheet-projectarchive),
+	.charsheet div.sheet-attributes input.sheet-attr:checked + div.sheet-attr,
+	.charsheet div.sheet-attributes input.sheet-attr:checked + select,
+	.charsheet div.sheet-attributes input.sheet-attr:checked + textarea {
 		width: 50%;
 		height: 24px;
 		margin-left: -50%;
@@ -2188,7 +2227,10 @@
 		margin-bottom: 0px;
 	}
 
-	.charsheet div.sheet-skills input.sheet-attr + span:not(.sheet-nohighlight):not(.sheet-projectarchive),.charsheet div.sheet-skills input.sheet-attr + div.sheet-attr,.charsheet div.sheet-skills input.sheet-attr + select,.charsheet div.sheet-skills input.sheet-attr + textarea {
+	.charsheet div.sheet-skills input.sheet-attr + span:not(.sheet-nohighlight):not(.sheet-projectarchive),
+	.charsheet div.sheet-skills input.sheet-attr + div.sheet-attr,
+	.charsheet div.sheet-skills input.sheet-attr + select,
+	.charsheet div.sheet-skills input.sheet-attr + textarea {
 		height: 20px;
 		width: 80px;
 		line-height: 20px;
@@ -2220,7 +2262,9 @@
 		margin-top: 5px;
 	}
 
-	.charsheet div.sheet-disciplines input.sheet-attr:checked + span:not(.sheet-nohighlight),.charsheet div.sheet-disciplines input.sheet-attr:checked + div.sheet-attr,.charsheet div.sheet-disciplines input.sheet-attr:checked + textarea {
+	.charsheet div.sheet-disciplines input.sheet-attr:checked + span:not(.sheet-nohighlight),
+	.charsheet div.sheet-disciplines input.sheet-attr:checked + div.sheet-attr,
+	.charsheet div.sheet-disciplines input.sheet-attr:checked + textarea {
 		background-size: 105% 125%;
 	}
 
@@ -2234,7 +2278,8 @@
 		margin: 0px -160px 0px 0px;
 	}
 
-	.charsheet div.sheet-disciplines input.sheet-statictrait,.charsheet div.sheet-disciplines input.sheet-editableflag.sheet-customtrait {
+	.charsheet div.sheet-disciplines input.sheet-statictrait,
+	.charsheet div.sheet-disciplines input.sheet-editableflag.sheet-customtrait {
 		height: 20px;
 		width: calc(100% - 96px);
 		margin: 0px 0px 10px 0px;
@@ -2245,7 +2290,8 @@
 		margin-top: -10px;	
 	}
 
-	.charsheet div.sheet-disciplines textarea.sheet-customtrait,.charsheet div.sheet-disciplines select.sheet-customtrait {
+	.charsheet div.sheet-disciplines textarea.sheet-customtrait,
+	.charsheet div.sheet-disciplines select.sheet-customtrait {
 		height: 25px;
 		width: calc(100% - 96px);
 		margin: 0px 0px 5px calc(-100% + 96px);
@@ -2375,10 +2421,12 @@
 /* #region PAGE TWO: DETAILS */
 /*		#region ASSET BLOCK STYLES */
 .charsheet div.sheet-assetBlock div.sheet-assetLine {
-	height: 21px;
-	width: calc(100% - 2 * 2px - 2 * 4px);
+	box-sizing: border-box;
+	height: 30px;
+	width: 100%;
+	
 	margin-bottom: 1px;
-	padding: 2px 4px;
+	padding: 2px 0px 2px 4px;
 	
 	background: rgba(255, 255, 255, 0.15);	
 	border: 2px black outset;
@@ -2386,23 +2434,23 @@
 
 	z-index: 1;
 }
-.charsheet div.sheet-assetBlock div.sheet-assetLine input[type="text"],.charsheet div.sheet-assetBlock div.sheet-assetLine select,.charsheet div.sheet-assetBlock div.sheet-assetLine textarea {
+.charsheet div.sheet-assetBlock div.sheet-assetLine input[type="text"],
+	.charsheet div.sheet-assetBlock div.sheet-assetLine select,
+	.charsheet div.sheet-assetBlock div.sheet-assetLine textarea {
 	height: 12px;
 	line-height: 16px;
 }
 .charsheet div.sheet-assetBlock div.sheet-assetLine input[type="text"] {
 	height: 100%;
-	width: calc(100% - 20px - 95px - 60px - 3px);
+	width: calc(100% - 100px - 5px - 62px - 20px);
 	padding-top: 2px;
-
-	background-color: rgba(125, 125, 125, 0.25);
+	
 	font-size: 14px;
 }
 .charsheet div.sheet-assetBlock div.sheet-assetLine select.sheet-header5 {
 	height: 100%;
-	width: 95px;
-	margin-right: 0px;
-	margin-left: 5px;
+	width: 100px;
+	margin: 0px 0px 0px 5px;
 	padding-top: 2px;
 
 	background-position-x: 2px;
@@ -2443,11 +2491,11 @@
 }
 .charsheet div.sheet-assetBlock div.sheet-assetLine span.sheet-header5 {
 	height: 100%;
-	width: 58px;
+	width: 62px;
 	text-align: left;
 	text-align-last: left;
-	line-height: 26px;
-	font-size: 14px !important;
+	line-height: 24px;
+	font-size: 14px;
 }
 .charsheet div.sheet-assetBlock div.repcontrol {
 	margin-top: 5px;
@@ -2462,40 +2510,29 @@
 /* 		#endregion*/
 /* 		#region SECTION: Domain Control */
 .charsheet div.sheet-domainControl span.sheet-header5 {
-	width: 180px;
+	width: 200px;
 }
 .charsheet div.sheet-domainControl textarea.sheet-domaincontrolbenefits {
-	width: calc(100% - 180px - 10px);
-	font-family: "Voltaire";
-	color: rgba(155,4,0,1);
-	text-shadow: none;
-	font-weight: bold;
-	padding-top: 0px;
+	height: 20px;
+	width: calc(100% - 200px - 10px);
+	padding: 0px;
 	font-size: 14px;
-	line-height: 18px;
+	line-height: 16px;
 }
 
-.charsheet div.sheet-assetBlock.sheet-domainControl div.sheet-assetLine {
-	width: calc(100% - 2 * 2px);
-	padding: 2px 0px;
-}
-
-.charsheet div.sheet-assetBlock.sheet-domainControl div.sheet-assetLine input.sheet-hoverpopup + span::before {
-	margin-left: -7px;
-}
 .charsheet div.sheet-assetBlock.sheet-domainControl div.sheet-assetLine span.sheet-header5 {
-	width: 54px;
+	width: 60px;
 }
 .charsheet div.sheet-assetBlock.sheet-domainControl div.sheet-assetLine select.sheet-header5:nth-of-type(1) {
-	width: calc(100% - 54px - (83px + 5px + 4px) - 20px - 5px);
+	width: calc(100% - 60px - 92px - 20px - 5px - 4px);
 	text-align: left;
 	text-align-last: left;
 }
 .charsheet div.sheet-assetBlock.sheet-domainControl div.sheet-assetLine select.sheet-header5:nth-of-type(2) {
-	width: 88px;
+	width: 92px;
 	text-align: left;
 	text-align-last: left;
-	margin-left: 4px;
+	margin: 0px 0px 0px 4px;
 }
 /* 		#endregion */
 /* 		#region SECTION: Assets */
@@ -2510,9 +2547,9 @@
 
 /* #region PAGE THREE: HUMANITY */
 /* 		#region SECTION: Tenets, Convictions, Touchstones */
-	.charsheet div.sheet-tenets input.sheet-customtrait,.charsheet div.sheet-beliefs input.sheet-customtrait {
+	.charsheet div.sheet-tenets input.sheet-customtrait,
+	.charsheet div.sheet-beliefs input.sheet-customtrait {
 		height: 20px;
-		text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc;
 		margin-bottom: 10px;
 	}
 
@@ -2527,7 +2564,8 @@
 		text-align-last: center;
 	}
 
-	.charsheet div.sheet-mask input,.charsheet div.sheet-mask span.sheet-header2 {
+	.charsheet div.sheet-mask input,
+	.charsheet div.sheet-mask span.sheet-header2 {
 		margin-bottom: 5px;
 		height: 24px;
 		font-size: 24px !important;
@@ -2558,7 +2596,11 @@
 	.charsheet div.sheet-scheme div,.charsheet div.sheet-scheme div.linerow,.charsheet div.sheet-scheme span,.charsheet div.sheet-scheme input,.charsheet div.sheet-scheme textarea,.charsheet div.sheet-scheme select {
 		height: 20px;
 		margin-bottom: 5px;
-		font-family: 'Bodoni SvtyTwo ITC TT' !important;
+		font-family: 'Poly';
+	}
+
+	.charsheet div.sheet-scheme input,.charsheet div.sheet-scheme textarea,.charsheet div.sheet-scheme select {
+	font-size: 14px;
 	}
 
 	.charsheet div.sheet-scheme hr {
@@ -2708,14 +2750,20 @@
 	}
 /*			#endregion */
 /*			#region Objectives, Events, Memoriams */
-	.charsheet div.sheet-scheme.sheet-objective div.sheet-mainleft,.charsheet div.sheet-scheme.sheet-event div.sheet-mainleft,.charsheet div.sheet-scheme.sheet-memoriam div.sheet-mainleft {
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-mainleft,
+	.charsheet div.sheet-scheme.sheet-event div.sheet-mainleft,
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-mainleft {
 		width: calc(100% - 1% - 80px);
 	}
 
-	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox,.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox,.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox {
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox,
+	.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox,
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox {
 		width: 70px;
 	} 	
-	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-completiondate input,.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox div.sheet-completiondate input,.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox div.sheet-completiondate input {
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-completiondate input,
+	.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox div.sheet-completiondate input,
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox div.sheet-completiondate input {
 		font-size: 12px;
 		padding: 0px;
 		font-family: 'Voltaire' !important;
@@ -2725,14 +2773,18 @@
 		font-weight: bold;
 		margin-bottom: 0px;
 	}
-	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-archive input,.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox div.sheet-archive input,.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox div.sheet-archive input {
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-archive input,
+	.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox div.sheet-archive input,
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox div.sheet-archive input {
 		width: 100%;
 		height: 20px;
 		margin-right: -100%;
 		margin-bottom: 20px;
 	}
 
-	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-archive input + span,.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox div.sheet-archive input + span,.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox div.sheet-archive input + span {
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-archive input + span,
+	.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox div.sheet-archive input + span,
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox div.sheet-archive input + span {
 		height: 23px;
 		width: 100%;
 		margin: 0px -10px 17px 0px;
@@ -2741,7 +2793,8 @@
 		font-size: 14px;
 	}
 
-	.charsheet div.sheet-scheme.sheet-objective div.sheet-mainleft div.sheet-topline input.sheet-goal,.charsheet div.sheet-scheme.sheet-event div.sheet-mainleft div.sheet-topline input.sheet-goal {
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-mainleft div.sheet-topline input.sheet-goal,
+	.charsheet div.sheet-scheme.sheet-event div.sheet-mainleft div.sheet-topline input.sheet-goal {
 		width: calc(100% - 20px - 2*(5px));
 	}
 /*			#endregion */
@@ -2825,7 +2878,8 @@
 		width: calc(100% - 40px - 25px);
 	}
 
-	.charsheet div.sheet-scheme.sheet-project div.sheet-projectteamwork input.sheet-dotlinename,.charsheet div.sheet-scheme.sheet-project div.sheet-projectstake input.sheet-dotlinename {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectteamwork input.sheet-dotlinename,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectstake input.sheet-dotlinename {
 		width: calc(100% - 96px);
 		height: 16px;
 		font-size: 12px;
@@ -2844,7 +2898,10 @@
 		width: 150px;
 	}
 
-	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox,.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox span,.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox select,.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox textarea {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox span,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox select,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox textarea {
 		width: 45px;
 		height: 45px;
 		margin-bottom: 5px;
@@ -2934,7 +2991,11 @@
 		margin: 0px !important;
 	}
 
-	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div,.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary span,.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary input,.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary textarea,.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary select {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary span,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary input,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary textarea,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary select {
 		height: 20px;
 		font-family: 'Bodoni SvtyTwo ITC TT' !important;
 		margin-bottom: 0px;
@@ -2967,7 +3028,8 @@
 		padding: 0px;
 	}
 
-	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div.sheet-projectdate textarea,.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div.sheet-projectdate span {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div.sheet-projectdate textarea,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div.sheet-projectdate span {
 		height: 14px;
 		line-height: 14px;
 		font-size: 14px;
@@ -3067,7 +3129,12 @@
 		width: 95%;
 	}
 
-	.charsheet div.sheet-timeline div,.charsheet div.sheet-timeline div.linerow,.charsheet div.sheet-timeline span,.charsheet div.sheet-timeline input,.charsheet div.sheet-timeline textarea,.charsheet div.sheet-timeline select {
+	.charsheet div.sheet-timeline div,
+	.charsheet div.sheet-timeline div.linerow,
+	.charsheet div.sheet-timeline span,
+	.charsheet div.sheet-timeline input,
+	.charsheet div.sheet-timeline textarea,
+	.charsheet div.sheet-timeline select {
 		height: 20px;
 		font-family: 'Bodoni SvtyTwo ITC TT' !important;
 	}
@@ -3246,7 +3313,8 @@
 		margin-bottom: 0px;
 	}
 
-	.charsheet div.sheet-xp div.sheet-colheader,.charsheet div.sheet-xp div.sheet-colheader span {
+	.charsheet div.sheet-xp div.sheet-colheader,
+	.charsheet div.sheet-xp div.sheet-colheader span {
 		height: 25px;
 		text-align: left;
 		text-align-last: left;
@@ -3258,7 +3326,9 @@
 		width: 90%;
 	}
 
-	.charsheet div.sheet-xp select,.charsheet div.sheet-xp textarea,.charsheet div.sheet-xp input {
+	.charsheet div.sheet-xp select,
+	.charsheet div.sheet-xp textarea,
+	.charsheet div.sheet-xp input {
 		height: 100%;
 		width: calc(100% - (2 * 5px));
 		text-align: left;
@@ -3283,7 +3353,8 @@
 		margin-bottom: 0px;
 	}
 
-	.charsheet div.sheet-earnedxp div.sheet-colheader,.charsheet div.sheet-earnedxp div.sheet-colheader span {
+	.charsheet div.sheet-earnedxp div.sheet-colheader,
+	.charsheet div.sheet-earnedxp div.sheet-colheader span {
 		height: 15px;
 		margin-bottom: 5px;
 	}
@@ -3354,7 +3425,9 @@
 
 /* #region OVERRIDES */
 /*		#region <fieldset > Overrides */
-.charsheet div.itemcontrol > button,.charsheet div.repcontrol > button,.charsheet .repcontrol_move {
+.charsheet div.itemcontrol > button,
+	.charsheet div.repcontrol > button,
+	.charsheet .repcontrol_move {
 	padding: 0px 3px;
 	margin-top: -5px;
 

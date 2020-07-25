@@ -222,6 +222,10 @@ const Media = (() => {
                         adjustObj(mediaObjs, ...args.map((x) => D.Float(x)));
                         break;
                     }
+                    case "clean": {
+                        Media.Polish();
+                        break;
+                    }
                     // no default
                 }
                 break;
@@ -1942,6 +1946,12 @@ const Media = (() => {
         for (const [mediaObj] of sortedMediaRefs)
             toBack(mediaObj);
     };
+    const alignMatteImages = () => {
+        const mapObjs = Object.values(Media.IMAGES).filter((x) => x.height === C.MAP.height && x.width === C.MAP.width).map((x) => getObj("graphic", x.id));
+        mapObjs.forEach((x) => { x.set({left: C.MAP.left, top: C.MAP.top}) });
+        const bgObjs = Object.values(Media.IMAGES).filter((x) => x.height === C.SANDBOX.height && x.width === C.SANDBOX.width).map((x) => getObj("graphic", x.id));
+        bgObjs.forEach((x) => { x.set({left: C.SANDBOX.left, top: C.SANDBOX.top}) });
+    };
     const resetModeData = (isResettingAll = false, isQueueing = false, isVerbose = false, isChangingData = false) => {
         const traceID = TRACEON("resetModeData", [isResettingAll, isQueueing, isVerbose, isChangingData]);
         // ^([^.]+)\.([^.\n=]+)\.([^.\n=]+)\.([^.\n=]+)\.([^.\n=]+) = (.*)
@@ -2538,6 +2548,8 @@ const Media = (() => {
         DB({tokenRef, isActive}, "toggleTokens");
         if (isActive !== null)
             for (const tokenObj of getTokenObjs(tokenRef)) {
+                if (tokenObj.get("layer") === "gmlayer")
+                    continue;
                 for (const tokenAura of getActiveTokenAuras(tokenRef))
                     toggle(tokenAura, isActive);
                 if (isActive === true && tokenObj.get("layer") !== "objects")
@@ -4751,7 +4763,9 @@ const Media = (() => {
                 fixTextObjs();
             }
             setZIndices();
-        }
+            alignMatteImages();
+        },
+        Polish: () => Media.Fix(true)
     };
 })();
 

@@ -188,7 +188,7 @@ const Handouts = (() => {
     const updateHandout = (title, category, contents, isWritingGM = false, isVerbose = false, isRawCode = false) => {
         const handoutObj = getHandoutObj(title);
         const noteData = {
-            notes: isRawCode ? C.HANDOUTHTML.main(contents) : C.HANDOUTHTML.main(D.JS(contents, isVerbose)),
+            notes: isRawCode ? `<div style="display: block; width: 545px; margin-left: -30px; font-family: 'Fira Code'; font-size: 8px;">${contents}</div>` : C.HANDOUTHTML.main(D.JS(contents, isVerbose)),
             gmnotes: typeof contents === "string" ? contents : JSON.stringify(contents)
         };
         if (handoutObj) {

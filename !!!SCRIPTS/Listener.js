@@ -123,7 +123,7 @@ const Listener = (() => {
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
-        STATE.REF.isLocked = STATE.REF.isLocked || false;
+        STATE.REF.isLocked = false;
         STATE.REF.objectLog = STATE.REF.objectLog || [];
         STATE.REF.callLog = STATE.REF.callLog || [];
         STATE.REF.callLogBlacklist = STATE.REF.callLogBlacklist || [];
