@@ -146,7 +146,7 @@
     <div class="sheet-pagecontainer sheet-settings">
         <div class="sheet-header2 sheet-settings" style="margin-bottom: 20px;">SETTINGS</div>
         <div class="sheet-col3">
-            <span class="sheet-header3" style="width: 50%; margin-left: 10%;">Health Modifier:</span>
+            <span class="sheet-header3" style="width: 55%; margin-left: 5%;">Health Modifier:</span>
             <select name="attr_bonus_health" value="0">
                 <option value="10">+10</option>
                 <option value="9">+9</option>
@@ -172,7 +172,7 @@
             </select>
         </div>
         <div class="sheet-col3">
-            <span class="sheet-header3" style="width: 60%; margin-left: 5%;">Willpower Modifier:</span>
+            <span class="sheet-header3" style="width: 65%; margin-left: 5%;">Willpower Modifier:</span>
             <select name="attr_bonus_willpower" value="0">
                 <option value="10">+10</option>
                 <option value="9">+9</option>
@@ -198,7 +198,7 @@
             </select>
         </div>
         <div class="sheet-col3">
-            <span class="sheet-header3" style="width: 70%;">Blood Potency Modifier:</span>
+            <span class="sheet-header3" style="width: 75%;">Blood Potency Modifier:</span>
             <select name="attr_bonus_bp" value="0">
                 <option value="10">+10</option>
                 <option value="9">+9</option>
@@ -229,7 +229,7 @@
         </div>
         <div class="sheet-col2x3">
             <span class="sheet-header3" style="width: 40%;">Generic Token Category:</span>
-            <input type="text" class="sheet-header2 sheet-left sheet-insetBox sheet-clearText" name="attr_tokencat"
+            <input type="text" class="sheet-left sheet-insetBox sheet-clearText" name="attr_tokencat"
                 value="" style="width:60%; height: 22px;">
         </div>
     </div>
@@ -702,7 +702,7 @@
                     <input class="sheet-box sheet-nulldot" type="radio" name="attr_health_10" value="3" /><span class="sheet-nulldot"></span>
                 </div>
                 <input class="sheet-dottoggle" type="radio" name="attr_health_max" value="11" />
-                <div class="sheet-dotcontainer sheet-multidot sheet-multibox" style="margin-top: 5px;">
+                <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
                     <input class="sheet-box sheet-whitedot" type="radio" name="attr_health_11" value="0" checked /><span
                         class="sheet-whitedot"></span>
                     <input class="sheet-box sheet-superficialdot" type="radio" name="attr_health_11" value="1" /><span
@@ -3293,7 +3293,7 @@
                     <!-- Second Line -->
                     <div class="sheet-coltight1 sheet-linerow">
                         <!-- Type Checkbox: Objective, Project, Memoriam -->
-                        <div class="sheet-dotline sheet-variabledotline sheet-schemeselector sheet-centered">
+                        <div class="sheet-dotline sheet-variabledotline sheet-schemeselector sheet-centered" style="margin-top: -3px; margin-left: 3px;">
                             <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
                                 <input class="sheet-box sheet-whitedot sheet-objectivedot" type="radio"
                                     name="attr_schemetypeobj_toggle" value="0" checked /><span
@@ -3336,7 +3336,7 @@
                     <!-- Top Line -->
                     <div class="sheet-coltight1 sheet-linerow sheet-topline">
                         <!-- Hover Popup Ankh -->
-                        <input class="sheet-hoverpopup" type="checkbox" value="1" /><span></span>
+                        <input class="sheet-hoverpopup" type="checkbox" value="1" style="margin: 0px -16.5px 5px 0px;" /><span></span>
                         <div class="sheet-coltight1">
                             <textarea class="sheet-collapsibletitle" readonly>Details</textarea>
                             <textarea class="sheet-collapsiblebody sheet-editable"
@@ -3345,7 +3345,7 @@
                         <!-- Goal / Scope -->
                         <input type="text" class="sheet-insetBox sheet-darkText sheet-goal"
                             placeholder="Describe what is it you wish to achieve. (Put Scope calculations into the ankh to the left.)"
-                            name="attr_projectscope_name" />
+                            name="attr_projectscope_name" style="margin-left: 1.5px;" />
                         <div class="sheet-dotline" style="margin-left: 10px;">
                             <input class="sheet-dot sheet-zero" type="radio" name="attr_projectscope" value="0"
                                 checked /><span></span>
@@ -3419,7 +3419,7 @@
                 <div class="sheet-coltight1x3 sheet-linerow">
                     <div class="sheet-coltight2">
                         <span class="sheet-header5 sheet-right">Increment:</span><input type="text"
-                            class="sheet-insetBox sheet-darkText sheet-squareBox sheet-centered"
+                            class="sheet-insetBox sheet-darkText sheet-squareBox sheet-cinzel sheet-centered"
                             name="attr_projectincnum" />
                     </div>
                     <div class="sheet-coltight2">
@@ -3498,7 +3498,7 @@
                 <!-- Launch Roll-->
                 <div class="sheet-coltight1 sheet-doublerow sheet-launchline">
                     <span class="sheet-header5 sheet-doublerow sheet-centered"
-                        style="width: 75px;">Launch<br />Roll:</span>
+                        style="width: 60px; margin-left: 15px;">Launch<br />Roll:</span>
                     <div class="sheet-coltight1 sheet-doublerow sheet-launchtrait">
                         <div class="sheet-coltight1 sheet-linerow sheet-centered">
                             <input type="text" class="sheet-insetBox sheet-darkText sheet-left"
@@ -3545,7 +3545,7 @@
                         </div>
                     </div>
                     <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-squareBox" style="width: 60px;">
-                        <select class="sheet-squareBox sheet-darkText" name="attr_projectlaunchmod" value="0">
+                        <select class="sheet-squareBox sheet-cinzel sheet-darkText" name="attr_projectlaunchmod" value="0">
                             <option value="9">+9</option>
                             <option value="8">+8</option>
                             <option value="7">+7</option>
@@ -3567,9 +3567,9 @@
                             <option value="-9">-9</option>
                         </select>
                     </div>
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox" style="width: 55px;">
-                        <textarea class="sheet-numberBox sheet-squareBox sheet-darkText"
-                            name="attr_projectforcedstakemodline" value="0" readonly style="width: 60px;"></textarea>
+                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox" style="width: 46px; margin-left: -5px;">
+                        <textarea class="sheet-numberBox sheet-squareBox sheet-right sheet-darkText sheet-cinzel"
+                            name="attr_projectforcedstakemodline" value="0" readonly style="width: 46px; line-height: 45px;"></textarea>
                         <input type="hidden" name="attr_projectforcedstakemod" value="0" />
                     </div>
                     <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-squareBox" style="width:45px;">
@@ -3577,8 +3577,8 @@
                             style="width:100%; margin:0px 0px;">vs.</span>
                     </div>
                     <div class="sheet-coltight1 sheet-doublerow sheet-squareBox" style="width: 25px;">
-                        <textarea class="sheet-numberBox sheet-squareBox sheet-darkText" name="attr_projectlaunchdiff"
-                            value="2" readonly>2</textarea>
+                        <textarea class="sheet-numberBox sheet-squareBox sheet-cinzel sheet-darkText" name="attr_projectlaunchdiff"
+                            value="2" readonly style="line-height: 45px;">2</textarea>
                         <input type="hidden" name="attr_projectlaunchdiffmod" value="0" />
                     </div>
                     <input class="sheet-containerselector" type="radio" name="attr_projectlaunchroll_toggle" value="0"
@@ -3635,7 +3635,7 @@
                 <input class="sheet-containerselector" type="radio" name="attr_projectstakes_toggle" value="1" />
                 <div class="sheet-coltight1 sheet-linerow">
                     <span class="sheet-header5 sheet-linerow sheet-left"
-                        style="width: 40px; margin-left: 20px;">Stake:</span>
+                        style="width: 45px; margin-left: 15px;">Stake:</span>
                     <div class="sheet-coltight1 sheet-linerow sheet-projectstake">
                         <div class="sheet-coltight3 sheet-linerow">
                             <input type="text" class="sheet-dotlinename sheet-insetBox sheet-darkText sheet-left"
@@ -3924,7 +3924,7 @@
             <div class="sheet-col1 sheet-header3">
                 Desires
             </div>
-            <div class="sheet-col1 sheet-centered" style="font-size: 14px; color: #aaa;">
+            <div class="sheet-col1 sheet-centered" style="font-size: 14px; margin-bottom: 5px;">
                 (Only the topmost Desire is active for the session.)
             </div>
             <div class="sheet-col1">
@@ -3936,7 +3936,7 @@
             </div>
         </div>
         <div class="sheet-header1 sheet-centered sheet-xp" style="margin-bottom: -10px;">
-            <textarea class="sheet-centered sheet-clearText" name="attr_xp_summary" style="width: 100%;"
+            <textarea class="sheet-centered sheet-cinzel sheet-clearText" name="attr_xp_summary" style="width: 100%;"
                 readonly></textarea>
         </div>
         <!--EXPERIENCE-->
@@ -4040,7 +4040,7 @@
                     </div>
                 </div>
                 <div class="sheet-coltight1" style="width: 8%">
-                    <textarea class="sheet-centered" name="attr_xp_cost" style="padding-left: 0px; line-height: 25px"
+                    <textarea class="sheet-centered sheet-numberBox" name="attr_xp_cost" style="padding-left: 0px; line-height: 20px;"
                         readonly></textarea>
                 </div>
             </fieldset>
@@ -4064,7 +4064,7 @@
                     <textarea class="sheet-session" name="attr_xp_session" readonly></textarea>
                 </div>
                 <div class="sheet-coltight1 sheet-centered" style="width: 7%; margin-right: 2%">
-                    <textarea class="sheet-right" name="attr_xp_award" readonly></textarea>
+                    <textarea class="sheet-numberBox sheet-right" name="attr_xp_award" readonly></textarea>
                 </div>
                 <div class="sheet-coltight1 sheet-left" style="width: 75%">
                     <textarea class="sheet-xpreason" name="attr_xp_reason" readonly></textarea>
@@ -4087,7 +4087,7 @@
                     <textarea class="sheet-session" name="attr_xp_session" readonly></textarea>
                 </div>
                 <div class="sheet-coltight1 sheet-centered" style="width: 7%; margin-right: 2%">
-                    <textarea class="sheet-right" name="attr_xp_award" readonly></textarea>
+                    <textarea class="sheet-numberBox sheet-right" name="attr_xp_award" readonly></textarea>
                 </div>
                 <div class="sheet-coltight1 sheet-left" style="width: 75%">
                     <textarea class="sheet-xpreason" name="attr_xp_reason" readonly></textarea>

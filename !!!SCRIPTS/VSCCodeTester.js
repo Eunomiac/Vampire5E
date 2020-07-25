@@ -2,7 +2,7 @@ const SCRIPTNAME = "TimeTracker"; // <-- SET THIS BEFORE TESTING OR STATE.REF CA
 
 const state = {
     TimeTracker: {
-        dateObj: 
+        // dateObj: 
         SessionDate: {
             start: [0, 19, 30],
             end: [0, 22, 30]
