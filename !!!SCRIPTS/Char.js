@@ -43,6 +43,99 @@ const Char = (() => {
     const initialize = () => {
         // PENDINGCHARCOMMAND = D.Clone(BLANKPENDINGCHARCOMMAND)
 
+        /* STATE.REF.registry = {
+            TopLeft: {
+                id: "-Lt3NYCcsMUqdijYCWEc",
+                name: "Locke Ulrich",
+                playerID: "-Ltvp919sIbaWTe0FbaF",
+                playerName: "PixelPuzzler",
+                tokenName: "Locke Ulrich",
+                shortName: "Locke",
+                initial: "L",
+                quadrant: "TopLeft",
+                docName: "L. Ulrich",
+                isActive: true,
+                spotlightPrompt: {
+                    prompt: "Show us what happened on that fateful night years ago when you almost killed Bacchus Giovanni while acting out your duties as sheriff of Toronto.",
+                    author: false,
+                    id: "jdfsWveSUe",
+                    isAwardingXP: false
+                }
+            },
+            BotLeft: {
+                id: "-Lt3NX_VzMz2GjiVS61h",
+                name: "Dr. Arthur Roy",
+                playerID: "-Ltu_6_IXWL9uhgmJpvQ",
+                playerName: "banzai",
+                tokenName: "Dr. Arthur Roy",
+                shortName: "Roy",
+                initial: "R",
+                quadrant: "BotLeft",
+                docName: "Dr. Roy",
+                isActive: true,
+                spotlightPrompt: {
+                    prompt: "I want to see you actually performing a ritual; chanting, drawing pentagrams, whatever it is you do.",
+                    author: "N",
+                    id: "QpYqB4iIkf",
+                    isAwardingXP: true
+                }
+            },
+            BotRight: {
+                id: "-Lt3NWi8bDHdWmo06gnm",
+                name: "Ava Wong",
+                playerID: "-Ltu_Bv374-umIX8wNhm",
+                playerName: "TeatimeRationale",
+                tokenName: "Ava Wong",
+                shortName: "Ava",
+                initial: "A",
+                quadrant: "BotRight",
+                docName: "A. Wong",
+                isActive: true,
+                spotlightPrompt: {
+                    prompt: "Ava seems to consistently have a rough time of things. If it isn't possession and shadow people just squatting in your head rent free it's vomitting on Setites and being blackmailed. Ava deserves something fun, and I think just a small scene showing her enjoying herself so she doesn't literally explode could be interesting.",
+                    author: "L",
+                    id: "XDlsvVpxI6",
+                    isAwardingXP: true
+                }
+            },
+            MidRight: {
+                id: "-Lt3NXv8ES_NsYiwvYW8",
+                name: "Johannes Napier",
+                playerID: "-Ltu_ABMK_SNmtU1TE4o",
+                playerName: "Thaumaterge",
+                tokenName: "Johannes Napier",
+                shortName: "Napier",
+                initial: "N",
+                quadrant: "MidRight",
+                docName: "Dr. Napier",
+                isActive: true,
+                spotlightPrompt: {
+                    prompt: "An accident occurs in the middle of a very sensitive experiment--his Malkavian nature acts up once more, and the result is messy. Show us what happened, and how Napier deals with significant setbacks when they're caused by his own hand.",
+                    author: "A",
+                    id: "WOybCmsv7Y",
+                    isAwardingXP: true
+                }
+            },
+            TopRight: {
+                id: "-LzZWGWH-yvOZB97qWq_",
+                name: "Bacchus Giovanni",
+                playerID: "-LzZU4s5ylON7iWLO-jK",
+                playerName: "Hastur",
+                tokenName: "Bacchus Giovanni",
+                shortName: "Bacchus",
+                initial: "B",
+                quadrant: "TopRight",
+                docName: "B. Giovanni",
+                isActive: true,
+                spotlightPrompt: {
+                    prompt: "It is the early 1970's. Although Bacchus has long been separated from the old country, news has been disturbing. The Communist Brigate Rosse and the Fascist Golpe Borghese have turned to terror in order to grab attention for their causes. The Brigate Rosse are assassinating politicians while the Golpe Borghese have embarked on a campaign of bombing. Bacchus is extremely concerned with the events unfolding, as many bear a striking resemblance to Mussolini's rise to power. How does Bacchus respond?",
+                    author: "R",
+                    id: "WzXb9CQumP",
+                    isAwardingXP: true
+                }
+            }
+        }; */
+
         STATE.REF.registry = STATE.REF.registry || {};
         STATE.REF.weeklyResources = STATE.REF.weeklyResources || {};
         STATE.REF.customStakes = STATE.REF.customStakes || {};
@@ -851,6 +944,10 @@ const Char = (() => {
             }
             case "process": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "boons": case "prestation": {
+                        processPrestation();
+                        break;
+                    }
                     case "sheetattrs": {
                         validateCharAttributes(charObjs, args[0] === "true");
                         break;
@@ -1688,6 +1785,47 @@ const Char = (() => {
     const charHasFlag = (charRef, flagName) => {
         const allCharFlags = (D.GetStatVal(charRef, "charflags") || "").split("|");
         return allCharFlags.includes(flagName);
+    };
+    const processPrestation = () => {
+        const allCharNames = findObjs({_type: "character"}).map((x) => x.get("name"));
+        const prestationData = {
+            boonsOwing: [],
+            boonsOwed: []
+        };
+        for (const charName of allCharNames) {
+            const boonsOwed = Object.values(D.GetRepStats(charName, "boonsowed", null, null, "rowID"));
+            const boonsOwing = Object.values(D.GetRepStats(charName, "boonsowing", null, null, "rowID"));
+            for (const owedBoon of boonsOwed)
+                prestationData.boonsOwed.push({
+                    from: charName,
+                    to: (owedBoon.find((x) => x.attrName === "boonowed_to") || {val: false}).val,
+                    type: (owedBoon.find((x) => x.attrName === "boonowed_type") || {val: false}).val,
+                    details: (owedBoon.find((x) => x.attrName === "boonowed_details") || {val: false}).val
+                });
+            for (const owingBoon of boonsOwing)
+                prestationData.boonsOwing.push({
+                    from: (owingBoon.find((x) => x.attrName === "boonowing_from") || {val: false}).val,
+                    to: charName,
+                    type: (owingBoon.find((x) => x.attrName === "boonowing_type") || {val: false}).val,
+                    details: (owingBoon.find((x) => x.attrName === "boonowing_details") || {val: false}).val
+                });
+        }
+        const checkData = D.Clone(prestationData);
+        for (let i = 0; i < checkData.boonsOwed.length; i++) {
+            const boonOwed = checkData.boonsOwed[i];
+            const recipBoon = D.PullOut(checkData.boonsOwing, (x) => x.to === boonOwed.to
+                && x.to === boonOwed.to
+                && x.type === boonOwed.type);
+            if (recipBoon)
+                checkData.boonsOwed[i] = null;
+        }
+        checkData.boonsOwed = _.compact(checkData.boonsOwed);
+        D.Alert([
+            "<h3>OWED Boons Without Partners</h3>",
+            ...checkData.boonsOwed.map((x) => `${x.from} --> ${x.to} (${x.type})<br>`),
+            "<h3>OWING Boons Without Partners</h3>",
+            ...checkData.boonsOwing.map((x) => `${x.from} --> ${x.to} (${x.type})<br>`)
+        ], "Prestation Review");
     };
     // #endregion
 

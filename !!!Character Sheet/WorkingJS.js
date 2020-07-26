@@ -9,12 +9,13 @@
         end: 22 * 60 + 30
     };
     const LOGOPTIONS = {
-        get isDebugging() {
+        /* get isDebugging() {
             const curDate = new Date((new Date()).getTime());
             const [day, hour, min] = [curDate.getDay(), curDate.getHours(), curDate.getMinutes()];
             const dayMins = hour * 60 + min;
             return !(day === SESSIONTIME.day && dayMins > (SESSIONTIME.start - 15) && dayMins < (SESSIONTIME.end + 120));
-        },
+        }, */
+        isDebugging: false,
         isMuted: false
     };
     const ATTRIBUTES = {
@@ -2400,11 +2401,11 @@
                     repeating_project_memoriamrewards:
                         (parseInt(ATTRS.repeating_project_memoriamdiff) === 0 && "(Set the difficulty to see which rewards you can choose from.)")
                         || (parseInt(ATTRS.repeating_project_memoriamdiff) === 1
-                            && "Answer One Minor Question   ♦   Gain One Expendable Background Dot   ♦   Gain a +2 Bonus to One Roll")
+                            && "Ask a Minor Question   ♦   Gain One Temporary Advantage Dot   ♦   Gain +2 to One Roll   ♦   Advance a Project Die by Three Steps")
                         || (parseInt(ATTRS.repeating_project_memoriamdiff) === 2
-                            && "Answer One Major Question   ♦   Gain Two Expendable Background Dots   ♦   Gain a +4 Bonus to One Roll")
+                            && "Ask a Major Question   ♦   Gain Two Temporary Advantage Dots   ♦   Gain +4 to One Roll   ♦   Advance a Project Die by Six Steps")
                         || (parseInt(ATTRS.repeating_project_memoriamdiff) === 3
-                            && "Answer One Epic Question   ♦   Gain Three Expendable Background Dot   ♦   Gain a Major Boon")
+                            && "Ask an Epic Question   ♦   Gain Three Temporary Advantage Dots   ♦   Gain a Major Boon   ♦   Advance a Project Die by Nine Steps")
                 };
                 log(`Setting Attrs: ${JSON.stringify(attrList)}`);
                 setAttrs(attrList);

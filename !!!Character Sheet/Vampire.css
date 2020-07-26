@@ -1645,14 +1645,13 @@
 		border: none;
 	}
 
-	.charsheet div.sheet-dicebuttonblock {
+.charsheet div.sheet-dicebuttonblock {
 		height: 123px;
 		width: 618px;
 		margin-top: -21px;
 		margin-right: 5px;
 		padding-top: 21px;
-		background: url("https://i.imgur.com/wUFKBPF.png") no-repeat top;
-		background-size: 100%;
+		background: url('https://i.imgur.com/FdIw7ak.png') no-repeat top/100%;
 	}
 
 	.charsheet div.sheet-rouserollblock {
@@ -1666,18 +1665,17 @@
 		width: 74px;
 	}
 
+	.charsheet div.sheet-rouserollblock div.sheet-obvrouse1block:hover {
+		background: url('https://i.imgur.com/zHJTx4D.png') no-repeat center/100%;
+	}
+
 	.charsheet div.sheet-rouserollblock div.sheet-obvrouse2block {
 		height: 32px;
 		width: 36px;
 	}
-
-	.charsheet div.sheet-rouserollblock div.sheet-obvrouse1block:hover {
-		background: url("https://i.imgur.com/qSPNwfl.png");
-
-	}
 	
 	.charsheet div.sheet-rouserollblock div.sheet-obvrouse2block:hover {
-		background: url("https://i.imgur.com/euEWBix.png");		
+		background: url('https://i.imgur.com/9oTqGTp.png') no-repeat center/100%;		
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rouse1block {
@@ -1686,7 +1684,7 @@
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rouse1block:hover {
-		background: url("https://i.imgur.com/IM1PoBQ.png");
+		background: url('https://i.imgur.com/bgcyS98.png') no-repeat center/100%;
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rouse2block {
@@ -1695,7 +1693,7 @@
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rouse2block:hover {
-		background: url("https://i.imgur.com/PwHQhJs.png");
+		background: url('https://i.imgur.com/IXOpb3d.png') no-repeat center/100%;
 	}
 	
 	.charsheet div.sheet-rouserollblock div.sheet-discblock {
@@ -1704,22 +1702,66 @@
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-discblock:hover {
-		background: url("https://i.imgur.com/90qOGFe.png");
+		background: url('https://i.imgur.com/zpDPLYo.png') no-repeat center/100%;
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rollblock {
-		height: 20px;
-		width: 70px;
-		margin-left: 20px;
+		height: 24px;
+		width: 110px;
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rollblock:hover {
-		background: url("https://i.imgur.com/2lV8SRi.png") center no-repeat;
+		background: url('https://i.imgur.com/4S7qkbt.png') no-repeat center/100%;
 	}
 
 	.charsheet div.sheet-longbuttonblock {
 		height: 102px;
 		width: 508px;
+	}
+
+	.charsheet div.sheet-longbuttonblock div.sheet-checkblock {
+		height: 40px;
+		width: 84px;
+	}
+
+	.charsheet div.sheet-longbuttonblock div.sheet-checkblock:hover {
+		background: url('https://i.imgur.com/miifI3x.png') no-repeat center/100%;
+	}
+
+	.charsheet div.sheet-longbuttonblock div.sheet-willpowerblock {
+		height: 40px;
+		width: 127px;
+	}
+
+	.charsheet div.sheet-longbuttonblock div.sheet-willpowerblock:hover {
+		background: url('https://i.imgur.com/3pRK0RD.png') no-repeat center/100%;
+	}
+
+	.charsheet div.sheet-longbuttonblock div.sheet-humanityblock {
+		height: 40px;
+		width: 115px;
+	}
+
+	.charsheet div.sheet-longbuttonblock div.sheet-humanityblock:hover {
+		background: url('https://i.imgur.com/fupX8Yc.png') no-repeat center/100%; 
+	}
+
+	.charsheet div.sheet-longbuttonblock div.sheet-frenzyblock {
+		height: 40px;
+		width: 88px;
+	}
+
+	.charsheet div.sheet-longbuttonblock div.sheet-frenzyblock:hover {
+		background: url('https://i.imgur.com/94CS9NO.png') no-repeat center/100%; 
+	}
+
+	.charsheet div.sheet-longbuttonblock div.sheet-remorseblock {
+		height: 40px;
+		width: 94px;
+	}
+
+	.charsheet div.sheet-longbuttonblock div.sheet-remorseblock:hover {
+		background: url('https://i.imgur.com/LYzhA1u.png') no-repeat center/100%; 
 	}
 
 	.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input.sheet-attr:checked + span:not(.sheet-nohighlight),
@@ -1734,51 +1776,6 @@
 		margin: -5px -10px -20px -40px !important;
 		padding-top: 0px;
 		line-height: 36px;
-	}
-
-	.charsheet div.sheet-longbuttonblock div.sheet-checkblock {
-		height: 40px;
-		width: 84px;
-	}
-
-	.charsheet div.sheet-longbuttonblock div.sheet-checkblock:hover {
-		background: url("https://i.imgur.com/MftmtUs.png");
-	}
-
-	.charsheet div.sheet-longbuttonblock div.sheet-willpowerblock {
-		height: 40px;
-		width: 127px;
-	}
-
-	.charsheet div.sheet-longbuttonblock div.sheet-willpowerblock:hover {
-		background: url("https://i.imgur.com/9zfAjdn.png");
-	}
-
-	.charsheet div.sheet-longbuttonblock div.sheet-humanityblock {
-		height: 40px;
-		width: 115px;
-	}
-
-	.charsheet div.sheet-longbuttonblock div.sheet-humanityblock:hover {
-		background: url("https://i.imgur.com/niwPzG0.png");
-	}
-
-	.charsheet div.sheet-longbuttonblock div.sheet-frenzyblock {
-		height: 40px;
-		width: 88px;
-	}
-
-	.charsheet div.sheet-longbuttonblock div.sheet-frenzyblock:hover {
-		background: url("https://i.imgur.com/ZKxUMKR.png");
-	}
-
-	.charsheet div.sheet-longbuttonblock div.sheet-remorseblock {
-		height: 40px;
-		width: 94px;
-	}
-
-	.charsheet div.sheet-longbuttonblock div.sheet-remorseblock:hover {
-		background: url("https://i.imgur.com/Jv9M176.png");
 	}
 
 	.charsheet div.sheet-longbuttonblock div.sheet-rollpooldisplayblock {
@@ -2587,7 +2584,7 @@
 /* 		#endregion */
 /* 		#region SECTION: History */
 	.charsheet div.sheet-history span.sheet-header2 {
-		width: 150px;
+		width: 160px;
 	}
 
 	.charsheet div.sheet-history input {
@@ -3125,8 +3122,10 @@
 		width: 60px;
 	}
 	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rewards textarea {
-		width: calc(100% - 60px - 32px - 5px);
-		text-indent: 10px;
+		width: calc(100% - 69px);
+		font-size: 13px;
+		line-height: 20px;
+		margin-left: -4px;
 	}
 
 	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-outcome span.sheet-header5 {

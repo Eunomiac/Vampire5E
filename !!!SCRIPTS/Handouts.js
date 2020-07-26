@@ -22,9 +22,69 @@ const Handouts = (() => {
     // #region LOCAL INITIALIZATION
     const preInitialize = () => {
         // delete STATE.REF.categoryLogs;
+        STATE.REF.registry = STATE.REF.registry || {};
         STATE.REF.noteCounts = STATE.REF.noteCounts || {projects: 0, debug: 0};
         STATE.REF.categoryLogs = STATE.REF.categoryLogs || {projects: [], debug: [], callLogs: []};
         // STATE.REF.categoryLogs.callLogs = [];
+
+        /* const handOutTitles = [
+            "Character Stat Summary",
+            "Character Details",
+            "MEMO: Active Projects",
+            "MEMO: Fielded Assets",
+            "Ava Wong",
+            "Bacchus Giovanni",
+            "Dr. Arthur Roy",
+            "Johannes Napier",
+            "Locke Ulrich",
+            "C",
+            "D",
+            "LISTENER",
+            "FUZZY",
+            "CHAR",
+            "MEDIA",
+            "PLAYER",
+            "SESSION",
+            "LOCATIONS",
+            "TIMETRACKER",
+            "DRAGPADS",
+            "ROLLER",
+            "SOUNDSCAPE",
+            "COMPLICATIONS",
+            "HANDOUTS",
+            "CHAT",
+            "TESTER",
+            "INITCOMMANDS",
+            "JANUARY (Current)",
+            "FEBRUARY (Current)",
+            "MARCH (Current)",
+            "APRIL (Current)",
+            "MAY (Current)",
+            "JUNE (Current)",
+            "JULY (Current)",
+            "AUGUST (Current)",
+            "SEPTEMBER (Current)",
+            "OCTOBER (Current)",
+            "NOVEMBER (Current)",
+            "DECEMBER (Current)",
+            "JANUARY (Raw)",
+            "FEBRUARY (Raw)",
+            "MARCH (Raw)",
+            "APRIL (Raw)",
+            "MAY (Raw)",
+            "JUNE (Raw)",
+            "JULY (Raw)",
+            "AUGUST (Raw)",
+            "SEPTEMBER (Raw)",
+            "OCTOBER (Raw)",
+            "NOVEMBER (Raw)",
+            "DECEMBER (Raw)",
+            "Soundscape Log"
+        ];
+        for (const title of handOutTitles) {
+            const noteObj = getHandoutObj(title);
+            STATE.REF.registry[title] = noteObj && noteObj.id;
+        } */
     };
     // #endregion
 
@@ -95,9 +155,13 @@ const Handouts = (() => {
             D.Flag("Must provide a storage reference and a key to store the code!");
         }
     };
-    const getHandoutObj = (titleRef, charRef) => findObjs({_type: "handout"}).filter(
-        (x) => D.LCase(x.get("name")).includes(D.LCase(titleRef)) && (!charRef || x.get("inplayerjournals").includes(D.GetPlayerID(charRef)))
-    )[0];
+    const getHandoutObj = (titleRef, charRef) => {
+        if (titleRef in STATE.REF.registry)
+            return getObj("handout", STATE.REF.registry[titleRef]);
+        return findObjs({_type: "handout"}).filter(
+            (x) => D.LCase(x.get("name")).includes(D.LCase(titleRef)) && (!charRef || x.get("inplayerjournals").includes(D.GetPlayerID(charRef)))
+        )[0];
+    };
     const getProjectData = (charRef) => {
         const projAttrs = D.GetRepStats(charRef, "project", null, null, "rowID");
         const projData = [];
@@ -170,16 +234,21 @@ const Handouts = (() => {
 
     // #region SETTERS: Setting Notes, Deleting Handouts, Appending to Handouts
     const makeHandoutObj = (title, category, contents, isWritingGM = false, isVerbose = false, isRawCode = false) => {
+        let noteObj;
         if (category) {
             STATE.REF.categoryLogs[category] = STATE.REF.categoryLogs[category] || [];
             while (getCount(category) >= (categoryMax[category] || categoryMax["default"]))
                 delHandoutObj(STATE.REF.categoryLogs[category][0], category);
             title += ` ${getCatNum(category)}`;
             STATE.REF.categoryLogs[category].push(title);
-        } else {
-            delHandoutObj(title);
+        } else if (title in STATE.REF.registry && STATE.REF.registry[title]) {
+            noteObj = getObj("handout", STATE.REF.registry[title].id);
         }
-        const noteObj = createObj("handout", {name: title});
+        if (!noteObj) {
+            delHandoutObj(title);
+            noteObj = createObj("handout", {name: title});
+        }
+        STATE.REF.registry[title] = noteObj.id;
         if (contents)
             updateHandout(title, category, contents, isWritingGM, isVerbose, isRawCode);
         return noteObj;
@@ -187,8 +256,9 @@ const Handouts = (() => {
     const makeSimpleHandoutObj = (title, contents, isVerbose = false) => makeHandoutObj(title, false, contents, true, isVerbose);
     const updateHandout = (title, category, contents, isWritingGM = false, isVerbose = false, isRawCode = false) => {
         const handoutObj = getHandoutObj(title);
+        const isShiftingUp = handoutObj && handoutObj.get("avatar");
         const noteData = {
-            notes: isRawCode ? `<div style="display: block; width: 545px; margin-left: -30px; font-family: 'Fira Code'; font-size: 8px;">${contents}</div>` : C.HANDOUTHTML.main(D.JS(contents, isVerbose)),
+            notes: isRawCode ? `<div style="display: block; width: 545px; margin-left: -30px; font-family: 'Fira Code'; font-size: 8px;">${contents}</div>` : C.HANDOUTHTML.main(D.JS(contents, isVerbose), isShiftingUp),
             gmnotes: typeof contents === "string" ? contents : JSON.stringify(contents)
         };
         if (handoutObj) {

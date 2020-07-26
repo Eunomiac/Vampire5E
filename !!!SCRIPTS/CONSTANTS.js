@@ -1360,9 +1360,11 @@ const C = (() => {
                 DotBPEmpty: "<span style=\"display: inline-block; width: 9px; line-height: 12px; vertical-align: top; background: rgba(150, 150, 150, 0.4); border: none; height: 9px; box-shadow: -1px -1px 0px #000, 0px -1px 0px #999, 1px -1px 0px #aaa, 0px 0px 2px #000, 1px 0px 0px #fff, 0px 1px 0px #ccc, 1px 1px 0px #fff; border-radius: 100%; margin: 3px 1px 0px 1px;\"></span>"
             }
         },
-        main: (content) => D.JSH(`<div style="
+        main: (content, hasIcon = false) => D.JSH(`<div style="
                 display: block;
                 width: 600px;
+                background-color: ${C.COLORS.white};
+                margin-top: ${hasIcon ? "-550px" : "0px"};
             ">${content}</div>`),
         title: (content) => D.JSH(`<span style="
                 display: block;

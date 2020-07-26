@@ -43,9 +43,9 @@ const Roller = (() => {
             redMods: [],
             goldMods: []
         };
-        STATE.REF.diceStatus =
-            STATE.REF.diceStatus ||
-            _.each(SETTINGS.dice, (v, k) => {
+        STATE.REF.diceStatus
+            = STATE.REF.diceStatus
+            || _.each(SETTINGS.dice, (v, k) => {
                 STATE.REF.diceStatus = STATE.REF.diceStatus || {};
                 Object.assign(STATE.REF.diceStatus, {[k]: []});
             });
@@ -171,16 +171,16 @@ const Roller = (() => {
                             DB({"Received Roll": `${D.JSL(call)} ${D.JSL(params.join("|"))}`, params, rollCharObj}, "onChatCall");
                             params.shift();
                             if (VAL({charobj: rollCharObj}, "onChatCall")) {
-                                const rollFlags =
-                                    ["check", "rouse", "rouse2"].includes(rollType) ||
-                                    (VAL({pc: rollCharObj}) && (!playerIsGM(msg.playerid) || rollType === "frenzy")) ?
-                                        {} :
-                                        _.clone(STATE.REF.nextRollFlags);
+                                const rollFlags
+                                    = ["check", "rouse", "rouse2"].includes(rollType)
+                                    || (VAL({pc: rollCharObj}) && (!playerIsGM(msg.playerid) || rollType === "frenzy"))
+                                        ? {}
+                                        : _.clone(STATE.REF.nextRollFlags);
                                 rollFlags.isNPCRoll = STATE.REF.isNextRollNPC && playerIsGM(msg.playerid);
                                 rollFlags.isDiscRoll = call === "disc";
-                                rollFlags.isOblivionRoll =
-                                    call.includes("obv") ||
-                                    (STATE.REF.oblivionRouse && (rollFlags.isNPCRoll || playerIsGM(msg.playerid) || VAL({npc: rollCharObj})));
+                                rollFlags.isOblivionRoll
+                                    = call.includes("obv")
+                                    || (STATE.REF.oblivionRouse && (rollFlags.isNPCRoll || playerIsGM(msg.playerid) || VAL({npc: rollCharObj})));
                                 makeNewRoll(rollCharObj, rollType, params, rollFlags);
                                 delete STATE.REF.rollNextAs;
                                 delete STATE.REF.frenzyRoll;
@@ -618,16 +618,16 @@ const Roller = (() => {
                 const lineShifts = {
                         // rollerName: Media.GetTextData("rollerName").left + Media.GetTextWidth("rollerName") - Media.GetTextData("outcome").left + 45,
                         mainRoll:
-                            Media.GetImg("RollerFrame_TopEnd").get("left") +
-                            0.5 * Media.GetImgData("RollerFrame_TopEnd").width -
-                            Media.GetTextData("outcome").left +
-                            10,
-                        diceLine: Media.IsActive("RollerFrame_BottomEnd") ?
-                            Media.GetImg("RollerFrame_BottomEnd").get("left") +
-                              0.5 * Media.GetImgData("RollerFrame_BottomEnd").width -
-                              Media.GetTextData("outcome").left +
-                              20 :
-                            Infinity,
+                            Media.GetImg("RollerFrame_TopEnd").get("left")
+                            + 0.5 * Media.GetImgData("RollerFrame_TopEnd").width
+                            - Media.GetTextData("outcome").left
+                            + 10,
+                        diceLine: Media.IsActive("RollerFrame_BottomEnd")
+                            ? Media.GetImg("RollerFrame_BottomEnd").get("left")
+                              + 0.5 * Media.GetImgData("RollerFrame_BottomEnd").width
+                              - Media.GetTextData("outcome").left
+                              + 20
+                            : Infinity,
                         outcome: Media.GetTextWidth("outcome") + 45
                     },
                     shifts = {
@@ -692,20 +692,20 @@ const Roller = (() => {
             margin: {
                 get top() {
                     return (
-                        (Session.Mode === "Spotlight" && -1 * Media.GetImgData("RollerFrame_BottomEnd").height - 40) ||
-                        SETTINGS.shifts.resultCount.top
+                        (Session.Mode === "Spotlight" && -1 * Media.GetImgData("RollerFrame_BottomEnd").height - 40)
+                        || SETTINGS.shifts.resultCount.top
                     );
                 },
                 get left() {
                     return (
-                        (Session.Mode === "Spotlight" &&
-                            C.SANDBOX.width -
-                                Media.GetTextWidth("outcome") -
-                                SETTINGS.frame.flagBuffer -
-                                Media.GetTextData("margin").left -
-                                Media.GetTextWidth("margin") -
-                                40) ||
-                        SETTINGS.shifts.resultCount.left
+                        (Session.Mode === "Spotlight"
+                            && C.SANDBOX.width
+                                - Media.GetTextWidth("outcome")
+                                - SETTINGS.frame.flagBuffer
+                                - Media.GetTextData("margin").left
+                                - Media.GetTextWidth("margin")
+                                - 40)
+                        || SETTINGS.shifts.resultCount.left
                     ); /*
                                 Media.GetImgData(Media.IsActive("RollerFrame_BottomEnd") ? "RollerFrame_BottomEnd" : "RollerFrame_TopEnd").rightEdge ||
                 SETTINGS.shifts.resultCount.left */
@@ -1105,8 +1105,8 @@ const Roller = (() => {
         if (colorRef)
             return TRACEOFF(
                 traceID,
-                (VAL({string: COLORSCHEMES[rollType][rollLine][colorRef]}) && COLORSCHEMES[rollType][rollLine][colorRef]) ||
-                    COLORSCHEMES.base[rollLine]
+                (VAL({string: COLORSCHEMES[rollType][rollLine][colorRef]}) && COLORSCHEMES[rollType][rollLine][colorRef])
+                    || COLORSCHEMES.base[rollLine]
             );
         return TRACEOFF(
             traceID,
@@ -1158,9 +1158,9 @@ const Roller = (() => {
                     Media.RemoveImg(topImgName) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"
                 }`,
                 `... Removing <b>${bottomImgName}</b>: ${
-                    Media.RemoveImg(bottomImgName) ?
-                        "<span style='color: green;'><b>OK!</b></span>" :
-                        "<span style='color: red;'><b>ERROR!</b></span>"
+                    Media.RemoveImg(bottomImgName)
+                        ? "<span style='color: green;'><b>OK!</b></span>"
+                        : "<span style='color: red;'><b>ERROR!</b></span>"
                 }`
             );
         }
@@ -1327,8 +1327,8 @@ const Roller = (() => {
     const selectDie = (dieCat, dieNum) => {
         const traceID = TRACEON("selectDie", [dieCat, dieNum]);
         const rollRecord = getCurrentRoll(false);
-        const selectType =
-            (rollRecord.rollResults.wpCost === 0 && "selectedFree") || (rollRecord.rollResults.wpCost === 1 && "selected") || "selectedDouble";
+        const selectType
+            = (rollRecord.rollResults.wpCost === 0 && "selectedFree") || (rollRecord.rollResults.wpCost === 1 && "selected") || "selectedDouble";
         setDie(dieCat, dieNum, selectType, rollRecord.rollData.type, rollRecord.rollData.wasRerolled);
         if (STATE.REF.selected[dieCat].length > (rollRecord.rollResults.maxRerollDice || 3))
             selectDie(dieCat, STATE.REF.selected[dieCat][0]);
@@ -1412,8 +1412,8 @@ const Roller = (() => {
                 );
                 return TRACEOFF(
                     innerTraceID,
-                    Boolean(input.rolls) ===
-                        Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true))
+                    Boolean(input.rolls)
+                        === Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true))
                 );
             };
             const checkRestriction = (input, traits, flags, rollMod, restriction) => {
@@ -1657,9 +1657,9 @@ const Roller = (() => {
 
                 // THRESHOLD TEST OF ROLLTARGET: IF TARGET SPECIFIED BUT DOES NOT EXIST, SKIP PROCESSING THIS ROLL EFFECT.
                 if (
-                    VAL({string: rollTarget}) &&
-                    !D.IsIn(rollTarget, Object.keys(rollTraits), true) &&
-                    !D.IsIn(rollTarget, Object.keys(rollFlags), true)
+                    VAL({string: rollTarget})
+                    && !D.IsIn(rollTarget, Object.keys(rollTraits), true)
+                    && !D.IsIn(rollTarget, Object.keys(rollFlags), true)
                 ) {
                     DB(`Roll Target ${rollTarget} NOT present, SKIPPING EFFECT.`, "applyRollEffects");
                     continue;
@@ -1762,14 +1762,14 @@ const Roller = (() => {
                                 // If so, is the rollTarget present in traits?
                                 if (D.IsIn(rollTarget, Object.keys(rollTraits), true))
                                     // If so, multiply trait accordingly (rounding DOWN to a minimum of one) and set rollMod to the difference.
-                                    rollMod =
-                                        Math.max(1, Math.floor(rollTraits[rollTarget] * parseFloat(rollMod.replace(/x/gu, "")))) -
-                                        rollTraits[rollTarget];
+                                    rollMod
+                                        = Math.max(1, Math.floor(rollTraits[rollTarget] * parseFloat(rollMod.replace(/x/gu, ""))))
+                                        - rollTraits[rollTarget];
                                 // If not in traits, rollTarget must be in flags (validation happened above)
                                 // If so, multiply the flag accordingly (rounding DOWN to a minimum of one) and set rollMod to the difference.
                                 else
-                                    rollMod =
-                                        Math.max(
+                                    rollMod
+                                        = Math.max(
                                             1,
                                             Math.floor(_.find(rollFlags, (v, k) => k.includes(rollTarget)) * parseFloat(rollMod.replace(/x/gu, "")))
                                         ) - _.find(rollFlags, (v, k) => k.includes(rollTarget));
@@ -1920,9 +1920,9 @@ const Roller = (() => {
                         case "bestialcancelcrit": {
                             isReapplying = true;
                             if (
-                                rollResults.diceVals.filter((x) => x === "Hb").length === 0 ||
-                                rollResults.total <= 0 ||
-                                rollResults.diceVals.filter((x) => x.includes("Bc")).length === 0
+                                rollResults.diceVals.filter((x) => x === "Hb").length === 0
+                                || rollResults.total <= 0
+                                || rollResults.diceVals.filter((x) => x.includes("Bc")).length === 0
                             ) {
                                 // Moot if there are no bestial dice or no successes to cancel.
                                 isEffectMoot = true;
@@ -1967,9 +1967,9 @@ const Roller = (() => {
                         case "bestialcancelall": {
                             isReapplying = true;
                             if (
-                                rollResults.diceVals.filter((x) => x === "Hb").length === 0 ||
-                                rollResults.total <= 0 ||
-                                rollResults.diceVals.filter((x) => x.includes("Bc") || x.includes("Bs")).length === 0
+                                rollResults.diceVals.filter((x) => x === "Hb").length === 0
+                                || rollResults.total <= 0
+                                || rollResults.diceVals.filter((x) => x.includes("Bc") || x.includes("Bs")).length === 0
                             ) {
                                 // Moot if there are no bestial dice or no successes to cancel.
                                 isEffectMoot = true;
@@ -2291,16 +2291,16 @@ const Roller = (() => {
             ),
             (flag) => {
                 if (
-                    flag === "Health" &&
-                    _.intersection(
+                    flag === "Health"
+                    && _.intersection(
                         traitList,
                         _.map(_.flatten([C.ATTRIBUTES.physical, C.SKILLS.physical]), (v) => v.toLowerCase())
                     ).length
                 )
                     flagData.negFlagLines.push([-2, "Injured (<.>)"]);
                 else if (
-                    flag === "Willpower" &&
-                    _.intersection(
+                    flag === "Willpower"
+                    && _.intersection(
                         traitList,
                         _.map(_.flatten([C.ATTRIBUTES.mental, C.ATTRIBUTES.social, C.SKILLS.mental, C.SKILLS.social]), (v) => v.toLowerCase())
                     ).length
@@ -2385,10 +2385,10 @@ const Roller = (() => {
             } else {
                 tFull.traitData[trt] = {
                     display:
-                        D.IsIn(trt, undefined, true) ||
-                        D.IsIn(trt.replace(/_/gu, " "), undefined, true) ||
-                        D.GetStatVal(charObj.id, `${trt}_name`) ||
-                        D.GetStatVal(charObj.id, `${trt.replace(/_/gu, " ")}_name`),
+                        D.IsIn(trt, undefined, true)
+                        || D.IsIn(trt.replace(/_/gu, " "), undefined, true)
+                        || D.GetStatVal(charObj.id, `${trt}_name`)
+                        || D.GetStatVal(charObj.id, `${trt.replace(/_/gu, " ")}_name`),
                     value: D.Int(D.GetStatVal(charObj.id, trt) || D.GetStatVal(charObj.id, trt.replace(/_/gu, " ")))
                 };
                 if (rollType === "frenzy" && trt === "humanity") {
@@ -2952,9 +2952,9 @@ const Roller = (() => {
                     logLine,
                     "</div></div>",
                     CHATSTYLES.margin,
-                    !rollFlags.isHidingDifficulty && !rollFlags.isHidingResult && typeof rollResults.margin === "number" ?
-                        `(${rollResults.margin >= 0 ? "+" : "-"}${Math.abs(rollResults.margin)})` :
-                        "",
+                    !rollFlags.isHidingDifficulty && !rollFlags.isHidingResult && typeof rollResults.margin === "number"
+                        ? `(${rollResults.margin >= 0 ? "+" : "-"}${Math.abs(rollResults.margin)})`
+                        : "",
                     "</span></div></div>"
                 ]
                     .join("")
@@ -3238,8 +3238,8 @@ const Roller = (() => {
                                         if (rollData.type === "remorse")
                                             dotline = "◌".repeat(Math.max(maxHumanity - dotline.length - stains, 0)) + dotline + "◌".repeat(stains);
                                         else
-                                            dotline +=
-                                                "◌".repeat(Math.max(maxHumanity - dotline.length - (stains || 0)), 0) + "‡".repeat(stains || 0);
+                                            dotline
+                                                += "◌".repeat(Math.max(maxHumanity - dotline.length - (stains || 0)), 0) + "‡".repeat(stains || 0);
                                         break;
                                     }
                                     case "willpower": {
@@ -3276,14 +3276,14 @@ const Roller = (() => {
                                 }
                             }
                             if (rollFlags.isHidingTraits) {
-                                rollLines.mainRoll.text = rollFlags.isHidingDicePool ?
-                                    "Some Dice" :
-                                    `${Math.max(1, rollData.dicePool + -1 * (rollData.negFlagMod || 0))} Dice`;
-                                logLines.mainRoll =
-                                    CHATSTYLES.mainRoll +
-                                    (rollFlags.isHidingDicePool ?
-                                        "Some Dice" :
-                                        `${Math.max(1, rollData.dicePool + -1 * (rollData.negFlagMod || 0))} Dice`);
+                                rollLines.mainRoll.text = rollFlags.isHidingDicePool
+                                    ? "Some Dice"
+                                    : `${Math.max(1, rollData.dicePool + -1 * (rollData.negFlagMod || 0))} Dice`;
+                                logLines.mainRoll
+                                    = CHATSTYLES.mainRoll
+                                    + (rollFlags.isHidingDicePool
+                                        ? "Some Dice"
+                                        : `${Math.max(1, rollData.dicePool + -1 * (rollData.negFlagMod || 0))} Dice`);
                             } else {
                                 rollLines.mainRoll.text = mainRollParts.join(" + ");
                                 logLines.mainRoll = CHATSTYLES.mainRoll + mainRollLog.join(" + ");
@@ -3297,14 +3297,14 @@ const Roller = (() => {
                                     stLines.mainRoll = `${CHATSTYLES.mainRoll + rollData.mod} Dice`;
                                     playerNPCLines.mainRoll = `${CHATSTYLES.mainRoll + (rollFlags.isHidingDicePool ? "Some" : rollData.mod)} Dice`;
                                 } else {
-                                    logLines.mainRoll +=
-                                        rollFlags.isHidingTraits || rollFlags.isHidingDicePool ?
-                                            "" :
-                                            (rollData.mod < 0 ? " - " : " + ") + Math.abs(rollData.mod);
-                                    rollLines.mainRoll.text +=
-                                        rollFlags.isHidingTraits || rollFlags.isHidingDicePool ?
-                                            "" :
-                                            (rollData.mod < 0 ? " - " : " + ") + Math.abs(rollData.mod);
+                                    logLines.mainRoll
+                                        += rollFlags.isHidingTraits || rollFlags.isHidingDicePool
+                                            ? ""
+                                            : (rollData.mod < 0 ? " - " : " + ") + Math.abs(rollData.mod);
+                                    rollLines.mainRoll.text
+                                        += rollFlags.isHidingTraits || rollFlags.isHidingDicePool
+                                            ? ""
+                                            : (rollData.mod < 0 ? " - " : " + ") + Math.abs(rollData.mod);
                                     stLines.mainRoll += rollData.mod < 0 ? " - " : ` + ${Math.abs(rollData.mod)}`;
                                 }
                             if (rollData.type === "project")
@@ -3441,18 +3441,18 @@ const Roller = (() => {
                         }
                         case "trait": {
                             if (
-                                !rollResults.noBestialFail &&
-                                (rollResults.total === 0 || D.Int(rollResults.margin) < 0) &&
-                                rollResults.H.botches > 0
+                                !rollResults.noBestialFail
+                                && (rollResults.total === 0 || D.Int(rollResults.margin) < 0)
+                                && rollResults.H.botches > 0
                             ) {
                                 stLines.outcome = `${CHATSTYLES.outcomeRed}BESTIAL FAILURE!</span></div>`;
                                 rollLines.outcome.text = "BESTIAL FAILURE!";
                                 rollLines.outcome.color = getColor(rollData.type, "outcome", "worst");
                                 break;
                             } else if (
-                                !rollResults.noMessyCrit &&
-                                (!rollResults.margin || rollResults.margin >= 0) &&
-                                rollResults.critPairs.hb + rollResults.critPairs.hh > 0
+                                !rollResults.noMessyCrit
+                                && (!rollResults.margin || rollResults.margin >= 0)
+                                && rollResults.critPairs.hb + rollResults.critPairs.hh > 0
                             ) {
                                 rollLines.outcome.text = "MESSY CRITICAL!";
                                 stLines.outcome = `${CHATSTYLES.outcomeRed}MESSY CRITICAL!</span></div>`;
@@ -3519,10 +3519,10 @@ const Roller = (() => {
                         case "rouse":
                         case "rouse2": {
                             if (
-                                rollResults.diceVals.length === 2 &&
-                                rollResults.total > 0 &&
-                                _.any(rollResults.diceVals, (v) => v.includes("O")) &&
-                                _.any(rollResults.diceVals, (v) => v.includes("H"))
+                                rollResults.diceVals.length === 2
+                                && rollResults.total > 0
+                                && _.any(rollResults.diceVals, (v) => v.includes("O"))
+                                && _.any(rollResults.diceVals, (v) => v.includes("H"))
                             ) {
                                 stLines.outcome = `${CHATSTYLES.outcomePurple}HUMANITY or HUNGER?</span></div>`;
                                 rollLines.outcome.text = "RESTRAINT AT A COST?";
@@ -3655,8 +3655,8 @@ const Roller = (() => {
             "RollerFrame_Left",
             "RollerFrame_TopEnd",
             topMidRefs,
-            SETTINGS.frame.leftBuffer +
-                Math.max(
+            SETTINGS.frame.leftBuffer
+                + Math.max(
                     Media.GetTextWidth("mainRoll"),
                     SETTINGS.shifts.negMods.left + (Media.IsActive("negMods") && Media.GetTextWidth("negMods")) || 0
                 ),
@@ -3741,7 +3741,7 @@ const Roller = (() => {
                 PARAMS: [${D.JS(params.join(", "))}] (length: ${params.length})`,
             "makeNewRoll"
         );
-        if (D.Int(D.GetStatVal(charObj.id, "applybloodsurge")) > 0)
+        if (["disc", "trait"].includes(rollType) && D.Int(D.GetStatVal(charObj.id, "applybloodsurge")) > 0)
             quickRouseCheck(charObj, false, false, true);
         const rollData = buildDicePool(getRollData(charObj, rollType, params, rollFlags));
         recordRoll(rollData, rollDice(rollData, null, rollFlags));
@@ -4104,8 +4104,8 @@ const Roller = (() => {
         ];
         if (isOblivionRouse)
             if (
-                (isDoubleRouse && ((results[0] === 10 && results[1] === 1) || (results[0] === results[1] && [1, 10].includes(results[0])))) ||
-                (!isDoubleRouse && (results[0] === 10 || results[0] === 1))
+                (isDoubleRouse && ((results[0] === 10 && results[1] === 1) || (results[0] === results[1] && [1, 10].includes(results[0]))))
+                || (!isDoubleRouse && (results[0] === 10 || results[0] === 1))
             )
                 deltaAttrs.stain = true;
             else if (isDoubleRouse && results[0] === 10 && results[1] <= 5)
@@ -4159,10 +4159,10 @@ const Roller = (() => {
                 .map((x) => x.display.toLowerCase())
                 .join(`</span><br>${CHATSTYLES.space30}${CHATSTYLES.secret.greyPlus}${CHATSTYLES.secret.white}`)}</span>`;
             if (rollData.mod !== 0)
-                playerLine += `${(rollData.mod > 0 ? CHATSTYLES.secret.greyPlus : "") +
-                    (rollData.mod < 0 ? CHATSTYLES.secret.greyMinus : "") +
-                    CHATSTYLES.secret.white +
-                    Math.abs(rollData.mod)}</span>`;
+                playerLine += `${(rollData.mod > 0 ? CHATSTYLES.secret.greyPlus : "")
+                    + (rollData.mod < 0 ? CHATSTYLES.secret.greyMinus : "")
+                    + CHATSTYLES.secret.white
+                    + Math.abs(rollData.mod)}</span>`;
         }
 
         if (rollData.traits.length) {
@@ -4217,10 +4217,10 @@ const Roller = (() => {
         });
         D.Chat(
             "Storyteller",
-            `${CHATSTYLES.fullBox +
-                CHATSTYLES.secret.topLineStart +
-                (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling") +
-                (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${
+            `${CHATSTYLES.fullBox
+                + CHATSTYLES.secret.topLineStart
+                + (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling")
+                + (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${
                 rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""
             }</div>${blocks.join("")}</div></div>`
         );

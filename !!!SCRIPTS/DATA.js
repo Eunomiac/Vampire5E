@@ -1359,14 +1359,14 @@ const D = (() => {
             }, throttle);
         }
         sendChatMessage(getGMID(), msg, title, isPureCode);
-    };    
+    };
     const printSessionNotes = (sessionNum) => {
         sessionNum = sessionNum || Session.SessionNum;
         if ((sessionNum - 1) in STATE.REF.SessionNotes) {
             printSessionNotes(sessionNum - 1);
             delete STATE.REF.SessionNotes[sessionNum - 1];
         }
-        if (sessionNum in STATE.REF.SessionNotes) {            
+        if (sessionNum in STATE.REF.SessionNotes) {
             const sessNotes = kvpMap(STATE.REF.SessionNotes[sessionNum], null, (v) => _.sortBy(v, (vv) => vv.time).map((x) => `[${TimeTracker.FormatTime(TimeTracker.GetRealDate(x.time))}] ${x.content}<br>`));
             const sessStrings = [...sessNotes.general, "<br>"];
             for (const [cat, notes] of Object.entries(_.omit(sessNotes, "general")))
@@ -1385,7 +1385,7 @@ const D = (() => {
         if (VAL({string: menuHTML}, "promptGM")) {
             if (VAL({func: replyFunc})) {
                 TimeTracker.Pause();
-                Roller.Lock(true);
+                // Roller.Lock(true);
                 PROMPTFUNC = replyFunc;
             }
             sendChatMessage(getGMID(), menuHTML);
@@ -1396,16 +1396,14 @@ const D = (() => {
             replyString = replyString.replace(/_colon_/gu, ":");
             const func = PROMPTFUNC;
             PROMPTFUNC = null;
-            if (func(replyString, objects) === C.REPLY.KEEPOPEN) {
-                // DB("Received 'TRUE' from reply function: RESTORING.", "receivePrompt")
+            if (func(replyString, objects) === C.REPLY.KEEPOPEN)
+            // DB("Received 'TRUE' from reply function: RESTORING.", "receivePrompt")
                 PROMPTFUNC = func;
-            } else {
-                // DB("Did NOT receive 'TRUE' from reply function: CLEARING.", "receivePrompt")
-                Roller.Lock(false);
-                if (STATE.REF.PROMPTCLOCK) {
-                    TimeTracker.ToggleClock(true);
-                    STATE.REF.PROMPTCLOCK = false;
-                }
+            // DB("Did NOT receive 'TRUE' from reply function: CLEARING.", "receivePrompt")
+            // Roller.Lock(false);
+            if (STATE.REF.PROMPTCLOCK) {
+                TimeTracker.ToggleClock(true);
+                STATE.REF.PROMPTCLOCK = false;
             }
         }
     };
@@ -2089,7 +2087,7 @@ const D = (() => {
     const getBlackList = () => sendToGM(`${jStr(STATE.REF.BLACKLIST)}`, "DEBUG BLACKLIST");
     const logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
         msg = formatMsgContents(msg, false);
-        if (STATE.REF.ISDEBUGGING && (Session.IsTesting || !Session.IsSessionActive)) {
+        if (STATE.REF.ISDEBUGGING && (Session.IsTesting || !Session.IsSessionActive))
             // if (funcName) {
             //     STATE.REF.DEBUGLOG.push({
             //         timeStamp: new Date().getTime(),
@@ -2100,7 +2098,6 @@ const D = (() => {
             //         getDebugRecord("... DBLog");
             // }
             log(formatLogLine(msg, funcName, scriptName, prefix));
-        }
     };
     const logStackAlert = (rawCode) => {
         if (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) {
@@ -2444,7 +2441,7 @@ const D = (() => {
         //    E.g. statName = "advantage_type", repRowStatName = "Status (Anarchs)"
         const charObj = getChar(charRef);
         const isGettingMax = statName.endsWith("_max");
-        const stat = statName.replace(/_max$/gu, "");
+        const stat = D.LCase(statName.replace(/_max$/gu, ""));
         let attrValueObj = null,
             attrValue = null;
         if (VAL({charObj, string: stat})) {
@@ -2456,33 +2453,51 @@ const D = (() => {
             if (repRowStatName) {
                 const repStatData = getRepStats(charObj, null, {name: repRowStatName}, null, "rowID");
                 if (repStatData)
-                    attrValueObj = ((Object.values(repStatData)[0] || []).find((x) => x.name === stat) || {obj: false}).obj;
-                DB({repStatData: Object.values(repStatData), find: (Object.values(repStatData) || [])[0].find((x) => x.name === stat), stat, attrValueObj}, "getStat");
+                    attrValueObj = ((Object.values(repStatData)[0] || []).find((x) => x.name && D.LCase(x.name) === stat) || {obj: false}).obj;
+                DB({repStatData: Object.values(repStatData), find: (Object.values(repStatData) || [])[0].find((x) => x.name && D.LCase(x.name) === stat), stat, attrValueObj}, "getStat");
             }
             // STEP ONE: LOOK THROUGH NON-REPEATING ATTRIBUTES, IF NO REPROWSTATNAME GIVEN:
-            attrValueObj = _.find(attrObjs, (v) => v.get("name").toLowerCase() === stat.toLowerCase());
-
+            attrValueObj = _.find(attrObjs, (v) => D.LCase(v.get("name")) === stat);
+            DB({step: "STEP ONE: LOOK THROUGH NON-REPEATING ATTRIBUTES, IF NO REPROWSTATNAME GIVEN.", attrValueObj}, "getStat");
             // STEP TWO: LOOK THROUGH NON-REPEATING ATTRIBUTES FOR NAME/VAL PAIRS (e.g. "disc1_name, disc1")
             if (!attrValueObj) {
                 const attrNameObj = _.find(
                     attrObjs,
-                    (v) => v
-                        .get("name")
-                        .toLowerCase()
-                        .endsWith("_name") && v.get("current").toLowerCase() === stat.toLowerCase()
+                    (v) => D.LCase(v.get("name")).endsWith("_name") && D.LCase(v.get("current")) === stat
                 );
                 if (attrNameObj)
-                    attrValueObj = _.find(attrObjs, (v) => v.get("name") === attrNameObj.get("name").slice(0, -5));
+                    attrValueObj = _.find(attrObjs, (v) => D.LCase(v.get("name")) === D.LCase(attrNameObj.get("name")).slice(0, -5));
+                DB({step: "STEP TWO: LOOK THROUGH NON-REPEATING ATTRIBUTES FOR NAME/VAL PAIRS (e.g. \"disc1_name, disc1\")", attrNameObj, attrValueObj}, "getStat");
             }
 
             // STEP THREE: LOOK THROUGH REPEATING ATTRIBUTES IN C.TRAITREPSECS = ["advantage", "negadvantage", "discleft", "discmid", "discright"]
-            if (!attrValueObj)
+            if (!attrValueObj) {
                 for (const repSec of C.TRAITREPSECS) {
                     const repValData = getRepStats(charObj, repSec, null, stat);
-                    attrValueObj = repValData && repValData[0] && repValData[0].obj && repValData[0].obj.get("name").endsWith(stat) && repValData[0].obj;
+                    attrValueObj = repValData && repValData[0] && repValData[0].obj && (D.LCase(repValData[0].name).endsWith(stat) || D.LCase(repValData[0].obj.get("name")).endsWith(stat)) && repValData[0].obj;
+                    /* const boolChecks = {repValData: Boolean(repValData)};
+                    if (boolChecks.repValData)
+                        boolChecks["repValData[0]"] = Boolean(repValData[0]);
+                    if (boolChecks["repValData[0]"])
+                        boolChecks["repValData[0].obj"] = Boolean(repValData[0].obj);
+                    if (boolChecks["repValData[0].obj"])
+                        boolChecks.objName = Boolean(D.LCase(repValData[0].obj.get("name")));
+                    if (boolChecks.objName)
+                        boolChecks.stat = Boolean(stat);
+                    if (boolChecks.stat)
+                        boolChecks["objName.endsWith(stat)?"] = Boolean(D.LCase(repValData[0].obj.get("name")).endsWith(stat));
+                    if (boolChecks["objName.endsWith(stat)?"])
+                        boolChecks.finalObject = repValData[0].obj;
+                    DB({
+                        repValData,
+                        boolChecks,
+                        attrValueObj
+                    }, "getStat"); */
                     if (attrValueObj)
                         break;
                 }
+                DB({step: "LOOK THROUGH REPEATING ATTRIBUTES IN C.TRAITREPSECS = [\"advantage\", \"negadvantage\", \"discleft\", \"discmid\", \"discright\"]", attrValueObj}, "getStat");
+            }
             if (attrValueObj) {
                 attrValue = attrValueObj.get(isGettingMax ? "max" : "current");
                 if (!_.isNaN(parseInt(attrValue)))
@@ -2611,7 +2626,9 @@ const D = (() => {
     };
     const getRepStats = (charRef, section, rowFilter = {}, statName, groupBy, pickProperty, funcName = false) => {
         const charObj = getChar(charRef);
-        section = section || "*";
+
+        section = D.LCase(section || "*");
+        statName = statName ? D.LCase(statName) : statName;
         // D.Alert(`CharRef: ${D.JS(charRef)}, CharObj: ${D.JS(charObj)}`)
         DB(`getRepStats(${jStrL([charObj.get("name"), section, rowFilter, statName, groupBy, pickProperty])})`, "getRepStats");
         let finalRepData = [];
@@ -2671,10 +2688,10 @@ const D = (() => {
                     const foundStat
                         = _.find(attrNameData, (v) => looseMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FIRST match it against an EXACT ATTRIBUTE NAME already found above.
                         || _.find(attrNameData, (v) => looseMatch(parseRepStat(v.name)[2], statName)) // SECOND try to match with the EXACT "FOUND" NAME of a NAME/VALUE link.
-                        || _.find(rowAttrObjs, (v) => looseMatch(parseRepStat(v.get("name"))[2], statName)) // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
-                        || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FINALLY repeat the above but with fuzzy matching. match it against an EXACT ATTRIBUTE NAME already found above.
+                        || _.find(rowAttrObjs, (v) => looseMatch(parseRepStat(v.get("name"))[2], statName)); // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
+                        /* || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FINALLY repeat the above but with fuzzy matching. match it against an EXACT ATTRIBUTE NAME already found above.
                         || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.name)[2], statName))
-                        || _.find(rowAttrObjs, (v) => fuzzyMatch(parseRepStat(v.get("name"))[2], statName));
+                        || _.find(rowAttrObjs, (v) => fuzzyMatch(parseRepStat(v.get("name"))[2], statName)) */
                     if (foundStat) {
                         // If a stat was found, change it to a data set if it isn't one already
                         finalRepData.push(
@@ -2686,11 +2703,11 @@ const D = (() => {
                                     name: parseRepStat(foundStat.get("name"))[2],
                                     attrName: parseRepStat(foundStat.get("name"))[2],
                                     fullName: foundStat.get("name"),
-                                    obj: foundStat,
+                                    obj: D.JS(foundStat, true),
                                     val: foundStat.get("current")
                                 }
                         );
-                        DB(`FinalRepData: ${D.JSL(finalRepData, true)}`, "getRepStats");
+                        DB(`STAT FOUND - FinalRepData: ${D.JSL(finalRepData, true)}`, "getRepStats");
                     }
                     // IF a STATEMENT has NOT been specified, return ALL the row attribute objects (after parsing them into data sets)
                 } else {
@@ -2710,6 +2727,7 @@ const D = (() => {
             }
             // Compactify the data to remove false values:
             finalRepData = _.compact(finalRepData);
+            DB(`COMPACTED - FinalRepData: ${D.JSL(finalRepData, true)}`, "getRepStats");
             // Check for grouping and property-picking, and transform the data accordingly:
             if (VAL({string: groupBy}) && ["rowID", "fullName", "attrName", "name", "val"].includes(groupBy)) {
                 finalRepData = _.groupBy(finalRepData, (v) => v[groupBy]);
@@ -2724,6 +2742,7 @@ const D = (() => {
                 finalRepData = _.map(finalRepData, (v) => v[pickProperty]);
             }
         }
+        DB(`RETURNING FOUND STAT: ${D.JSL(finalRepData, true)}`, "getRepStats");
         return finalRepData;
     };
     const getRepStat = (charRef, section, rowFilter, statName, funcName = false) => getRepStats(charRef, section, rowFilter, statName, null, null, funcName)[0];

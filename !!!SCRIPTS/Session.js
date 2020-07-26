@@ -26,6 +26,58 @@ const Session = (() => {
         STATE.REF.isPromptingGeneric = false;
         PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND);
 
+        /* STATE.REF.PromptAuthors = ["N", "A", "L", "R"];
+        STATE.REF.SpotlightPrompts = {
+            L: [],
+            R: [
+                {
+                    prompt: "Give us insight into Dr. Roy's unpleasant history with the blood bond, and why he's so determined to be free of it.",
+                    author: "A",
+                    id: "Yq01QJOit7"
+                },
+                {
+                    prompt: "Dr. Roy is stopped by a student from his history professor days. They enjoyed his lectures and always wondered what happened to make him disappear so suddenly. Does the encounter make him reflect on happier nights and wonder what he could have done differently? Does he still plan to return to the university one night?",
+                    author: "A",
+                    id: "97GxAEakYm"
+                }
+            ],
+            A: [],
+            N: [
+                {
+                    prompt: "You model yourself on self control. When has this virtue worked against you? Was there a time you maintained control when it would have been more advantageous to lose it?",
+                    author: false,
+                    id: "yCQf5Dslh9"
+                }
+            ],
+            B: [
+                {
+                    prompt: "Describe the incident that made Bacchus decide once and for all to move an ocean away from the rest of his Hecata family.",
+                    author: "A",
+                    id: "V9Pt5xJlZI"
+                },
+                {
+                    prompt: "It is the early 1970's.",
+                    author: "R",
+                    id: "F18GKOPhm4"
+                },
+                {
+                    prompt: "I want to see you checking on/setting up another contingency that Bacchus has set up for a masquerade break.",
+                    author: "N",
+                    id: "4QrJ5H3cY0"
+                },
+                {
+                    prompt: "You've told us about your funerary mask. Now tell us a story of how you aquired one of your other occult tools.",
+                    author: "N",
+                    id: "PNVxjYzqU6"
+                },
+                {
+                    prompt: "Bacchus has just witnessed the bloody aftermath of another vampire's Frenzy. Louis, no stranger to the costs of revolution, asks Bacchus whether his envisioned future of a world beyond the Masquerade will truly be won as bloodlessly as he hopes.",
+                    author: "A",
+                    id: "n4KLU3zmEk"
+                }
+            ]
+        }; */
+
         STATE.REF.isTestingActive = STATE.REF.isTestingActive || false;
         STATE.REF.isFullTest = STATE.REF.isFullTest || false;
         STATE.REF.sceneChars = STATE.REF.sceneChars || [];
@@ -142,35 +194,35 @@ const Session = (() => {
                             Media.ToggleImg("DisableSiteBottomAll", false);
                             Media.ToggleImg("DisableSiteLeft", false);
                             Media.ToggleImg("DisableSiteRight", false);
-                            Media.SetImgData("SiteCenter", {width: 440, height: 325});
-                            Media.SetImgData("SiteLeft", {top: 876, left: 595, width: 400, height: 295});
-                            Media.SetImgData("SiteRight", {top: 876, left: 995, width: 400, height: 295});
-                            Media.SetImgData("SiteCenterTint", {width: 441, height: 326});
-                            Media.SetImgData("SiteLeftTint", {top: 876, left: 595, width: 401, height: 296});
-                            Media.SetImgData("SiteRightTint", {top: 876, left: 995, width: 401, height: 296});
+                            // Media.SetImgData("SiteCenter", {width: 440, height: 325});
+                            // Media.SetImgData("SiteLeft", {top: 876, left: 595, width: 400, height: 295});
+                            // Media.SetImgData("SiteRight", {top: 876, left: 995, width: 400, height: 295});
+                            // Media.SetImgData("SiteCenterTint", {width: 441, height: 326});
+                            // Media.SetImgData("SiteLeftTint", {top: 876, left: 595, width: 401, height: 296});
+                            // Media.SetImgData("SiteRightTint", {top: 876, left: 995, width: 401, height: 296});
                             Media.SetImgData("SignalLightBotLeft", {top: 759});
                             Media.SetImgData("SignalLightBotRight", {top: 759});
                             Media.SetTextData("testSessionNotice", {top: 300});
                             Media.SetTextData("playerPageAlertMessage", {top: 275});
-                            Media.SetTextData("clockStatusNotice", {top: 316});
+                            Media.SetTextData("clockStatusNotice", {top: 320});
                             Media.SetTextData("TimeTracker", {top: 350});
                             STATE.REF.quadScene.isActive = false;
                             Media.SetImg("DistrictCenter", "DupontByTheCastle");
                             Media.SetImg("SiteCenter", "CLGrounds");
                             setLocation({DistrictCenter: ["DupontByTheCastle"], SiteCenter: ["CLGrounds"]});
-                            setTimeout(() => {
-                                Media.ToggleText("HubAspectsNotice", false);
-                                Media.ToggleText("HubAspectsTitle", false);
-                            }, 1000);
+                            // setTimeout(() => {
+                            //     Media.ToggleText("HubAspectsNotice", false);
+                            //     Media.ToggleText("HubAspectsTitle", false);
+                            // }, 1000);
                         } else {
                             Media.ToggleImg("DistrictCenter", false);
-                            Media.ToggleImg("SiteCenter", true);
-                            Media.ToggleImg("SiteLeft", true);
-                            Media.ToggleImg("SiteRight", true);
-                            Media.ToggleImg("SiteMidCenter", true);
-                            Media.ToggleImg("SiteTopCenter", true);
-                            Media.ToggleImg("SiteTopLeft", true);
-                            Media.ToggleImg("SiteTopRight", true);
+                            Media.ToggleImg("SiteCenter", false);
+                            Media.ToggleImg("SiteLeft", false);
+                            Media.ToggleImg("SiteRight", false);
+                            Media.ToggleImg("SiteMidCenter", false);
+                            Media.ToggleImg("SiteTopCenter", false);
+                            Media.ToggleImg("SiteTopLeft", false);
+                            Media.ToggleImg("SiteTopRight", false);
                             Media.ToggleImg("SiteCenterTint", false);
                             Media.ToggleImg("SiteLeftTint", false);
                             Media.ToggleImg("SiteRightTint", false);
@@ -183,27 +235,25 @@ const Session = (() => {
                             Media.ToggleImg("DisableSiteBottomAll", false);
                             Media.ToggleImg("DisableSiteLeft", false);
                             Media.ToggleImg("DisableSiteRight", false);
-                            Media.SetImg("SiteCenter", "CLVestibule");
-                            Media.SetImg("SiteLeft", "CLGallery");
-                            Media.SetImg("SiteRight", "CLDrawingRoom");
-                            Media.SetImg("SiteMidCenter", "CLGreatHall");
-                            Media.SetImg("SiteTopCenter", "CLOverlook");
-                            Media.SetImg("SiteTopLeft", "CLLibrary");
-                            Media.SetImg("SiteTopRight", "CLTerrace");
-                            Media.SetImgData("SiteCenter", {width: 352, height: 258});
-                            Media.SetImgData("SiteLeft", {top: 740, left: 520, width: 317, height: 233});
-                            Media.SetImgData("SiteRight", {top: 740, left: 1070, width: 317, height: 233});
-                            Media.SetImgData("SiteCenterTint", {width: 353, height: 259});
-                            Media.SetImgData("SiteLeftTint", {top: 740, left: 520, width: 318, height: 234});
-                            Media.SetImgData("SiteRightTint", {top: 740, left: 1070, width: 318, height: 234});
+                            // Media.SetImg("SiteCenter", "CLVestibule");
+                            // Media.SetImg("SiteLeft", "CLGallery");
+                            // Media.SetImg("SiteRight", "CLDrawingRoom");
+                            // Media.SetImg("SiteMidCenter", "CLGreatHall");
+                            // Media.SetImg("SiteTopCenter", "CLOverlook");
+                            // Media.SetImg("SiteTopLeft", "CLLibrary");
+                            // Media.SetImg("SiteTopRight", "CLTerrace");
+                            // Media.SetImgData("SiteCenter", {width: 352, height: 258});
+                            // Media.SetImgData("SiteLeft", {top: 740, left: 520, width: 317, height: 233});
+                            // Media.SetImgData("SiteRight", {top: 740, left: 1070, width: 317, height: 233});
+                            // Media.SetImgData("SiteCenterTint", {width: 353, height: 259});
+                            // Media.SetImgData("SiteLeftTint", {top: 740, left: 520, width: 318, height: 234});
+                            // Media.SetImgData("SiteRightTint", {top: 740, left: 1070, width: 318, height: 234});
                             Media.SetImgData("SignalLightBotLeft", {top: 900});
                             Media.SetImgData("SignalLightBotRight", {top: 900});
                             Media.SetTextData("testSessionNotice", {top: 200});
                             Media.SetTextData("playerPageAlertMessage", {top: 225});
-                            Media.SetTextData("clockStatusNotice", {top: 290});
+                            Media.SetTextData("clockStatusNotice", {top: 225});
                             Media.SetTextData("TimeTracker", {top: 265});
-                            Media.ToggleText("HubAspectsNotice", true);
-                            Media.ToggleText("HubAspectsTitle", true);
                             STATE.REF.quadScene.isActive = true;
                             if (D.LCase(args[0]) in HUBFOCUS) {
                                 Media.SetImg("SiteFocusHub", HUBFOCUS[D.LCase(args[0])], true);
@@ -279,7 +329,7 @@ const Session = (() => {
             case "end":
             case "toggle": {
                 if (isSessionActive())
-                    endSession(args[0] !== "skip");
+                    endSession(args[0] !== "skip", args[0] === "skip");
                 else
                     startSession();
                 break;
@@ -823,7 +873,7 @@ const Session = (() => {
             ]
         ]);
     };
-    const endSession = (isDoingMonologues = true) => {
+    const endSession = (isCheckingForMonologues = true, isSkippingMonologues = false) => {
         DB({mode: Session.Mode, spotlightChar: STATE.REF.spotlightChar, monologues: D.JS(STATE.REF.SessionMonologues)}, "endSession");
         if (Session.IsCasaLomaActive) {
             D.Flag("Toggle CasaLoma Off First!");
@@ -831,8 +881,9 @@ const Session = (() => {
         }
         if (
             (STATE.REF.isTestingActive && !STATE.REF.isFullTest)
-            || (isDoingMonologues && startSessionMonologue())
-            || (!isDoingMonologues && remorseCheck())
+            || (isCheckingForMonologues && startSessionMonologue())
+            || (!isCheckingForMonologues && isSkippingMonologues && remorseCheck())
+            || (!isCheckingForMonologues && !isSkippingMonologues)
         ) {
             changeMode("Inactive", true, [
                 [
@@ -854,17 +905,21 @@ const Session = (() => {
                 if (STATE.REF.isTestingActive) {
                     if (STATE.REF.SessionScribe === D.GetName(D.GetPlayer(char)))
                         D.Alert(`Would award 1 XP to ${D.JS(char)} ("Session Scribe") if session active.`, "Test: Session.endSession()");
-                    D.Alert(`Would award ${isDoingMonologues ? "1" : "2"} XP to ${D.JS(char)} ("Session XP award.") if session active.`, "Test: Session.endSession()");
+                    D.Alert(`Would award ${isSkippingMonologues ? "2" : "1"} XP to ${D.JS(char)} ("Session XP award.") if session active.`, "Test: Session.endSession()");
                 } else {
                     if (STATE.REF.SessionScribe === D.GetName(D.GetPlayer(char)))
                         Char.AwardXP(char, 1, "Session Scribe.");
-                    Char.AwardXP(char, isDoingMonologues ? 1 : 2, "Session XP award.");
+                    Char.AwardXP(char, isSkippingMonologues ? 2 : 1, "Session XP award.");
                 }
             if (!STATE.REF.isTestingActive || STATE.REF.isFullTest) {
                 STATE.REF.dateRecord = null;
                 STATE.REF.SessionNum++;
             } else if (STATE.REF.dateRecord) {
                 TimeTracker.CurrentDate = STATE.REF.dateRecord;
+            }
+            if (!STATE.REF.isTestingActive || STATE.REF.isFullTest) {
+                STATE.REF.PromptAuthors = [];
+                D.Flag("Clearing Prompt Authors List.");
             }
             Media.SetText(
                 "NextSession",
@@ -896,7 +951,7 @@ const Session = (() => {
         if (STATE.REF.tokenRecord[mode] !== false)
             for (const [tokenID, tokenData] of Object.entries(STATE.REF.tokenRecord[mode])) {
                 const tokenObj = getObj("graphic", tokenID);
-                if (tokenObj.get("layer") !== "gmlayer") {
+                if (tokenObj && tokenObj.get("layer") !== "gmlayer") {
                     Media.SetToken(tokenData.charID, tokenData.src);
                     Media.SetImgTemp(tokenID, _.omit(tokenData, "src"));
                     Media.ToggleToken(tokenData.charID, tokenData.layer === "objects");
@@ -1017,12 +1072,18 @@ const Session = (() => {
             STATE.REF.fullTestRecord.SessionScribes = D.Clone(STATE.REF.SessionScribes);
             STATE.REF.fullTestRecord.dateRecord = STATE.REF.dateRecord;
             STATE.REF.fullTestRecord.SessionNum = STATE.REF.SessionNum;
+            STATE.REF.fullTestRecord.SpotlightPrompts = D.Clone(STATE.REF.SpotlightPrompts);
+            STATE.REF.fullTestRecord.PromptAuthors = [...STATE.REF.PromptAuthors];
+            STATE.REF.fullTestRecord.CHARregistry = D.Clone(Char.REGISTRY);
         } else {
             setPlayerPage("SplashPage");
             if ("SessionScribes" in STATE.REF.fullTestRecord) {
                 STATE.REF.SessionScribes = D.Clone(STATE.REF.fullTestRecord.SessionScribes);
                 STATE.REF.dateRecord = STATE.REF.fullTestRecord.dateRecord;
                 STATE.REF.SessionNum = STATE.REF.fullTestRecord.SessionNum;
+                STATE.REF.SpotlightPrompts = D.Clone(STATE.REF.fullTestRecord.SpotlightPrompts);
+                STATE.REF.PromptAuthors = [...STATE.REF.fullTestRecord.PromptAuthors];
+                state[C.GAMENAME].Char.registry = D.Clone(STATE.REF.fullTestRecord.CHARregistry);
             }
             STATE.REF.fullTestRecord = {};
         }
@@ -2211,26 +2272,26 @@ const Session = (() => {
         DB({initial, quadrant, spotlightPrompt}, "assignSpotlightPrompt");
         if (initial) {
             // FIRST: Look for prompts already assigned, and tell the player IF not silent.
-            if (spotlightPrompt && !isSilent) {
-                D.Chat(
-                    isGMCall ? D.GMID() : D.GetPlayerID(charRef),
-                    C.HTML.Block([
-                        C.HTML.Header(`Your Prompt for Session ${D.NumToText(STATE.REF.SessionNum, true)} Is:`),
-                        C.HTML.Body(spotlightPrompt.prompt, {
-                            fontSize: "12px",
-                            fontFamily: "Voltaire",
-                            lineHeight: "14px",
-                            textAlign: "left",
-                            padding: "3px",
-                            margin: "0px"
-                        })
-                    ]),
-                    undefined,
-                    false,
-                    true
-                );
-                if (!(Session.IsSessionActive || TimeTracker.ArePromptsOpen()))
-                    return false;
+            if (spotlightPrompt) {
+                if (!isSilent)
+                    D.Chat(
+                        isGMCall ? D.GMID() : D.GetPlayerID(charRef),
+                        C.HTML.Block([
+                            C.HTML.Header(`Your Prompt for Session ${D.NumToText(STATE.REF.SessionNum, true)} Is:`),
+                            C.HTML.Body(spotlightPrompt.prompt, {
+                                fontSize: "12px",
+                                fontFamily: "Voltaire",
+                                lineHeight: "14px",
+                                textAlign: "left",
+                                padding: "3px",
+                                margin: "0px"
+                            })
+                        ]),
+                        undefined,
+                        false,
+                        true
+                    );
+                return spotlightPrompt;
             }
             // OTHERWISE, only assign prompts if this is a GM call.
             if (isGMCall)
@@ -2485,6 +2546,7 @@ const Session = (() => {
                 ])
             );
             D.Call(`!roll quick remorse ${STATE.REF.spotlightChar}`);
+            // promptContinueMonologue();
         }
         DB(
             {step: "Ending Session Monologue, Proceeding to Next", lastPrompt, numStains, lastData: D.GetCharData(STATE.REF.spotlightChar)},
@@ -2492,6 +2554,18 @@ const Session = (() => {
         );
         D.SetCharData(STATE.REF.spotlightChar, "spotlightPrompt", false);
         startSessionMonologue();
+    };
+    const promptContinueMonologue = () => {
+        D.CommandMenu({
+            title: "Remorse Checks",
+            rows: [
+                {
+                    type: "ButtonLine",
+                    contents: [0, {name: "Continue", command: "!endmonologue"}, 0]
+                }
+            ]
+        });
+        return false;
     };
     // #endregion
 

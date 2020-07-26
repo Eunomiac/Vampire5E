@@ -1528,16 +1528,11 @@ const TimeTracker = (() => {
         };
         if (isInBlackout({days: 0, hours: 0, minutes: 2}, {days: 0, hours: 2, minutes: 0})) {
             Media.ToggleText("Countdown", false);
-            Media.ToggleText("PromptsAvailableNotice", false);
             Media.SetTextData("NextSession", {shiftTop: -110});
         } else {
             Media.ToggleText("Countdown", true);
             Media.SetTextData("NextSession", {shiftTop: 0});
             Media.SetImgData("SplashMoon_1", {top: countdownRecord[3]}, true);
-            if (arePromptsAssignable())
-                Media.ToggleText("PromptsAvailableNotice", true);
-            else
-                Media.ToggleText("PromptsAvailableNotice", false);
             Media.SetImg("SplashWater", countdownRecord[4]);
             Media.SetText(
                 "Countdown",

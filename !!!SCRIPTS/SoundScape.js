@@ -38,8 +38,9 @@ const Soundscape = (() => {
         STATE.REF.fadeLeadTime = STATE.REF.fadeLeadTime || 5000;
         STATE.REF.maxFadeStep = STATE.REF.maxFadeStep || 1;
 
-        STATE.REF.scoreOverride = "ScoreMain";
-        D.Flag("Score Override: ScoreMain");
+        delete STATE.REF.scoreOverride;
+        // STATE.REF.scoreOverride = "ScoreMain";
+        // D.Flag("Score Override: ScoreMain");
 
         for (const [trackKey, fadeData] of Object.entries(STATE.REF.soundsFading))
             fadeTrackObj(trackKey, fadeData.targetVol, fadeData.startVol);
