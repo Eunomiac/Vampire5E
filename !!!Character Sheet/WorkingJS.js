@@ -43,6 +43,11 @@
         "Alchemy",
         "True Faith"
     ];
+    const TENETS = [
+        "Take Care of Our Own",
+        "Don't Kill Without Good Reason",
+        "Keep the Beast Under Control"
+    ];
     const TRACKERS = ["Health", "Willpower", "Blood Potency", "Humanity"];
     // HUMSEQUENCES = ["BSH", "HBHXS", "SBS", "XHB"],
     const REGEXPBLACKLIST = [
@@ -1418,6 +1423,9 @@
                                 attrList[`disc${i}_toggle`] = 1;
                                 attrList[`disc${i}_name`] = cDiscs[i - 1];
                             }
+
+                    // Finally, Chronicle Tenets:
+                    TENETS.forEach((x, i) => { attrList[`tenet_${i + 1}`] = `♦ ${x}` });
                     cBack(null, attrList);
                 });
             },
@@ -1673,7 +1681,6 @@
                                         ";  Rouse x2 for All Levels."
                                     ][attrList.bp_rousereroll]
                                 }`;
-                        attrList.bp_slakebag = attrList.bp_slakeanimal;
                         attrList.bp_slaketext = `Animals & bagged blood slake ${
                             {0: "no", 0.5: "half", 1: "full"}[attrList.bp_slakeanimal]
                         } Hunger.\n${

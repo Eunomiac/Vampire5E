@@ -2556,14 +2556,23 @@
 
 /* #region PAGE THREE: HUMANITY */
 /* 		#region SECTION: Tenets, Convictions, Touchstones */
-	.charsheet div.sheet-tenets input.sheet-customtrait,
-	.charsheet div.sheet-beliefs input.sheet-customtrait {
+	.charsheet div.sheet-tenets input.sheet-customtrait {
 		height: 20px;
 		margin-bottom: 10px;
 	}
 
-	.charsheet div.sheet-beliefs div.sheet-header3 {
+	.charsheet div.sheet-tenets div.sheet-header3 {
 		display: inline-block;
+		margin-bottom: 10px;
+	}
+	
+	.charsheet div.sheet-tenets textarea {
+		padding: 0px;
+		font-size: 14px;
+		font-family: 'Cinzel';
+		height: 20px;
+		margin-bottom: 10px;
+		line-height: 20px;
 	}
 
 /* 		#endregion */

@@ -1074,6 +1074,42 @@ const D = (() => {
         }
         return {};
     };
+    const merge = (target, source, areNewPropsOK = true, isWritingToTarget = false) => {
+        if (_.isUndefined(source))
+            return target;
+        if (typeof target !== "function" && _.isObject(target)) {
+            const thisTarget = Array.isArray(target) ? [...target] : Object.assign({}, target);
+            if (typeof source !== "function" && _.isObject(source)) {
+                for (const [key, val] of Object.entries(areNewPropsOK ? source : _.pick(source, Object.keys(thisTarget))))
+                    thisTarget[key] = merge(thisTarget[key], val, areNewPropsOK, isWritingToTarget);
+                if (isWritingToTarget)
+                    Object.assign(target, thisTarget);
+                return thisTarget;
+            }
+        }
+        return source;
+    };
+    const filterForObjAttrs = (obj, deltas) => _.pick(deltas, (deltaVal, deltaKey) => deltaKey in obj.attributes);
+    const filterForChanges = (target, source) => {
+        if (_.isUndefined(source))
+            return undefined;
+        if (typeof source !== "function" && _.isObject(source)) {
+            const thisSource = Array.isArray(source) ? [] : {};
+            if (typeof target !== "function" && _.isObject(target)) {
+                for (const [key, val] of Object.entries(source)) {
+                    const changes = filterForChanges(target[key], val);
+                    if (changes !== undefined)
+                        thisSource[key] = changes;
+                }
+                return thisSource;
+            }
+            return source;
+        } else if (source === target) {
+            return undefined;
+        } else {
+            return source;
+        }
+    };
     const rbgToHex = (rgb = [0, 0, 0]) => `#${rgb
         .slice(0, 3)
         .map((x) => x.toString(16))
@@ -3156,6 +3192,9 @@ const D = (() => {
         Romanize: numToRomanNum,
         Capitalize: capitalize,
         Clone: clone,
+        Merge: merge,
+        FilterForObjAttrs: filterForObjAttrs,
+        FilterForChanges: filterForChanges,
         Gradient: colorGradient,
         RGBtoHEX: rbgToHex,
         ParseStack: parseStack,

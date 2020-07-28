@@ -6,7 +6,6 @@
         <input type="hidden" name="attr_bp_mend" value="0" />
         <input type="hidden" name="attr_bp_rousereroll" value="0" />
         <input type="hidden" name="attr_bp_slakeanimal" value="0" />
-        <input type="hidden" name="attr_bp_slakebag" value="0" />
         <input type="hidden" name="attr_bp_slakehuman" value="0" />
         <input type="hidden" name="attr_bp_slakekill" value="0" />
         <input type="hidden" name="attr_bp_surge" value="0" />
@@ -2696,7 +2695,6 @@
                                 <input class="sheet-dot" type="radio" name="attr_ceremony" value="5" /><span></span>
                             </div>
                         </div>
-                        <input type="hidden" name="attr_ceremony_type" value="ceremony" />
                     </fieldset>
                 </div>
                 <div class="sheet-col3 sheet-disciplines">
@@ -2713,7 +2711,6 @@
                                 <input class="sheet-dot" type="radio" name="attr_ceremony" value="5" /><span></span>
                             </div>
                         </div>
-                        <input type="hidden" name="attr_ceremony_type" value="ceremony" />
                     </fieldset>
                 </div>
                 <div class="sheet-col3 sheet-disciplines">
@@ -2730,7 +2727,6 @@
                                 <input class="sheet-dot" type="radio" name="attr_ceremony" value="5" /><span></span>
                             </div>
                         </div>
-                        <input type="hidden" name="attr_ceremony_type" value="ceremony" />
                     </fieldset>
                 </div>
             </div>
@@ -2756,7 +2752,6 @@
                                 <input class="sheet-dot" type="radio" name="attr_ritual" value="5" /><span></span>
                             </div>
                         </div>
-                        <input type="hidden" name="attr_ritual_type" value="ritual" />
                     </fieldset>
                 </div>
                 <div class="sheet-col3 sheet-disciplines">
@@ -2773,7 +2768,6 @@
                                 <input class="sheet-dot" type="radio" name="attr_ritual" value="5" /><span></span>
                             </div>
                         </div>
-                        <input type="hidden" name="attr_ritual_type" value="ritual" />
                     </fieldset>
                 </div>
                 <div class="sheet-col3 sheet-disciplines">
@@ -2790,7 +2784,6 @@
                                 <input class="sheet-dot" type="radio" name="attr_ritual" value="5" /><span></span>
                             </div>
                         </div>
-                        <input type="hidden" name="attr_ritual_type" value="ritual" />
                     </fieldset>
                 </div>
             </div>
@@ -2820,7 +2813,6 @@
                         <div class="sheet-powerlist sheet-rituallist sheet-formulalist">
                             <input type="text" name="attr_formula" value="" /><br />
                         </div>
-                        <input type="hidden" name="attr_formula_type" value="formula" />
                     </fieldset>
                 </div>
                 <div class="sheet-col3 sheet-disciplines">
@@ -2828,7 +2820,6 @@
                         <div class="sheet-powerlist sheet-rituallist sheet-formulalist">
                             <input type="text" name="attr_formula" value="" /><br />
                         </div>
-                        <input type="hidden" name="attr_formula_type" value="formula" />
                     </fieldset>
                 </div>
                 <div class="sheet-col3 sheet-disciplines">
@@ -2836,7 +2827,6 @@
                         <div class="sheet-powerlist sheet-rituallist sheet-formulalist">
                             <input type="text" name="attr_formula" value="" /><br />
                         </div>
-                        <input type="hidden" name="attr_formula_type" value="formula" />
                     </fieldset>
                 </div>
             </div>
@@ -3199,39 +3189,25 @@
             <div class="sheet-coltight1 sheet-header3">
                 Chronicle Tenets
             </div>
-            <div class="sheet-coltight1">
-                <fieldset class="repeating_tenet">
-                    <div class="sheet-coltight1">
-                        <input class="sheet-customtrait sheet-left sheet-insetBox sheet-clearText" type="text"
-                            name="attr_tenet" style="width: 100%;" />
-                    </div>
-                    <input type="hidden" name="attr_tenetid" />
-                </fieldset>
-            </div>
+            <textarea name="attr_tenet_1" value="" readonly></textarea>
+            <textarea name="attr_tenet_2" value="" readonly></textarea>
+            <textarea name="attr_tenet_3" value="" readonly></textarea>
         </div>
-        <div class="sheet-coltight2x3 sheet-beliefs">
-            <div class="sheet-col2 sheet-header3">
+        <div class="sheet-col3 sheet-tenets">
+            <div class="sheet-coltight1 sheet-header3">
                 Compromises
             </div>
-            <div class="sheet-col2 sheet-header3">
+            <input class="sheet-customtrait sheet-left sheet-insetBox sheet-clearText" type="text" name="attr_compromise_1" style="width: 100%;" />
+            <input class="sheet-customtrait sheet-left sheet-insetBox sheet-clearText" type="text" name="attr_compromise_2" style="width: 100%;" />
+            <input class="sheet-customtrait sheet-left sheet-insetBox sheet-clearText" type="text" name="attr_compromise_3" style="width: 100%;" />
+        </div>
+        <div class="sheet-col3 sheet-tenets">
+            <div class="sheet-coltight1 sheet-header3">
                 Convictions
             </div>
-            <div class="sheet-coltight1">
-                <fieldset class="repeating_beliefs">
-                    <div class="sheet-col2">
-                        <input class="sheet-customtrait sheet-left sheet-insetBox sheet-clearText" type="text"
-                            name="attr_conviction" style="width: 100%;" />
-                    </div>
-                    <div class="sheet-col2">
-                        <div class="sheet-coltight1">
-                            <input class="sheet-customtrait sheet-left sheet-insetBox sheet-clearText" type="text"
-                                name="attr_touchstone_name" style="width: 100%;" />
-                        </div>
-                    </div>
-                    <input type="hidden" name="attr_convictionid" />
-                    <input type="hidden" name="attr_touchstoneid" />
-                </fieldset>
-            </div>
+            <input class="sheet-customtrait sheet-left sheet-insetBox sheet-clearText" type="text" name="attr_conviction_1" style="width: 100%;" />
+            <input class="sheet-customtrait sheet-left sheet-insetBox sheet-clearText" type="text" name="attr_conviction_2" style="width: 100%;" />
+            <input class="sheet-customtrait sheet-left sheet-insetBox sheet-clearText" type="text" name="attr_conviction_3" style="width: 100%;" />
         </div>
         <!--MASK -->
         <div class="sheet-header1">
@@ -3284,7 +3260,6 @@
             <img src="https://i.imgur.com/5DZF5Ig.png" /> <!-- Schemes -->
         </div>
         <fieldset class="repeating_project">
-            <input type="hidden" name="attr_projectsrowid" value="0" />
             <!-- OBJECTIVES -->
             <input class="sheet-containerselector" type="radio" name="attr_schemetype" value="0" checked />
             <div class="sheet-col1 sheet-scheme sheet-objective sheet-engravedFrame">
@@ -3879,7 +3854,6 @@
         </div>
         <div class="sheet-coltight1 sheet-timeline">
             <fieldset class="repeating_timeline">
-                <input type="hidden" name="attr_timelinerowid" value="0" />
                 <input type="hidden" name="attr_tlsortby" value="0" />
                 <div class="sheet-coltight1 sheet-timeline sheet-timewhole">
                     <div class="sheet-coltight1 sheet-timeline sheet-doublerow sheet-timecategory">
@@ -3945,7 +3919,6 @@
                 <fieldset class="repeating_desire">
                     <textarea class="sheet-generalInput sheet-insetBox sheet-clearText" name="attr_desire" rows="2"
                         style="height: 20px;"></textarea>
-                    <input type="hidden" name="attr_desireid" />
                 </fieldset>
             </div>
         </div>
@@ -4162,6 +4135,11 @@
             "Blood Sorcery",
             "Alchemy",
             "True Faith"
+        ];
+        const TENETS = [
+            "Take Care of Our Own",
+            "Don't Kill Without Good Reason",
+            "Keep the Beast Under Control"
         ];
         const TRACKERS = ["Health", "Willpower", "Blood Potency", "Humanity"];
         // HUMSEQUENCES = ["BSH", "HBHXS", "SBS", "XHB"],
@@ -5538,6 +5516,9 @@
                                     attrList[`disc${i}_toggle`] = 1;
                                     attrList[`disc${i}_name`] = cDiscs[i - 1];
                                 }
+    
+                        // Finally, Chronicle Tenets:
+                        TENETS.forEach((x, i) => { attrList[`tenet_${i + 1}`] = `♦ ${x}` });
                         cBack(null, attrList);
                     });
                 },
@@ -5793,7 +5774,6 @@
                                             ";  Rouse x2 for All Levels."
                                         ][attrList.bp_rousereroll]
                                     }`;
-                            attrList.bp_slakebag = attrList.bp_slakeanimal;
                             attrList.bp_slaketext = `Animals & bagged blood slake ${
                                 {0: "no", 0.5: "half", 1: "full"}[attrList.bp_slakeanimal]
                             } Hunger.\n${

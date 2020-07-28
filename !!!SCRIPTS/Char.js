@@ -136,6 +136,7 @@ const Char = (() => {
             }
         }; */
 
+        // delete STATE.REF.badAttrNames;
         STATE.REF.registry = STATE.REF.registry || {};
         STATE.REF.weeklyResources = STATE.REF.weeklyResources || {};
         STATE.REF.customStakes = STATE.REF.customStakes || {};
@@ -152,6 +153,8 @@ const Char = (() => {
         STATE.REF.traitSelection = STATE.REF.traitSelection || [];
         STATE.REF.tokenPowerData = STATE.REF.tokenPowerData || {all: {}};
         STATE.REF.charAlarms = STATE.REF.charAlarms || {};
+        STATE.REF.badAttrNames = STATE.REF.badAttrNames || [];
+        STATE.REF.badRepAttrNames = STATE.REF.badRepAttrNames || {};
 
         MENUHTML.CharSelect = D.CommandMenuHTML({
             title: "Character Selection",
@@ -2972,7 +2975,7 @@ const Char = (() => {
     DISCIPLINES = ["Animalism", "Auspex", "Celerity", ...],
     TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"], */
     const getAllAttributes = (isUniqueOnly = true) => {
-        const allAttrNames = findObjs({_type: "attribute"}).map((x) => [x.get("name").replace(/repeating_([^_]*)_[^_]*_(.*)/gu, "®_$1_$2"), x]);
+        const allAttrNames = findObjs({_type: "attribute"}).map((x) => [x.get("name").replace(/^repeating_([^_]*)_[^_]*_(.*)/gu, "®_$1_$2"), x]);
         if (isUniqueOnly) {
             const uniqueAttrNames = [];
             for (const attrData of allAttrNames) {
@@ -2987,9 +2990,11 @@ const Char = (() => {
     const findBadAttrs = (isUniqueOnly = true) => {
         const badAttrStrings = [
             "[object Object]",
+            "bp_slakebag",
             "_friends",
             "_flag_flag",
             "powertoggle",
+            "collapsible_toggle",
             "flagnull",
             "flagbonus",
             "surgebonus",
@@ -3059,21 +3064,37 @@ const Char = (() => {
             "xp_arrowtoggle",
             "xp_initialtoggle",
             "xp_traittoggle",
-            "xp_newtoggle"
+            "xp_newtoggle",
+            "blood_potency_maximum",
+            "character_dobdoe"
         ];
         const badAttrRegExp = [
             "[A-Z]",
-            "^summary$"
+            "^summary$",
+            "^bp$"
         ].map((x) => new RegExp(x, "gu"));
         const [goodAttrsList, badAttrsList] = [[], []];
         const [badAttrsByRegExp, badRepAttrsList] = [[], []];
+        const [badAttrNamesState, badRepAttrsState] = [
+            JSON.parse(STATE.REF.badAttrNames),
+            JSON.parse(STATE.REF.badRepAttrNames)
+        ];
         for (const attrData of getAllAttributes(isUniqueOnly)) {
             let isBadAttr = false;
-            for (const badAttrString of badAttrStrings)
-                if (attrData[0].includes(badAttrString) || attrData[0].toLowerCase() !== attrData[0]) {
+            if (attrData[0].startsWith("®")) {
+                const [, section, ...name] = attrData[0].split("_");
+                if (section in badRepAttrsState && _.any(badRepAttrsState[section], (x) => x.name === name.join("_")))
                     isBadAttr = true;
-                    break;
-                }
+            } else {
+                if (badAttrNamesState.includes(attrData[0]))
+                    isBadAttr = true;
+            }
+            if (!isBadAttr)
+                for (const badAttrString of badAttrStrings)
+                    if (attrData[0].includes(badAttrString) || attrData[0].toLowerCase() !== attrData[0]) {
+                        isBadAttr = true;
+                        break;
+                    }
             if (!isBadAttr)
                 for (const regExp of badAttrRegExp)
                     if (regExp.test(attrData[0])) {
@@ -3099,10 +3120,15 @@ const Char = (() => {
                 goodAttrsList.push(attrData);
             }
         }
-        STATE.REF.badAttrNames = _.uniq([...STATE.REF.badAttrNames, ...badAttrsList.filter((x) => !x[0].startsWith("®")).map((x) => x[0])]).sort();
+        const badAttrsToState = badAttrsList.filter((x) => !x[0].startsWith("®")).map((x) => x[0]).sort();
+        STATE.REF.badAttrNames = JSON.stringify(badAttrsToState);
+        // D.Alert(D.JS(badAttrsToState));
+        // STATE.REF.badAttrNames = badAttrsList.filter((x) => !x[0].startsWith("®")).map((x) => x[0]).sort();
+        /* STATE.REF.badRepAttrNames = D.Clone(STATE.REF.TESTBadRepAttrNamesBackup);
+        STATE.REF.TESTBadRepAttrNamesBackup = _.mapObject(_.groupBy(badRepAttrsList.map((x) => _.omit(x, "attrObj")), "section"), (v) => v.map((x) => _.omit(x, "section")));
         const badRepAttrs = _.mapObject(_.groupBy(badRepAttrsList.map((x) => _.omit(x, "attrObj")), "section"), (v) => v.map((x) => _.omit(x, "section")));
-        
-        STATE.REF.badRepAttrNames = ;
+        D.Merge(STATE.REF.badRepAttrNames, badRepAttrs, true, true); */
+        STATE.REF.badRepAttrNames = JSON.stringify(_.mapObject(_.groupBy(badRepAttrsList.map((x) => _.omit(x, "attrObj")), "section"), (v) => v.map((x) => _.omit(x, "section"))));
         return [goodAttrsList, badAttrsList, badAttrsByRegExp];
     };
     const validateCharAttributes = (charRefs, isChangingSheet = false) => {

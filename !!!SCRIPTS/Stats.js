@@ -47,13 +47,16 @@ const Stats = (() => {
 
     // #endregion
     class Attr {
-        constructor(name) {
-            this._name = name;
-            this._value = "Attr._value";
+        constructor(attrObj) {
+            this.SetName(attrObj);
+            this.SetValue(attrObj);
         }
 
-        GetName() { console.log(`Attr.GET(${this._name})`) }
-        GetValue() { console.log(`Attr.GET(${this._value})`) }
+        SetName(v) { this._nameObj = v }
+        SetValue(v) { this._valueObj = v }
+
+        GetName() { console.log(`Attr.GET(${this._nameObj.get("name")})`) }
+        GetValue() { console.log(`Attr.GET(${this._valueObj.get("value")})`) }
         Set(v) { this._value = v; console.log(`Attr.SET(${v})`) }
     }
 
@@ -71,18 +74,42 @@ const Stats = (() => {
     // #region MIXIN DEFINITIONS
     // (Mixins provide modular functionality that can be assigned to classes without using inheritance.)
     const $repStat = {
-        GetName() { console.log(`$repStat:GetName() = ${this._name}`) },
-        GetValue() { console.log(`$repStat:GetValue() = ${this._value}`) }
-    }
+        set obj(v) {
+            this._nameObj = v;
+            this._valueObj = {
+                get(v) { return this[v] },
+                name: "RepAttr Obj: Name",
+                value: "RepAttr Obj: Value"
+            };
+        },
+        SetValue(v) { this._valueObj = {
+            get(v) { return this[v] },
+            name: "RepAttr Obj: Name",
+            value: "RepAttr Obj: Value"
+        } },
+        GetName() { console.log(`$repStat:GetName() = ${this._nameObj.get("name")}`) },
+        GetValue() { console.log(`$repStat:GetValue() = ${this._valueObj.get("value")}`) }
+    };
+    const testObjs = [
+        {
+            get(v) { return this[v] },
+            name: "Test Object One: Name",
+            value: "Test Object One: Value"
+        },
+        {
+            get(v) { return this[v] },
+            name: "Test Object Two: Name",
+            value: "Test Object Two: Value"
+        }
+    ];
     // #endregion
 
     Object.assign(RepTrait.prototype, $repStat);
-    const repTrait = new RepTrait("repTrait");
-    console.log([
-        repTrait.GetName(),
-        repTrait.GetValue()
-    ]);
-
+    const repTraits = testObjs.map((x) => new RepTrait(x));
+    console.log(repTraits.map((x) => [
+        x.GetName(),
+        x.GetValue()
+    ]));
 
 
     // #region CLASS DEFINITIONS
@@ -135,7 +162,7 @@ const Stats = (() => {
             //      Tracker
             //      Dotline
             //      HighDots
-            //      TraitMod 
+            //      TraitMod
         }
         // #endregion
 
