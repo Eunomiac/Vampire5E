@@ -1244,9 +1244,6 @@ const C = (() => {
                         margin-left: -30px;
                         background: url('${params.bgURL}') no-repeat top;
                         background-size: 100%;
-                        position: relative;
-                        top: -515px;
-                        margin-bottom: -515px;
                         "><div style="
                             display: inline-block;
                             height: 100%;
@@ -1364,7 +1361,7 @@ const C = (() => {
                 display: block;
                 width: 600px;
                 background-color: ${C.COLORS.white};
-                margin-top: ${hasIcon ? "-550px" : "0px"};
+                margin-top: ${hasIcon ? "-500px" : "0px"};
             ">${content}</div>`),
         title: (content) => D.JSH(`<span style="
                 display: block;

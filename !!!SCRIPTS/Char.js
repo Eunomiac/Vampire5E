@@ -651,6 +651,24 @@ const Char = (() => {
             }
             case "get": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "badattrs": case "badstats": {
+                        const [, badAttrs, badAttrsByRegExp] = findBadAttrs(true);
+                        if (args[0] === "regexp")
+                            D.Alert(D.JS(badAttrsByRegExp.map((x) => x[0]).sort()), `${badAttrsByRegExp.length} Unique Bad Attribute Names by RegExp`);
+                        else
+                            D.Alert(D.JS(badAttrs.map((x) => x[0]).sort()), `${badAttrs.length} Unique Bad Attribute Names`);
+                        break;
+                    }
+                    case "goodattrs": case "goodstats": {
+                        const [goodAttrs] = findBadAttrs(true);
+                        D.Alert(D.JS(goodAttrs.map((x) => x[0]).sort()), `${goodAttrs.length} Unique Good Attribute Names`);
+                        break;
+                    }
+                    case "allattrs": case "allstats": {
+                        const allAttrs = getAllAttributes();
+                        D.Alert(D.JS(allAttrs.map((x) => x[0]).sort()), `${allAttrs.length} Unique Attribute Names`);
+                        break;
+                    }
                     case "attr": {
                         const [charObj] = charObjs;
                         let attrObjs = findObjs({
@@ -2953,6 +2971,140 @@ const Char = (() => {
     },
     DISCIPLINES = ["Animalism", "Auspex", "Celerity", ...],
     TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"], */
+    const getAllAttributes = (isUniqueOnly = true) => {
+        const allAttrNames = findObjs({_type: "attribute"}).map((x) => [x.get("name").replace(/repeating_([^_]*)_[^_]*_(.*)/gu, "®_$1_$2"), x]);
+        if (isUniqueOnly) {
+            const uniqueAttrNames = [];
+            for (const attrData of allAttrNames) {
+                if (uniqueAttrNames.find((x) => x[0] === attrData[0]))
+                    continue;
+                uniqueAttrNames.push(attrData);
+            }
+            return uniqueAttrNames;
+        }
+        return allAttrNames;
+    };
+    const findBadAttrs = (isUniqueOnly = true) => {
+        const badAttrStrings = [
+            "[object Object]",
+            "_friends",
+            "_flag_flag",
+            "powertoggle",
+            "flagnull",
+            "flagbonus",
+            "surgebonus",
+            "surgenull",
+            "resonancebonus",
+            "resonancenull",
+            "specialtybonus",
+            "specialtynull",
+            "namebonus",
+            "namenull",
+            "hungerbonus",
+            "hungernull",
+            "incapbonus",
+            "incapnull",
+            "detailsbonus",
+            "detailsnull",
+            "typebonus",
+            "typenull",
+            "modbonus",
+            "modnull",
+            "temp",
+            "_1bonus",
+            "_1null",
+            "_2bonus",
+            "_2null",
+            "_3bonus",
+            "_3null",
+            "_kr_",
+            "resonancebonus",
+            "resonancenull",
+            "rollarraybonus",
+            "rollarraynull",
+            "rolldiffbonus",
+            "rolldiffnull",
+            "rollmodbonus",
+            "rollmodnull",
+            "stainsbonus",
+            "stainsnull",
+            "topdisplaybonus",
+            "topdisplaynull",
+            "undefined",
+            "Untitled",
+            "aggDmg",
+            "groupdetails",
+            "health_maximum",
+            "health_admg_social",
+            "health_admg_socialtotal",
+            "health_sdmg_social",
+            "health_sdmg_socialtotal",
+            "humanitybox",
+            "incapacitation",
+            "lastbox",
+            "lastcollisions",
+            "lasthumanity",
+            "laststains",
+            "mask_name",
+            "repeatingprojectslist",
+            "roll_array",
+            "roll_params",
+            "sandboxquadrant",
+            "tab_type",
+            "willpower_maximum",
+            "domaincontrol_",
+            "_ritualleft_ritualleft",
+            "_ritualmid_ritualmid",
+            "_ritualright_ritualright",
+            "xp_arrowtoggle",
+            "xp_initialtoggle",
+            "xp_traittoggle",
+            "xp_newtoggle"
+        ];
+        const badAttrRegExp = [
+            "[A-Z]",
+            "^summary$"
+        ].map((x) => new RegExp(x, "gu"));
+        const [goodAttrsList, badAttrsList] = [[], []];
+        const [badAttrsByRegExp, badRepAttrsList] = [[], []];
+        for (const attrData of getAllAttributes(isUniqueOnly)) {
+            let isBadAttr = false;
+            for (const badAttrString of badAttrStrings)
+                if (attrData[0].includes(badAttrString) || attrData[0].toLowerCase() !== attrData[0]) {
+                    isBadAttr = true;
+                    break;
+                }
+            if (!isBadAttr)
+                for (const regExp of badAttrRegExp)
+                    if (regExp.test(attrData[0])) {
+                        isBadAttr = true;
+                        badAttrsByRegExp.push(attrData);
+                        break;
+                    }
+            if (isBadAttr) {
+                if (attrData[0].startsWith("®")) {
+                    const [, section, ...name] = attrData[0].split("_");
+                    if (!(
+                        isUniqueOnly
+                        && badRepAttrsList.find((x) => x.section === section && x.name === name.join("_"))
+                    ))
+                        badRepAttrsList.push({
+                            section,
+                            name: name.join("_"),
+                            attrObj: attrData[1]
+                        });
+                }
+                badAttrsList.push(attrData);
+            } else {
+                goodAttrsList.push(attrData);
+            }
+        }
+        STATE.REF.badAttrNames = _.uniq([...STATE.REF.badAttrNames, ...badAttrsList.filter((x) => !x[0].startsWith("®")).map((x) => x[0])]).sort();
+        const badRepAttrs = _.mapObject(_.groupBy(badRepAttrsList.map((x) => _.omit(x, "attrObj")), "section"), (v) => v.map((x) => _.omit(x, "section")));
+        
+        STATE.REF.badRepAttrNames = ;
+        return [goodAttrsList, badAttrsList, badAttrsByRegExp];
+    };
     const validateCharAttributes = (charRefs, isChangingSheet = false) => {
         const [reportLines, nameChanges] = [[], []];
         for (const charObj of D.GetChars(charRefs))
