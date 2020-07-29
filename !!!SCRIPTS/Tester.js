@@ -34,7 +34,7 @@ const Tester = (() => {
             case "effectshandout": {
                 const parseRollEffectsHandout = () => {
                     const noteObj = Handouts.Get("Roll Effects");
-                    if (noteObj) {
+                    if (noteObj)
                         noteObj.get("notes", (noteContents) => {
                             const noteRows = noteContents.match(/<tr>(.*?)<\/tr>/gu).map((x) => x
                                 .replace(/<br><\/t(d|h)>/gu, "</t$1>")
@@ -42,7 +42,7 @@ const Tester = (() => {
                                 .replace(/<\/td>/gu, "|")
                                 .replace(/(<script(\s|\S)*?<\/script>)|(<style(\s|\S)*?<\/style>)|(<!--(\s|\S)*?-->)|(<\/?(\s|\S)*?>)/gu, ""));
                             const effects = [];
-                            for (const noteRow of noteRows) {
+                            for (const noteRow of noteRows)
                                 if (noteRow.length > 20 && noteRow.endsWith("|")) {
                                     const [isActive, scope, restrictions, mod, rollDisplay, sheetDisplay, offTrigger] = noteRow.split("|");
                                     effects.push({
@@ -55,10 +55,9 @@ const Tester = (() => {
                                         offTrigger: (!offTrigger || offTrigger === "never") ? false : TimeTracker.GetDate(offTrigger)
                                     });
                                 }
-                            }
+
                             D.Show(effects);
                         });
-                    }
                 };
                 parseRollEffectsHandout();
                 break;
@@ -112,6 +111,9 @@ const Tester = (() => {
                 let [charRef, section, rowFilter, statName, groupBy, pickProperty] = args;
                 if (!rowFilter) {
                     D.Alert([
+                        "<h3>C.REPATTRS</h3>",
+                        D.JS(C.REPATTRS, false, true),
+                        " ",
                         "<b>SYNTAX:</b>",
                         "<br>!test repstats &lt;charRef&gt; &lt;section&gt; &lt;rowFilter&gt; &lt;statName&gt; &lt;groupBy&gt; &lt;pickProperty&gt;",
                         " ",

@@ -2564,6 +2564,11 @@ const D = (() => {
                 .toLowerCase()
                 .startsWith(section === "*" ? "repeating_" : `repeating_${section.toLowerCase()}_`));
             // D.Alert(`attrObjs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
+            DB({
+                attrObjs,
+                attrObjIDs: attrObjs.map((x) => x.id),
+                nameVals: attrObjs.map((x) => [parseRepStat(x.get("name"))[2], x.get("current")])
+            }, "getRepIDs");
             const rowIDs = getUniqIDs(attrObjs);
             DB(
                 `attrObjsInSection: ${jStrL(_.map(attrObjs, (v) => parseRepStat(v.get("name"))[2]))}<br><br>rowIDsInSection: ${jStrL(rowIDs)}`,
@@ -2699,6 +2704,7 @@ const D = (() => {
                             charID: charObj.id,
                             rowID,
                             name: v.get("current"),
+                            section: parseRepStat(v.get("name"))[0],
                             fullName: v.get("name").replace(/_name$/gu, ""),
                             obj: _.find(
                                 rowAttrObjs,
@@ -2737,6 +2743,7 @@ const D = (() => {
                                     charID: charObj.id,
                                     rowID,
                                     name: parseRepStat(foundStat.get("name"))[2],
+                                    section: parseRepStat(foundStat.get("name"))[0],
                                     attrName: parseRepStat(foundStat.get("name"))[2],
                                     fullName: foundStat.get("name"),
                                     obj: D.JS(foundStat, true),
@@ -2753,6 +2760,7 @@ const D = (() => {
                             charID: charObj.id,
                             rowID,
                             name: parseRepStat(v.get("name"))[2],
+                            section: parseRepStat(v.get("name"))[0],
                             attrName: parseRepStat(v.get("name"))[2],
                             fullName: v.get("name"),
                             obj: v,
@@ -2764,18 +2772,20 @@ const D = (() => {
             // Compactify the data to remove false values:
             finalRepData = _.compact(finalRepData);
             DB(`COMPACTED - FinalRepData: ${D.JSL(finalRepData, true)}`, "getRepStats");
-            // Check for grouping and property-picking, and transform the data accordingly:
-            if (VAL({string: groupBy}) && ["rowID", "fullName", "attrName", "name", "val"].includes(groupBy)) {
-                finalRepData = _.groupBy(finalRepData, (v) => v[groupBy]);
-                if (VAL({string: pickProperty}) && ["fullName", "attrName", "name", "obj", "val"].includes(pickProperty)) {
-                    const pickData = {};
-                    _.each(finalRepData, (v, k) => {
-                        pickData[k] = _.map(v, (vv) => vv[pickProperty]);
-                    });
-                    finalRepData = pickData;
+            if (finalRepData.length) {
+                // Check for grouping and property-picking, and transform the data accordingly:
+                if (VAL({string: groupBy}) && Object.keys(finalRepData[0]).includes(groupBy)) {
+                    finalRepData = _.groupBy(finalRepData, (v) => v[groupBy]);
+                    if (VAL({string: pickProperty}) && ["fullName", "attrName", "name", "obj", "val"].includes(pickProperty)) {
+                        const pickData = {};
+                        _.each(finalRepData, (v, k) => {
+                            pickData[k] = _.map(v, (vv) => vv[pickProperty]);
+                        });
+                        finalRepData = pickData;
+                    }
+                } else if (VAL({string: pickProperty}) && Object.keys(finalRepData[0]).includes(pickProperty)) {
+                    finalRepData = _.map(finalRepData, (v) => v[pickProperty]);
                 }
-            } else if (VAL({string: pickProperty}) && ["fullName", "attrName", "name", "obj", "val"].includes(pickProperty)) {
-                finalRepData = _.map(finalRepData, (v) => v[pickProperty]);
             }
         }
         DB(`RETURNING FOUND STAT: ${D.JSL(finalRepData, true)}`, "getRepStats");

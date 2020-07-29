@@ -4108,7 +4108,7 @@
                 const dayMins = hour * 60 + min;
                 return !(day === SESSIONTIME.day && dayMins > (SESSIONTIME.start - 15) && dayMins < (SESSIONTIME.end + 120));
             }, */
-            isDebugging: false,
+            isDebugging: true,
             isMuted: false
         };
         const ATTRIBUTES = {
@@ -5075,13 +5075,22 @@
         // #region Repeating Field Configuration
         const DISCENUMS = ["disc1", "disc2", "disc3"];
         const DISCREPREFS = {
-            discleft: ["disc", "disc_name", "disc_flag", "discpower_toggle", "disctemp"],
-            discmid: ["disc", "disc_name", "disc_flag", "discpower_toggle", "disctemp"],
-            discright: ["disc", "disc_name", "disc_flag", "discpower_toggle", "disctemp"]
+            discleft: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `discpower_${x}`)],
+            discmid: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `discpower_${x}`)],
+            discright: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `discpower_${x}`)]
+        };
+        const DISCMODREPREFS = {
+            discleft: ["disc", "discmod"],
+            discmid: ["disc", "discmod"],
+            discright: ["disc", "discmod"]
         };
         const ADVREPREFS = {
-            advantage: ["advantage", "advantage_name", "advantage_flag", "advantage_type", "advantage_details", "advantagetemp"],
-            negadvantage: ["negadvantage", "negadvantage_name", "negadvantage_flag", "negadvantage_type", "negadvantage_details", "negadvantagetemp"]
+            advantage: ["advantage", "advantage_name", "advantage_flag", "advantage_type", "advantage_details", "advantagemod"],
+            negadvantage: ["negadvantage", "negadvantage_name", "negadvantage_flag", "negadvantage_type", "negadvantage_details", "negadvantagemod"]
+        };
+        const ADVMODREPREFS = {
+            advantage: ["advantage", "advantagemod"],
+            negadvantage: ["negadvantage", "negadvantagemod"]
         };
         const DOMCONREPREFS = {
             domaincontrolleft: ["district", "level", "details"],
@@ -5156,7 +5165,7 @@
         // #region Derivative Stats
         const BASICATTRS = _.map(_.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS]), (v) => v.toLowerCase().replace(/ /gu, "_"));
         const BASICFLAGS = _.map(_.omit(BASICATTRS, TRACKERS), (v) => `${v.toLowerCase().replace(/ /gu, "_")}_flag`);
-        const BASICTEMPATTRS = BASICATTRS.map((x) => `${x}temp`);
+        const BASICMODATTRS = [...BASICATTRS, ...BASICATTRS.map((x) => `${x}mod`)];
         const ALLATTRS = [...ROLLFLAGS.all, ...BASICATTRS, ...BASICFLAGS, ..._.map(DISCENUMS, (v) => `${v}_name`)];
         const ATTRDISPNAMES = _.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS]);
         // #endregion
@@ -5171,10 +5180,10 @@
             }
         };
         const isBlacklisted = (attr = "") => {
-            if (TEMPTHROTTLE.includes(attr)) {
+    /*         if (TEMPTHROTTLE.includes(attr)) {
                 log(`[${attr}] THROTTLED: RETURNING TRUE`);
                 return true;
-            }
+            } */
             for (const regex of REGEXPBLACKLIST) {
                 const regExp = new RegExp(regex, "gui");
                 if (regExp.test(attr)) {
@@ -6939,15 +6948,15 @@
                     log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ STAT ROLLER TRIGGERED @@@`);
                     doRolls(eInfo.sourceAttribute, {silent: true});
                 }
-                log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ TEMP DOTS TRIGGERED (ROLL) @@@`);
-                updateTempDots(eInfo.sourceAttribute);
+                log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ MOD DOTS TRIGGERED (ROLL) @@@`);
+                updateModDots(eInfo.sourceAttribute);
             }
         });
         // #endregion
     
         // #region UPDATE: Temporary Stat Effects
         /* Bonus/Nullified stats are DISPLAY ONLY --- the actual stat value remains unchanged.
-            D.GetStat needs to also look for {stat}temp and make the appropriate changes.
+            D.GetStat needs to also look for {stat}mod and make the appropriate changes.
                 Try to get all attempts to grab stat values to go through GetStat.
             Need to also go through scripts to look for other places where stats are referenced, to ensure they're getting the modified value
             Ditto sheetworker scripts for things like blood potency, humanity popups, roller, projects, tracker damage
@@ -7115,38 +7124,49 @@
             };
             getRepAttrs(repSecs.shift());
         };
-        const updateTempDots = (sourceAttr) => {
-            /* Hidden Attribute "strengthtemp" -> amount by which strength has been modified **
+        const updateModDots = (sourceAttr) => {
+            /* Hidden Attribute "strengthmod" -> amount by which strength has been modified **
                JS figures out which null and bonusdots need to be activated, and toggles strengthnull_X / strengthbonus_X dots ON.
                This is STRICTLY DISPLAY --- the actual penalty must be covered in a roll effect (e.g. resolve/0.5/-(<.>) Redemption House) */
-            // if (TEMPTHROTTLE.includes("updateTempDots")) {
-            //     log(`updateTempDots(${sourceAttr}) THROTTLED.`);
-            // } else {
+    
+            // STEP ONE: Check to make sure this is a valid VALUE attribute, and not a "_name", "_details", etc. attribute
+            const regExpBlacklist = [
+                "_name$",
+                "power_\\d+$",
+                "_flag$",
+                "_toggle$",
+                "_type$",
+                "_details$"
+            ];
+            for (const pattern of regExpBlacklist)
+                if (sourceAttr.match(new RegExp(pattern))) {
+                    log(`updateModDots CALLED: ${sourceAttr}\nSource Attr BLACKLISTED: Returning...`);
+                    return;
+                }
             const repStatData = {};
             const [repAttrs, attrList] = [[], {}];
             const statsList = [];
-            const masterStat = sourceAttr.replace(/temp$/gu, "");
-            const tempStat = `${masterStat}temp`;
-            log(`updateTempDots CALLED: ${sourceAttr}\nMaster Stat: ${JSON.stringify(masterStat)}\nTemp Stat: ${JSON.stringify(tempStat)}`, "UTD");
-            // throttle("updateTempDots", 2000);
-            statsList.push(tempStat, masterStat);
-            if (tempStat.includes("health"))
+            const masterStat = sourceAttr.replace(/mod$/gu, "");
+            const modStat = `${masterStat}mod`;
+            log(`updateModDots CALLED: ${sourceAttr}\nMaster Stat: ${JSON.stringify(masterStat)}\nMod Stat: ${JSON.stringify(modStat)}`, "UMD");
+            statsList.push(modStat, masterStat);
+            if (modStat.includes("health"))
                 statsList.push([11, 12, 13, 14, 15].map((x) => `health_${x}`));
-            if (tempStat.includes("health") || tempStat.includes("willpower")) {
+            if (modStat.includes("health") || modStat.includes("willpower")) {
                 statsList.push([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((x) => `${masterStat}_${x}`));
                 statsList.push(`${masterStat}_max`, `${masterStat}`, `${masterStat}_bashing`, `${masterStat}_aggravated`);
-            } else if (tempStat.includes("blood_potency")) {
+            } else if (modStat.includes("blood_potency")) {
                 statsList.push("blood_potency_max", "blood_potency");
-            } else if (tempStat.includes("humanity")) {
+            } else if (modStat.includes("humanity")) {
                 statsList.push("humanity", "stains");
             } else if (masterStat.endsWith("_disc")) {
-                Object.assign(repStatData, DISCREPREFS);
-            } else if (tempStat.includes("negadvantage")) {
-                Object.assign(repStatData, _.pick(ADVREPREFS, "negadvantage"));
-            } else if (tempStat.includes("advantage")) {
-                Object.assign(repStatData, _.pick(ADVREPREFS, "advantage"));
+                Object.assign(repStatData, DISCMODREPREFS);
+            } else if (modStat.includes("negadvantage")) {
+                Object.assign(repStatData, _.pick(ADVMODREPREFS, "negadvantage"));
+            } else if (modStat.includes("advantage")) {
+                Object.assign(repStatData, _.pick(ADVMODREPREFS, "advantage"));
             }
-            log(`STATSLIST: ${JSON.stringify(statsList)}\n\nREPSTATDATA: ${JSON.stringify(repStatData)}`, "UTD");
+            log(`STATSLIST: ${JSON.stringify(statsList)}\n\nREPSTATDATA: ${JSON.stringify(repStatData)}`, "UMD");
             const repSecs = Object.keys(repStatData);
             const getRepAttrs = (repSec) => {
                 if (repSec)
@@ -7158,30 +7178,27 @@
                                     .map((repStat) => `repeating_${repSec}_${rowID}_${repStat}`)
                             ))
                         );
-                        // log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
-    
-                        //     ... mapped to: ${JSON.stringify(repAttrs)}`);
                         getRepAttrs(repSecs.shift());
                     });
                 else
                     getAttrs([..._.flatten(statsList), ..._.flatten(repAttrs)], (ATTRS) => {
-                        log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, "UTD");
+                        log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, "UMD");
                         const [prefix, p, pV, pI, pF] = pFuncs(ATTRS, sourceAttr);
-                        const tempDelta = pI(tempStat);
+                        const modDelta = pI(modStat);
                         const [bonusAttrsList, nullAttrsList] = [[], []];
                         const [bonusAttrPrefix, nullAttrPrefix] = [`${p(masterStat)}bonus_`, `${p(masterStat)}null_`];
-                        if (_.isNaN(tempDelta)) {
-                            log(`ERROR: tempDelta '${JSON.stringify(ATTRS[tempStat])}' parses to '${JSON.stringify(tempDelta)}' --> not a number.`, "UTD");
+                        if (_.isNaN(modDelta)) {
+                            log(`ERROR: modDelta '${JSON.stringify(ATTRS[modStat])}' parses to '${JSON.stringify(modDelta)}' --> not a number.`, "UMD");
                             return;
                         }
-                        if (tempStat.includes("health")) {
-                            log(`HEALTHTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
-                        } else if (tempStat.includes("willpower")) {
-                            log(`WILLPOWERTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
-                        } else if (tempStat.includes("blood_potency")) {
-                            log(`BPTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
-                        } else if (tempStat.includes("humanity")) {
-                            log(`HUMANITYTEMP DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
+                        if (modStat.includes("health")) {
+                            log(`HEALTHMOD DELTA ATTRS: ${JSON.stringify(attrList)}`, "UMD");
+                        } else if (modStat.includes("willpower")) {
+                            log(`WILLPOWERMOD DELTA ATTRS: ${JSON.stringify(attrList)}`, "UMD");
+                        } else if (modStat.includes("blood_potency")) {
+                            log(`BPMOD DELTA ATTRS: ${JSON.stringify(attrList)}`, "UMD");
+                        } else if (modStat.includes("humanity")) {
+                            log(`HUMANITYMOD DELTA ATTRS: ${JSON.stringify(attrList)}`, "UMD");
                         } else {
                             nullAttrsList.push(...[1, 2, 3, 4, 5].map((x) => p(`${nullAttrPrefix}${x}`)));
                             bonusAttrsList.push(...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((x) => p(`${bonusAttrPrefix}${x}`)));
@@ -7212,32 +7229,32 @@
                             */
     
                             // ======= IF POSITIVE: =========
-                            if (tempDelta > 0) {
+                            if (modDelta > 0) {
                                 // Turn off all null boxes:
                                 nullAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
                                 // Turn on appropriate bonus boxes:  (max = 10 - masterStat)
-                                for (let i = 0; i < Math.min(10 - pI(masterStat), Math.abs(tempDelta)); i++)
+                                for (let i = 0; i < Math.min(10 - pI(masterStat), Math.abs(modDelta)); i++)
                                     attrList[validBonusAttrs.shift()] = 1;
                                     // Turn off other bonus boxes:
                                 bonusAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
                                 // ======= IF ZERO: =========
-                            } else if (tempDelta === 0) {
+                            } else if (modDelta === 0) {
                                 // Turn off all bonus boxes:
                                 bonusAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
                                 // Turn off all null boxes:
                                 nullAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
                                 // ======= IF NEGATIVE: =========
-                            } else if (tempDelta < 0) {
+                            } else if (modDelta < 0) {
                                 // Turn off all bonus boxes:
                                 bonusAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
                                 // Turn on appropriate null boxes:
-                                for (let i = 0; i < Math.min(Math.abs(tempDelta), pI(masterStat)); i++)
+                                for (let i = 0; i < Math.min(Math.abs(modDelta), pI(masterStat)); i++)
                                     attrList[validNullAttrs.shift()] = 1;
                                     // Turn off other null boxes:
                                 nullAttrsList.forEach((x) => { attrList[x] = attrList[x] || 0 });
                             }
                         }
-                        log(`DELTA ATTRS: ${JSON.stringify(attrList)}`, "UTD");
+                        log(`DELTA ATTRS: ${JSON.stringify(attrList)}`, "UMD");
                         setAttrs(attrList);
                     });
             };
@@ -7252,11 +7269,30 @@
             if (!isBlacklisted(eInfo.sourceAttribute))
                 doDomainControl();
         });
-        on(getTriggers(BASICTEMPATTRS, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)], ["disctemp", "advantagetemp", "negadvantagetemp"]), (eInfo) => {
+        on(getTriggers(
+            BASICMODATTRS,
+            "",
+            [..._.keys(DISCMODREPREFS), ..._.keys(ADVMODREPREFS)],
+            _.uniq([
+                ..._.flatten(Object.values(DISCMODREPREFS)),
+                ..._.flatten(Object.values(ADVMODREPREFS))
+            ])
+        ), (eInfo) => {
             if (!isBlacklisted(eInfo.sourceAttribute)) {
-                log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ TEMP DOTS TRIGGERED (DIRECT) @@@`);
-                updateTempDots(eInfo.sourceAttribute);
+                log(`TRIGGERS: '${getTriggers(
+                    BASICMODATTRS,
+                    "",
+                    [..._.keys(DISCMODREPREFS), ..._.keys(ADVMODREPREFS)],
+                    _.uniq([
+                        ..._.flatten(Object.values(DISCMODREPREFS)),
+                        ..._.flatten(Object.values(ADVMODREPREFS))
+                    ]))}'`);
+                log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ MOD DOTS TRIGGERED (DIRECT) @@@`);
+                updateModDots(eInfo.sourceAttribute);
             }
+        });
+        on("change:repeating_advantage", (eInfo) => {
+            log(`[TRIGGER: ${JSON.stringify(eInfo)}]`);
         });
         // #endregion
     

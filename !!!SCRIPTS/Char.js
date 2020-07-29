@@ -156,6 +156,8 @@ const Char = (() => {
         STATE.REF.badAttrNames = STATE.REF.badAttrNames || [];
         STATE.REF.badRepAttrNames = STATE.REF.badRepAttrNames || {};
 
+        D.GetChars("registered").forEach((x) => new Character(x));
+
         MENUHTML.CharSelect = D.CommandMenuHTML({
             title: "Character Selection",
             rows: [
@@ -508,6 +510,81 @@ const Char = (() => {
         DB({call, args, objects, msg}, "onChatCall");
         const charObjs = Listener.GetObjects(objects, "character");
         switch (call) {
+            case "class": {
+                const charInsts = _.compact(charObjs.map((x) => Character.Get(x)));
+                switch (D.LCase(call = args.shift())) {
+                    case "get": {
+                        switch (D.LCase(call = args.shift())) {
+                            case "report": {
+                                charInsts.forEach((x) => D.Alert([
+                                    "<h3>Attributes</h3>",
+                                    D.JS(x.attributes),
+                                    "<h3>Skills</h3>",
+                                    D.JS(x.skills),
+                                    "<h3>Disciplines</h3>",
+                                    D.JS(x.disciplines),
+                                    "<h3>Advantages</h3>",
+                                    D.JS(x.advantages)
+                                ]));
+                                break;
+                            }
+                            default: {
+                                if (call)
+                                    args.unshift(call);
+                                const returnLines = [];
+                                const attrRef = D.LCase(args.join(" "));
+                                if (STATCATS.includes(attrRef))
+                                    charInsts.forEach((x) => {
+                                        returnLines.push(...[
+                                            `<h3>${x.name}</h3>`,
+                                            D.JS(x[attrRef])
+                                        ]);
+                                    });
+                                else
+                                    charInsts.forEach((x) => {
+                                        returnLines.push(...[
+                                            `<h3>${x.name}</h3>`,
+                                            D.JS(x.GetStatData(attrRef))
+                                        ]);
+                                    });
+                                D.Alert(returnLines.join("<br>"), `!char get ${args.join(" ")}`);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    case "set": {
+                        switch (D.LCase(call = args.shift())) {
+                            case "mod": {
+                                const modVal = args.pop();
+                                const statName = args.join(" ").trim();
+                                charInsts.forEach((x) => {
+                                    x.SetStatMod(statName, modVal);
+                                });
+                                break;
+                            }
+                            default: {
+                                if (call)
+                                    args.unshift(call);
+                                const statVal = args.pop();
+                                const statName = args.join(" ").trim();
+                                charInsts.forEach((x) => {
+                                    D.Alert(`Setting '${D.JS(statName)}' to '${D.JS(statVal)}'`, "!char set stat");
+                                    x.SetStatValue(statName, statVal);
+                                });
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    default: {
+                        charObjs.forEach((x) => new Character(x));
+                        D.Flag("Character Classes Initialized");
+                        break;
+                    }
+                }
+                break;
+            }
             case "reg": {
                 switch (D.LCase((call = args.shift()))) {
                     case "tokenpower": {
@@ -535,10 +612,10 @@ const Char = (() => {
                         for (const playerObj of allPlayers) {
                             const charObj = allChars.find((x) => x.get("controlledby").includes(playerObj.id));
                             if (VAL({charObj})) {
-                                const quad = _.findKey(Char.REGISTRY, (v) => v.id === charObj.id);
+                                const quad = _.findKey(Character.REGISTRY, (v) => v.id === charObj.id);
                                 if (VAL({string: quad})) {
-                                    Char.REGISTRY[quad].playerID = playerObj.id;
-                                    Char.REGISTRY[quad].playerName = playerObj.get("_displayname");
+                                    Character.REGISTRY[quad].playerID = playerObj.id;
+                                    Character.REGISTRY[quad].playerName = playerObj.get("_displayname");
                                 }
                                 D.Alert(
                                     `Registering <b>${playerObj.get("_displayname")}</b> with <b>${charObj.get("name")}</b> at <b>${quad}</b>`,
@@ -569,7 +646,7 @@ const Char = (() => {
                         } else {
                             D.Alert("Invalid character.<br><br>Syntax: !char reg weekly <charRef> <resName> <resAmount>", "!char reg weekly");
                         }
-                        Char.RefreshDisplays();
+                        Character.RefreshDisplays();
                         break;
                     }
                     case "stake": {
@@ -591,7 +668,7 @@ const Char = (() => {
                                 break;
                             }
                         }
-                        Char.RefreshDisplays();
+                        Character.RefreshDisplays();
                         break;
                     }
                     default: {
@@ -618,7 +695,7 @@ const Char = (() => {
                             unregResource(charData.initial, D.Int(args.shift()));
                         else
                             D.Alert("Invalid character.<br><br>Syntax: !char unreg weekly <charRef> <rowNum>", "!char unreg weekly");
-                        Char.RefreshDisplays();
+                        Character.RefreshDisplays();
                         break;
                     }
                     case "stake": {
@@ -645,7 +722,7 @@ const Char = (() => {
                                 break;
                             }
                         }
-                        Char.RefreshDisplays();
+                        Character.RefreshDisplays();
                         break;
                     }
                     // no default
@@ -970,6 +1047,7 @@ const Char = (() => {
                         break;
                     }
                     case "sheetattrs": {
+                        D.Flag("Processing...");
                         validateCharAttributes(charObjs, args[0] === "true");
                         break;
                     }
@@ -1137,6 +1215,9 @@ const Char = (() => {
             }
             // no default
         }
+        const charInst = Character.Get(attrObj.get("_characterid"));
+        if (charInst)
+            charInst.Update(attrObj);
     };
     const onAttrAdd = (call, attrObj) => {
         switch (call) {
@@ -1160,6 +1241,9 @@ const Char = (() => {
             }
             // no default
         }
+        const charInst = Character.Get(attrObj.get("_characterid"));
+        if (charInst)
+            charInst.Update(attrObj);
     };
     const onAttrDestroy = (call, attrObj) => {
         switch (call) {
@@ -1170,11 +1254,379 @@ const Char = (() => {
             }
             // no default
         }
+        const charInst = Character.Get(attrObj.get("_characterid"));
+        if (charInst)
+            charInst.Update(attrObj);
     };
-    const onCharAdd = (charObj) => validateCharAttributes([charObj], true);
+    const onCharAdd = (charObj) => {
+        const charInst = new Character(charObj);
+        validateCharAttributes([charObj], true);
+    };
     // #endregion
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ END BOILERPLATE INITIALIZATION & CONFIGURATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // #region CLASS DEFINITIONS
+    class Character {
+        // #region ~ STATIC METHODS, GETTERS & SETTERS
+        static Get(charRef) {
+            const charObj = D.GetChar(charRef);
+            return (charObj && charObj.id in this.LIB) ? this.LIB[charObj.id] : false;
+        }
+
+        // #region Instance Storage Libraries (Indexed by "id" property on Instance)
+        static get LIB() { return this._CharLIB }
+        static set LIB(charInst) { this._CharLIB = Object.assign(this._CharLIB || {}, {[charInst.id]: charInst}) }
+        // #endregion
+        // #endregion
+
+        // #region ~ BASIC GETTERS & SETTERS
+        // INITIALIZATION
+        get obj() { return this._obj }
+        set obj(charObj) { this._obj = charObj }
+        // READ-ONLY
+        get id() { return this.obj.id }
+        get name() { return this.obj.get("name") }
+        get baseAttrObjs() {
+            if (!this._baseAttrObjs)
+                this._baseAttrObjs = _.compact(findObjs({_type: "attribute", _characterid: this.id}).filter((x) => !x.get("name").startsWith("repeating_")) || []);
+            return this._baseAttrObjs;
+        }
+        get repAttrObjs() { return _.mapObject(D.GetRepStats(this.id, null, null, null, "section", "obj"), (v) => v.slice(1)) }
+
+        get isPC() { return Boolean(Object.values(REGISTRY).find((x) => x.id === this.id)) }
+
+        // ATTRIBUTE VALUES
+        get attributes() {
+            if (!this._attributes)
+                this.Update("attributes");
+            return this._attributes;
+        }
+        get skills() {
+            if (!this._skills)
+                this.Update("skills");
+            return this._skills;
+        }
+        get disciplines() {
+            if (!this._disciplines)
+                this.Update("disciplines");
+            return this._disciplines;
+        }
+        get advantages() {
+            if (!this._advantages)
+                this.Update("advantages");
+            return this._advantages;
+        }
+        // #endregion
+
+        // #region ~ CONSTRUCTOR
+        constructor(charObj) {
+            this.obj = charObj;
+            Character.LIB = this;
+            this.Update();
+        }
+        // #endregion
+
+        // #region ~ GETTERS
+        // READ-ONLY
+
+        // GENERAL
+
+        // #endregion
+
+        // #region ~ SETTERS
+
+        // #endregion
+
+        // #region ~ PRIVATE METHODS
+
+        // #endregion
+
+        // #region ~ PUBLIC METHODS
+        GetStatData(statRef) {
+            let [statCat, statData] = [false, false];
+            const statCats = [...STATCATS];
+            if (D.IsID(statRef))
+                statRef = getObj("attribute", statRef);
+            if (VAL({string: statRef})) {
+                while (!statData && statCats.length) {
+                    statCat = statCats.shift();
+                    statData = this[statCat][statRef] || false;
+                }
+                return statData ? [statCat, statData] : [false, false];
+            } else if (VAL({obj: statRef})) {
+                const attrID = statRef.id;
+                while (!statData && statCats.length) {
+                    statCat = statCats.shift();
+                    statData = Object.values(this[statCat]).find((x) => x.objIDs.includes(attrID)) || false;
+                }
+                return statData ? [statCat, statData] : [false, false];
+            }
+            return [false, false];
+        }
+        SetStatValue(statName, value) {
+            if (VAL({number: value}))
+                value = `${value}`.includes(".") ? D.Float(value) : D.Int(value);
+            const [statCat, statData] = this.GetStatData(statName);
+            DB({statName, value, statCat, statData, objs: statData.objs, ids: statData.objIDs}, "SetStatValue");
+            if (statData) {
+                setAttrs(this.id, {[statData.objs.current.get("name")]: value});
+                this.Update(statCat);
+            }
+        }
+        SetStatMod(statName, value) {
+            if (VAL({number: value}))
+                value = `${value}`.includes(".") ? D.Float(value) : D.Int(value);
+            const [statCat, statData] = this.GetStatData(statName);
+            DB({statName, value, statCat, statData, objs: statData.objs, ids: statData.objIDs}, "SetStatMod");
+            if (statData) {
+                setAttrs(this.id, {[statData.objs.mod.get("name")]: value});
+                this.Update(statCat);
+            }
+        }
+        SetSubStat(statName, subStat, value) {
+            let index;
+            [subStat, index] = subStat.split(":");
+            index = VAL({number: index}) ? D.Int(index) : false;
+            if (VAL({number: value}))
+                value = `${value}`.includes(".") ? D.Float(value) : D.Int(value);
+            const [statCat, statData] = this.GetStatData(statName);
+            if (statData && (subStat in statData.objs)) {
+                let statObj = false;
+                if (VAL({array: statData.objs[subStat], number: index}))
+                    statObj = statData.objs[subStat][D.Int(index)];
+                else
+                    statObj = statData.objs[subStat];
+                if (VAL({obj: statObj})) {
+                    setAttrs(this.id, {[statObj.get("name")]: value});
+                    this.Update(statCat);
+                }
+            }
+        }
+        Update(attrRef) {
+            // Remove below override when attribute objects can be sent through as parameters:
+            // attrRef = VAL({obj: _.flatten([attrRef])}, undefined, true) ? [...STATCATS] : attrRef;
+
+            _.flatten([attrRef]).forEach((ref) => {
+                if (VAL({obj: ref}))
+                    [ref] = this.GetStatData(ref);
+                switch (D.LCase(ref)) {
+                    case "attributes": {
+                        this._attributes = D.KeyMapObj(
+                            this.baseAttrObjs.filter((x) => ATTRIBUTES.all.includes(x.get("name"))),
+                            (k, v) => D.LCase(v.get("name")),
+                            (v) => {
+                                let modObj = this.baseAttrObjs.find((x) => x.get("name") === `${v.get("name")}mod`) || false;
+                                if (!modObj) {
+                                    modObj = createObj("attribute", {
+                                        name: `${v.get("name")}mod`,
+                                        current: 0,
+                                        characterid: this.id
+                                    });
+                                    this._baseAttrObjs.push(modObj);
+                                }
+                                return {
+                                    val: D.Int(v.get("current")) + D.Int(modObj.get("current")),
+                                    name: D.Capitalize(v.get("name").replace(/_/gu, " "), true),
+                                    current: D.Int(v.get("current")),
+                                    max: 10,
+                                    mod: D.Int(modObj.get("current")),
+                                    objs: {
+                                        val: v,
+                                        name: v,
+                                        current: v,
+                                        max: v,
+                                        mod: modObj
+                                    },
+                                    objIDs: _.uniq(_.compact([
+                                        v,
+                                        modObj
+                                    ]).map((x) => x.id))
+                                };
+                            }
+                        );
+                        break;
+                    }
+                    case "skills": {
+                        this._skills = D.KeyMapObj(
+                            this.baseAttrObjs.filter((x) => SKILLS.all.includes(x.get("name"))),
+                            (k, v) => D.LCase(v.get("name")),
+                            (v) => {
+                                let modObj = this.baseAttrObjs.find((xx) => xx.get("name") === `${v.get("name")}mod`) || false;
+                                if (!modObj) {
+                                    modObj = createObj("attribute", {
+                                        name: `${v.get("name")}mod`,
+                                        current: 0,
+                                        characterid: this.id
+                                    });
+                                    this._baseAttrObjs.push(modObj);
+                                }
+                                const specObj = this.baseAttrObjs.find((xx) => xx.get("name") === `${v.get("name")}_spec`) || false;
+                                return {
+                                    val: D.Int(v.get("current")) + D.Int(modObj.get("current")),
+                                    name: D.Capitalize(v.get("name").replace(/_/gu, " "), true),
+                                    current: D.Int(v.get("current")),
+                                    max: 10,
+                                    mod: D.Int(modObj.get("current")),
+                                    spec: specObj ? specObj.get("current") : "",
+                                    objs: {
+                                        val: v,
+                                        name: v,
+                                        current: v,
+                                        max: v,
+                                        mod: modObj,
+                                        spec: specObj
+                                    },
+                                    objIDs: _.uniq(_.compact([
+                                        v,
+                                        modObj,
+                                        specObj
+                                    ]).map((x) => x.id))
+                                };
+                            }
+                        );
+                        break;
+                    }
+                    case "disciplines": {
+                        const baseDiscs = _.chain([1, 2, 3])
+                            .map((i) => {
+                                if (D.Int(this.baseAttrObjs.find((x) => x.get("name") === `disc${i}_toggle`).get("current"))) {
+                                    const objs = {
+                                        nameObj: this.baseAttrObjs.find((x) => x.get("name") === `disc${i}_name`) || false,
+                                        valObj: this.baseAttrObjs.find((x) => x.get("name") === `disc${i}`) || false,
+                                        modObj: this.baseAttrObjs.find((x) => x.get("name") === `disc${i}mod`) || false,
+                                        powerObjs: [1, 2, 3, 4, 5].map((ii) => this.baseAttrObjs.find((x) => x.get("name") === `disc${i}_${ii}`) || false)
+                                    };
+                                    if (!objs.modObj) {
+                                        objs.modObj = createObj("attribute", {
+                                            name: `disc${i}mod`,
+                                            current: 0,
+                                            characterid: this.id
+                                        });
+                                        this._baseAttrObjs.push(objs.modObj);
+                                    }
+                                    return objs;
+                                }
+                                return null;
+                            })
+                            .compact()
+                            .value();
+                        const repDiscs = _.chain(["discleft", "discmid", "discright"])
+                            .filter((x) => x in this.repAttrObjs)
+                            .map((x) => this.repAttrObjs[x])
+                            .flatten()
+                            .groupBy((x) => D.ParseRepStat(x)[1])
+                            .values()
+                            .map((x) => {
+                                const objs = {
+                                    nameObj: x.find((xx) => xx.get("name").endsWith("_name")) || false,
+                                    valObj: x.find((xx) => xx.get("name").endsWith("_disc")) || false,
+                                    modObj: x.find((xx) => xx.get("name").endsWith("_discmod")) || false,
+                                    powerObjs: [1, 2, 3, 4, 5].map((i) => x.find((xx) => xx.get("name").endsWith(`_discpower_${i}`)) || false)
+                                };
+                                if (!objs.modObj)
+                                    objs.modObj = createObj("attribute", {
+                                        name: `${objs.valObj.get("name")}mod`,
+                                        current: 0,
+                                        characterid: this.id
+                                    });
+                                return objs;
+                            })
+                            .value();
+                        this._disciplines = D.KeyMapObj(
+                            [...baseDiscs, ...repDiscs].map((x) => {
+                                const current = D.Int(x.valObj ? x.valObj.get("current") : 0);
+                                const mod = D.Int(x.modObj.get("current"));
+                                return {
+                                    val: current + mod,
+                                    name: x.nameObj ? x.nameObj.get("current") : "",
+                                    current,
+                                    max: 10,
+                                    mod,
+                                    powers: x.powerObjs.map((xx, i) => (((xx && i + 1) >= (current + mod)) ? xx.get("current") : "")),
+                                    objs: {
+                                        val: x.valObj,
+                                        name: x.nameObj,
+                                        current: x.valObj,
+                                        max: x.valObj,
+                                        mod: x.modObj,
+                                        powers: x.powerObjs
+                                    },
+                                    objIDs: _.uniq(_.compact([
+                                        x.nameObj,
+                                        x.valObj,
+                                        x.modObj,
+                                        ...x.powerObjs
+                                    ]).map((xx) => xx.id))
+                                };
+                            }),
+                            (k, v) => D.LCase(v.name),
+                            null
+                        );
+                        break;
+                    }
+                    case "advantages": {
+                        this._advantages = D.KeyMapObj(
+                            _.chain(["advantage", "negadvantage"])
+                                .filter((x) => x in this.repAttrObjs)
+                                .map((x) => this.repAttrObjs[x])
+                                .flatten()
+                                .groupBy((x) => D.ParseRepStat(x)[1])
+                                .values()
+                                .map((x) => {
+                                    const objs = {
+                                        nameObj: x.find((xx) => xx.get("name").endsWith("_name")) || false,
+                                        valObj: x.find((xx) => xx.get("name").endsWith("advantage")) || false,
+                                        modObj: x.find((xx) => xx.get("name").endsWith("advantagemod")) || false,
+                                        typeObj: x.find((xx) => xx.get("name").endsWith("_type")) || false,
+                                        detailsObj: x.find((xx) => xx.get("name").endsWith("_details")) || false
+                                    };
+                                    if (!objs.modObj)
+                                        objs.modObj = createObj("attribute", {
+                                            name: `${objs.valObj.get("name")}mod`,
+                                            current: 0,
+                                            characterid: this.id
+                                        });
+                                    return objs;
+                                })
+                                .map((x) => ({
+                                    val: D.Int(x.valObj ? x.valObj.get("current") : 0) + D.Int(x.modObj ? x.modObj.get("current") : 0),
+                                    name: x.nameObj ? x.nameObj.get("current") : "",
+                                    current: D.Int(x.valObj ? x.valObj.get("current") : 0),
+                                    max: 10,
+                                    mod: D.Int(x.modObj ? x.modObj.get("current") : 0),
+                                    type: x.typeObj ? x.typeObj.get("current") : "",
+                                    details: x.detailsObj ? x.detailsObj.get("current") : "",
+                                    objs: {
+                                        val: x.valObj,
+                                        name: x.nameObj,
+                                        current: x.valObj,
+                                        max: x.valObj,
+                                        mod: x.modObj,
+                                        type: x.typeObj,
+                                        details: x.detailsObj
+                                    },
+                                    objIDs: _.uniq(_.compact([
+                                        x.nameObj,
+                                        x.valObj,
+                                        x.modObj,
+                                        x.typeObj,
+                                        x.detailsObj
+                                    ]).map((xx) => xx.id))
+                                }))
+                                .value(),
+                            (k, v) => D.LCase(v.name),
+                            null
+                        );
+                        break;
+                    }
+                    // no default
+                }
+                // }
+            });
+        }
+        // #endregion
+    }
+
+    // #region Roll & Char Effects Classes
     // class Effect {
     //     /* SETTING UP CLASS TEMPLATE: Replace "Effect" with name of class (e.g. "Asset") */
     //     // #region ~ STATIC METHODS, GETTERS & SETTERS
@@ -1361,9 +1813,24 @@ const Char = (() => {
     //     // #endregion
     // }
     // #endregion
+    // #endregion
 
     const REGISTRY = STATE.REF.registry;
     const MENUHTML = {};
+    const STATCATS = ["attributes", "skills", "disciplines", "advantages"];
+    const ATTRIBUTES = {
+        all: _.flatten(Object.values(C.ATTRIBUTES)).map((x) => D.LCase(x).replace(/ /gu, "_")),
+        physical: C.ATTRIBUTES.physical.map((x) => D.LCase(x).replace(/ /gu, "_")),
+        social: C.ATTRIBUTES.social.map((x) => D.LCase(x).replace(/ /gu, "_")),
+        mental: C.ATTRIBUTES.mental.map((x) => D.LCase(x).replace(/ /gu, "_"))
+    };
+    const SKILLS = {
+        all: _.flatten(Object.values(C.SKILLS)).map((x) => D.LCase(x).replace(/ /gu, "_")),
+        physical: C.SKILLS.physical.map((x) => D.LCase(x).replace(/ /gu, "_")),
+        social: C.SKILLS.social.map((x) => D.LCase(x).replace(/ /gu, "_")),
+        mental: C.SKILLS.mental.map((x) => D.LCase(x).replace(/ /gu, "_"))
+    };
+    const DISCIPLINES = Object.keys(C.DISCIPLINES).map((x) => D.LCase(x).replace(/ /gu, "_"));
 
     // #region JSON Text Blocks
     const NPCSTATS
@@ -1859,7 +2326,7 @@ const Char = (() => {
             const [quad] = _.values(D.GetCharVals(charObj, "quadrant"));
             const [pcTokenObj] = Media.GetTokens(charObj.id);
             if (npcName === "base") {
-                delete Char.REGISTRY[quad].isNPC;
+                delete Character.REGISTRY[quad].isNPC;
                 Media.ToggleImg(`Tombstone${quad}`, false);
                 Media.ToggleImg(`TombstoneToken${quad}`, false);
                 Media.ToggleText(`TombstoneName${quad}`, false);
@@ -1868,7 +2335,7 @@ const Char = (() => {
                 let nameString = D.GetName(npcObj);
                 if (Media.GetTextWidth(`TombstoneName${quad}`, nameString) > 200)
                     nameString = npcName;
-                Char.REGISTRY[quad].isNPC = npcObj.id;
+                Character.REGISTRY[quad].isNPC = npcObj.id;
                 Media.SetImg(`TombstoneToken${quad}`, npcObj);
                 DB({charRef, npcRef, quad, npcName, nameString}, "setCharNPC");
                 Media.SetText(`TombstoneName${quad}`, nameString, true);
@@ -1927,7 +2394,7 @@ const Char = (() => {
 
     // #region Handouts & Displays: Desires, Advantages, Hunger & Weekly Resources
     const displayDesires = (addAttrData) => {
-        for (const charData of _.values(Char.REGISTRY)) {
+        for (const charData of _.values(Character.REGISTRY)) {
             const desireObj = Media.GetText(`${charData.shortName}Desire`);
             if (VAL({textObj: desireObj})) {
                 let desireVal = (D.GetRepStat(charData.id, "desire", "top", "desire") || {val: false}).val;
@@ -3189,14 +3656,26 @@ const Char = (() => {
                             .includes(D.LCase(x[1]))
                     );
                     const obsoleteRepAttrValTrips = repAttrValTrips.filter(
-                        (x) => !Object.keys(C.REPATTRS)
-                            .map((xx) => D.LCase(xx))
-                            .includes(D.LCase(x[1]))
+                        (x) => {
+                            const [, section, id, ...splitName] = x[0].get("name").split("_");
+                            const name = splitName.join("_");
+                            return !(section in C.REPATTRS && C.REPATTRS[section].includes(name));
+                        }
                     );
                     const nonRepAttrNames = nonRepAttrValPairs.map((x) => D.LCase(x[1]));
                     const missingDefaultAttrTrips = _.omit(D.Clone(C.SHEETATTRS), (v, k) => nonRepAttrNames.includes(D.LCase(k).replace(/_max/gu, "")));
 
-                    missingDefaultAttrTrips.marquee_toggle = 1;
+                    const dupeNameRecord = [];
+                    const dupeRepAttrValTrips = [];
+                    repAttrValTrips.forEach((x) => {
+                        const fullName = x[0].get("name");
+                        if (dupeNameRecord.includes(fullName))
+                            dupeRepAttrValTrips.push(x);
+                        else
+                            dupeNameRecord.push(fullName);
+                    });
+
+                    // missingDefaultAttrTrips.marquee_toggle = 1;
 
                     if (isChangingSheet) {
                         setAttrs(charObj.id, missingDefaultAttrTrips);
@@ -3206,6 +3685,9 @@ const Char = (() => {
                         for (const [attrObj] of obsoleteRepAttrValTrips)
                             if (VAL({object: attrObj}))
                                 attrObj.remove();
+                        for (const [attrObj] of dupeRepAttrValTrips)
+                            if (VAL({object: attrObj}))
+                                attrObj.remove();
                     }
                     reportLines.push(
                         ...[
@@ -3213,6 +3695,7 @@ const Char = (() => {
                             `${allAttrObjs.length} Attributes Found:`,
                             `... ${repOrderAttrObjs.length} '_reporder' Attributes,`,
                             `... ${repAttrValTrips.length} Repeating Attributes,`,
+                            `... ... including ${dupeRepAttrValTrips.length} Duplicates,`,
                             `... ${nonRepAttrObjs.length} Non-Repeating, Non-RepOrder Attributes`,
                             `... ... ${nonRepAttrValPairs.length} Attribute Name/Value Pairs Compiled.`,
                             "",
@@ -3227,6 +3710,10 @@ const Char = (() => {
                             "<b><u>OBSOLETE REP-ATTRIBUTES REMOVED</u>:</b>",
                             `${obsoleteRepAttrValTrips.length} OBSOLETE Attributes found and removed:`,
                             D.JS(obsoleteRepAttrValTrips.map((x) => `<b>${x[1]}</b>: ${x[2]}`)),
+                            "",
+                            "<b><u>DUPLICATE REP-ATTRIBUTES REMOVED</u>:</b>",
+                            `${dupeRepAttrValTrips.length} DUPLICATE Attributes found and removed:`,
+                            D.JS(dupeRepAttrValTrips.map((x) => `<b>${x[1]}</b>: ${x[2]}`)),
                             "",
                             "<b><u>DEFAULT ATTRIBUTES APPLIED</u>:</b>",
                             D.JS(missingDefaultAttrTrips),
