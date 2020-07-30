@@ -1872,6 +1872,10 @@ const D = (() => {
                             if (_.isNaN(parseInt(v)))
                                 errorLines.push(`Invalid number: ${jStrL(v)}`);
                             break;
+                        case "int": case "integer":
+                            if (!Number.isInteger(parseFloat(v)))
+                                errorLines.push(`Invalid integer: ${jStrL(v)}`);
+                            break;
                         case "string": // If v is a string OR a number
                             if (!_.isString(v) && !_.isNumber(v))
                                 errorLines.push(`Invalid string: ${jStrL(v)}`);
@@ -2746,7 +2750,7 @@ const D = (() => {
                                     section: parseRepStat(foundStat.get("name"))[0],
                                     attrName: parseRepStat(foundStat.get("name"))[2],
                                     fullName: foundStat.get("name"),
-                                    obj: D.JS(foundStat, true),
+                                    obj: foundStat,
                                     val: foundStat.get("current")
                                 }
                         );
@@ -2772,7 +2776,7 @@ const D = (() => {
             // Compactify the data to remove false values:
             finalRepData = _.compact(finalRepData);
             DB(`COMPACTED - FinalRepData: ${D.JSL(finalRepData, true)}`, "getRepStats");
-            if (finalRepData.length) {
+            if (finalRepData.length)
                 // Check for grouping and property-picking, and transform the data accordingly:
                 if (VAL({string: groupBy}) && Object.keys(finalRepData[0]).includes(groupBy)) {
                     finalRepData = _.groupBy(finalRepData, (v) => v[groupBy]);
@@ -2786,7 +2790,6 @@ const D = (() => {
                 } else if (VAL({string: pickProperty}) && Object.keys(finalRepData[0]).includes(pickProperty)) {
                     finalRepData = _.map(finalRepData, (v) => v[pickProperty]);
                 }
-            }
         }
         DB(`RETURNING FOUND STAT: ${D.JSL(finalRepData, true)}`, "getRepStats");
         return finalRepData;

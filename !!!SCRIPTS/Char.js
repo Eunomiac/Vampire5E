@@ -43,6 +43,42 @@ const Char = (() => {
     const initialize = () => {
         // PENDINGCHARCOMMAND = D.Clone(BLANKPENDINGCHARCOMMAND)
 
+        const charsToValidate = D.GetChars("npc");
+        D.Alert(D.JS(_.range(0, 0)));
+        const attrNameChanges = [
+
+        ];
+        const repAttrNameChanges = [];
+        [].forEach((section) => {
+            repAttrNameChanges.push(...[
+
+            ]);
+        });
+        const numAttrNameChanges = attrNameChanges.length;
+        const numRepAttrNameChanges = repAttrNameChanges.length;
+        const numCharsToValidate = charsToValidate.length;
+
+        charsToValidate.length = 0; D.Flag(`${numCharsToValidate} Chars Awaiting Validation`);
+
+        const changeNextAttr = () => {
+            if (attrNameChanges.length) {
+                changeAttrName(...attrNameChanges.pop());
+                D.Flag(`Attr Changed. ${attrNameChanges.length} / ${numAttrNameChanges} Remaining...`);
+            } else if (repAttrNameChanges.length) {
+                changeRepAttrName(...repAttrNameChanges.pop());
+                D.Flag(`RepAttr Changed. ${repAttrNameChanges.length} / ${numRepAttrNameChanges} Remaining...`);
+            } else if (charsToValidate.length) {
+                validateCharAttributes([charsToValidate.pop()], true);
+                D.Flag(`Char Validated. ${charsToValidate.length} / ${numCharsToValidate} Remaining...`);
+            } else {
+                D.Flag("ALL DONE!");
+                return true;
+            }
+            setTimeout(() => changeNextAttr(), 3000);
+            return false;
+        };
+        changeNextAttr();
+
         /* STATE.REF.registry = {
             TopLeft: {
                 id: "-Lt3NYCcsMUqdijYCWEc",
@@ -155,8 +191,9 @@ const Char = (() => {
         STATE.REF.charAlarms = STATE.REF.charAlarms || {};
         STATE.REF.badAttrNames = STATE.REF.badAttrNames || [];
         STATE.REF.badRepAttrNames = STATE.REF.badRepAttrNames || {};
+        STATE.REF.allAttrObjsRefreshSecs = STATE.REF.allAttrObjsRefreshSecs || 10;
 
-        D.GetChars("registered").forEach((x) => new Character(x));
+        D.GetChars("all").forEach((x) => new Character(x));
 
         MENUHTML.CharSelect = D.CommandMenuHTML({
             title: "Character Selection",
@@ -515,65 +552,56 @@ const Char = (() => {
                 switch (D.LCase(call = args.shift())) {
                     case "get": {
                         switch (D.LCase(call = args.shift())) {
-                            case "report": {
-                                charInsts.forEach((x) => D.Alert([
-                                    "<h3>Attributes</h3>",
-                                    D.JS(x.attributes),
-                                    "<h3>Skills</h3>",
-                                    D.JS(x.skills),
-                                    "<h3>Disciplines</h3>",
-                                    D.JS(x.disciplines),
-                                    "<h3>Advantages</h3>",
-                                    D.JS(x.advantages)
-                                ]));
+                            case "allstats": {
+                                D.Flag("AllStats Called!");
+                                const [charInst] = charInsts;
+                                const [category, subStat, index] = args;
+                                charInst.getAllStatObjs(category, subStat, index);
+                                D.Alert(D.JS(_.pick(charInst.ObjsLIB, (v) => v.category === category), true), "!char get allstats");
                                 break;
                             }
-                            default: {
-                                if (call)
-                                    args.unshift(call);
-                                const returnLines = [];
-                                const attrRef = D.LCase(args.join(" "));
-                                if (STATCATS.includes(attrRef))
-                                    charInsts.forEach((x) => {
-                                        returnLines.push(...[
-                                            `<h3>${x.name}</h3>`,
-                                            D.JS(x[attrRef])
-                                        ]);
-                                    });
-                                else
-                                    charInsts.forEach((x) => {
-                                        returnLines.push(...[
-                                            `<h3>${x.name}</h3>`,
-                                            D.JS(x.GetStatData(attrRef))
-                                        ]);
-                                    });
-                                D.Alert(returnLines.join("<br>"), `!char get ${args.join(" ")}`);
+                            case "objs": {
+                                const [charInst] = charInsts;
+                                D.Alert(D.JS(charInst.ObjsLIB, true), `${charInst.name}'s Objects`);
                                 break;
                             }
+                            case "stat": {
+                                let [index, subStat, ...statName] = args.reverse();
+                                statName.reverse();
+                                if (index && !VAL({int: index})) {
+                                    statName.push(subStat);
+                                    subStat = index;
+                                    index = null;
+                                }
+                                if (subStat && !ATTRSUBSTATS.includes(subStat)) {
+                                    statName.push(subStat);
+                                    subStat = null;
+                                }
+                                const reportLines = [`<h3>${statName.join(" ")}${subStat !== null ? `::${subStat}` : ""}${index !== null ? `::${index}` : ""}</h3>`];
+                                charInsts.forEach((x) => reportLines.push(`${x.name}: ${x.GetStat(statName.join(" ").trim(), subStat, index)}`));
+                                D.Alert(reportLines.join("<br>"), "!char get stat");
+                                break;
+                            }
+                            // no default
                         }
                         break;
                     }
                     case "set": {
                         switch (D.LCase(call = args.shift())) {
-                            case "mod": {
-                                const modVal = args.pop();
-                                const statName = args.join(" ").trim();
-                                charInsts.forEach((x) => {
-                                    x.SetStatMod(statName, modVal);
-                                });
+                            case "stat": {
+                                const [statName, subStatIndex, ...value] = args;
+                                let [subStat, index] = subStatIndex.split(":");
+                                if (subStat && !ATTRSUBSTATS.includes(subStat)) {
+                                    value.unshift(subStatIndex);
+                                    subStat = null;
+                                    index = null;
+                                }
+                                if (index && VAL({int: index}))
+                                    index = D.Int(index) - 1;
+                                charInsts.forEach((x) => x.SetStat(statName, subStat, index, value.join(" ")));
                                 break;
                             }
-                            default: {
-                                if (call)
-                                    args.unshift(call);
-                                const statVal = args.pop();
-                                const statName = args.join(" ").trim();
-                                charInsts.forEach((x) => {
-                                    D.Alert(`Setting '${D.JS(statName)}' to '${D.JS(statVal)}'`, "!char set stat");
-                                    x.SetStatValue(statName, statVal);
-                                });
-                                break;
-                            }
+                            // no default
                         }
                         break;
                     }
@@ -1080,6 +1108,10 @@ const Char = (() => {
                         changeAttrName(args.shift(), args.shift());
                         break;
                     }
+                    case "changerepstat": {
+                        changeRepAttrName(...args);
+                        break;
+                    }
                     // no default
                 }
                 break;
@@ -1265,6 +1297,7 @@ const Char = (() => {
     // #endregion
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ END BOILERPLATE INITIALIZATION & CONFIGURATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // #region CLASS DEFINITIONS
+
     class Character {
         // #region ~ STATIC METHODS, GETTERS & SETTERS
         static Get(charRef) {
@@ -1273,7 +1306,7 @@ const Char = (() => {
         }
 
         // #region Instance Storage Libraries (Indexed by "id" property on Instance)
-        static get LIB() { return this._CharLIB }
+        static get LIB() { return this._CharLIB || {} }
         static set LIB(charInst) { this._CharLIB = Object.assign(this._CharLIB || {}, {[charInst.id]: charInst}) }
         // #endregion
         // #endregion
@@ -1285,48 +1318,48 @@ const Char = (() => {
         // READ-ONLY
         get id() { return this.obj.id }
         get name() { return this.obj.get("name") }
-        get baseAttrObjs() {
-            if (!this._baseAttrObjs)
-                this._baseAttrObjs = _.compact(findObjs({_type: "attribute", _characterid: this.id}).filter((x) => !x.get("name").startsWith("repeating_")) || []);
-            return this._baseAttrObjs;
-        }
-        get repAttrObjs() { return _.mapObject(D.GetRepStats(this.id, null, null, null, "section", "obj"), (v) => v.slice(1)) }
-
         get isPC() { return Boolean(Object.values(REGISTRY).find((x) => x.id === this.id)) }
 
         // ATTRIBUTE VALUES
-        get attributes() {
-            if (!this._attributes)
-                this.Update("attributes");
-            return this._attributes;
-        }
-        get skills() {
-            if (!this._skills)
-                this.Update("skills");
-            return this._skills;
-        }
-        get disciplines() {
-            if (!this._disciplines)
-                this.Update("disciplines");
-            return this._disciplines;
-        }
-        get advantages() {
-            if (!this._advantages)
-                this.Update("advantages");
-            return this._advantages;
-        }
+        /*
+        StatData objects stored in two-level object: '[category]: {[name]: {data}, [name]: {data}}'.
+            Can either iterate through categories, or flatten an Object.values() call to search through all attributes by name
+        Initialization doesn't fetch any objects.
+            - get functions within each statData object will fetch/create objects if...
+                (a) they aren't already set
+                (b) the attribute object doesn't exist anymore
+                (c) the attribute's name is in the this._attrsUpdateQueue array
+                ... but one-at-a-time, as needed, instead of in bulk
+                    ... maybe pre-initialize player characters at API restart
+            - do attribute creation through setAttrs() function
+            - statData also has get functions for names & ids of each object --> just return obj.get("name")/obj.id
+                - do you have to use _.bind() or something to have 'this' within statData refer to statData and not to the class instance?
+        Most of this can be completely isolated/compartmentalized within the private class scope
+            - outside functions should only ever need to get or set data values --- don't need to expose objects to outside scope
+            - make the get()s exposed to outside SUPER simple: only replies with SINGLE statData VALUE if statName/subStat/index is a match
+                - can iterate through multiple statData queries as needed outside of the class
+        */
         // #endregion
 
         // #region ~ CONSTRUCTOR
         constructor(charObj) {
             this.obj = charObj;
             Character.LIB = this;
-            this.Update();
+            this._objsLIB = {};
         }
         // #endregion
 
         // #region ~ GETTERS
         // READ-ONLY
+        get allAttrObjs() {
+            if (!this._allAttrObjs) {
+                this._allAttrObjs = findObjs({_type: "attribute", characterid: this.id})
+                    .filter((x) => !_.any(ATTROBJSBLACKLIST, (pattern) => new RegExp(pattern).test(x)));
+
+                setTimeout(() => { delete this._allAttrObjs }, STATE.REF.allAttrObjsRefreshSecs * 1000);
+            }
+            return this._allAttrObjs;
+        }
 
         // GENERAL
 
@@ -1337,295 +1370,209 @@ const Char = (() => {
         // #endregion
 
         // #region ~ PRIVATE METHODS
-
-        // #endregion
-
-        // #region ~ PUBLIC METHODS
-        GetStatData(statRef) {
-            let [statCat, statData] = [false, false];
-            const statCats = [...STATCATS];
-            if (D.IsID(statRef))
-                statRef = getObj("attribute", statRef);
-            if (VAL({string: statRef})) {
-                while (!statData && statCats.length) {
-                    statCat = statCats.shift();
-                    statData = this[statCat][statRef] || false;
-                }
-                return statData ? [statCat, statData] : [false, false];
-            } else if (VAL({obj: statRef})) {
-                const attrID = statRef.id;
-                while (!statData && statCats.length) {
-                    statCat = statCats.shift();
-                    statData = Object.values(this[statCat]).find((x) => x.objIDs.includes(attrID)) || false;
-                }
-                return statData ? [statCat, statData] : [false, false];
-            }
-            return [false, false];
-        }
-        SetStatValue(statName, value) {
-            if (VAL({number: value}))
-                value = `${value}`.includes(".") ? D.Float(value) : D.Int(value);
-            const [statCat, statData] = this.GetStatData(statName);
-            DB({statName, value, statCat, statData, objs: statData.objs, ids: statData.objIDs}, "SetStatValue");
-            if (statData) {
-                setAttrs(this.id, {[statData.objs.current.get("name")]: value});
-                this.Update(statCat);
-            }
-        }
-        SetStatMod(statName, value) {
-            if (VAL({number: value}))
-                value = `${value}`.includes(".") ? D.Float(value) : D.Int(value);
-            const [statCat, statData] = this.GetStatData(statName);
-            DB({statName, value, statCat, statData, objs: statData.objs, ids: statData.objIDs}, "SetStatMod");
-            if (statData) {
-                setAttrs(this.id, {[statData.objs.mod.get("name")]: value});
-                this.Update(statCat);
-            }
-        }
-        SetSubStat(statName, subStat, value) {
-            let index;
-            [subStat, index] = subStat.split(":");
-            index = VAL({number: index}) ? D.Int(index) : false;
-            if (VAL({number: value}))
-                value = `${value}`.includes(".") ? D.Float(value) : D.Int(value);
-            const [statCat, statData] = this.GetStatData(statName);
-            if (statData && (subStat in statData.objs)) {
-                let statObj = false;
-                if (VAL({array: statData.objs[subStat], number: index}))
-                    statObj = statData.objs[subStat][D.Int(index)];
-                else
-                    statObj = statData.objs[subStat];
-                if (VAL({obj: statObj})) {
-                    setAttrs(this.id, {[statObj.get("name")]: value});
-                    this.Update(statCat);
-                }
-            }
-        }
-        Update(attrRef) {
-            // Remove below override when attribute objects can be sent through as parameters:
-            // attrRef = VAL({obj: _.flatten([attrRef])}, undefined, true) ? [...STATCATS] : attrRef;
-
-            _.flatten([attrRef]).forEach((ref) => {
-                if (VAL({obj: ref}))
-                    [ref] = this.GetStatData(ref);
-                switch (D.LCase(ref)) {
-                    case "attributes": {
-                        this._attributes = D.KeyMapObj(
-                            this.baseAttrObjs.filter((x) => ATTRIBUTES.all.includes(x.get("name"))),
-                            (k, v) => D.LCase(v.get("name")),
-                            (v) => {
-                                let modObj = this.baseAttrObjs.find((x) => x.get("name") === `${v.get("name")}mod`) || false;
-                                if (!modObj) {
-                                    modObj = createObj("attribute", {
-                                        name: `${v.get("name")}mod`,
-                                        current: 0,
-                                        characterid: this.id
-                                    });
-                                    this._baseAttrObjs.push(modObj);
-                                }
-                                return {
-                                    val: D.Int(v.get("current")) + D.Int(modObj.get("current")),
-                                    name: D.Capitalize(v.get("name").replace(/_/gu, " "), true),
-                                    current: D.Int(v.get("current")),
-                                    max: 10,
-                                    mod: D.Int(modObj.get("current")),
-                                    objs: {
-                                        val: v,
-                                        name: v,
-                                        current: v,
-                                        max: v,
-                                        mod: modObj
-                                    },
-                                    objIDs: _.uniq(_.compact([
-                                        v,
-                                        modObj
-                                    ]).map((x) => x.id))
-                                };
-                            }
-                        );
-                        break;
-                    }
+        findStatObj(statName, subStat, index) {
+            statName = D.LCase(statName);
+            _.flatten(Object.values(ATTRVALSUFFIXES).map((x) => Object.values(x)))
+                .forEach((x) => { statName = statName.replace(new RegExp(`${x}$`, "gu"), "") });
+            subStat = subStat ? D.LCase(subStat) : "val";
+            const getCatFromObj = (attrObj) => {
+                const attrName = attrObj.get("name");
+                if (ATTRIBUTES.all.includes(attrName.replace(/mod$/gu, "")))
+                    return "attributes";
+                if (SKILLS.all.includes(attrName.replace(/mod$|_spec$/gu, "")))
+                    return "skills";
+                if (new RegExp("disc(\\d|left|mid|right)").test(attrName))
+                    return "disciplines";
+                if (attrName.includes("advantage_"))
+                    return "advantages";
+                return false;
+            };
+            DB({statName: `'${statName}'`, subStat, index}, "findStatObj");
+            // Only two possibilities for a statName reference:
+            //      1) D.LCase() match to attrObj.get("name")
+            //      2) D.LCase() match to attrObj.get("name") === `${statName}_name`
+            let valObj = this.allAttrObjs.find((x) => D.LCase(x.get("name")) === statName.replace(/ /gu, "_")
+                                                      || (x.get("name").endsWith("_name") && D.LCase(x.get("current")) === statName));
+            DB({valObjInitial: valObj}, "findStatObj");
+            // If it's a name object, replace it with the value object
+            if (valObj && valObj.get("name").endsWith("_name"))
+                valObj = this.allAttrObjs.find((x) => x.get("name") === valObj.get("name").replace(/_name/gu, ""));
+            // IF an object is found:
+            DB({valObj}, "findStatObj");
+            if (VAL({obj: valObj})) {
+                // Use the valObj to determine the category
+                const statCat = getCatFromObj(valObj);
+                const valName = valObj.get("name");
+                DB({valObjFound: valObj, statCat, valName}, "findStatObj");
+                // Use category to determine/create rest of objects for _objsLIB entry.
+                const libData = {category: statCat, val: valObj, name: false, mod: false};
+                switch (statCat) {
                     case "skills": {
-                        this._skills = D.KeyMapObj(
-                            this.baseAttrObjs.filter((x) => SKILLS.all.includes(x.get("name"))),
-                            (k, v) => D.LCase(v.get("name")),
-                            (v) => {
-                                let modObj = this.baseAttrObjs.find((xx) => xx.get("name") === `${v.get("name")}mod`) || false;
-                                if (!modObj) {
-                                    modObj = createObj("attribute", {
-                                        name: `${v.get("name")}mod`,
-                                        current: 0,
-                                        characterid: this.id
-                                    });
-                                    this._baseAttrObjs.push(modObj);
-                                }
-                                const specObj = this.baseAttrObjs.find((xx) => xx.get("name") === `${v.get("name")}_spec`) || false;
-                                return {
-                                    val: D.Int(v.get("current")) + D.Int(modObj.get("current")),
-                                    name: D.Capitalize(v.get("name").replace(/_/gu, " "), true),
-                                    current: D.Int(v.get("current")),
-                                    max: 10,
-                                    mod: D.Int(modObj.get("current")),
-                                    spec: specObj ? specObj.get("current") : "",
-                                    objs: {
-                                        val: v,
-                                        name: v,
-                                        current: v,
-                                        max: v,
-                                        mod: modObj,
-                                        spec: specObj
-                                    },
-                                    objIDs: _.uniq(_.compact([
-                                        v,
-                                        modObj,
-                                        specObj
-                                    ]).map((x) => x.id))
-                                };
-                            }
-                        );
+                        libData.spec = this.allAttrObjs.find((x) => x.get("name") === `${valName}_spec`)
+                                                       || createObj("attribute", {
+                                                           name: `${valName}_spec`,
+                                                           current: "",
+                                                           characterid: this.id
+                                                       });
+                    }
+                    // falls through
+                    case "attributes": {
+                        libData.name = valObj;
+                        libData.mod = this.allAttrObjs.find((x) => x.get("name") === `${valName}mod`)
+                                                      || createObj("attribute", {
+                                                          name: `${valName}mod`,
+                                                          current: 0,
+                                                          characterid: this.id
+                                                      });
+                        this._objsLIB[statName] = libData;
                         break;
                     }
                     case "disciplines": {
-                        const baseDiscs = _.chain([1, 2, 3])
-                            .map((i) => {
-                                if (D.Int(this.baseAttrObjs.find((x) => x.get("name") === `disc${i}_toggle`).get("current"))) {
-                                    const objs = {
-                                        nameObj: this.baseAttrObjs.find((x) => x.get("name") === `disc${i}_name`) || false,
-                                        valObj: this.baseAttrObjs.find((x) => x.get("name") === `disc${i}`) || false,
-                                        modObj: this.baseAttrObjs.find((x) => x.get("name") === `disc${i}mod`) || false,
-                                        powerObjs: [1, 2, 3, 4, 5].map((ii) => this.baseAttrObjs.find((x) => x.get("name") === `disc${i}_${ii}`) || false)
-                                    };
-                                    if (!objs.modObj) {
-                                        objs.modObj = createObj("attribute", {
-                                            name: `disc${i}mod`,
-                                            current: 0,
-                                            characterid: this.id
-                                        });
-                                        this._baseAttrObjs.push(objs.modObj);
-                                    }
-                                    return objs;
-                                }
-                                return null;
-                            })
-                            .compact()
-                            .value();
-                        const repDiscs = _.chain(["discleft", "discmid", "discright"])
-                            .filter((x) => x in this.repAttrObjs)
-                            .map((x) => this.repAttrObjs[x])
-                            .flatten()
-                            .groupBy((x) => D.ParseRepStat(x)[1])
-                            .values()
-                            .map((x) => {
-                                const objs = {
-                                    nameObj: x.find((xx) => xx.get("name").endsWith("_name")) || false,
-                                    valObj: x.find((xx) => xx.get("name").endsWith("_disc")) || false,
-                                    modObj: x.find((xx) => xx.get("name").endsWith("_discmod")) || false,
-                                    powerObjs: [1, 2, 3, 4, 5].map((i) => x.find((xx) => xx.get("name").endsWith(`_discpower_${i}`)) || false)
-                                };
-                                if (!objs.modObj)
-                                    objs.modObj = createObj("attribute", {
-                                        name: `${objs.valObj.get("name")}mod`,
-                                        current: 0,
-                                        characterid: this.id
-                                    });
-                                return objs;
-                            })
-                            .value();
-                        this._disciplines = D.KeyMapObj(
-                            [...baseDiscs, ...repDiscs].map((x) => {
-                                const current = D.Int(x.valObj ? x.valObj.get("current") : 0);
-                                const mod = D.Int(x.modObj.get("current"));
-                                return {
-                                    val: current + mod,
-                                    name: x.nameObj ? x.nameObj.get("current") : "",
-                                    current,
-                                    max: 10,
-                                    mod,
-                                    powers: x.powerObjs.map((xx, i) => (((xx && i + 1) >= (current + mod)) ? xx.get("current") : "")),
-                                    objs: {
-                                        val: x.valObj,
-                                        name: x.nameObj,
-                                        current: x.valObj,
-                                        max: x.valObj,
-                                        mod: x.modObj,
-                                        powers: x.powerObjs
-                                    },
-                                    objIDs: _.uniq(_.compact([
-                                        x.nameObj,
-                                        x.valObj,
-                                        x.modObj,
-                                        ...x.powerObjs
-                                    ]).map((xx) => xx.id))
-                                };
-                            }),
-                            (k, v) => D.LCase(v.name),
-                            null
-                        );
+                        libData.name = this.allAttrObjs.find((x) => x.get("name") === `${valName}_name`);
+                        if (!libData.name.get("current"))
+                            break;
+                        DB({nameObjFound: [libData.name, libData.name.get("current")]}, "findStatObj");
+                        libData.mod = this.allAttrObjs.find((x) => x.get("name") === `${valName}mod`)
+                                                        || createObj("attribute", {
+                                                            name: `${valName}mod`,
+                                                            current: 0,
+                                                            characterid: this.id
+                                                        });
+                        if (!valName.startsWith("repeating_"))
+                            libData.toggle = this.allAttrObjs.find((x) => x.get("name") === `${valName}_toggle`);
+                        libData.powerToggle = this.allAttrObjs.find((x) => x.get("name") === `${valName}_power_toggle`)
+                                                                || createObj("attribute", {
+                                                                    name: `${valName}_power_toggle`,
+                                                                    current: D.Int(valObj.get("current")),
+                                                                    characterid: this.id
+                                                                });
+                        libData.powers = _.range(0, D.Int(valObj.get("current"))).map((i) => this.allAttrObjs.find((x) => x.get("name") === `${valName}_power_${i + 1}`)
+                                                                                                            || createObj("attribute", {
+                                                                                                                name: `${valName}_power_${i + 1}`,
+                                                                                                                current: "",
+                                                                                                                characterid: this.id
+                                                                                                            }));
+
+
+                        this._objsLIB[D.LCase(libData.name.get("current"))] = libData;
                         break;
                     }
                     case "advantages": {
-                        this._advantages = D.KeyMapObj(
-                            _.chain(["advantage", "negadvantage"])
-                                .filter((x) => x in this.repAttrObjs)
-                                .map((x) => this.repAttrObjs[x])
-                                .flatten()
-                                .groupBy((x) => D.ParseRepStat(x)[1])
-                                .values()
-                                .map((x) => {
-                                    const objs = {
-                                        nameObj: x.find((xx) => xx.get("name").endsWith("_name")) || false,
-                                        valObj: x.find((xx) => xx.get("name").endsWith("advantage")) || false,
-                                        modObj: x.find((xx) => xx.get("name").endsWith("advantagemod")) || false,
-                                        typeObj: x.find((xx) => xx.get("name").endsWith("_type")) || false,
-                                        detailsObj: x.find((xx) => xx.get("name").endsWith("_details")) || false
-                                    };
-                                    if (!objs.modObj)
-                                        objs.modObj = createObj("attribute", {
-                                            name: `${objs.valObj.get("name")}mod`,
-                                            current: 0,
-                                            characterid: this.id
-                                        });
-                                    return objs;
-                                })
-                                .map((x) => ({
-                                    val: D.Int(x.valObj ? x.valObj.get("current") : 0) + D.Int(x.modObj ? x.modObj.get("current") : 0),
-                                    name: x.nameObj ? x.nameObj.get("current") : "",
-                                    current: D.Int(x.valObj ? x.valObj.get("current") : 0),
-                                    max: 10,
-                                    mod: D.Int(x.modObj ? x.modObj.get("current") : 0),
-                                    type: x.typeObj ? x.typeObj.get("current") : "",
-                                    details: x.detailsObj ? x.detailsObj.get("current") : "",
-                                    objs: {
-                                        val: x.valObj,
-                                        name: x.nameObj,
-                                        current: x.valObj,
-                                        max: x.valObj,
-                                        mod: x.modObj,
-                                        type: x.typeObj,
-                                        details: x.detailsObj
-                                    },
-                                    objIDs: _.uniq(_.compact([
-                                        x.nameObj,
-                                        x.valObj,
-                                        x.modObj,
-                                        x.typeObj,
-                                        x.detailsObj
-                                    ]).map((xx) => xx.id))
-                                }))
-                                .value(),
-                            (k, v) => D.LCase(v.name),
-                            null
-                        );
+                        libData.name = this.allAttrObjs.find((x) => x.get("name") === `${valName}_name`);
+                        if (!libData.name.get("current"))
+                            break;
+                        DB({nameObjFound: [libData.name, libData.name.get("current")]}, "findStatObj");
+                        libData.mod = this.allAttrObjs.find((x) => x.get("name") === `${valName}mod`)
+                                                        || createObj("attribute", {
+                                                            name: `${valName}mod`,
+                                                            current: 0,
+                                                            characterid: this.id
+                                                        });
+                        libData.type = this.allAttrObjs.find((x) => x.get("name") === `${valName}_type`)
+                                                        || createObj("attribute", {
+                                                            name: `${valName}_type`,
+                                                            current: "",
+                                                            characterid: this.id
+                                                        });
+                        libData.details = this.allAttrObjs.find((x) => x.get("name") === `${valName}_details`)
+                                                        || createObj("attribute", {
+                                                            name: `${valName}_details`,
+                                                            current: "",
+                                                            characterid: this.id
+                                                        });
+                        this._objsLIB[D.LCase(libData.name.get("current"))] = libData;
                         break;
                     }
                     // no default
                 }
-                // }
-            });
+            }
+            // Finally, return desired subStat object
+            let returnObj;
+            if (statName in this._objsLIB && subStat in this._objsLIB[statName])
+                returnObj = this._objsLIB[statName][subStat];
+            if (VAL({int: index, array: returnObj}))
+                returnObj = returnObj[D.Int(index)];
+            return VAL({obj: returnObj}) && returnObj;
+        }
+        getStatObj(statName, subStat, index) {
+            statName = D.LCase(statName);
+            subStat = subStat ? D.LCase(subStat) : "val";
+            let statObj = false;
+            if (statName in this._objsLIB && subStat in this._objsLIB[statName]) {
+                statObj = this._objsLIB[statName][subStat];
+                if (VAL({int: index, array: statObj}))
+                    statObj = statObj[index];
+            }
+            if (!VAL({obj: statObj}))
+                statObj = this.findStatObj(statName, subStat, index) || {get: () => false};
+            return VAL({obj: statObj}) && statObj;
+        }
+        getAllStatObjs(category, subStat, index) {
+            category = D.LCase(category);
+            subStat = subStat ? D.LCase(subStat) : "val";
+            const getCatFromObj = (attrObj) => {
+                const attrName = attrObj.get("name");
+                if (ATTRIBUTES.all.includes(attrName.replace(/mod$/gu, "")))
+                    return "attributes";
+                if (SKILLS.all.includes(attrName.replace(/mod$|_spec$/gu, "")))
+                    return "skills";
+                if (new RegExp("disc(\\d|left|mid|right)").test(attrName))
+                    return "disciplines";
+                if (attrName.includes("advantage_"))
+                    return "advantages";
+                return false;
+            };
+            const [valObjs, checkedValObjs] = [[], []];
+            switch (D.LCase(category)) {
+                case "attributes": {
+                    valObjs.push(...this.allAttrObjs.filter((x) => ATTRIBUTES.all.includes(x.get("name"))));
+                    break;
+                }
+                case "skills": {
+                    valObjs.push(...this.allAttrObjs.filter((x) => SKILLS.all.includes(x.get("name"))));
+                    break;
+                }
+                case "disciplines": {
+                    valObjs.push(...this.allAttrObjs.filter((x) => new RegExp("(^disc\\d?|_disc)$").test(x.get("name"))));
+                    break;
+                }
+                case "advantages": {
+                    valObjs.push(...this.allAttrObjs.filter((x) => x.get("name").endsWith("advantage")));
+                    break;
+                }
+                // no default
+            }
+            valObjs.forEach((x) => checkedValObjs.push(this.getStatObj(x.get("name"), subStat, index)));
+            return checkedValObjs;
+        }
+        // #endregion
+
+        // #region ~ PUBLIC METHODS
+        get ObjsLIB() { return this._objsLIB }
+        GetStat(statName, subStat, index) {
+            subStat = subStat || "val";
+            DB({statName, subStat, index}, "GetStat");
+            const valObj = this.getStatObj(statName, ["raw", "max"].includes(subStat) ? "val" : subStat, index);
+            if (VAL({obj: valObj})) {
+                let value = valObj.get(subStat === "max" ? "max" : "current");
+                if (VAL({int: value}))
+                    value = D.Int(value);
+                if (subStat === "val") {
+                    const modObj = this.getStatObj(statName, "mod") || {get: () => 0};
+                    return value + D.Int(modObj.get("current"));
+                }
+                return value;
+            }
+            return false;
+        }
+        SetStat(statName, subStat, index, value) {
+            subStat = subStat || "val";
+            const valObj = this.getStatObj(statName, ["max"].includes(subStat) ? "val" : subStat, index);
+            if (VAL({obj: valObj}))
+                setAttrs(this.id, {[valObj.get("name")]: value});
         }
         // #endregion
     }
-
     // #region Roll & Char Effects Classes
     // class Effect {
     //     /* SETTING UP CLASS TEMPLATE: Replace "Effect" with name of class (e.g. "Asset") */
@@ -1831,6 +1778,17 @@ const Char = (() => {
         mental: C.SKILLS.mental.map((x) => D.LCase(x).replace(/ /gu, "_"))
     };
     const DISCIPLINES = Object.keys(C.DISCIPLINES).map((x) => D.LCase(x).replace(/ /gu, "_"));
+    const ATTRSUBSTATS = ["val", "raw", "max", "mod", "name", "spec", "toggle", "powerToggle", "powers", "type", "details"];
+    const ATTRVALSUFFIXES = {
+        attributes: {name: "", mod: "mod"},
+        skills: {name: "", mod: "mod", spec: "_spec"},
+        disciplines: {name: "_name", mod: "mod", powerToggle: "_power_toggle", toggle: "_toggle", powers: ["_power_1", "_power_2", "_power_3", "_power_4", "_power_5"]},
+        advantages: {name: "_name", mod: "mod", type: "_type", details: "_details"}
+    };
+    const ATTROBJSBLACKLIST = [
+        "null_\\d+",
+        "bonus_\\d+"
+    ];
 
     // #region JSON Text Blocks
     const NPCSTATS
@@ -3767,11 +3725,11 @@ const Char = (() => {
         const attrList = {};
         for (const char of allChars) {
             attrList[char.get("name")] = [];
-            const attr = findObjs({
+            const [attr] = findObjs({
                 _type: "attribute",
                 _characterid: char.id,
                 name: oldName
-            })[0];
+            });
             if (attr) {
                 attrList[char.get("name")].push({
                     [newName]: attr.get("current"),
@@ -3781,11 +3739,32 @@ const Char = (() => {
                     [newName]: attr.get("current"),
                     [`${newName}_max`]: attr.get("max")
                 });
-                attr.remove();
+                // attr.remove();
             }
         }
+        // D.Alert(D.JS(attrList));
+    };
+    const changeRepAttrName = (section, oldName, newName) => {
+        const allChars = findObjs({
+            _type: "character"
+        });
+        // const allChars = D.GetChars("registered");
+        for (const char of allChars) {
+            const deltaAttrs = {};
+            for (const oldAttrObj of _.uniq(_.compact(D.GetRepStats(char, section, null, oldName, null, "obj"))))
+                try {
+                    const newNameFull = oldAttrObj.get("name").replace(new RegExp(`${oldName}$`), newName);
+                    deltaAttrs[newNameFull] = oldAttrObj.get("current");
+                    deltaAttrs[`${newNameFull}_max`] = oldAttrObj.get("max");
+                } catch (errObj) {
+                    // DB({char: char.get("name"), oldAttrObj, [`ERROR (${section}, ${oldName})`]: D.GetRepStats(char, section, null, oldName, null, "obj")}, "changeRepAttrName");
+                    THROW("Error Report", "changeRepAttrName", errObj);
+                    continue;
+                }
 
-        D.Alert(D.JS(attrList));
+            // DB({char: char.get("name"), deltaAttrs}, "changeRepAttrName");
+            setAttrs(char.id, deltaAttrs);
+        }
     };
     const setNPCStats = (charRef) => {
         // Applies NPCSTATS (output from the NPC Stats Google Sheet) to the given character reference, OR all characters in NPC stats.

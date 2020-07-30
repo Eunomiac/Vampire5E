@@ -982,9 +982,9 @@
     // #region Repeating Field Configuration
     const DISCENUMS = ["disc1", "disc2", "disc3"];
     const DISCREPREFS = {
-        discleft: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `discpower_${x}`)],
-        discmid: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `discpower_${x}`)],
-        discright: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `discpower_${x}`)]
+        discleft: ["disc", "disc_name", "disc_flag", "disc_power_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `disc_power_${x}`)],
+        discmid: ["disc", "disc_name", "disc_flag", "disc_power_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `disc_power_${x}`)],
+        discright: ["disc", "disc_name", "disc_flag", "disc_power_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `disc_power_${x}`)]
     };
     const DISCMODREPREFS = {
         discleft: ["disc", "discmod"],
@@ -1087,7 +1087,7 @@
         }
     };
     const isBlacklisted = (attr = "") => {
-/*         if (TEMPTHROTTLE.includes(attr)) {
+        /* if (TEMPTHROTTLE.includes(attr)) {
             log(`[${attr}] THROTTLED: RETURNING TRUE`);
             return true;
         } */
@@ -1376,9 +1376,9 @@
         const attrList = {};
         const $funcs = [
             $getRepAttrs({
-                discLeft: ["disc_name"],
-                discMid: ["disc_name"],
-                discRight: ["disc_name"]
+                discleft: ["disc_name"],
+                discmid: ["disc_name"],
+                discright: ["disc_name"]
             }),
             (attrArray, cBack) => {
                 getAttrs([...["disc1_name", "disc2_name", "disc3_name"], ...attrArray], (ATTRS) => {
@@ -1452,7 +1452,7 @@
                 getAttrs([stat], (ATTRS) => {
                     log(`[DODISCS ATTRS = ${JSON.stringify(ATTRS)}]`);
                     if (stat.endsWith("disc") || stat.startsWith("disc"))
-                        attrList[`${stat}power_toggle`] = ATTRS[stat];
+                        attrList[`${stat}_power_toggle`] = ATTRS[stat];
                     cback(null, attrList);
                 });
             },
@@ -3193,7 +3193,8 @@
                 _.uniq([
                     ..._.flatten(Object.values(DISCMODREPREFS)),
                     ..._.flatten(Object.values(ADVMODREPREFS))
-                ]))}'`);
+                ])
+            )}'`);
             log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ MOD DOTS TRIGGERED (DIRECT) @@@`);
             updateModDots(eInfo.sourceAttribute);
         }

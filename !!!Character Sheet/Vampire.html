@@ -606,7 +606,7 @@
         <div class="sheet-coltight4 sheet-titleblock sheet-centered" style="margin-left:-7px;">
             <div class="sheet-header2">Health</div>
             <br />
-            <input type="hidden" name="attr_healthtemp" />
+            <input type="hidden" name="attr_healthmod" />
             <input class="sheet-containertoggle" type="radio" name="attr_health_impair_toggle" value="0" checked />
             <input class="sheet-containertoggle" type="radio" name="attr_health_impair_toggle" value="1" />
             <div class="sheet-impairment">
@@ -768,7 +768,7 @@
         </div>
         <div class="sheet-coltight4 sheet-titleblock sheet-centered">
             <div class="sheet-header2">Willpower</div>
-            <input type="hidden" name="attr_willpowertemp" />
+            <input type="hidden" name="attr_willpowermod" />
             <br />
             <input class="sheet-containertoggle" type="radio" name="attr_willpower_impair_toggle" value="0" checked />
             <input class="sheet-containertoggle" type="radio" name="attr_willpower_impair_toggle" value="1" />
@@ -882,7 +882,7 @@
         <div class="sheet-coltight4 sheet-titleblock sheet-centered">
             <!-- style="z-index: 19;" -->
             <div class="sheet-coltight1 sheet-centered">
-				<input type="hidden" name="attr_blood_potencytemp" />
+				<input type="hidden" name="attr_blood_potencymod" />
                 <input class="sheet-hoverpopup" type="checkbox" value="1" style="margin-left: -25px;" /><span
                     style="margin-right: 5px;"></span>
                 <div class="sheet-coltight1 sheet-bppopup">
@@ -947,7 +947,7 @@
         </div>
         <div class="sheet-coltight4 sheet-titleblock sheet-centered">
             <div class="sheet-coltight1 sheet-centered">
-				<input type="hidden" name="attr_humanitytemp" />
+				<input type="hidden" name="attr_humanitymod" />
                 <input class="sheet-hoverpopup" type="checkbox" value="1" /><span></span>
                 <div class="sheet-coltight1 sheet-humanitypopup">
                     <div class="sheet-coltight1 sheet-humanitybox">                        
@@ -2390,7 +2390,7 @@
                 <input class="sheet-containertoggle" type="radio" name="attr_disc1_toggle" value="0" />
                 <input class="sheet-containertoggle" type="radio" name="attr_disc1_toggle" value="1" />
                 <div class="sheet-contingentcontainer">
-                    <input type="hidden" name="attr_disc1temp" value="0" />
+                    <input type="hidden" name="attr_disc1mod" value="0" />
                     <input class="sheet-attr sheet-statictrait" type="checkbox" name="attr_disc1_flag" value="1" />
                     <textarea class="sheet-customtrait" name="attr_disc1_name" value="@{disc1_name}" readonly></textarea>
                     <div class="sheet-dotline sheet-customtrait">
@@ -2413,23 +2413,23 @@
                         <input type="checkbox" class="sheet-bonusdot" name="attr_disc1bonus_5" value="1" /><span></span>
                     </div>
                     <div class="sheet-powerlist">
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc1power_toggle" value="0"
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc1_power_toggle" value="0"
                             checked />
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc1power_toggle" value="1" />
-                        <div><span>1.</span><input type="text" name="attr_disc1_1" value="" /></div>
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc1power_toggle" value="2" />
-                        <div><br /><span>2.</span><input type="text" name="attr_disc1_2" value="" /></div>
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc1power_toggle" value="3" />
-                        <div><br /><span>3.</span><input type="text" name="attr_disc1_3" value="" /></div>
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc1power_toggle" value="4" />
-                        <div><br /><span>4.</span><input type="text" name="attr_disc1_4" value="" /></div>
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc1power_toggle" value="5" />
-                        <div><br /><span>5.</span><input type="text" name="attr_disc1_5" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc1_power_toggle" value="1" />
+                        <div><span>1.</span><input type="text" name="attr_disc1_power_1" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc1_power_toggle" value="2" />
+                        <div><br /><span>2.</span><input type="text" name="attr_disc1_power_2" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc1_power_toggle" value="3" />
+                        <div><br /><span>3.</span><input type="text" name="attr_disc1_power_3" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc1_power_toggle" value="4" />
+                        <div><br /><span>4.</span><input type="text" name="attr_disc1_power_4" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc1_power_toggle" value="5" />
+                        <div><br /><span>5.</span><input type="text" name="attr_disc1_power_5" value="" /></div>
                     </div>
                 </div>
             </div>
             <fieldset class="repeating_discleft">
-                <input type="hidden" name="attr_disctemp" value="0" />
+                <input type="hidden" name="attr_discmod" value="0" />
                 <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_disc_flag" value="1" />
                 <select class="sheet-customtrait" name="attr_disc_name" value="0">
                     <option value="0" selected hidden disabled></option>
@@ -2467,17 +2467,17 @@
 					<input type="checkbox" class="sheet-bonusdot" name="attr_discbonus_5" value="1" /><span></span>
                 </div>
                 <div class="sheet-powerlist">
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="0" checked />
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="1" />
-                    <div><span>1.</span><input type="text" name="attr_discpower_1" value="" /></div>
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="2" />
-                    <div><br /><span>2.</span><input type="text" name="attr_discpower_2" value="" /></div>
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="3" />
-                    <div><br /><span>3.</span><input type="text" name="attr_discpower_3" value="" /></div>
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="4" />
-                    <div><br /><span>4.</span><input type="text" name="attr_discpower_4" value="" /></div>
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="5" />
-                    <div><br /><span>5.</span><input type="text" name="attr_discpower_5" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="0" checked />
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="1" />
+                    <div><span>1.</span><input type="text" name="attr_disc_power_1" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="2" />
+                    <div><br /><span>2.</span><input type="text" name="attr_disc_power_2" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="3" />
+                    <div><br /><span>3.</span><input type="text" name="attr_disc_power_3" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="4" />
+                    <div><br /><span>4.</span><input type="text" name="attr_disc_power_4" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="5" />
+                    <div><br /><span>5.</span><input type="text" name="attr_disc_power_5" value="" /></div>
                 </div>
             </fieldset>
         </div>
@@ -2486,7 +2486,7 @@
                 <input class="sheet-containertoggle" type="radio" name="attr_disc2_toggle" value="0" />
                 <input class="sheet-containertoggle" type="radio" name="attr_disc2_toggle" value="1" />
                 <div class="sheet-contingentcontainer">
-                    <input type="hidden" name="attr_disc2temp" value="0" />
+                    <input type="hidden" name="attr_disc2mod" value="0" />
                     <input class="sheet-attr sheet-statictrait" type="checkbox" name="attr_disc2_flag" value="1" />
                     <textarea class="sheet-customtrait" name="attr_disc2_name" value="@{disc2_name}" readonly></textarea>
                     <div class="sheet-dotline sheet-customtrait">
@@ -2509,23 +2509,23 @@
                         <input type="checkbox" class="sheet-bonusdot" name="attr_disc2bonus_5" value="1" /><span></span>
                     </div>
                     <div class="sheet-powerlist">
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc2power_toggle" value="0"
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc2_power_toggle" value="0"
                             checked />
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc2power_toggle" value="1" />
-                        <div><span>1.</span><input type="text" name="attr_disc2_1" value="" /></div>
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc2power_toggle" value="2" />
-                        <div><br /><span>2.</span><input type="text" name="attr_disc2_2" value="" /></div>
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc2power_toggle" value="3" />
-                        <div><br /><span>3.</span><input type="text" name="attr_disc2_3" value="" /></div>
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc2power_toggle" value="4" />
-                        <div><br /><span>4.</span><input type="text" name="attr_disc2_4" value="" /></div>
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc2power_toggle" value="5" />
-                        <div><br /><span>5.</span><input type="text" name="attr_disc2_5" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc2_power_toggle" value="1" />
+                        <div><span>1.</span><input type="text" name="attr_disc2_power_1" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc2_power_toggle" value="2" />
+                        <div><br /><span>2.</span><input type="text" name="attr_disc2_power_2" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc2_power_toggle" value="3" />
+                        <div><br /><span>3.</span><input type="text" name="attr_disc2_power_3" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc2_power_toggle" value="4" />
+                        <div><br /><span>4.</span><input type="text" name="attr_disc2_power_4" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc2_power_toggle" value="5" />
+                        <div><br /><span>5.</span><input type="text" name="attr_disc2_power_5" value="" /></div>
                     </div>
                 </div>
             </div>
             <fieldset class="repeating_discmid">
-                <input type="hidden" name="attr_disctemp" value="0" />
+                <input type="hidden" name="attr_discmod" value="0" />
                 <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_disc_flag" value="1" />
                 <select class="sheet-customtrait" name="attr_disc_name" value="0">
                     <option value="0" selected hidden disabled></option>
@@ -2563,17 +2563,17 @@
 					<input type="checkbox" class="sheet-bonusdot" name="attr_discbonus_5" value="1" /><span></span>
                 </div>
                 <div class="sheet-powerlist">
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="0" checked />
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="1" />
-                    <div><span>1.</span><input type="text" name="attr_discpower_1" value="" /></div>
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="2" />
-                    <div><br /><span>2.</span><input type="text" name="attr_discpower_2" value="" /></div>
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="3" />
-                    <div><br /><span>3.</span><input type="text" name="attr_discpower_3" value="" /></div>
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="4" />
-                    <div><br /><span>4.</span><input type="text" name="attr_discpower_4" value="" /></div>
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="5" />
-                    <div><br /><span>5.</span><input type="text" name="attr_discpower_5" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="0" checked />
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="1" />
+                    <div><span>1.</span><input type="text" name="attr_disc_power_1" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="2" />
+                    <div><br /><span>2.</span><input type="text" name="attr_disc_power_2" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="3" />
+                    <div><br /><span>3.</span><input type="text" name="attr_disc_power_3" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="4" />
+                    <div><br /><span>4.</span><input type="text" name="attr_disc_power_4" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="5" />
+                    <div><br /><span>5.</span><input type="text" name="attr_disc_power_5" value="" /></div>
                 </div>
             </fieldset>
         </div>
@@ -2582,7 +2582,7 @@
                 <input class="sheet-containertoggle" type="radio" name="attr_disc3_toggle" value="0" />
                 <input class="sheet-containertoggle" type="radio" name="attr_disc3_toggle" value="1" />
                 <div class="sheet-contingentcontainer">
-                    <input type="hidden" name="attr_disc3temp" value="0" />
+                    <input type="hidden" name="attr_disc3mod" value="0" />
                     <input class="sheet-attr sheet-statictrait" type="checkbox" name="attr_disc3_flag" value="1" />
                     <textarea class="sheet-customtrait" name="attr_disc3_name" value="@{disc3_name}" readonly></textarea>
                     <div class="sheet-dotline sheet-customtrait">
@@ -2605,23 +2605,23 @@
                         <input type="checkbox" class="sheet-bonusdot" name="attr_disc3bonus_5" value="1" /><span></span>
                     </div>
                     <div class="sheet-powerlist">
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc3power_toggle" value="0"
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc3_power_toggle" value="0"
                             checked />
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc3power_toggle" value="1" />
-                        <div><span>1.</span><input type="text" name="attr_disc3_1" value="" /></div>
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc3power_toggle" value="2" />
-                        <div><br /><span>2.</span><input type="text" name="attr_disc3_2" value="" /></div>
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc3power_toggle" value="3" />
-                        <div><br /><span>3.</span><input type="text" name="attr_disc3_3" value="" /></div>
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc3power_toggle" value="4" />
-                        <div><br /><span>4.</span><input type="text" name="attr_disc3_4" value="" /></div>
-                        <input class="sheet-containertoggle" type="radio" name="attr_disc3power_toggle" value="5" />
-                        <div><br /><span>5.</span><input type="text" name="attr_disc3_5" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc3_power_toggle" value="1" />
+                        <div><span>1.</span><input type="text" name="attr_disc3_power_1" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc3_power_toggle" value="2" />
+                        <div><br /><span>2.</span><input type="text" name="attr_disc3_power_2" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc3_power_toggle" value="3" />
+                        <div><br /><span>3.</span><input type="text" name="attr_disc3_power_3" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc3_power_toggle" value="4" />
+                        <div><br /><span>4.</span><input type="text" name="attr_disc3_power_4" value="" /></div>
+                        <input class="sheet-containertoggle" type="radio" name="attr_disc3_power_toggle" value="5" />
+                        <div><br /><span>5.</span><input type="text" name="attr_disc3_power_5" value="" /></div>
                     </div>
                 </div>
             </div>
             <fieldset class="repeating_discright">
-                <input type="hidden" name="attr_disctemp" value="0" />
+                <input type="hidden" name="attr_discmod" value="0" />
                 <input class="sheet-attr sheet-editableflag sheet-customtrait" type="checkbox" name="attr_disc_flag" value="1" />
                 <select class="sheet-customtrait" name="attr_disc_name" value="0">
                     <option value="0" selected hidden disabled></option>
@@ -2659,17 +2659,17 @@
 					<input type="checkbox" class="sheet-bonusdot" name="attr_discbonus_5" value="1" /><span></span>
                 </div>
                 <div class="sheet-powerlist">
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="0" checked />
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="1" />
-                    <div><span>1.</span><input type="text" name="attr_discpower_1" value="" /></div>
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="2" />
-                    <div><br /><span>2.</span><input type="text" name="attr_discpower_2" value="" /></div>
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="3" />
-                    <div><br /><span>3.</span><input type="text" name="attr_discpower_3" value="" /></div>
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="4" />
-                    <div><br /><span>4.</span><input type="text" name="attr_discpower_4" value="" /></div>
-                    <input class="sheet-containertoggle" type="radio" name="attr_discpower_toggle" value="5" />
-                    <div><br /><span>5.</span><input type="text" name="attr_discpower_5" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="0" checked />
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="1" />
+                    <div><span>1.</span><input type="text" name="attr_disc_power_1" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="2" />
+                    <div><br /><span>2.</span><input type="text" name="attr_disc_power_2" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="3" />
+                    <div><br /><span>3.</span><input type="text" name="attr_disc_power_3" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="4" />
+                    <div><br /><span>4.</span><input type="text" name="attr_disc_power_4" value="" /></div>
+                    <input class="sheet-containertoggle" type="radio" name="attr_disc_power_toggle" value="5" />
+                    <div><br /><span>5.</span><input type="text" name="attr_disc_power_5" value="" /></div>
                 </div>
             </fieldset>
         </div>
@@ -5075,9 +5075,9 @@
         // #region Repeating Field Configuration
         const DISCENUMS = ["disc1", "disc2", "disc3"];
         const DISCREPREFS = {
-            discleft: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `discpower_${x}`)],
-            discmid: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `discpower_${x}`)],
-            discright: ["disc", "disc_name", "disc_flag", "discpower_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `discpower_${x}`)]
+            discleft: ["disc", "disc_name", "disc_flag", "disc_power_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `disc_power_${x}`)],
+            discmid: ["disc", "disc_name", "disc_flag", "disc_power_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `disc_power_${x}`)],
+            discright: ["disc", "disc_name", "disc_flag", "disc_power_toggle", "discmod", ...[1, 2, 3, 4, 5].map((x) => `disc_power_${x}`)]
         };
         const DISCMODREPREFS = {
             discleft: ["disc", "discmod"],
@@ -5469,9 +5469,9 @@
             const attrList = {};
             const $funcs = [
                 $getRepAttrs({
-                    discLeft: ["disc_name"],
-                    discMid: ["disc_name"],
-                    discRight: ["disc_name"]
+                    discleft: ["disc_name"],
+                    discmid: ["disc_name"],
+                    discright: ["disc_name"]
                 }),
                 (attrArray, cBack) => {
                     getAttrs([...["disc1_name", "disc2_name", "disc3_name"], ...attrArray], (ATTRS) => {
@@ -5545,7 +5545,7 @@
                     getAttrs([stat], (ATTRS) => {
                         log(`[DODISCS ATTRS = ${JSON.stringify(ATTRS)}]`);
                         if (stat.endsWith("disc") || stat.startsWith("disc"))
-                            attrList[`${stat}power_toggle`] = ATTRS[stat];
+                            attrList[`${stat}_power_toggle`] = ATTRS[stat];
                         cback(null, attrList);
                     });
                 },
