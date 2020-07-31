@@ -17,23 +17,23 @@
 	// }
 	"Match (Capture Groups)": {
 		"scope": "javascript,typescript",
-		"prefix": "match",
+		"prefix": "matchgroups",
 		"body": [
-			"match(/${0}/u).pop() // ... for just your capture groups: 'matchfull<TAB>' for multiple whole matches"
+			"match(/${0}/u).pop();"
 		],
-		"description": "Basically just a reminder whether or not to use the 'g' flag."
+		"description": "= Capture Groups (Array)"
 	},
 	"Match (Multiple Full Matches)": {
 		"scope": "javascript,typescript",
 		"prefix": "matchfull",
 		"body": [
-			"match(/${0}/gu) // ... for every matching substring: capture groups are ignored"
+			"match(/${0}/gu);"
 		],
-		"description": "Basically just a reminder whether or not to use the 'g' flag."
+		"description": "= Full Match (String)"
 	},
 	"Command Menu": {
 		"scope": "javascript,typescript",
-		"prefix": "menu",
+		"prefix": "commandmenu",
 		"body": [
 			"D.CommandMenu(",
 			"    {",
@@ -44,7 +44,7 @@
 			"            {",
 			"                type: \"ButtonLine\",",
 			"                contents: [",
-						"                    {text: \"Push One:\", styles: { }}, /* height, width, fontFamily, fontSize, bgColor, color, margin, textAlign, textIndent, padding, lineHeight */",
+			"                    {text: \"Push One:\", styles: { }}, /* height, width, fontFamily, fontSize, bgColor, color, margin, textAlign, textIndent, padding, lineHeight */",
 			"                    0,",
 			"                    {name: \"Button1\", command: \"!reply <args>\", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */",
 			"                    15",
@@ -75,15 +75,15 @@
 			"        blockStyles: { } /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */",
 			"    },",
 			"    (commandString, objects) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands",
-            "        const params = D.ParseToObj(commandString, \",\", \"@\") // key:value pairs must be in key@pairs for this to work. Multiple commands comma-delimited.",
+            "        const params = D.ParseToObj(commandString, \",\", \"@\"); // key:value pairs must be in key@pairs for this to work. Multiple commands comma-delimited.",
 			"    }",
-			")"
+			");"
 		],
 		"description": "Reminder of proper D.CommandMenu syntax."
 	},
 	"Detailed Command Menu": {
 		"scope": "javascript,typescript",
-		"prefix": "commandmenu",
+		"prefix": "commandmenufull",
 		"body": [			
 			"/* MENU DATA:",
 			"    {",
@@ -125,7 +125,7 @@
 			"            {",
 			"                type: \"ButtonLine\",",
 			"                contents: [",
-						"                    {text: \"Push One:\", styles: { } /* height, width, fontFamily, fontSize, bgColor, color, margin, textAlign, textIndent, padding, lineHeight */",
+			"                    {text: \"Push One:\", styles: { } /* height, width, fontFamily, fontSize, bgColor, color, margin, textAlign, textIndent, padding, lineHeight */",
 			"                    0,",
 			"                    {name: \"Button1\", command: \"!reply <args>\", styles: { }} /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */",
 			"                    15",
@@ -147,148 +147,108 @@
 			"    (commandString, objects) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands",
             "        const params = D.ParseToObj(commandString, \",\", \"@\") // key:value pairs must be in key@pairs for this to work. Multiple commands comma-delimited.",
 			"    }",
-			")"
+			");"
 		],
 		"description": "More verbose help for D.CommandMenu syntax."
 	},
-	"Validate (Silent)": {
+	"VAL": {
 		"scope": "javascript,typescript",
-		"prefix": "val",
+		"prefix": "VAL",
 		"body": [
 			"if (VAL({${1:type}: ${2:var}})) {",
-			"\t$0",
+			"\t$0;",
 			"}"
 		],
 		"description": "Validate, No Function Name"
 	},	
-	"Validate (Full)": {
+	"VAL (+DB)": {
 		"scope": "javascript,typescript",
-		"prefix": "vl",
+		"prefix": "VALf",
 		"body": [
 			"if (VAL({${1:type}: ${2:var}, \"${3:funcName}\"})) {",
-			"\t$0",
+			"\t$0;",
 			"}"
 		],
 		"description": "Validate, Full"
 	},
-	"NOT Validate (Silent)": {
-		"scope": "javascript,typescript",
-		"prefix": "!val",
-		"body": [
-			"if (!VAL({${1:type}: ${2:var}})) {",
-			"\t$0",
-			"}"
-		],
-		"description": "Validate NOT, No Function Name"
-	},	
-	"NOT Validate (Full)": {
-		"scope": "javascript,typescript",
-		"prefix": "!vl",
-		"body": [
-			"if (!VAL({${1:type}: ${2:var}, \"${3:funcName}\"})) {",
-			"\t$0",
-			"}"
-		],
-		"description": "Validate NOT, Full"
-	},
-	"Switch Statement": {
+	"Switch": {
 		"scope": "javascript,typescript",
 		"prefix": "switch",
 		"body": [
-			"switch (D.LCase(${1:switcher})) {",
+			"switch (D.LCase(${1:call})) {",
 			"\tcase \"${2:case1}\": {",
-			"\t\t${0}",
-			"\t\tbreak",
+			"\t\t${0};",
+			"\t\tbreak;",
 			"\t}",
 			"\t// no default",
 			"}"
 		],
-		"description": "A simple switch statement."
+		"description": "switch(D.LCase(call = args.shift())"
 	},
-	"Switch Case": {
+	"Switch/Call": {
+		"scope": "javascript,typescript",
+		"prefix": "switchcall",
+		"body": [
+			"switch (D.LCase(call = args.shift())) {",
+			"\tcase \"${1:case1}\": {",
+			"\t\t${0};",
+			"\t\tbreak;",
+			"\t}",
+			"\t// no default",
+			"}"
+		],
+		"description": "switch(D.LCase(call = args.shift())"
+	},
+	"Case": {
 		"scope": "javascript,typescript",
 		"prefix": "ca",
 		"body": [
 			"case \"${1:case}\": {",
-			"\t${0}",
-			"\tbreak",
+			"\t${0};",
+			"\tbreak;",
 			"}"
 		],
-		"description": "A case statement within a switch block."
+		"description": "case \"...\": {}"
 	},
-	"For Loop: Numeric": {
+	"For i": {
 		"scope": "javascript,typescript",
 		"prefix": "for",
 		"body": [
 			"for (let i = 0; i < ${1:maxVal}; i++) {",
-			"\t${0}",
+			"\t${0};",
 			"}"
 		],
-		"description": "A for loop, numeric increment."
+		"description": "for INCREMENT"
 	},
-	"For Loop: Enumerable": {
+	"For of": {
 		"scope": "javascript,typescript",
 		"prefix": "forof",
 		"body": [
 			"for (const ${1:enumVar} of ${2:array}) {",
-			"\t${0}",
+			"\t${0};",
 			"}"
 		],
-		"description": "A for loop, enumerating over an array."
+		"description": "for ARRAY"
 	},
-	"For Loop: Enumerable Pairs": {
+	"For of Entries": {
 		"scope": "javascript,typescript",
 		"prefix": "forent",
 		"body": [
-			"for (const [${1:key}, ${2:value}] of Object.entries(${3:listOrObject}) {",
-			"\t${0}",
+			"for (const [${1:key}, ${2:value}] of Object.entries(${3:listOrObject})) {",
+			"\t${0};",
 			"}"
 		],
-		"description": "A for loop, enumerating over an object."
+		"description": "for OBJECT (key/val pairs)"
 	},
-	"Find Objects": {
+	"FindObjs": {
 		"scope": "javascript,typescript",
 		"prefix": "findobjs",
 		"body": [
 			"findObjs({",
-			"\t_pageid: D.PAGEID,",
-			"\t_type: \"${1:type}\",",
-			"})"
+			"\t_type: \"${1:type}\"",
+			"});"
 		],
-		"description": "A Roll20 findObjs command."
-	},
-	"Sheetworker Function": {
-		"scope": "javascript,typescript",
-		"prefix": "SWS",
-		"body": [
-			"const ${1} = callback => {",
-			"\tconst [attrList, attrArray] = [{\\}, []],",
-			"\t\tfuncName = \"${1}\"",
-			"\tlog(\"\", `████ \\${funcName.toUpperCase()\\} CALLED ████`)",
-			"\tgetSectionIDs(\"${2:section}\", idArray => {",
-			"\t\t_.each(idArray, repID => {",
-			"\t\t\t_.each([${3:array of stat names}], stat => {",
-			"\t\t\t\tattrArray.push(`repeating_${2}_\\${repID\\}_\\${stat\\}`)",
-			"\t\t\t\\} )",
-			"\t\t\\} )",
-			"\t\tgetAttrs( [...attrArray], ATTRS => {",
-			"\t\t\tconst ids = _.uniq(_.map(attrArray, v => parseRepAttr(v)[1]))",
-			"\t\t\t//log(`Retrieved Attributes: \\${JSON.stringify(simpleRepAttrs(ATTRS))\\}`, funcName)",
-			"\t\t\t//log(`Retrieved IDs: \\${JSON.stringify(simpleRepAttrs(ids))\\}`, funcName)",
-			"\t\t\t_.each(ids, rowID => {",
-			"\t\t\t\tconst [,p,pV,pI] = pFuncs(`repeating_${2}_\\${rowID\\}`, ATTRS)",
-			"\t\t\t\t",
-			"\t\t\t\\} )",
-			"\t\t\tsetAttrs(attrList, {\\}, () => {",
-			"\t\t\t\tlog(`Setting Attributes: \\${JSON.stringify(simpleRepAttrs(attrList))\\}`, funcName)",
-			"\t\t\t\tif (_.isFunction(callback))",
-			"\t\t\t\t\tcallback(null)",
-			"\t\t\t\\})",
-			"\t\t\\} )",
-			"\t\\} )",
-			"\\}"
-			],
-		"description": "A function template for sheetworker scripts calling and working through multiple repeating rows."
+		"description": "findObjs() [Roll20]"
 	}
 
 }

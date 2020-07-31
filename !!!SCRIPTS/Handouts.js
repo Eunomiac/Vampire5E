@@ -469,15 +469,16 @@ const Handouts = (() => {
                     const discPowerLines = [];
                     if (skillVal > 0) {
                         areAllZero = false;
-                        if (attrObj.get("name").startsWith("repeating")) {
+                        const statPrefix = attrObj.get("name");
+                        for (let i = 1; i <= skillVal; i++)
+                            discPowerLines.push(`${html.Symbols.DotFull} ${D.GetStatVal(charObj, `${statPrefix}_power_${i}`)}`);
+                        /* if (attrObj.get("name").startsWith("repeating")) {
                             const [section, rowID, statName] = D.ParseRepStat(attrObj);
                             for (let i = 1; i <= skillVal; i++)
-                                discPowerLines.push(`${html.Symbols.DotFull} ${D.GetRepStats(charObj, section, rowID, `discpower_${i}`, null, "val").pop()}`);
+                                discPowerLines.push(`${html.Symbols.DotFull} ${D.GetRepStats(charObj, section, rowID, `disc_power_${i}`, null, "val").pop()}`);
                         } else {
                             const statPrefix = attrObj.get("name");
-                            for (let i = 1; i <= skillVal; i++)
-                                discPowerLines.push(`${html.Symbols.DotFull} ${D.GetStatVal(charObj, `${statPrefix}_${i}`)}`);
-                        }
+                        } */
                     }
                     rowCells.push(html.Cell(discPowerLines.map((x) => html.PowerSpan(x)).join("")));
                 } else {
@@ -491,7 +492,10 @@ const Handouts = (() => {
         }
 
         // Assemble Full Table Code
-        const fullCode = html.Table(tableRows.join(""));
+        const fullCode = [
+            "<div style=\"display: block; height: 20px; font-family: 'Fira Code'; font-weight: bold; font-size: 10px;\">To Update: '!handouts get charsummary'</div>",
+            html.Table(tableRows.join(""))
+        ].join("");
         updateHandout("Character Stat Summary", null, fullCode);
     };
     const updateCharDetails = () => {
@@ -525,8 +529,8 @@ const Handouts = (() => {
         for (const charObj of charObjs) {
             rowCells.length = 0;
             rowCells.push(html.RowFirstCell(D.GetName(charObj, true)));
-            const compromises = D.GetRepStats(charObj, "beliefs", null, "conviction", null, "val");
-            const convictions = D.GetRepStats(charObj, "beliefs", null, "touchstone_name", null, "val");
+            const compromises = ["compromise_1", "compromise_2", "compromise_3"].map((x) => D.GetStatVal(charObj, x));
+            const convictions = ["conviction_1", "conviction_2", "conviction_3"].map((x) => D.GetStatVal(charObj, x));
             const lineColors = D.Clone(masterColorScheme);
             cellLines.length = 0;
             convictions.forEach((x) => {
@@ -681,7 +685,10 @@ const Handouts = (() => {
         tables.push(html.Table(tableRows.join("")));
 
         // Assemble Full Table Code
-        const fullCode = tables.join("");
+        const fullCode = [
+            "<div style=\"display: block; height: 20px; font-family: 'Fira Code'; font-weight: bold; font-size: 10px;\">To Update: '!handouts get charsummary'</div>",
+            ...tables
+        ].join("");
         updateHandout("Character Details", null, fullCode);
 
         /*

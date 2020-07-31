@@ -1239,9 +1239,8 @@ const C = (() => {
                 };
                 return D.JSH(`<div style="
                         display: block;
-                        width: 540px;
+                        width: 100%;
                         height: 800px;
-                        margin-left: -30px;
                         background: url('${params.bgURL}') no-repeat top;
                         background-size: 100%;
                         "><div style="
@@ -1317,13 +1316,13 @@ const C = (() => {
                     ">${content}</div>`)
         },
         DetailsSummaryDoc: {
-            Table: (content) => D.JSH(`<table style="width: 600px; box-shadow: 7px 7px 7px rgba(0,0,0,0.5); border: 1px solid black; font-size: 0px; font-family: 'Carrois Gothic SC'; margin: 0px;"><tbody>${content}</tbody></table>`),
+            Table: (content) => D.JSH(`<table style="width: 100%; box-shadow: 7px 7px 7px rgba(0,0,0,0.5); border: 1px solid black; font-size: 0px; font-family: 'Carrois Gothic SC'; margin: 0px;"><tbody>${content}</tbody></table>`),
             HeaderRow: (content, bgColor = "rgba(20, 20, 20, 1)") => D.JSH(`<tr style="font-size: 14px; font-weight: bold; color: white; background-color: ${bgColor};">${content}</tr>`),
             Row: (content, bgColor) => D.JSH(`<tr style="vertical-align: top; border-bottom: 1px solid black; background-color: ${bgColor};">${content}</tr>`),
             SubtitleRow: (content) => D.JSH(`<tr style="vertical-align: top; border: none; background-color: white;">${content}</tr>`),
             Cell: (content, vertAlign = "top") => D.JSH(`<td style="padding: 2px 1px; white-space: nowrap; border-right: 1px solid black; line-height: 14px; vertical-align: ${vertAlign};">${content}</td>`),
             HeaderCell: (content, colSpan = 1) => D.JSH(`<td colspan="${colSpan}" style="padding: 2px 1px; white-space: nowrap; border: none; line-height: 14px;">${content}</td>`),
-            SubtitleCell: (content, colSpan = 1) => D.JSH(`<td colspan="${colSpan}" style="border: none; font-family: 'Voltaire'; font-size: 17px; font-weight: bold; text-align: center; text-align-last: center; border: 1px solid transparent; overflow: hidden; padding: 0px; line-height: 18px; white-space: nowrap; vertical-align: bottom; height: 40px;">${content}</td>`),
+            SubtitleCell: (content, colSpan = 1) => D.JSH(`<td colspan="${colSpan}" style="border: none; font-family: 'Voltaire'; font-size: 17px; font-weight: bold; text-align: center; text-align-last: center; border: 1px solid transparent; overflow: hidden; padding: 0px; line-height: 18px; white-space: nowrap; vertical-align: bottom; height: 18px;">${content}</td>`),
             RowFirstCell: (content) => D.JSH(`<td style="line-height: 14px; font-weight: bold; font-size: 14px; padding: 2px 1px; white-space: nowrap; border-right: 1px solid black; width: 60px;">${content}</td>`),
             BigTextCell: (content) => D.JSH(`<td style="padding: 2px 1px; white-space: nowrap; border-right: 1px solid black; line-height: 14px; font-size: 14px;">${content}</td>`),
             LongTextCell: (content, numLines) => D.JSH(`<td style="padding: 2px 1px; white-space: nowrap; border-right: 1px solid black; line-height: 10px;"><div style="width: 100%; display: block; font-size: 10px; line-height: 10px; position:relative; height: ${numLines * 10}px; padding: 0px; white-space: normal;"><div style="width: 100%; display: block; font-size: 10px; line-height: 10px; position: absolute; overflow: hidden; width: 100%; padding: 1px 0px; margin: auto; top: 0; bottom:0; white-space: normal;">${content}</div></div></td>`),
@@ -1332,7 +1331,7 @@ const C = (() => {
             CellLine: (content, bgColor) => D.JSH(`<div style="display: block; font-size: 10px; line-height: 10px; padding: 2px; white-space: normal; background-color: ${bgColor};">${content}</div>`)
         },
         TraitSummaryDoc: {
-            Table: (content) => D.JSH(`<table style="width: 600px; box-shadow: 7px 7px 7px rgba(0,0,0,0.5); border: 1px solid black; font-family: 'Carrois Gothic SC'; font-size: 0px; margin-left: -30px;"><tbody>${content}</tbody></table>`),
+            Table: (content) => D.JSH(`<table style="width: 100%; box-shadow: 7px 7px 7px rgba(0,0,0,0.5); border: 1px solid black; font-family: 'Carrois Gothic SC'; font-size: 0px;"><tbody>${content}</tbody></table>`),
             HeaderRow: (content, bgColor) => D.JSH(`<tr style="font-weight: bold; color: white; background-color: ${bgColor};">${content}</tr>`),
             Row: (content, bgColor) => D.JSH(`<tr style="background-color: ${bgColor};">${content}</tr>`),
             Cell: (content) => D.JSH(`<td style="line-height: 16px; padding: 1px; white-space: nowrap; border: none; border-right: 1px solid black;">${content}</td>`),
@@ -1359,9 +1358,10 @@ const C = (() => {
         },
         main: (content, hasIcon = false) => D.JSH(`<div style="
                 display: block;
-                width: 600px;
+                width: 540px;
                 background-color: ${C.COLORS.white};
-                margin-top: ${hasIcon ? "-500px" : "0px"};
+                margin-top: ${hasIcon ? "-535px" : "0px"};
+                margin-left: -30px;
             ">${content}</div>`),
         title: (content) => D.JSH(`<span style="
                 display: block;
