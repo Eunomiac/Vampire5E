@@ -235,9 +235,9 @@ const Session = (() => {
                             Media.ToggleImg("DisableSiteBottomAll", false);
                             Media.ToggleImg("DisableSiteLeft", false);
                             Media.ToggleImg("DisableSiteRight", false);
-                            // Media.SetImg("SiteCenter", "CLVestibule");
-                            // Media.SetImg("SiteLeft", "CLGallery");
-                            // Media.SetImg("SiteRight", "CLDrawingRoom");
+                            Media.SetImg("SiteCenter", "CLVestibule");
+                            Media.SetImg("SiteLeft", "CLGallery");
+                            Media.SetImg("SiteRight", "CLDrawingRoom");
                             // Media.SetImg("SiteMidCenter", "CLGreatHall");
                             // Media.SetImg("SiteTopCenter", "CLOverlook");
                             // Media.SetImg("SiteTopLeft", "CLLibrary");
@@ -392,6 +392,8 @@ const Session = (() => {
                         // macroObjs.filter(x => !x.get("visibleto").includes("Storyteller")).forEach(x => x.set({name: x.get("name").replace(/\|$/gu, "")}));
                         break;
                     }
+                    case "site": D.Alert(D.JS(Session.Site), "Session.Site"); break;
+                    case "district": D.Alert(D.JS(Session.District), "Session.District"); break;
                     case "scenechars":
                         D.Alert(`Scene Focus: ${Session.SceneFocus}<br>Scene Chars: ${D.JS(Session.SceneChars)}`, "Scene Chars");
                         break;
@@ -707,8 +709,8 @@ const Session = (() => {
             Testing: () => {
                 STATE.REF.isTestingActive = false;
                 toggleFullTest(false);
-                Media.ToggleText("testSessionNotice", false);
-                Media.ToggleText("testSessionNoticeSplash", false);
+                Media.ToggleText("testSessionNotice", D.IsForcingDebug);
+                Media.ToggleText("testSessionNoticeSplash", D.IsForcingDebug);
                 Media.ToggleText("playerPageAlertMessage", false);
             }
         },
@@ -742,8 +744,10 @@ const Session = (() => {
                 STATE.REF.isTestingActive = true;
                 Media.ToggleText("testSessionNotice", true);
                 Media.ToggleText("testSessionNoticeSplash", true);
-                Media.SetText("testSessionNotice", `TESTING (${Session.Mode})`);
-                Media.SetText("testSessionNoticeSplash", `TESTING (${Session.Mode})`);
+                if (!D.IsForcingDebug) {
+                    Media.SetText("testSessionNotice", `TESTING (${Session.Mode})`);
+                    Media.SetText("testSessionNoticeSplash", `TESTING (${Session.Mode})`);
+                }
                 setPlayerPage();
             }
         },
@@ -1057,8 +1061,10 @@ const Session = (() => {
                 D.Queue(endFunc[0], endFunc[1], "ModeSwitch", endFunc[2] || 0.1);
             // D.Queue(setSceneFocus, [])
             D.Run("ModeSwitch");
-            Media.SetText("testSessionNotice", `TESTING (${curMode})`);
-            Media.SetText("testSessionNoticeSplash", `TESTING (${curMode})`);
+            if (!D.IsForcingDebug) {
+                Media.SetText("testSessionNotice", `TESTING (${curMode})`);
+                Media.SetText("testSessionNoticeSplash", `TESTING (${curMode})`);
+            }
         }
         return true;
     };

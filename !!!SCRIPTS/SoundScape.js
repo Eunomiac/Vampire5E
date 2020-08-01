@@ -56,7 +56,7 @@ const Soundscape = (() => {
                 importFromJukebox();
                 break;
             case "sync":
-                syncSoundscape();
+                syncSoundscape(args[0] === "reset");
                 break;
             case "start":
                 startSoundscape(args[0] === "reset");
@@ -65,7 +65,7 @@ const Soundscape = (() => {
                 playSound(args[0]);
                 break;
             case "stop":
-                if (args[0])
+                if (args[0] && args[0] !== "all")
                     stopSound(args[0]);
                 else
                     stopSoundscape();
@@ -119,6 +119,28 @@ const Soundscape = (() => {
             }
             case "get": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "report": {
+                        sendVolumeAlert();
+                        D.Alert([
+                            "<h3>Should Be Playing:</h3>",
+                            D.JS(getPlayingSounds(), true),
+                            "<h3>Are Playing:</h3>",
+                            D.JS(getPlayingTrackObjs().map((x) => ({
+                                title: x.get("title"),
+                                playing: x.get("playing"),
+                                softstop: x.get("softstop"),
+                                loop: x.get("loop"),
+                                volume: x.get("volume")
+                            })), true),
+                            "<h3>SYNTAX</h3>",
+                            "<b>!sound sync ['reset']</b>: Sync / Sync + Full Reset",
+                            "<b>!sound stop [trackName/'all']</b>: Stop Track / Stop Soundscape",
+                            "<b>!sound start ['reset']</b>: Start Soundscape / Start + Full Reset",
+                            "<b>!sound get log</b>: Print Sound Log",
+                            "<b>!data toggle debug</b>: Toggle Full Debugging of API"
+                        ].join("<br>"), "Sound Report");
+                        break;
+                    }
                     case "log": printSoundLog(); break;
                     case "tracks": {
                         D.Alert([
@@ -127,14 +149,14 @@ const Soundscape = (() => {
                         ]);
                         break;
                     }
-                    case "volume":
+                    case "volume": {
+                        sendVolumeAlert(true);
                         break;
+                    }
                     // no default
                 }
-                if (call !== "volume")
-                    break;
+                break;
             }
-            // falls through
             case "set": {
                 switch (D.LCase((call = args.shift()))) {
                     case "volume":
@@ -158,6 +180,9 @@ const Soundscape = (() => {
                     // no default
                 }
                 sendVolumeAlert();
+                break;
+            }
+            case "log": {
                 break;
             }
             case "reset": case "clear": {
@@ -239,7 +264,7 @@ const Soundscape = (() => {
         },
         CLDrawingRoom: {
             activeSounds: {
-                ScoreCasaLoma: 0.25, // Volume multipliers ON TOP of normal ones.
+                ScoreCasaLoma: 0.3, // Volume multipliers ON TOP of normal ones.
                 FastClock: 1
                 // Fireplace: 1
             },
@@ -247,20 +272,20 @@ const Soundscape = (() => {
         },
         CLOverlook: {
             activeSounds: {
-                ScoreCasaLoma: 0.5 // Volume multipliers ON TOP of normal ones.
+                ScoreCasaLoma: 0.8 // Volume multipliers ON TOP of normal ones.
             },
             isOutside: false
         },
         CLLibrary: {
             activeSounds: {
-                ScoreCasaLoma: 0.25,
+                ScoreCasaLoma: 0.3,
                 Fireplace: 1
             },
             isOutside: false
         },
         CLTerrace: {
             activeSounds: {
-                ScoreCasaLoma: 0.25, // Volume multipliers ON TOP of normal ones.
+                ScoreCasaLoma: 0.6, // Volume multipliers ON TOP of normal ones.
                 EerieForest: 1,
                 LowWindAmbient: 1
             },
@@ -555,7 +580,27 @@ const Soundscape = (() => {
             return OFFSTACK(funcID) && locSounds.District;
         return OFFSTACK(funcID) && false;
     };
-    const sendVolumeAlert = () => {
+    const getPlayingSounds = () => {
+        let activeSounds;
+        if (Session.IsCasaLomaActive) {
+            DB({casaLomaActive: Session.IsCasaLomaActive}, "getPlayingSounds");
+            const [activeSite] = Session.Site;
+            activeSounds = activeSite in CASALOMASOUNDS ? Object.keys(CASALOMASOUNDS[activeSite].activeSounds) : [];
+            if (activeSounds.length) {
+                STATE.REF.outsideOverride = CASALOMASOUNDS[activeSite].isOutside;
+                STATE.REF.volumeMults = CASALOMASOUNDS[activeSite].activeSounds;
+                if (STATE.REF.outsideOverride)
+                    activeSounds.push(...getWeatherSounds(true));
+            }
+            activeSounds = _.compact(activeSounds);
+        } else {
+            STATE.REF.outsideOverride = null;
+            STATE.REF.volumeMults = {};
+            activeSounds = _.compact([getScore(), getLocationSounds(), ...getWeatherSounds()]);
+        }
+        return activeSounds;
+    };
+    const sendVolumeAlert = (isShowingAllVolumeSettings = false) => {
         const trackObjs = getPlayingTrackObjs();
         const volSettingsKeys = [];
         const playingVolumeData = [];
@@ -588,7 +633,7 @@ const Soundscape = (() => {
         D.Alert(
             [
                 "<h3>VOLUME SETTINGS</h3>",
-                D.JS(volumeSettingsData, true, true),
+                D.JS(isShowingAllVolumeSettings ? STATE.REF.VOLUME : volumeSettingsData, true, true),
                 "<h3>PLAYING TRACK VOLUME</h3>",
                 playingVolumeData.join(""),
                 "<h3>SYNTAX</h3>",
@@ -651,7 +696,7 @@ const Soundscape = (() => {
     };
     const initSoundLog = () => {
         STATE.REF.SoundscapeLog.push({
-            time: (new Date()).getTime() - 1000 * 60 * 60 * 4,
+            time: TimeTracker.GetRealDate().getTime(),
             content: "FRESHREBOOT"
         });
     };
@@ -660,16 +705,14 @@ const Soundscape = (() => {
         const logStrings = [];
         for (let i = 0; i < STATE.REF.SoundscapeLog.length; i++) {
             const {time, content} = STATE.REF.SoundscapeLog[i];
-            const dateObj = new Date(new Date(time).toLocaleString("en-US", {timezone: "America/New_York"}));
-            const secs = dateObj.getSeconds();
             if ((time - lastTimeStamp) > 8 * 60 * 60 * 1000)
-                logStrings.push(`<h2 style="background-color: rgb(150, 150, 150); border-top: 1px solid black; border-bottom: 1px solid black;">${TimeTracker.FormatDate(dateObj, true)}</h2>`);
+                logStrings.push(`<h2 style="background-color: rgb(150, 150, 150); border-top: 1px solid black; border-bottom: 1px solid black;">${TimeTracker.FormatDate(time, true)}</h2>`);
             else if ((time - lastTimeStamp) > 60 * 60 * 1000 || content === "FRESHREBOOT")
-                logStrings.push(`<h3>${TimeTracker.FormatTime(dateObj, false)}</h3>`);
+                logStrings.push(`<h3>${TimeTracker.FormatTime(time, false)}</h3>`);
             lastTimeStamp = time;
             if (content !== "FRESHREBOOT")
                 logStrings.push(`<div style="display: block; background-color: rgba(0, 0, 0, ${i % 2 === 0 ? "0" : "0.2"}); border-bottom: 1px solid rgb(200, 200, 200);">[${
-                    TimeTracker.FormatTime(dateObj, false).replace(/ /u, `:${secs} `)
+                    TimeTracker.FormatTime(time, true)
                 }]<br>${
                     content
                 }</div>`);
@@ -1035,23 +1078,7 @@ const Soundscape = (() => {
             [...Object.keys(REGISTRY.Playlists), ...Object.keys(REGISTRY.Tracks)].map((x) => stopSound(x));
             STATE.REF.activeSounds = [];
         }
-        let activeSounds;
-        if (Session.IsCasaLomaActive) {
-            DB({casaLomaActive: Session.IsCasaLomaActive}, "syncSoundscape");
-            const [activeSite] = Session.Site;
-            activeSounds = activeSite in CASALOMASOUNDS ? Object.keys(CASALOMASOUNDS[activeSite].activeSounds) : [];
-            if (activeSounds.length) {
-                STATE.REF.outsideOverride = CASALOMASOUNDS[activeSite].isOutside;
-                STATE.REF.volumeMults = CASALOMASOUNDS[activeSite].activeSounds;
-                if (STATE.REF.outsideOverride)
-                    activeSounds.push(...getWeatherSounds(true));
-            }
-            activeSounds = _.compact(activeSounds);
-        } else {
-            STATE.REF.outsideOverride = null;
-            STATE.REF.volumeMults = {};
-            activeSounds = _.compact([getScore(), getLocationSounds(), ...getWeatherSounds()]);
-        }
+        const activeSounds = getPlayingSounds();
         const soundsToStop = STATE.REF.activeSounds.filter((x) => !activeSounds.includes(x));
         const soundsToPlay = activeSounds.filter((x) => !STATE.REF.activeSounds.includes(x));
         const soundsToCheck = activeSounds.filter((x) => STATE.REF.activeSounds.includes(x));
@@ -1061,12 +1088,12 @@ const Soundscape = (() => {
         const volumeChanges = [];
         for (const soundKey of soundsToCheck) {
             const trackObj = getTrackObj(soundKey);
-            if (!isTrackObjPlaying(trackObj)) {
+            if (!isTrackObjPlaying(trackObj))
                 if (isPlaylist(soundKey))
                     playSound(trackObj, getPlaylistKey(soundKey));
                 else
                     playSound(trackObj);
-            }
+
             updateVolume(soundKey);
             volumeChanges.push({soundKey, trackObj: getTrackKey(soundKey), realVolume: getTrackObj(soundKey).get("volume")});
         }

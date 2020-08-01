@@ -873,9 +873,34 @@ const TimeTracker = (() => {
         const dateObj = realDateRef ? getDateObj(realDateRef) : new Date();
         return convertToLocalTime(dateObj);
     };
+
+    const convertUTCtoLOCAL = (dateRef) => {
+        const dateObj = dateRef ? getDateObj(dateRef) : new Date();
+        if (!dateObj.isShifted) {
+            dateObj.setUTCMinutes(dateObj.getUTCMinutes() - dateObj.getTimezoneOffset());
+            dateObj.isShifted = true;
+        }
+        return dateObj;
+    };
+    
+        /* CODE TESTBED
+        
+        const dateObj = new Date();
+        console.log([dateObj.getUTCHours(), dateObj.getUTCMinutes()]);
+        // dateObj.setUTCHours(dateObj.getUTCHours() - 0.5 - dateObj.getTimezoneOffset() / 60);
+        dateObj.setUTCMinutes(dateObj.getUTCMinutes() - dateObj.getTimezoneOffset());
+        console.log([dateObj.getUTCHours(), dateObj.getUTCMinutes()]);
+
+        */
+    }
     const convertToLocalTime = (dateRef) => {
         const dateObj = dateRef ? getDateObj(dateRef) : new Date();
+
+        const dateObj = new Date();
         const offset = dateObj.getTimezoneOffset() / 60;
+        console.log(offset);
+        dateObj.isShifted = true;
+        console.log(dateObj.isShifted);
         const hours = dateObj.getUTCHours();
         const newDateObj = new Date(dateObj.getTime() + dateObj.getTimezoneOffset() * 60 * 1000);
         newDateObj.setUTCHours(hours - offset);

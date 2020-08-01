@@ -43,22 +43,17 @@ const Char = (() => {
     const initialize = () => {
         // PENDINGCHARCOMMAND = D.Clone(BLANKPENDINGCHARCOMMAND)
 
-        const charsToValidate = D.GetChars("npc");
-        D.Alert(D.JS(_.range(0, 0)));
-        const attrNameChanges = [
-
-        ];
+        const charsToValidate = []; // D.GetChars("npc");
+        const attrNameChanges = [];
         const repAttrNameChanges = [];
         [].forEach((section) => {
-            repAttrNameChanges.push(...[
-
-            ]);
+            repAttrNameChanges.push(...[]);
         });
         const numAttrNameChanges = attrNameChanges.length;
         const numRepAttrNameChanges = repAttrNameChanges.length;
         const numCharsToValidate = charsToValidate.length;
 
-        charsToValidate.length = 0; D.Flag(`${numCharsToValidate} Chars Awaiting Validation`);
+        // charsToValidate.length = 0; D.Flag(`${numCharsToValidate} Chars Awaiting Validation`);
 
         const changeNextAttr = () => {
             if (attrNameChanges.length) {
@@ -569,7 +564,7 @@ const Char = (() => {
                                 let [index, subStat, ...statName] = args.reverse();
                                 statName.reverse();
                                 if (VAL({int: index}) && D.Int(index) > 0) {
-                                    index = D.Int(index) - 1;                                
+                                    index = D.Int(index) - 1;
                                 } else if (index && !VAL({int: index})) {
                                     statName.push(subStat);
                                     subStat = index;
@@ -1446,7 +1441,7 @@ const Char = (() => {
                 return linkedAttrObjs;
             }
             return false;
-        }   
+        }
         findStatObj(statName, subStat, index) {
             statName = D.LCase(statName);
             subStat = subStat ? D.LCase(subStat) : "val";

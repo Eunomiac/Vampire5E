@@ -44,7 +44,7 @@ const D = (() => {
         STATE.REF.TRACENESTCOUNTER = 0;
         STATE.REF.TRACESTARTTIME = 0;
         STATE.REF.TRACELOGSTOPS = {};
-        STATE.REF.ISDEBUGGING = STATE.REF.ISDEBUGGING !== false;
+        STATE.REF.ISFORCINGDEBUGGING = STATE.REF.ISFORCINGDEBUGGING === true;
         STATE.REF.TRACELASTTIME = 0;
         STATE.REF.SessionNotes = STATE.REF.SessionNotes || {};
 
@@ -100,7 +100,7 @@ const D = (() => {
                 STATE.REF.SessionNotes[Session.SessionNum] = STATE.REF.SessionNotes[Session.SessionNum] || {};
                 STATE.REF.SessionNotes[Session.SessionNum][noteCategory] = STATE.REF.SessionNotes[Session.SessionNum][noteCategory] || [];
                 STATE.REF.SessionNotes[Session.SessionNum][noteCategory].push({
-                    time: TimeTracker.GetRealDate(),
+                    time: TimeTracker.GetRealDate().getTime(),
                     content: _.escape(noteString)
                 });
                 break;
@@ -239,13 +239,15 @@ const D = (() => {
                     case "toggle": {
                         switch (D.LCase((call = args.shift()))) {
                             case "debug": {
-                                STATE.REF.ISDEBUGGING = !STATE.REF.ISDEBUGGING;
-                                D.Flag(`Debugging is ${STATE.REF.ISDEBUGGING ? "ON" : "OFF"}`);
+                                STATE.REF.ISFORCINGDEBUGGING = !STATE.REF.ISFORCINGDEBUGGING;
+                                D.Flag(`Debugging is ${STATE.REF.ISFORCINGDEBUGGING ? "ON" : "OFF"}`);
+                                Media.ToggleText("testSessionNotice", STATE.REF.ISFORCINGDEBUGGING);
+                                Media.SetText("testSessionNotice", STATE.REF.ISFORCINGDEBUGGING ? "Debugging Forced ON" : `TESTING (${Session.Mode})`);
                                 break;
                             }
                             case "trace": {
                                 toggleTracing();
-                                D.Flag(`Tracing is ${ISTRACING ? "ON" : "OFF"}; Debugging is ${STATE.REF.ISDEBUGGING ? "ON" : "OFF"}`);
+                                D.Flag(`Tracing is ${ISTRACING ? "ON" : "OFF"}; Debugging is ${(STATE.REF.ISFORCINGDEBUGGING || !TimeTracker.IsInBlackout()) ? "ON" : "OFF"}`);
                                 break;
                             }
                             case "report": {
@@ -556,7 +558,7 @@ const D = (() => {
             if (typeof v === "object" && "get" in v && v.get("_type")) {
                 return objectParser(v);
             } else if (v instanceof Date) {
-                return `@@DATE-${TimeTracker.FormatDate(new Date(v), true)}-@@`;
+                return `@@DATE-${TimeTracker.FormatDate(new Date(v), true, true)}-@@`;
                 // } else if (!isVerbose && (k.slice(0, 3).toLowerCase() === "obj" || (v && (v.get || v._type)))) {
                 // const type = (v.get && v.get("_type")) || v._type || "O";
                 // let name = (v.get && v.get("name")) || v.name || "(Unnamed)";
@@ -663,7 +665,7 @@ const D = (() => {
                 */
                 let returnVal = v;
                 if (v instanceof Date) {
-                    returnVal = `@@NAMESTART${typeColor("date")}@@${TimeTracker.FormatDate(new Date(v), true)}@@NAMEEND@@`;
+                    returnVal = `@@NAMESTART${typeColor("date")}@@${TimeTracker.FormatDate(new Date(v), true, true)}@@NAMEEND@@`;
                 } else if (!isVerbose && (k.slice(0, 3).toLowerCase() === "obj" || (v && (v.get || v._type)))) {
                     const type = (v.get && v.get("_type")) || v._type || "O";
                     let name = (v.get && v.get("name")) || v.name || "(Unnamed)";
@@ -1403,7 +1405,7 @@ const D = (() => {
             delete STATE.REF.SessionNotes[sessionNum - 1];
         }
         if (sessionNum in STATE.REF.SessionNotes) {
-            const sessNotes = kvpMap(STATE.REF.SessionNotes[sessionNum], null, (v) => _.sortBy(v, (vv) => vv.time).map((x) => `[${TimeTracker.FormatTime(TimeTracker.GetRealDate(x.time))}] ${x.content}<br>`));
+            const sessNotes = kvpMap(STATE.REF.SessionNotes[sessionNum], null, (v) => _.sortBy(v, (vv) => vv.time).map((x) => `[${TimeTracker.FormatTime(x.time, true)}] ${x.content}<br>`));
             const sessStrings = [...sessNotes.general, "<br>"];
             for (const [cat, notes] of Object.entries(_.omit(sessNotes, "general")))
                 sessStrings.push(...[
@@ -2127,7 +2129,7 @@ const D = (() => {
     const getBlackList = () => sendToGM(`${jStr(STATE.REF.BLACKLIST)}`, "DEBUG BLACKLIST");
     const logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
         msg = formatMsgContents(msg, false);
-        if (STATE.REF.ISDEBUGGING && (Session.IsTesting || !Session.IsSessionActive))
+        if (STATE.REF.ISFORCINGDEBUGGING || !TimeTracker.IsInBlackout())
             // if (funcName) {
             //     STATE.REF.DEBUGLOG.push({
             //         timeStamp: new Date().getTime(),
@@ -2221,11 +2223,9 @@ const D = (() => {
                         `${trace[4] - STATE.REF.TRACESTARTTIME},${trace[3]},${trace[1]},${trace[2]},${STATE.REF.TRACELOGSTOPS[trace[0]] - trace[4]}`
                     );
             Handouts.Report("Trace Report", traceLogLines.join("<br>"));
-            STATE.REF.ISDEBUGGING = true;
             TimeTracker.Fix();
         } else {
             ISTRACING = true;
-            STATE.REF.ISDEBUGGING = false;
             TimeTracker.StopAllTimers();
         }
         STATE.REF.TRACELOG = [];
@@ -3175,6 +3175,9 @@ const D = (() => {
 
         get IsReportingListener() {
             return STATE.REF.isReportingListener;
+        },
+        get IsForcingDebug() {
+            return STATE.REF.ISFORCINGDEBUGGING;
         },
 
         Queue: queueFunc,
