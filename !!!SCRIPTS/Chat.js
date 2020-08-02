@@ -311,7 +311,7 @@ const Chat = (() => {
                                     _.each(attrList, (v) => {
                                         params[v.split(":")[0]] = D.Int(v.split(":")[1]) || v.split(":")[1];
                                     });
-                                    obj.set(params);
+                                    obj.set(D.FilterForObjAttrs(obj, params));
                                 }
                             }
 

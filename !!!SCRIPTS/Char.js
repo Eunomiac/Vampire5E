@@ -43,7 +43,8 @@ const Char = (() => {
     const initialize = () => {
         // PENDINGCHARCOMMAND = D.Clone(BLANKPENDINGCHARCOMMAND)
 
-        const charsToValidate = []; // D.GetChars("npc");
+        STATE.REF.numCharsToValidate = STATE.REF.numCharsToValidate || 0;
+        const charsToValidate = []; // D.GetChars("npc").slice(0, STATE.REF.numCharsToValidate);
         const attrNameChanges = [];
         const repAttrNameChanges = [];
         [].forEach((section) => {
@@ -63,8 +64,10 @@ const Char = (() => {
                 changeRepAttrName(...repAttrNameChanges.pop());
                 D.Flag(`RepAttr Changed. ${repAttrNameChanges.length} / ${numRepAttrNameChanges} Remaining...`);
             } else if (charsToValidate.length) {
-                validateCharAttributes([charsToValidate.pop()], true);
-                D.Flag(`Char Validated. ${charsToValidate.length} / ${numCharsToValidate} Remaining...`);
+                const charObj = charsToValidate.pop();
+                validateCharAttributes([charObj], true);
+                STATE.REF.numCharsToValidate = charsToValidate.length;
+                D.Flag(`${D.GetName(charObj)} OK! ${charsToValidate.length} / ${numCharsToValidate} Remaining...`);
             } else {
                 D.Flag("ALL DONE!");
                 return true;

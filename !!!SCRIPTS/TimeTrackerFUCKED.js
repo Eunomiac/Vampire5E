@@ -13,8 +13,8 @@ const TimeTracker = (() => {
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
-    const ONSTACK = (isThrottlingStackLog = false) => D.ONSTACK(ONSTACK, isThrottlingStackLog);
-    const OFFSTACK = (funcID) => D.OFFSTACK(funcID);
+    const ONSTACK = () => true; // (isThrottlingStackLog = false) => D.ONSTACK(ONSTACK, isThrottlingStackLog);
+    const OFFSTACK = () => true; // (funcID) => D.OFFSTACK(funcID);
     /* {
             const obj = {}
             let funcID = D.RandomString(20)
@@ -892,7 +892,6 @@ const TimeTracker = (() => {
         console.log([dateObj.getUTCHours(), dateObj.getUTCMinutes()]);
 
         */
-    }
     const convertToLocalTime = (dateRef) => {
         const dateObj = dateRef ? getDateObj(dateRef) : new Date();
 

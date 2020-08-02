@@ -23,8 +23,8 @@ const VAL = (varList, funcName, isArray = false) => {
 const DB = (msg, funcName) => true;
 const LOG = (msg, funcName) => true;
 const THROW = (msg, funcName, errObj) => false;
-const ONSTACK = (isThrottlingStackLog = false) => "randomFuncID";
-const OFFSTACK = (funcID) => true;
+const ONSTACK = () => true; // (isThrottlingStackLog = false) => D.ONSTACK(ONSTACK, isThrottlingStackLog);
+const OFFSTACK = () => true; // (funcID) => D.OFFSTACK(funcID);
 
 const D = {
     Cycle: (num, minVal, maxVal) => {

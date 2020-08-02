@@ -13,8 +13,8 @@ const TimeTracker = (() => {
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
-    const ONSTACK = (isThrottlingStackLog = false) => D.ONSTACK(ONSTACK, isThrottlingStackLog);
-    const OFFSTACK = (funcID) => D.OFFSTACK(funcID);
+    const ONSTACK = () => true; // (isThrottlingStackLog = false) => D.ONSTACK(ONSTACK, isThrottlingStackLog);
+    const OFFSTACK = () => true; // (funcID) => D.OFFSTACK(funcID);
     /* {
             const obj = {}
             let funcID = D.RandomString(20)
@@ -40,21 +40,44 @@ const TimeTracker = (() => {
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
+        const splashObj = Media.GetImg("SplashMoon");
+        splashObj.set({height: 2374, width: 1590, left: 795});
         const funcID = ONSTACK();
 
+        Soundscape.SetVolume("ScoreSplash", 30);
         STATE.REF.SessionDate = {
             start: [0, 19, 30],
             end: [0, 22, 30],
-            startBlackout: [0, 19, 29],
-            stopBlackout: [0, 22, 30]
+            startBlackout: [0, 19, 30],
+            stopBlackout: [0, 22, 30],
+            secsOutToInitFade: 30
         };
-        /* // SessionDate Test: Set values so you're in the middle of a session.
-        STATE.REF.SessionDate = {
-            start: [6, 5, 30],
-            end: [6, 9, 30],
-            startBlackout: [6, 5, 15],
-            stopBlackout: [6, 9, 30]
-        }; */
+        /* // SessionDate Test: Uncomment to set next session date to 2 minutes into future, for a 5-min long session.
+        const curRealDateObj = getRealDateObj();
+        let [weekday, hour, minute] = [curRealDateObj.getUTCDay(), curRealDateObj.getUTCHours(), curRealDateObj.getUTCMinutes()];
+        minute += 2;
+        if (minute >= 60) {
+            minute -= 60;
+            hour++;
+        }
+        if (hour >= 24) {
+            hour -= 24;
+            weekday = D.Bound(weekday + 1, 0, 6);
+        }
+        STATE.REF.SessionDate.start = [weekday, hour, minute];
+        STATE.REF.SessionDate.startBlackout = [weekday, hour, minute];
+        minute += 5;
+        if (minute >= 60) {
+            minute -= 60;
+            hour++;
+        }
+        if (hour >= 24) {
+            hour -= 24;
+            weekday = D.Bound(weekday + 1, 0, 6);
+        }
+        STATE.REF.SessionDate.end = [weekday, hour, minute];
+        STATE.REF.SessionDate.stopBlackout = [weekday, hour, minute];
+        // */
 
 
         STATE.REF.nextSessionDayShift = STATE.REF.nextSessionDayShift || 0;
@@ -113,6 +136,16 @@ const TimeTracker = (() => {
         const funcID = ONSTACK();
         let isForcing = false;
         switch (call) {
+            case "fade": {
+                D.Flag("Initializing Session Fade...");
+                initSessionFade();
+                break;
+            }
+            case "freeze": {
+                isCountdownFrozen = !isCountdownFrozen;
+                D.Flag(`Countdown ${isCountdownFrozen ? "Frozen" : "Unfrozen"}`);
+                break;
+            }
             case "stall": {
                 STATE.REF.dateObj.setTime(STATE.REF.dateObj.getTime() - 2 * 60 * 1000);
                 break;
@@ -135,28 +168,6 @@ const TimeTracker = (() => {
             case "codecheck": {
                 const [month, day, hour] = args.map((x) => D.Int(x));
                 convertWeatherDataToCode(getWeatherData(month, day, hour));
-                break;
-            }
-            case "moon": {
-                if (!args.length) {
-                    syncCountdown(false, true);
-                } else if (args[0] === "stop") {
-                    isCountdownFrozen = false;
-                    syncCountdown();
-                } else {
-                    if (args[1])
-                        MOON.maxTop = VAL({number: args[1]}) ? D.Int(args[1]) : MOON.maxTop;
-                    if (args[2])
-                        MOON.minTop = VAL({number: args[2]}) ? D.Int(args[2]) : MOON.minTop;
-                    if (args[3])
-                        MOON.daysToWait = VAL({number: args[3]}) ? D.Int(args[3]) : MOON.daysToWait;
-                    isCountdownFrozen = false;
-                    if (VAL({number: args[0]}))
-                        syncCountdown({daysIn: D.Float(args[0])}, true);
-                    else
-                        syncCountdown({}, true);
-                    isCountdownFrozen = true;
-                }
                 break;
             }
             case "get": {
@@ -270,7 +281,7 @@ const TimeTracker = (() => {
                             STATE.REF.nextSessionDayShift = 0;
                             D.Alert(`Next Session Day Shift reset to zero:<br>${D.JS(formatDateString(getNextSessionDate(), true))}<br><br><b>!sess set session &lt;dayshift&gt;</b> to change.`, "!sess set session");
                         }
-                        syncCountdown();
+                        updateCountdown();
                         break;
                     }
                     case "force": {
@@ -589,11 +600,10 @@ const TimeTracker = (() => {
             }
         }
     };
-    let [timeTimer, secTimer] = [null, null],
+    let [timeTimer, secTimer, fadeTimer] = [null, null, null],
         [isTweeningClock, isFastTweeningClock, isTickingClock, isCountdownFrozen, weatherDataMemo] = [false, false, true, false, false],
         isCountdownRunning = true,
-        [secondsLeft, numReturns] = [0, 0],
-        countdownRecord = [];
+        [secondsLeft, numReturns] = [0, 0];
 
     // #region CLASSES
     /* class Alarm {
@@ -729,11 +739,30 @@ const TimeTracker = (() => {
         "Z"
     ];
     const MONTHTEMP = ["f", "b", "a", "C", "Q", "S", "W", "V", "R", "H", "A", "a"];
-    const MOON = {
-        minTop: 932, // 1300,
-        maxTop: 262, // 630,
-        daysToWaitTill: 5,
-        daysToWaitTillWater: 4.25
+    const SPLASHPAGE = {
+        moon: {
+            start: {shiftTop: 0},
+            end: {shiftTop: -670}
+        },
+        water: {
+            sequence: {src: [6, 5, 4, 3, 2, 1, 0].map((x) => `red${x}`)}
+        },
+        nextSession: {
+            start: {shiftTop: 0, font_size: 56},
+            end: {shiftTop: -110, font_size: 120}
+        },
+        countdown: {
+            start: {color: "rgba(255, 0, 0, 1)"},
+            end: {color: "rgba(0, 0, 0, 1)"}
+        },
+        score: {
+            start: {volume: 30},
+            end: {volume: 150}
+        },
+        daysOutToStart: {
+            moon: 2,
+            water: 2.75
+        }
     };
     // #endregion
 
@@ -869,11 +898,11 @@ const TimeTracker = (() => {
     };
     const formatTimeString = (date, isIncludingSeconds = false) => {
         // const funcID = ONSTACK();
-        const [hours, minutes, secs] = [date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()].map((x) => D.Pad(x, 2));
-        if (D.Int(hours) === 0 || D.Int(hours) === 12)
-            return /* OFFSTACK(funcID) && */ `12:${minutes}${isIncludingSeconds ? `:${secs}` : ""} ${D.Int(hours) === 0 ? "A.M." : "P.M."}`;
-        else if (D.Int(hours) > 12)
-            return /* OFFSTACK(funcID) && */ `${D.Pad(D.Int(hours) - 12, 2)}:${minutes}${isIncludingSeconds ? `:${secs}` : ""} P.M.`;
+        const [hours, minutes, secs] = [date.getUTCHours(), ...[date.getUTCMinutes(), date.getUTCSeconds()].map((x) => D.Pad(x, 2))];
+        if (hours === 0 || hours === 12)
+            return /* OFFSTACK(funcID) && */ `12:${minutes}${isIncludingSeconds ? `:${secs}` : ""} ${hours === 0 ? "A.M." : "P.M."}`;
+        else if (hours > 12)
+            return /* OFFSTACK(funcID) && */ `${hours - 12}:${minutes}${isIncludingSeconds ? `:${secs}` : ""} P.M.`;
         else
             return /* OFFSTACK(funcID) && */ `${hours}:${minutes}${isIncludingSeconds ? `:${secs}` : ""} A.M.`;
     };
@@ -961,9 +990,13 @@ const TimeTracker = (() => {
     };
     const isInBlackout = () => {
         const dateObj = getRealDateObj();
-        const startBlackoutObj = setToNearestWeekday(getRealDateObj(), ...STATE.REF.SessionDate.startBlackout);
-        const stopBlackoutObj = setToNearestWeekday(getRealDateObj(), ...STATE.REF.SessionDate.stopBlackout);
-        return stopBlackoutObj > startBlackoutObj && dateObj < stopBlackoutObj && dateObj > startBlackoutObj;
+        const [weekDay, hour, minute] = [dateObj.getUTCDay(), dateObj.getUTCHours(), dateObj.getUTCMinutes()];
+        const dayMins = hour * 60 + minute;
+        const [startWeekDay, startHour, startMinute] = STATE.REF.SessionDate.startBlackout;
+        const startDayMins = startHour * 60 + startMinute;
+        const [stopWeekDay, stopHour, stopMinute] = STATE.REF.SessionDate.stopBlackout;
+        const stopDayMins = stopHour * 60 + stopMinute;
+        return weekDay === startWeekDay && dayMins >= startDayMins && dayMins < stopDayMins;
     };
     const testDateObjs = () => {
         const gameDateObj = getDateObj();
@@ -971,6 +1004,14 @@ const TimeTracker = (() => {
         const convertedDateObj = convertUTCtoLOCAL();
         const nextSessDate = getNextSessionDate();
         const lastSessDate = getLastSessionDate();
+
+        const [weekDay, hour, minute] = [convertedDateObj.getUTCDay(), convertedDateObj.getUTCHours(), convertedDateObj.getUTCMinutes()];
+        const dayMins = hour * 60 + minute;
+        const [startWeekDay, startHour, startMinute] = STATE.REF.SessionDate.startBlackout;
+        const startDayMins = startHour * 60 + startMinute;
+        const [stopWeekDay, stopHour, stopMinute] = STATE.REF.SessionDate.stopBlackout;
+        const stopDayMins = stopHour * 60 + stopMinute;
+
         D.Alert([
             `Game Date Obj: ${formatDateString(gameDateObj, true)}`,
             `Real Date Obj: ${formatDateString(realDateObj, true)}`,
@@ -978,7 +1019,11 @@ const TimeTracker = (() => {
             `Next Session Date Obj: ${formatDateString(nextSessDate, true)}`,
             `Last Session Date Obj: ${formatDateString(lastSessDate, true)}`,
             `Prompts Open: ${D.JS(timeTillPromptsOpen())}`,
-            `In Blackout? ${isInBlackout()}`
+            `In Blackout? ${isInBlackout()}`,
+            `... Current: [${weekDay}, ${hour}, ${minute} (${dayMins})]`,
+            `... Sess Start: [${startWeekDay}, ${startHour}, ${startMinute} (${startDayMins})]`,
+            `... Sess Stop: [${stopWeekDay}, ${stopHour}, ${stopMinute} (${stopDayMins})]`,
+            `Secs Left: ${D.Float((nextSessDate - convertedDateObj) / 1000, 2)}`
         ].join("<br>"), "Testing Date Objects");
     };
 
@@ -1287,7 +1332,7 @@ const TimeTracker = (() => {
         timeTimer = null;
         STATE.REF.lastRealTime = null;
     };
-    const updateClockObj = () => {
+    const updateClock = () => {
         const funcID = ONSTACK();
         // dateObj = dateObj || new Date(D.Int(STATE.REF.currentDate))
         // DB(`Setting Current Date; Checking Alarms.<br>LastDateStep: ${D.JSL(STATE.REF.lastDateStep)}`, "setCurrentDate")
@@ -1355,7 +1400,7 @@ const TimeTracker = (() => {
             isFastTweeningClock = Math.abs(newDelta - STATE.REF.TweenLastTime) > RUNNINGFASTAT;
             STATE.REF.TweenLastTime = newDelta;
             STATE.REF.dateObj.setTime(STATE.REF.TweenStart + newDelta);
-            updateClockObj();
+            updateClock();
             STATE.REF.TweenCurTime += CLOCKSPEED;
             return OFFSTACK(fID) && undefined;
         };
@@ -1456,7 +1501,7 @@ const TimeTracker = (() => {
             }
             STATE.REF.lastRealTime = curRealTime;
             STATE.REF.dateObj.setTime(STATE.REF.dateObj.getTime() + deltaTime);
-            updateClockObj();
+            updateClock();
             if (STATE.REF.dateObj.getUTCHours() !== lastHour)
                 setWeather();
             setHorizon();
@@ -1494,25 +1539,13 @@ const TimeTracker = (() => {
         };
     };
     const arePromptsAssignable = () => timeTillPromptsOpen().delta.isOpen;
-    const syncCountdown = (isTesting = false) => {
+    const updateCountdown = () => {
         const funcID = ONSTACK();
-        // if (isCountdownFrozen)
-        //   return OFFSTACK(funcID) &&
         const realDateObj = getRealDateObj();
         const nextSessDateObj = getNextSessionDate();
         const lastSessDateObj = getLastSessionDate();
-        const maxSecs = Math.max((nextSessDateObj - lastSessDateObj) / 1000, 7 * 24 * 60 * 60, (nextSessDateObj - realDateObj) / 1000);
-        const waitSecsMoon = maxSecs - MOON.daysToWaitTill * 24 * 60 * 60;
-        const waitSecsWater = maxSecs - MOON.daysToWaitTillWater * 24 * 60 * 60;
-        const totalSecsLeft = (nextSessDateObj - realDateObj) / 1000 - 60;
-        const totalSecsIn = maxSecs - totalSecsLeft;
-        const moonUpPercent = Math.min(1, D.Float(Math.max(0, totalSecsIn - waitSecsMoon) / (maxSecs - waitSecsMoon)));
-        const waterRedPercent = Math.min(1, D.Float(Math.max(0, totalSecsIn - waitSecsWater) / (maxSecs - waitSecsWater)));
-        const moonTop = MOON.minTop + (MOON.maxTop - MOON.minTop) * moonUpPercent;
-        const waterSource = `red${D.Int(6 * waterRedPercent, true)}`;
-
-        let secsLeft = totalSecsLeft;
-
+        const secsTillNextSession = D.Int((nextSessDateObj.getTime() - realDateObj.getTime()) / 1000, true);
+        let secsLeft = secsTillNextSession;
         const daysLeft = Math.floor(secsLeft / (24 * 60 * 60));
         secsLeft -= daysLeft * 24 * 60 * 60;
         const hoursLeft = Math.floor(secsLeft / (60 * 60));
@@ -1520,60 +1553,100 @@ const TimeTracker = (() => {
         const minsLeft = Math.floor(secsLeft / 60);
         secsLeft -= minsLeft * 60;
 
-        // D.Alert(D.JS({isCountdownFrozen, maxSecs, totalSecsLeft, totalSecsIn, ["daysToWait MOON"]: MOON.daysToWaitTill, waitSecsMoon, moonUpPercent, moonTop, ["daysToWait WATER"]: MOON.daysToWaitTillWater, waitSecsWater, waterRedPercent, waterSource}), "syncCountdown")
-        if (VAL({list: isTesting})) {
-            Media.SetImgData("SplashMoon_1", {top: moonTop}, true);
-            Media.SetImg("SplashWater", waterSource);
-            isCountdownRunning = false;
-        } else if (isCountdownRunning) {
-            countdownRecord = [daysLeft, hoursLeft, minsLeft, moonTop, waterSource];
-
-            Media.SetImgData("SplashMoon_1", {top: moonTop}, true);
-            Media.SetImg("SplashWater", waterSource);
-            // tickCountdown()
-            updateCountdownObj();
-
-            startCountdownTimer(secsLeft);
-        }
-        OFFSTACK(funcID);
-    };
-    const startCountdownTimer = () => {
-        const funcID = ONSTACK();
-        if (isCountdownFrozen)
-            return OFFSTACK(funcID);
-        clearInterval(secTimer);
-        secondsLeft = new Date().getSeconds();
-        secTimer = setInterval(() => {
-            const fID = ONSTACK();
-            if (isCountdownFrozen)
-                return OFFSTACK(fID);
-            secondsLeft = 59 - new Date().getSeconds();
-            if (secondsLeft <= 0)
-                syncCountdown();
-            else
-                updateCountdownObj();
-            return OFFSTACK(fID);
-        }, 1000);
-        return OFFSTACK(funcID);
-    };
-    const updateCountdownObj = () => {
-        const funcID = ONSTACK();
-        if (isCountdownFrozen || Media.HasForcedState("Countdown"))
-            return OFFSTACK(funcID) && false;
-        if (isInBlackout()) {
+        if (secsTillNextSession <= STATE.REF.SessionDate.secsOutToInitFade) {
+            initSessionFade();
+            Media.SetText("Countdown", `${D.Pad(daysLeft, 2)}:${D.Pad(hoursLeft, 2)}:${D.Pad(minsLeft, 2)}:${D.Pad(secsLeft, 2)}`);
+        } else if (isInBlackout()) {
+            Media.SetTextData("Countdown", SPLASHPAGE.countdown.end);
             Media.ToggleText("Countdown", false);
-            Media.SetTextData("NextSession", {shiftTop: -110});
-        } else {
+            Media.SetTextData("NextSession", SPLASHPAGE.nextSession.end);
+        } else if (isCountdownRunning && !isCountdownFrozen && !Media.HasForcedState("Countdown")) {
+            // Soundscape.SetVolume("ScoreSplash", SPLASHPAGE.score.start.volume);
+            Media.SetTextData("Countdown", SPLASHPAGE.countdown.start);
             Media.ToggleText("Countdown", true);
-            Media.SetTextData("NextSession", {shiftTop: 0});
-            Media.SetImgData("SplashMoon_1", {top: countdownRecord[3]}, true);
-            Media.SetImg("SplashWater", countdownRecord[4]);
-            Media.SetText(
-                "Countdown",
-                [...countdownRecord.slice(0, 3), secondsLeft].map((x) => `${(x.toString().length === 1 && "0") || ""}${x}`).join(":")
-            );
+            Media.SetTextData("NextSession", SPLASHPAGE.nextSession.start);
+
+            const moonData = D.Clone(SPLASHPAGE.moon);
+            const secsOutToStartMoon = SPLASHPAGE.daysOutToStart.moon * 24 * 60 * 60;
+            if (secsTillNextSession > secsOutToStartMoon)
+                Media.SetImgData("SplashMoon", moonData.start, true);
+            else
+                Media.SetImgData(
+                    "SplashMoon",
+                    D.KeyMapObj(
+                        moonData.start,
+                        null,
+                        (v, k) => v + (moonData.end[k] - v) * D.Float((secsOutToStartMoon - secsTillNextSession) / secsOutToStartMoon, 2)
+                    ),
+                    true
+                );
+
+            const secsOutToStartWater = SPLASHPAGE.daysOutToStart.water * 24 * 60 * 60;
+            if (secsTillNextSession > secsOutToStartWater)
+                Media.SetImg("SplashWater", "red0");
+            else
+                Media.SetImg("SplashWater", `red${D.Int(6 * D.Float((secsOutToStartWater - secsTillNextSession) / secsOutToStartWater, 2), true)}`);
+            Media.SetText("Countdown", `${D.Pad(daysLeft, 2)}:${D.Pad(hoursLeft, 2)}:${D.Pad(minsLeft, 2)}:${D.Pad(secsLeft, 2)}`);
         }
+        
+        if (secTimer)
+            clearTimeout(secTimer);
+
+        secTimer = setTimeout(updateCountdown, 1000);
         return OFFSTACK(funcID);
+    };
+    const initSessionFade = () => {
+        if (fadeTimer)
+            return;
+        const stepDur = 100;
+
+        const realTimeStart = getRealDateObj().getTime();
+        const realTimeEnd = realTimeStart + STATE.REF.SessionDate.secsOutToInitFade * 1000; // getNextSessionDate().getTime();
+        const duration = realTimeEnd - realTimeStart;
+
+        const moonData = D.Clone(SPLASHPAGE.moon);
+        const waterData = D.Clone(SPLASHPAGE.water);
+        const nextSessData = D.Clone(SPLASHPAGE.nextSession);
+        const countdownData = D.Clone(SPLASHPAGE.countdown);
+
+        const fadeStep = () => {
+            const curRealTime = getRealDateObj().getTime();
+            const percentDone = (curRealTime - realTimeStart) / duration;
+            if (percentDone >= 1) {
+                Media.SetImgData("SplashMoon", moonData.start, true);
+                Media.SetImg("SplashWater", D.Last(waterData.sequence.src));
+                Media.SetTextData("NextSession", nextSessData.end);
+                Media.ToggleText("Countdown", false);
+                setTimeout(() => Soundscape.SetVolume("ScoreSplash", 0.75 * SPLASHPAGE.score.end.volume), 10000);
+                setTimeout(() => Soundscape.SetVolume("ScoreSplash", 0.5 * SPLASHPAGE.score.end.volume), 20000);
+                setTimeout(() => Soundscape.SetVolume("ScoreSplash", 0.25 * SPLASHPAGE.score.end.volume), 30000);
+                setTimeout(() => Soundscape.SetVolume("ScoreSplash", 0.1), 40000);
+                fadeTimer = setTimeout(() => {
+                    if (fadeTimer)
+                        clearTimeout(fadeTimer);
+                    fadeTimer = null;
+                }, 10000);
+                // D.Flag("Finished Session Initialization Fade.");
+            } else {
+                moonData.current = D.KeyMapObj(moonData.end, null, (v, k) => v + percentDone * (moonData.start[k] - v));
+                nextSessData.current = D.KeyMapObj(nextSessData.start, null, (v, k) => v + percentDone * (nextSessData.end[k] - v));
+                waterData.current = D.KeyMapObj(waterData.sequence, null, (v) => v[D.Int((v.length - 1) * percentDone, true)]);
+                countdownData.current = {color: D.Gradient(countdownData.start.color, countdownData.end.color, percentDone)};
+                Media.SetImgData("SplashMoon", moonData.current, true);
+                Media.SetImg("SplashWater", waterData.current.src);
+                Media.SetTextData("NextSession", nextSessData.current);
+                Media.SetTextData("Countdown", countdownData.current);
+                /* D.Alert([
+                    `MOON: ${D.JS(moonData.current)}`,
+                    `WATER: ${D.JS(waterData.current)}`,
+                    `TEXT: ${D.JS(nextSessData.current)}`,
+                    `COUNTDOWN: ${D.JS(countdownData.current)}`
+                ].join("<br>"), `${D.Int(100 * percentDone)}%`); */
+                fadeTimer = setTimeout(fadeStep, stepDur);
+            }
+        };
+        Soundscape.SetVolume("ScoreSplash", SPLASHPAGE.score.end.volume);
+        fadeStep();
     };
     // #endregion
 
@@ -2635,9 +2708,9 @@ const TimeTracker = (() => {
             isCountdownRunning = true;
             isTickingClock = false;
         }
-        updateClockObj();
+        updateClock();
         setHorizon(setWeather());
-        syncCountdown();
+        updateCountdown();
         toggleClock(isTickingClock, STATE.REF.secsPerMin || 60);
         if (!isFixingTimeOnly)
             Char.RefreshDisplays();
@@ -2651,6 +2724,9 @@ const TimeTracker = (() => {
         Fix: fixTimeStatus,
 
         ALARMFUNCS,
+        get SessionDate() {
+            return STATE.REF.SessionDate;
+        },
         ToggleClock: (v, secsPerMin = 60) => {
             toggleClock(v, secsPerMin);
         },

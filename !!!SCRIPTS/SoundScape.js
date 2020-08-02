@@ -13,8 +13,8 @@ const Soundscape = (() => {
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
-    const ONSTACK = () => D.ONSTACK(ONSTACK);
-    const OFFSTACK = (funcID) => D.OFFSTACK(funcID);
+    const ONSTACK = () => true; // (isThrottlingStackLog = false) => D.ONSTACK(ONSTACK, isThrottlingStackLog);ingStackLog = false) => D.ONSTACK(ONSTACK, isThrottlingStackLog);
+    const OFFSTACK = () => true; // (funcID) => D.OFFSTACK(funcID);FSTACK(funcID);
 
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
@@ -1158,7 +1158,8 @@ const Soundscape = (() => {
 
         Sync: syncSoundscape,
         Play: playSound,
-        Stop: stopSound
+        Stop: stopSound,
+        SetVolume: setVolumeData
     };
 })();
 

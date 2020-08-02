@@ -704,6 +704,7 @@ const Session = (() => {
                     Char.SetNPC(charData.id, "base");
                 }
                 Media.ToggleImg("Spotlight", false);
+                Media.ToggleText("TimeTracker", true);
             },
             Complications: () => {},
             Testing: () => {
@@ -717,8 +718,7 @@ const Session = (() => {
         enterMode: {
             Active: () => {
                 Char.RefreshDisplays();
-                if (!STATE.REF.isTestingActive || STATE.REF.isFullTest)
-                    TimeTracker.ToggleClock(true);
+                TimeTracker.ToggleClock(true);
             },
             Inactive: () => {
                 setPlayerPage("SplashPage");
@@ -734,6 +734,7 @@ const Session = (() => {
             Spotlight: () => {
                 setLocation(BLANKLOCRECORD);
                 TimeTracker.ToggleClock(false);
+                Media.ToggleText("TimeTracker", false);
                 Char.RefreshDisplays();
             },
             Complications: () => {

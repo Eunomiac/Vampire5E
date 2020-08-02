@@ -369,7 +369,7 @@ const D = (() => {
     }
     // #endregion
 
-    // #region ASYNC FUNCTION HANDLING: Function Queing, Running
+    // #region ASYNC FUNCTION HANDLING: Function Queing, Running & Interval Functions
     const isFuncQueueClear = (queueName) => {
         if (!FunctionQueue[queueName])
             FunctionQueue[queueName] = [];
@@ -476,6 +476,9 @@ const D = (() => {
             $runFuncQueue(cback);
             return true;
         }
+    };
+    const runOnInterval = (func, initArgs = []) => {
+
     };
     // #endregion
 
@@ -859,7 +862,8 @@ const D = (() => {
     };
     const summarizeHTML = (htmlString = "") => ((htmlString.match(/.*?>([^<>]+)<.*?/g) || [""]).pop().match(/.*?>([^<>]+)<.*?/) || [""]).pop();
     const pInt = (strRef, isRounding = false) => parseInt(isRounding ? Math.round(parseFloat(strRef) || 0) : strRef) || 0;
-    const pFloat = (strRef, sigDigits = false) => (VAL({number: sigDigits}) && roundSig(parseFloat(strRef) || 0, sigDigits)) || parseFloat(strRef) || 0;
+    const pFloat = (strRef, sigDigits = false) => (VAL({number: sigDigits}) ? roundSig(parseFloat(strRef) || 0, sigDigits) : parseFloat(strRef))
+                                                  || 0;
     const roundSig = (num, digits, isReturningPaddedString = false) => {
         if (VAL({number: digits}) && D.Int(digits) > 0) {
             const returnNum = Math.round(num * 10 ** D.Int(digits) + Number.EPSILON) / 10 ** D.Int(digits);
@@ -1091,7 +1095,16 @@ const D = (() => {
         }
         return source;
     };
-    const filterForObjAttrs = (obj, deltas) => _.pick(deltas, (deltaVal, deltaKey) => deltaKey in obj.attributes);
+    const filterForObjAttrs = (obj, deltas) => {
+        const filteredDeltas = _.pick(deltas, (deltaVal, deltaKey) => deltaKey in obj.attributes);
+        ["left", "top", "height", "width"].forEach((x) => {
+            if (x in filteredDeltas && !VAL({number: filteredDeltas[x]}))
+                delete filteredDeltas[x];
+            else if (x in filteredDeltas)
+                filteredDeltas[x] = D.Int(filteredDeltas[x], true);
+        });
+        return filteredDeltas;
+    };
     const filterForChanges = (target, source) => {
         if (_.isUndefined(source))
             return undefined;
@@ -1116,7 +1129,7 @@ const D = (() => {
         .slice(0, 3)
         .map((x) => x.toString(16))
         .join("")}`;
-    const colorGradient = (startColor, endColor, step, totalSteps) => `rgba(${startColor
+    const colorGradient = (startColor, endColor, percent) => `rgba(${startColor
         .replace(/[^\d\s,]*/gu, "")
         .split(",")
         .map((x, i) => D[i === 3 ? "Round" : "Int"](x, 2))
@@ -1126,9 +1139,7 @@ const D = (() => {
                             .replace(/[^\d\s,]*/gu, "")
                             .split(",")
                             .map((xx, ii) => D[ii === 3 ? "Round" : "Int"](xx, 2))[i]
-                            - x)
-                            * step)
-                            / totalSteps,
+                            - x) * percent),
             2
         ))
         .join(", ")})`;
@@ -2129,17 +2140,16 @@ const D = (() => {
     const getBlackList = () => sendToGM(`${jStr(STATE.REF.BLACKLIST)}`, "DEBUG BLACKLIST");
     const logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
         msg = formatMsgContents(msg, false);
-        if (STATE.REF.ISFORCINGDEBUGGING || !TimeTracker.IsInBlackout())
-            // if (funcName) {
-            //     STATE.REF.DEBUGLOG.push({
-            //         timeStamp: new Date().getTime(),
-            //         title: formatTitle(funcName, scriptName, prefix),
-            //         contents: msg
-            //     });
-            //     if (STATE.REF.DEBUGLOG.length > 100)
-            //         getDebugRecord("... DBLog");
-            // }
-            log(formatLogLine(msg, funcName, scriptName, prefix));
+        // if (funcName) {
+        //     STATE.REF.DEBUGLOG.push({
+        //         timeStamp: new Date().getTime(),
+        //         title: formatTitle(funcName, scriptName, prefix),
+        //         contents: msg
+        //     });
+        //     if (STATE.REF.DEBUGLOG.length > 100)
+        //         getDebugRecord("... DBLog");
+        // }
+        log(formatLogLine(msg, funcName, scriptName, prefix));
     };
     const logStackAlert = (rawCode) => {
         if (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) {
@@ -2160,6 +2170,25 @@ const D = (() => {
         "ERROR"
     );
     const sendDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
+        funcName = funcName || "";
+        scriptName = scriptName || "";
+        if (
+            (STATE.REF.WATCHLIST.includes(funcName))
+            || (STATE.REF.WATCHLIST.includes(scriptName) && !STATE.REF.BLACKLIST.includes(funcName))
+            || (!STATE.REF.BLACKLIST.includes(funcName) && !STATE.REF.BLACKLIST.includes(scriptName) && (
+                STATE.REF.ISFORCINGDEBUGGING
+                || !TimeTracker.IsInBlackout()
+            ))
+        ) {
+            logDebugAlert(msg, funcName, scriptName, prefix);
+            if (
+                (funcName && [...TEMPWATCHLIST, ...STATE.REF.WATCHLIST].includes(funcName))
+                || (scriptName && funcName && [...TEMPWATCHLIST, ...STATE.REF.WATCHLIST].includes(scriptName) && !STATE.REF.BLACKLIST.includes(funcName))
+            )
+                sendToGM(formatMsgContents(msg, true, false), formatTitle(funcName, scriptName, prefix));
+        }
+    };
+    /* )
         if (
             (!Session.IsSessionActive || Session.IsTesting)
             && ([...TEMPWATCHLIST, ...STATE.REF.WATCHLIST].includes(funcName) || !STATE.REF.BLACKLIST.includes(funcName))
@@ -2173,7 +2202,7 @@ const D = (() => {
             )
                 sendToGM(formatMsgContents(msg, true, false), formatTitle(funcName, scriptName, prefix));
         }
-    };
+    }; */
     const getDebugRecord = (title = "Debug Log") => {
         const logLines = [];
         let lastTimeStamp, lastTitle;
