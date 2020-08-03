@@ -6752,7 +6752,7 @@
         const doProjectDiff = (callback) => {
             const attrList = {};
             const attrArray = _.map(
-                ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1, 2, 3], (v) => [`projectteamwork${v}`]))],
+                ["projectlaunchtrait1", "projectlaunchtrait2", "projectlaunchmod", "projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1, 2, 3], (v) => [`projectteamwork${v}`]))],
                 (v) => `repeating_project_${v}`
             );
             const funcName = "DoProjectDiff";
@@ -6768,10 +6768,11 @@
                     }
                 );
                 attrList[p("projectforcedstakemod")] = teamwork;
+                const finalDicePoolTotal = pI("projectlaunchtrait1") + pI("projectlaunchtrait2") + teamwork + pI("projectlaunchmod");
                 if (attrList[p("projectforcedstakemod")] > 0)
                     attrList[p("projectforcedstakemodline")] = `+${attrList[p("projectforcedstakemod")]}`;
                 else
-                    attrList[p("projectforcedstakemodline")] = "";
+                    attrList[p("projectforcedstakemodline")] = `=${finalDicePoolTotal >= 10 ? "" : " "}${finalDicePoolTotal}`;
                 attrList[p("projectlaunchdiff")] = pI("projectscope") + 2 + pI("projectlaunchdiffmod");
                 setAttrs(attrList, {}, () => {
                     log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
@@ -6888,7 +6889,7 @@
                                 = Math.max(0, 10 - Math.floor(10 * getProgress(new Date(parseInt(ATTRS.date_today)), pV("projectstartdate"), pV("projectenddate"))) - pI("projectinccounter_damage"));
                             if (counterPos > 0) {
                                 attrList[p("projectrushroll_toggle")] = 1;
-                                attrList[p("projectrushrollparams")] = `@{character_name}|${pV("projectlaunchtrait1_name")}${DELIM}${pV("projectlaunchtrait2_name")}|${counterPos}|${rowID}|quickflags:waitforopposing`;
+                                attrList[p("projectrushrollparams")] = `@{character_name}|${pV("projectlaunchtrait1_name")}:${pV("projectlaunchtrait1")}${DELIM}${pV("projectlaunchtrait2_name")}:${pV("projectlaunchtrait2")}|${counterPos}|${rowID}|quickflags:waitforopposing`;
                             }
                         }
                         if (counterPos === 0 && pI("projectlaunchroll_toggle") !== 3)

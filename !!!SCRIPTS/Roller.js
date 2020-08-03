@@ -1053,7 +1053,8 @@ const Roller = (() => {
             "bestialcancelall",
             "totalfailure",
             "nomessycrit",
-            "nobestialfail"
+            "nobestialfail",
+            "nocrit"
         ]
     };
     // #endregion
@@ -2073,6 +2074,20 @@ const Roller = (() => {
                             rollResults.noBestialFail = true;
                             isReapplying = true;
                             break;
+                        case "nocrit": {
+                            rollResults.diceVals = rollResults.diceVals.map((x) => x.replace(/(.*?)c.*/u, "$1s"));
+                            rollResults.total -= Object.values(rollResults.critPairs).reduce((tot, x) => x + tot, 0) * 2;
+                            if (VAL({number: rollResults.margin}))
+                                rollResults.margin -= Object.values(rollResults.critPairs).reduce((tot, x) => x + tot, 0) * 2;
+                            rollResults.B.succs += rollResults.B.crits + 2 * rollResults.critPairs.bb + rollResults.critPairs.hb;
+                            rollResults.H.succs += rollResults.H.crits + 2 * rollResults.critPairs.hh + rollResults.critPairs.hb;
+                            rollResults.critPairs = {bb: 0, hb: 0, hh: 0};
+                            rollResults.B.crits = 0;
+                            rollResults.H.crits = 0;
+                            rollResults.noCrit = true;
+                            isReapplying = true;
+                            break;
+                        }
                         default:
                             break;
                     }
@@ -2430,6 +2445,7 @@ const Roller = (() => {
     };
     const getRollData = (charObj, rollType, params, rollFlags, rollID) => {
         const traceID = TRACEON("getRollData", [charObj, rollType, params, rollFlags]);
+        rollID = rollID || D.RandomString(20);
         /* EXAMPLE RESULTS:
               {
                 charID: "-LN4P73XRfqCcI8U6c-t",
@@ -2524,11 +2540,19 @@ const Roller = (() => {
                 rollData.mod = 0;
                 rollData.diffMod = 0;
                 rollData.prefix = ["repeating", "project", D.GetRepStat(charObj, "project", rowID).rowID, ""].join("_");
+                rollData.rollEffectsToReapply = rollData.rollEffectsToReapply || [];
+                rollData.rollEffectsToReapply.push("all;nocrit;!Rush Roll: No Criticals");
                 rollData.oppRollData = {
                     type: "trait",
+                    oppName: "Project Die",
+                    traits: [],
+                    traitData: {},
                     diff: 0,
-                    basePool: counter,
-                    hungerPool: 0
+                    mod: D.Int(counter),
+                    basePool: D.Int(counter),
+                    hungerPool: 0,
+                    isNPCRoll: true,
+                    rollFlags
                 };
                 break;
             }
@@ -2704,50 +2728,40 @@ const Roller = (() => {
             } */
         const sortBins = [];
         const roll = (dType) => {
-            const d10 = forcedRolls && forcedRolls[dType] && forcedRolls[dType].length ? forcedRolls[dType].shift() : randomInteger(10);            
-            if (rollData.type === "rush") {
-                rollResults.rolls.push(`B${d10}`);
-                if (d10 >= 6) {
-                    rollResults.B.succs++;
+            const d10 = forcedRolls && forcedRolls[dType] && forcedRolls[dType].length ? forcedRolls[dType].shift() : randomInteger(10);
+            rollResults.rolls.push(dType + d10);
+            switch (d10) {
+                case 10:
+                    rollResults[dType].crits++;
                     rollResults.total++;
-                } else {
-                    rollResults.B.fails++;
-                }
-            } else {
-                rollResults.rolls.push(dType + d10);
-                switch (d10) {
-                    case 10:
-                        rollResults[dType].crits++;
-                        rollResults.total++;
-                        break;
-                    case 9:
-                    case 8:
-                    case 7:
-                    case 6:
-                        rollResults[dType].succs++;
-                        rollResults.total++;
-                        break;
-                    case 5:
-                    case 4:
-                    case 3:
-                    case 2:
-                        rollResults[dType].fails++;
-                        break;
-                    case 1:
-                        switch (dType) {
-                            case "B":
-                                rollResults.B.fails++;
-                                break;
-                            case "H":
-                                rollResults.H.botches++;
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    default:
-                        break;
-                }
+                    break;
+                case 9:
+                case 8:
+                case 7:
+                case 6:
+                    rollResults[dType].succs++;
+                    rollResults.total++;
+                    break;
+                case 5:
+                case 4:
+                case 3:
+                case 2:
+                    rollResults[dType].fails++;
+                    break;
+                case 1:
+                    switch (dType) {
+                        case "B":
+                            rollResults.B.fails++;
+                            break;
+                        case "H":
+                            rollResults.H.botches++;
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    break;
             }
         };
         let rollResults = {
@@ -2952,10 +2966,44 @@ const Roller = (() => {
             ];
         }
 
-        if (rollData.oppRollData)
-            rollResults.oppRollResults = rollDice(rollData.oppRollData);
+        if (rollData.oppRollData) {
+            const oppResults = rollDice(rollData.oppRollData);
+            oppResults.yourMargin = VAL({number: rollResults.margin}) ? D.Int(rollResults.margin) : D.Int(rollResults.total);
+            oppResults.myMargin = VAL({number: oppResults.margin}) ? D.Int(oppResults.margin) : D.Int(oppResults.total);
+            oppResults.finalMargin = oppResults.yourMargin - oppResults.myMargin;
+            rollResults.oppRollResults = oppResults;
+        }
 
         return TRACEOFF(traceID, rollResults);
+    };
+    const getRollOutcome = (rollData, rollResults, isGettingFinal = true) => {
+        const finalMargin = (isGettingFinal && "oppRollResults" in rollResults) ? rollResults.oppRollResults.finalMargin : rollResults.margin;
+        // First do a basic check:
+        let outcome;
+        if ((!rollResults.total || D.Int(finalMargin) < 0) && rollResults.H.botches)
+            outcome = "bestialFail";
+        else if ((!finalMargin || finalMargin >= 0) && (rollResults.critPairs.hb + rollResults.critPairs.hh))
+            outcome = "messyCrit";
+        else if (rollResults.total === 0)
+            outcome = "totalFail";
+        else if (finalMargin < -2)
+            outcome = "costlyFail";
+        else if (finalMargin < 0)
+            outcome = "Fail";
+        else if (rollResults.critPairs.hh + rollResults.critPairs.bb + rollResults.critPairs.hb > 0)
+            outcome = "Crit";
+        else
+            outcome = "Succ";
+
+        // Then check for relevant rollFlags:
+        if (rollData.noBestialFail && outcome === "bestialFail")
+            outcome = "Fail";
+        if (rollData.noMessyCrit && outcome === "messyCrit")
+            outcome = "Crit";
+        if (rollData.noCrit && ["Crit", "messyCrit"].includes(outcome))
+            outcome = "Succ";
+
+        return outcome;
     };
     const formatDiceLine = (rollData = {}, rollResults, split = 15, rollFlags = {}, isSmall = false) => {
         /* MUST SUPPLY:
@@ -2995,11 +3043,11 @@ const Roller = (() => {
             if (rollFlags.isHidingDicePool && rollFlags.isHidingResult)
                 filteredDice = [];
             else if (rollFlags.isHidingDicePool)
-                filteredDice = _.map(
+                filteredDice = _.map( // Reject all failures, botches and cancelled dice, then erase Hunger status from remaining
                     _.reject(rollResults.diceVals, (v) => ["Bf", "Hb", "Hf", "BXc", "BXs", "HXc", "HXs", "HXb", "HCb"].includes(v)),
                     (v) => v.replace(/H/gu, "B")
                 );
-            else if (rollFlags.isHidingResult)
+            else if (rollFlags.isHidingResult) // Map all dice to basic "g" (a fail die WITH an ankh)
                 filteredDice = _.map(rollResults.diceVals, () => "g");
             _.each(filteredDice, (v) => {
                 if (counter >= splitAt) {
@@ -3098,6 +3146,7 @@ const Roller = (() => {
         const p = (v) => rollData.prefix + v;
         DB({rollData, rollResults}, "displayRoll");
         switch (rollData.type) {
+            case "rush":
             case "project": {
                 rollLines.subOutcome = {
                     text: ""
@@ -3235,11 +3284,110 @@ const Roller = (() => {
                 return THROW(`Unrecognized rollType: ${D.JSL(rollData.rollType)}`, "APPLYROLL: START");
             }
         }
+        if ("oppRollData" in rollData) { // Displaying an opposed roll BEFORE (while waiting for it to fire) OR AFTER (applies to both) the Opposing Roll.
+            const oppData = rollData.oppRollData;
+            /* rollData.oppRollData = {
+                    type: "trait",
+                    oppName: "Project Die",
+                    traits: [],
+                    traitData: {},
+                    diff: 0,
+                    mod: D.Int(counter),
+                    basePool: D.Int(counter),
+                    hungerPool: 0,
+                    isNPCRoll: true,
+                    rollFlags
+                }; */
+            rollLines.oppRoll = {
+                rollerName: {text: oppData.oppName},
+                dicePool: {text: oppData.basePool + oppData.hungerPool},
+                mainRoll: {
+                    traits: Object.values(oppData.traitData).map((data) => `${data.display} (${D.Int(data.value) || "~"})`).join(" + "),
+                    mod: D.Int(oppData.mod) ? D.Sign(oppData.mod) : null,
+                    diff: D.Int(oppData.diff) ? `vs. ${D.Int(oppData.diff)}` : null
+                }
+            };
 
+            if (oppData.rollFlags.isHidingName)
+                rollLines.oppRoll.rollerName.text = "Someone";
+            if (oppData.rollFlags.isHidingTraitVals) {
+                rollLines.mainRoll.traits = rollLines.mainRoll.traits.replace(/\([\d\+-~]*\) ?(\+ |$)/gu, "$1");
+                delete rollLines.oppRoll.mainRoll.mod;
+            }
+            if (oppData.rollFlags.isHidingTraits)
+                rollLines.oppRoll.mainRoll.traits = null;
+            if (oppData.rollFlags.isHidingDicePool) {
+                delete rollLines.oppRoll.dicePool;
+                rollLines.oppRoll.mainRoll.mod = null;
+                if (!rollLines.oppRoll.mainRoll.traits)
+                    rollLines.oppRoll.mainRoll.traits = "Some Dice";
+            }
+            if (oppData.rollFlags.isHidingDifficulty)
+                rollLines.oppRoll.mainRoll.diff = null;
+
+            if (!rollLines.oppRoll.mainRoll.traits && rollLines.oppRoll.mainRoll.mod) {
+                rollLines.oppRoll.mainRoll.traits = `${D.NumToText(Math.abs(oppData.mod), true)} ${oppData.mod === 1 ? "Die" : "Dice"}`;
+                rollLines.oppRoll.mainRoll.mod = null;
+            }
+
+            rollLines.oppRoll.mainRoll = {text: _.compact(Object.values(rollLines.oppRoll.mainRoll)).join(" ")};
+            DB({oppData, oppRollLines: rollLines.oppRoll}, "displayRoll");
+        }
+        if ("oppRollResults" in rollResults) { // Displaying an opposed roll AFTER the Opposing Roll has occurred.
+            const oppResults = rollResults.oppRollResults;
+            Object.assign(rollLines.oppRoll, {
+                resultCount: {text: oppResults.total},
+                diceLine: buildOppDiceLine(oppResults.diceVals, oppResults.rollFlags),
+                margin: {text: D.Sign(D.Int(oppResults.total) - D.Int(oppResults.diff))},
+                outcome: {text: {
+                    messyCrit: "MESSY CRITICAL!",
+                    bestialFail: "BESTIAL FAILURE!",
+                    totalFail: "TOTAL FAILURE",
+                    Crit: "CRITICAL WIN!",
+                    Succ: "Success",
+                    Fail: "Failure",
+                    costlyFail: "Failure"
+                }[getRollOutcome(rollData.oppRollData, oppResults)]},
+                finalOutcome: {text: {
+                    messyCrit: "MESSY CRITICAL!",
+                    bestialFail: "BESTIAL FAILURE!",
+                    totalFail: "TOTAL FAILURE",
+                    Crit: "CRITICAL WIN!",
+                    Succ: "Success",
+                    Fail: "Failure",
+                    costlyFail: "Failure"
+                }[getRollOutcome(rollData, rollResults)]},
+                finalMargin: {text: D.Sign(D.Int(oppResults.finalMargin))}
+            });
+            if (oppResults.rollFlags.isHidingDifficulty) {
+                delete rollLines.oppRoll.margin;
+                delete rollLines.oppRoll.finalMargin;
+            }
+            if (oppResults.rollFlags.isHidingResult) {
+                delete rollLines.oppRoll.resultCount;
+                delete rollLines.oppRoll.margin;
+                delete rollLines.oppRoll.finalMargin;
+            }
+            if (oppResults.rollFlags.isHidingOutcome) {
+                delete rollLines.oppRoll.margin;
+                delete rollLines.oppRoll.finalMargin;
+                delete rollLines.oppRoll.outcome;
+                delete rollLines.oppRoll.finalOutcome;
+            }
+            DB({oppResults, oppRollLines: rollLines.oppRoll}, "displayRoll");
+        }
+        if (rollLines.oppRoll) {
+            D.Show(rollData);
+            D.Show(rollResults);
+            D.Show(rollLines);
+            D.Show(rollData.oppRollData);
+            D.Show(rollResults.oppRollResults);
+            D.Show(rollLines.oppRoll);
+            return;
+        }
         for (const line of Object.keys(rollLines))
             if (getColor(rollData.type, line))
                 rollLines[line].color = getColor(rollData.type, line);
-
         for (const name of Object.keys(rollLines))
             switch (name) {
                 case "rollerName": {
@@ -3525,6 +3673,7 @@ const Roller = (() => {
                                 break;
                             } else if (
                                 !rollResults.noMessyCrit
+                                && !rollResults.noCrit
                                 && (!rollResults.margin || rollResults.margin >= 0)
                                 && rollResults.critPairs.hb + rollResults.critPairs.hh > 0
                             ) {
@@ -4214,7 +4363,7 @@ const Roller = (() => {
     };
     // #endregion
 
-    // #region OPPOSED ROLLS 
+    // #region OPPOSED ROLLS
     const makeOpposedRoll = (oppRollData, afterRollFunc) => {
         oppRollData.opposingMargin = mainRollResults.margin;
         const mainRollResults = getCurrentRoll();
@@ -4223,6 +4372,38 @@ const Roller = (() => {
             afterRollFunc(mainRollResults); // Can change passed-in results object before displaying.
         displayRoll();
     };
+    const buildOppDiceLine = (diceVals, rollFlags) => diceVals.map((x) => D.UCase(x.replace(/[A-Z]/gu, ""))).join("");
+    /* rollFlags are ONLY for secrecy settings & filtering output
+                -- roll effects are still handled by applyRollEffects
+                -- oppRoll should have identical rollData/rollResults to main roll --- only distinguished in displayRoll
+        */
+    /*
+            BcL, BcR, HcL, HcR --- Paired Base & Hunger Crit Dice
+            Bc, Hc --- Unpaired Base & Hunger Crit Dice
+            Bs, Hs --- Successes
+            Bf, Hf --- Failures
+            Hb --- Hunger Botch
+            HcRb, HcLb --- ?
+            BXc, HXc, BXs, HXs, HXb --- Cancelled Crit, Success and Botch Dice, Base & Hunger
+            HCb --- Cancelling Hunger Botch Die
+            Os, Of --- Oblivion Rouse Success & Failure
+            g --- Generic Unknown Die (Grey w/ Ankh)
+        */
+
+    // diceVals = [ "BcL", "BcR", "Bs", "Bs", "Bs", "Bs", "Bs", "Bs", "Bf", "Bf" ];
+    //             let filteredDice = rollResults.diceVals;
+    //     if (rollFlags.isHidingDicePool && rollFlags.isHidingResult)
+    //     filteredDice = [];
+    // else if (rollFlags.isHidingDicePool)
+    //     filteredDice = _.map(
+    //         _.reject(rollResults.diceVals, (v) => ["Bf", "Hb", "Hf", "BXc", "BXs", "HXc", "HXs", "HXb", "HCb"].includes(v)),
+    //         (v) => v.replace(/H/gu, "B")
+    //     );
+    // else if (rollFlags.isHidingResult)
+    //     filteredDice = _.map(rollResults.diceVals, () => "g");
+    //     return diceVals.map((x) => D.UCase(x.replace(/[A-Z]/gu, ""))).join("");
+    //
+    // ;
     // #endregion
 
     // #region SECRET ROLLS
