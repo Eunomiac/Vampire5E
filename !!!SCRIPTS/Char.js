@@ -899,8 +899,9 @@ const Char = (() => {
                     case "attrs": {
                         const [charObj] = charObjs;
                         if (VAL({charObj}, "!char set stat")) {
-                            DB({params: Listener.ParseParams(args, "|")}, "onChatCall");
-                            D.SetStats(charObj.id, Listener.ParseParams(args, "|"));
+                            const [statName, ...statVal] = args;
+                            DB({statName, statVal}, "onChatCall");
+                            D.SetStats(charObj.id, {[statName]: statVal.join(" ")});
                         } else {
                             D.Alert("Select a character or provide a character reference first!", "!char set stat");
                         }
@@ -1074,6 +1075,10 @@ const Char = (() => {
             }
             case "process": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "margins": {
+                        addMarginToProjects(charObjs, args[0] === "true");
+                        break;
+                    }
                     case "boons": case "prestation": {
                         processPrestation();
                         break;
@@ -3285,10 +3290,55 @@ const Char = (() => {
         attrList[p("projectlaunchresults")] = resultString;
         attrList[p("projectstakes_toggle")] = 1;
         attrList[p("projecttotalstake")] = D.Int(scope) + 1 - margin;
+        attrList[p("projectmargin")] = D.Int(margin);
+        attrList[p("projectmargindisplay")] = `(${D.Sign(D.Int(margin))})`;
         attrList[p("projectlaunchresultsmargin")] = `${D.Int(scope) + 1 - margin} Stake Required, (${D.Int(scope) + 1 - margin} to Go)`;
         D.Queue(setAttrs, [charObj.id, attrList], "LaunchProject");
         D.Queue(updateProjectsDoc, [], "LaunchProject", 0.1);
         D.Run("LaunchProject");
+    };
+    const addMarginToProjects = (charRefs, isWritingSheet = false) => {
+        const charObjs = D.GetChars(charRefs);
+        for (const charObj of charObjs) {
+            const projectData = D.GetRepStats(charObj, "project", null, ["projectscope", "projecttotalstake", "projectlaunchresults"], "rowID");
+            const attrList = {};
+            const returnLines = [
+                `<h3>Processing ${D.GetName(charObj, true)}'s Projects</h3>`
+            ];
+            for (const [rowID, statData] of Object.entries(projectData)) {
+                if (statData.length === 3) {
+                    const projectResult = statData.find((x) => x.attrName === "projectlaunchresults").val;
+                    if (projectResult !== "CRITICAL WIN!") {
+                        const projectScope = D.Int(statData.find((x) => x.attrName === "projectscope").val);
+                        const projectTotalStake = D.Int(statData.find((x) => x.attrName === "projecttotalstake").val);
+                        const projectMargin = D.Int(projectScope) + 1 - D.Int(projectTotalStake);
+                        attrList[`repeating_project_${rowID}_projectmargin`] = projectMargin;
+                        attrList[`repeating_project_${rowID}_projectmargindisplay`] = `(${D.Sign(projectMargin)})`;
+                        continue;
+                    }
+                } else {
+                    returnLines.push(`Excluding ${rowID}: ${statData[0].val}`);
+                }                
+                returnLines.push(...[
+                    statData.find((x) => x.attrName === "projectscope").name,
+                    `     !char @${charObj.id} set stat repeating_project_${rowID}_projectmargin &lt;#&gt;`,
+                    `     !char @${charObj.id} set stat repeating_project_${rowID}_projectmargindisplay "(+&lt;#&gt;)"`
+                ]);
+            }
+
+            returnLines.push(...[
+                "<h3>Setting Attributes:</h3>",
+                D.JS(attrList),
+                isWritingSheet
+                    ? "<span style=\"color: red;\"><b>CHANGES WRITTEN TO SHEET</b></span>"
+                    : "(<b>!char process margins true</b> to write to sheet)"
+            ]);
+
+            D.Alert(returnLines.join("<br>"), "Add Margin to Projects");
+
+            if (isWritingSheet)
+                setAttrs(charObj.id, attrList);
+        }
     };
     const setCompulsion = (charRef, compulsionTitle, compulsionText) => {
         D.SetStats(charRef, {

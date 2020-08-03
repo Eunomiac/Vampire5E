@@ -22,15 +22,45 @@ const Tester = (() => {
     // #endregion
 
     // #region LOCAL INITIALIZATION
-    const initialize = () => { };
+    const initialize = () => {
+        STATE.REF.isLocWalking = STATE.REF.isLocWalking || false;
+        STATE.REF.locWalkDuration = STATE.REF.locWalkDuration || 120;
+
+        if (STATE.REF.isLocWalking)
+            locationWalk();
+    };
 
     const fuz = Fuzzy.Fix();
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
+    let locWalkTimer = false;
     const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
+            case "gmonline": {
+                D.Flag(`${D.GMOnline}`);
+                break;
+            }
+            case "locwalk": {
+                if (STATE.REF.isLocWalking) {
+                    STATE.REF.isLocWalking = false;
+                    if (locWalkTimer) {
+                        clearTimeout(locWalkTimer);
+                        locWalkTimer = false;
+                    }
+                    D.Flag("Location Walking Stopped.");
+                } else {
+                    STATE.REF.isLocWalking = true;
+                    const durSecs = args.length ? D.Int(args.pop()) : STATE.REF.locWalkDuration;
+                    if (VAL({int: durSecs}) && durSecs >= 15)
+                        STATE.REF.locWalkDuration = durSecs;
+                    else
+                        STATE.REF.locWalkDuration = 60;
+                    locationWalk();
+                }
+                break;
+            }
             case "effectshandout": {
                 const parseRollEffectsHandout = () => {
                     const noteObj = Handouts.Get("Roll Effects");
@@ -126,6 +156,7 @@ const Tester = (() => {
                 D.SetTempDebugWatch(["getRepStats", "getRepIDs"]);
                 charRef = charRef === "null" ? null : D.GetChar(charRef);
                 section = section === "null" ? null : section;
+                statName = statName.startsWith("[") ? statName.replace(/[\[\]]/gu, "").split(/, ?/gu) : statName;
                 statName = statName === "null" ? null : statName;
                 groupBy = groupBy === "null" ? null : groupBy;
                 pickProperty = pickProperty === "null" ? null : pickProperty;
@@ -317,6 +348,19 @@ const Tester = (() => {
     };
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
+
+    const locationWalk = () => {
+        if (!STATE.REF.isLocWalking)
+            return false;
+        const distName = _.sample(Object.keys(C.DISTRICTS));
+        const siteName = _.sample(Object.keys(_.pick(C.SITES, (v) => (v.district === null || v.district.includes(distName)) && (Session.IsOutside || v.outside))));
+        Session.SetLocation({DistrictCenter: [distName], SiteCenter: [siteName]});
+        TimeTracker.SetWeatherOverride(_.sample(["xxZhw2", "xfZmx1", "bxzdv5", "bfzdg3", "cxzdw4", "cfZsx3", "pxZhh1", "pfZmw0", "sxzdw2", "sfzdx4", "txZsv3", "tfZhg0", "wxZmw0", "wfZsx1"]));
+        if (locWalkTimer)
+            clearTimeout(locWalkTimer);
+        locWalkTimer = setTimeout(locationWalk, STATE.REF.locWalkDuration * 1000);
+        return true;
+    };
 
     return {
         CheckInstall: checkInstall,

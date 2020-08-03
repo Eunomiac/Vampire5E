@@ -96,102 +96,121 @@ const Roller = (() => {
                 const [charObj] = Listener.GetObjects(objects, "character");
                 let rollType;
                 if (VAL({array: args}, "!roll dice"))
-                    switch (D.LCase((call = args.shift()))) {
-                        case "frenzyinit": {
-                            // !roll dice project @{character_name}|Politics:3,Resources:2|diff|mod|diffMod|rowID
-                            lockRoller(true);
-                            STATE.REF.frenzyRoll = `${args.join(" ").split("|")[0]}|`;
-                            D.CommandMenu({
-                                rows: [
-                                    {type: "Header", contents: `Set Frenzy Diff for ${D.JSL(D.GetName(charObj, true))}`},
-                                    {
-                                        type: "ButtonLine",
-                                        contents: [
-                                            20,
-                                            {name: "1", command: "!roll dice frenzy 1"},
-                                            {name: "2", command: "!roll dice frenzy 2"},
-                                            {name: "3", command: "!roll dice frenzy 3"},
-                                            {name: "4", command: "!roll dice frenzy 4"},
-                                            {name: "5", command: "!roll dice frenzy 5"},
-                                            20
-                                        ],
-                                        styles: {bgColor: C.COLORS.darkred}
-                                    }
-                                ]
-                            });
-                            break;
-                        }
-                        case "frenzy": {
-                            rollType = rollType || "frenzy";
-                            lockRoller(false);
-                            args = `${STATE.REF.frenzyRoll} ${args[0] || ""}`.split(" ");
-                            DB({"Parsing Frenzy Args": args}, "!roll dice frenzy");
-                        }
-                        /* falls through */
-                        case "disc":
-                        case "trait": {
-                            rollType = rollType || "trait";
-                        }
-                        /* falls through */
-                        case "rouse":
-                        case "rouseobv": {
-                            rollType = rollType || "rouse";
-                        }
-                        /* falls through */
-                        case "rouse2":
-                        case "rouse2obv": {
-                            rollType = rollType || "rouse2";
-                        }
-                        /* falls through */
-                        case "check": {
-                            rollType = rollType || "check";
-                        }
-                        /* falls through */
-                        case "willpower": {
-                            rollType = rollType || "willpower";
-                        }
-                        /* falls through */
-                        case "humanity": {
-                            rollType = rollType || "humanity";
-                        }
-                        /* falls through */
-                        case "remorse": {
-                            rollType = rollType || "remorse";
-                        }
-                        /* falls through */
-                        case "project": {
-                            rollType = rollType || "project"; /* all continue below */
-                            if (isLocked)
+                    if (!D.GMOnline && ["project", "rush", "remorse", "frenzyinit"].includes(args[0]))
+                        D.Chat(
+                            msg.playerid,
+                            C.HTML.Block(
+                                [
+                                    C.HTML.Header(`${D.Capitalize(args[0].replace(/init/gu, ""))} Rolls Require the Storyteller`, C.STYLES.redMarble.header),
+                                    C.HTML.Body("Please try again when the Storyteller is online.", C.STYLES.redMarble.body)
+                                ],
+                                C.STYLES.redMarble.block
+                            )
+                        );
+                    else
+                        switch (D.LCase((call = args.shift()))) {
+                            case "frenzyinit": {
+                                lockRoller(true);
+                                STATE.REF.frenzyRoll = `${args.join(" ").split("|")[0]}|`;
+                                D.CommandMenu({
+                                    rows: [
+                                        {type: "Header", contents: `Set Frenzy Diff for ${D.JSL(D.GetName(charObj, true))}`},
+                                        {
+                                            type: "ButtonLine",
+                                            contents: [
+                                                20,
+                                                {name: "1", command: "!roll dice frenzy 1"},
+                                                {name: "2", command: "!roll dice frenzy 2"},
+                                                {name: "3", command: "!roll dice frenzy 3"},
+                                                {name: "4", command: "!roll dice frenzy 4"},
+                                                {name: "5", command: "!roll dice frenzy 5"},
+                                                20
+                                            ],
+                                            styles: {bgColor: C.COLORS.darkred}
+                                        }
+                                    ]
+                                });
                                 break;
-                            const params = args
-                                .join(" ")
-                                .split("|")
-                                .map((x) => x.trim());
-                            const [rollCharObj] = getRollChars(D.GetChars(STATE.REF.rollNextAs || params[0]));
-                            DB({"Received Roll": `${D.JSL(call)} ${D.JSL(params.join("|"))}`, params, rollCharObj}, "onChatCall");
-                            params.shift();
-                            if (VAL({charobj: rollCharObj}, "onChatCall")) {
-                                const rollFlags
-                                    = ["check", "rouse", "rouse2"].includes(rollType)
-                                    || (VAL({pc: rollCharObj}) && (!playerIsGM(msg.playerid) || rollType === "frenzy"))
+                            }
+                            case "frenzy": {
+                                rollType = rollType || "frenzy";
+                                lockRoller(false);
+                                args = `${STATE.REF.frenzyRoll} ${args[0] || ""}`.split(" ");
+                                DB({"Parsing Frenzy Args": args}, "!roll dice frenzy");
+                            }
+                            /* falls through */
+                            case "disc":
+                            case "trait": {
+                                rollType = rollType || "trait";
+                            }
+                            /* falls through */
+                            case "rouse":
+                            case "rouseobv": {
+                                rollType = rollType || "rouse";
+                            }
+                            /* falls through */
+                            case "rouse2":
+                            case "rouse2obv": {
+                                rollType = rollType || "rouse2";
+                            }
+                            /* falls through */
+                            case "check": {
+                                rollType = rollType || "check";
+                            }
+                            /* falls through */
+                            case "willpower": {
+                                rollType = rollType || "willpower";
+                            }
+                            /* falls through */
+                            case "humanity": {
+                                rollType = rollType || "humanity";
+                            }
+                            /* falls through */
+                            case "remorse": {
+                                rollType = rollType || "remorse";
+                            }
+                            /* falls through */
+                            case "rush": {
+                                rollType = rollType || "rush";
+                            }
+                            /* falls through */
+                            case "project": {
+                                rollType = rollType || "project"; /* all continue below */
+                                if (isLocked)
+                                    break;
+                                // const isOpposedRoll = args.join(" ").includes("|opposing");
+                                // const isWaitingForOpposedRoll = args.join(" ").includes("|waitforopposing");
+                                const quickFlags = (msg.content.match(/\|quickflags:([^\|]+)/u) || []).slice(1); // Returns simple array of capture groups in order, but only the first instance of each capture group.
+                                args = args.join(" ").replace(/\|quickflags:[^\|]+/gu, "");
+                                const params = args
+                                    .split("|")
+                                    .map((x) => x.trim());
+                                const [rollCharObj] = getRollChars(D.GetChars(STATE.REF.rollNextAs || params[0]));
+                                const playerObj = D.GetPlayer(msg.playerid);
+                                params.shift();
+                                if (VAL({charobj: rollCharObj}, "onChatCall")) {
+                                    const rollFlags = (["check", "rouse", "rouse2"].includes(rollType) || VAL({pc: rollCharObj}))
                                         ? {}
                                         : _.clone(STATE.REF.nextRollFlags);
-                                rollFlags.isNPCRoll = STATE.REF.isNextRollNPC && playerIsGM(msg.playerid);
-                                rollFlags.isDiscRoll = call === "disc";
-                                rollFlags.isOblivionRoll
-                                    = call.includes("obv")
-                                    || (STATE.REF.oblivionRouse && (rollFlags.isNPCRoll || playerIsGM(msg.playerid) || VAL({npc: rollCharObj})));
-                                makeNewRoll(rollCharObj, rollType, params, rollFlags);
-                                delete STATE.REF.rollNextAs;
-                                delete STATE.REF.frenzyRoll;
-                                delete STATE.REF.oblivionRouse;
-                                delete STATE.REF.isNextRollNPC;
-                                lockRoller(false);
+                                    const rollID = D.RandomString(20);
+                                    rollFlags.isOpposedRoll = Boolean(quickFlags.includes("opposed"));
+                                    rollFlags.isWaitingForOpposed = Boolean(quickFlags.includes("waitforopposing"));
+                                    rollFlags.isNPCRoll = Boolean(STATE.REF.isNextRollNPC && playerIsGM(msg.playerid));
+                                    rollFlags.isDiscRoll = call === "disc";
+                                    rollFlags.isOblivionRoll = Boolean(call.includes("obv")
+                                        || (STATE.REF.oblivionRouse && (rollFlags.isNPCRoll || playerIsGM(msg.playerid) || VAL({npc: rollCharObj}))));
+                                    DB({"Received Roll": `${D.JSL(call)} ${D.JSL(params.join("|"))}`, rollCharObj, rollType, params, rollFlags, playerObj}, "onChatCall");
+                                    makeNewRoll(rollCharObj, rollType, params, rollFlags, rollID);
+                                    delete STATE.REF.rollNextAs;
+                                    delete STATE.REF.frenzyRoll;
+                                    delete STATE.REF.oblivionRouse;
+                                    delete STATE.REF.isNextRollNPC;
+                                    lockRoller(false);
+                                }
+                                break;
                             }
-                            break;
+                            // no default
                         }
-                        // no default
-                    }
                 break;
             }
             case "secret": {
@@ -2340,10 +2359,12 @@ const Roller = (() => {
     const parseTraits = (charObj, playerCharID, rollType, params = {}) => {
         const traceID = TRACEON("parseTraits", [charObj, playerCharID, rollType, params]);
         playerCharID = playerCharID || charObj.id;
-        let traits = _.compact(
-            ((params && params.args && params.args[1]) || (_.isArray(params) && params[0]) || (_.isString(params) && params) || "").split(",")
-        );
-        DB(`Traits: ${D.JSL(traits)}`, "parseTraits");
+        let traits = (params && params.args && params.args[1])
+            || (_.isArray(params) && params[0])
+            || (_.isString(params) && params)
+            || "";
+        traits = _.compact(traits.split(traits.includes(C.DELIM) ? C.DELIM : ","));
+        DB(`Traits: ${D.JSL(traits.map((x) => `'${x}' [${x.length}]`))}`, "parseTraits");
         const tFull = {
             traitList: [],
             traitData: {}
@@ -2388,7 +2409,8 @@ const Roller = (() => {
                         D.IsIn(trt, undefined, true)
                         || D.IsIn(trt.replace(/_/gu, " "), undefined, true)
                         || D.GetStatVal(charObj.id, `${trt}_name`)
-                        || D.GetStatVal(charObj.id, `${trt.replace(/_/gu, " ")}_name`),
+                        || D.GetStatVal(charObj.id, `${trt.replace(/_/gu, " ")}_name`)
+                        || trt,
                     value: D.Int(D.GetStatVal(charObj.id, trt) || D.GetStatVal(charObj.id, trt.replace(/_/gu, " ")))
                 };
                 if (rollType === "frenzy" && trt === "humanity") {
@@ -2406,7 +2428,7 @@ const Roller = (() => {
 
         return TRACEOFF(traceID, tFull);
     };
-    const getRollData = (charObj, rollType, params, rollFlags) => {
+    const getRollData = (charObj, rollType, params, rollFlags, rollID) => {
         const traceID = TRACEON("getRollData", [charObj, rollType, params, rollFlags]);
         /* EXAMPLE RESULTS:
               {
@@ -2443,6 +2465,7 @@ const Roller = (() => {
         const rollData = {
             charID: charObj.id,
             playerID: (playerObj && playerObj.id) || D.GMID(),
+            rollID,
             playerCharID: playerCharObj && playerCharObj.id,
             type: rollType,
             hunger: D.Int(D.GetStatVal(charObj.id, "hunger")),
@@ -2480,6 +2503,35 @@ const Roller = (() => {
                 STATE.REF.lastProjectCharID = rollData.charID;
                 DB(`PROJECT PREFIX: ${D.JSL(rollData.prefix)}`, "getRollData");
                 break;
+            case "rush": {
+                const [traits, counter, rowID] = params;
+                /* MUST SUPPLY:
+                        rollData = { type, diff, basePool, hungerPool, << diffmod >> }
+                        OR
+                        rollData = { type, diff, rerollAmt }  */
+                /* EXAMPLE RESULTS:
+                    {
+                        total: 10,
+                        critPairs: { bb: 1, hb: 0, hh: 0 },
+                        B: { crits: 0, succs: 6, fails: 2 },
+                        H: { crits: 0, succs: 0, fails: 0, botches: 0 },
+                        rolls: [ "B7", "B5", "B7", "B10", "B8", "B8", "B7", "B7", "B5", "B10" ],
+                        diceVals: [ "BcL", "BcR", "Bs", "Bs", "Bs", "Bs", "Bs", "Bs", "Bf", "Bf" ],
+                        margin: 5,
+                        commit: 0
+                    } */
+                rollData.diff = 0;
+                rollData.mod = 0;
+                rollData.diffMod = 0;
+                rollData.prefix = ["repeating", "project", D.GetRepStat(charObj, "project", rowID).rowID, ""].join("_");
+                rollData.oppRollData = {
+                    type: "trait",
+                    diff: 0,
+                    basePool: counter,
+                    hungerPool: 0
+                };
+                break;
+            }
             case "secret":
                 rollData.diff = 0;
                 rollData.mod = _.isNumber(traitData.mod) ? traitData.mod : 0;
@@ -2494,7 +2546,7 @@ const Roller = (() => {
             }
         }
 
-        if (["remorse", "project", "humanity", "frenzy", "willpower", "check", "rouse", "rouse2"].includes(rollType))
+        if (["remorse", "rush", "project", "humanity", "frenzy", "willpower", "check", "rouse", "rouse2"].includes(rollType))
             rollData.hunger = 0;
 
         DB({"INITIAL ROLL DATA": rollData}, "getRollData");
@@ -2603,7 +2655,8 @@ const Roller = (() => {
                 break;
         }
         if (rollData.traits.length === 0 && rollData.dicePool <= 0) {
-            D.Chat(D.GetChar(rollData.charID), "You have no dice to roll!", "ERROR: Dice Roller", false, true);
+            if (!rollData.isOpposedRoll)
+                D.Chat(D.GetChar(rollData.charID), "You have no dice to roll!", "ERROR: Dice Roller", false, true);
 
             return false;
         }
@@ -2651,40 +2704,50 @@ const Roller = (() => {
             } */
         const sortBins = [];
         const roll = (dType) => {
-            const d10 = forcedRolls && forcedRolls[dType] && forcedRolls[dType].length ? forcedRolls[dType].shift() : randomInteger(10);
-            rollResults.rolls.push(dType + d10);
-            switch (d10) {
-                case 10:
-                    rollResults[dType].crits++;
+            const d10 = forcedRolls && forcedRolls[dType] && forcedRolls[dType].length ? forcedRolls[dType].shift() : randomInteger(10);            
+            if (rollData.type === "rush") {
+                rollResults.rolls.push(`B${d10}`);
+                if (d10 >= 6) {
+                    rollResults.B.succs++;
                     rollResults.total++;
-                    break;
-                case 9:
-                case 8:
-                case 7:
-                case 6:
-                    rollResults[dType].succs++;
-                    rollResults.total++;
-                    break;
-                case 5:
-                case 4:
-                case 3:
-                case 2:
-                    rollResults[dType].fails++;
-                    break;
-                case 1:
-                    switch (dType) {
-                        case "B":
-                            rollResults.B.fails++;
-                            break;
-                        case "H":
-                            rollResults.H.botches++;
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
-                default:
-                    break;
+                } else {
+                    rollResults.B.fails++;
+                }
+            } else {
+                rollResults.rolls.push(dType + d10);
+                switch (d10) {
+                    case 10:
+                        rollResults[dType].crits++;
+                        rollResults.total++;
+                        break;
+                    case 9:
+                    case 8:
+                    case 7:
+                    case 6:
+                        rollResults[dType].succs++;
+                        rollResults.total++;
+                        break;
+                    case 5:
+                    case 4:
+                    case 3:
+                    case 2:
+                        rollResults[dType].fails++;
+                        break;
+                    case 1:
+                        switch (dType) {
+                            case "B":
+                                rollResults.B.fails++;
+                                break;
+                            case "H":
+                                rollResults.H.botches++;
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         };
         let rollResults = {
@@ -2709,7 +2772,7 @@ const Roller = (() => {
             diceVals: [],
             appliedRollEffects: [],
             wpCost: 1,
-            isNoWPReroll: ["rouse", "rouse2", "check", "project", "secret", "humanity", "willpower", "remorse"].includes(rollData.type)
+            isNoWPReroll: ["rouse", "rouse2", "check", "rush", "project", "secret", "humanity", "willpower", "remorse"].includes(rollData.type)
         };
 
         if (rollData.rerollAmt || rollData.rerollAmt === 0)
@@ -2765,6 +2828,7 @@ const Roller = (() => {
             case "humanity":
             case "willpower":
             case "project":
+            case "rush":
                 sortBins.push("B");
                 while (rollResults.B.crits + rollResults.H.crits >= 2) {
                     rollResults.commit = 0;
@@ -2837,7 +2901,7 @@ const Roller = (() => {
 
         // Now run through again to find consecutive crits and apply them UNLESS no crits:
 
-        if (!["rouse", "rouse2", "check"].includes(rollData.type)) {
+        if (!["rush", "rouse", "rouse2", "check"].includes(rollData.type)) {
             // First, remove ALL valid crits from diceVals:
             const diceVals = rollResults.diceVals.filter((x) => !x.includes("Hc") && !x.includes("Bc"));
             // Second, find new crit pairs and update the tallies appropriately:
@@ -2887,6 +2951,10 @@ const Roller = (() => {
                 ...diceVals.filter((x) => x === "HCb")
             ];
         }
+
+        if (rollData.oppRollData)
+            rollResults.oppRollResults = rollDice(rollData.oppRollData);
+
         return TRACEOFF(traceID, rollResults);
     };
     const formatDiceLine = (rollData = {}, rollResults, split = 15, rollFlags = {}, isSmall = false) => {
@@ -3193,6 +3261,12 @@ const Roller = (() => {
                             rollLines.rollerName.text = `${displayName} launches a Project:`;
                             stLines.rollerName = `${CHATSTYLES.rollerName}${rollData.charName} launches a Project:</div>`;
                             logLines.rollerName = `${CHATSTYLES.rollerName}${displayName} launches a Project:</div>`;
+                            break;
+                        }
+                        case "rush": {
+                            rollLines.rollerName.text = `${displayName} rushes a Project:`;
+                            stLines.rollerName = `${CHATSTYLES.rollerName}${rollData.charName} rushes a Project:</div>`;
+                            logLines.rollerName = `${CHATSTYLES.rollerName}${displayName} rushes a Project:</div>`;
                             break;
                         }
                         case "trait":
@@ -4137,6 +4211,17 @@ const Roller = (() => {
         }
         D.Chat((isPublic && "all") || charRef, C.HTML.Block([C.HTML.Header(header), body].join("")), undefined, false, true);
         TRACEOFF(traceID);
+    };
+    // #endregion
+
+    // #region OPPOSED ROLLS 
+    const makeOpposedRoll = (oppRollData, afterRollFunc) => {
+        oppRollData.opposingMargin = mainRollResults.margin;
+        const mainRollResults = getCurrentRoll();
+        mainRollResults.oppResultData = rollDice(oppRollData);
+        if (VAL({func: afterRollFunc}))
+            afterRollFunc(mainRollResults); // Can change passed-in results object before displaying.
+        displayRoll();
     };
     // #endregion
 

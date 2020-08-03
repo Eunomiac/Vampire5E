@@ -894,6 +894,7 @@ const D = (() => {
             rightDigits = `.${rightDigits}${"0".repeat(Math.max(0, numDigitsRight - rightDigits.length))}`;
         return `${leftDigits}${rightDigits}`;
     };
+    const signNum = (num, delim = "") => `${D.Float(num) < 0 ? "-" : "+"}${delim}${Math.abs(D.Float(num))}`;
     const pLowerCase = (strRef) => `${strRef || ""}`.toLowerCase();
     const pUpperCase = (strRef) => `${strRef || ""}`.toUpperCase();
     const numToText = (num, isTitleCase = false) => {
@@ -2698,17 +2699,17 @@ const D = (() => {
         }
         return _.uniq(validRowIDs);
     };
-    const getRepStats = (charRef, section, rowFilter = {}, statName, groupBy, pickProperty, funcName = false) => {
+    const getRepStats = (charRef, section, rowFilter = {}, statNames, groupBy, pickProperty, funcName = false) => {
         const charObj = getChar(charRef);
 
         section = D.LCase(section || "*");
-        statName = statName ? D.LCase(statName) : statName;
+        statNames = _.compact(_.flatten([statNames])).map((x) => D.LCase(x));
         // D.Alert(`CharRef: ${D.JS(charRef)}, CharObj: ${D.JS(charObj)}`)
-        DB(`getRepStats(${jStrL([charObj.get("name"), section, rowFilter, statName, groupBy, pickProperty])})`, "getRepStats");
+        DB(`getRepStats(${jStrL([charObj.get("name"), section, rowFilter, statNames, groupBy, pickProperty])})`, "getRepStats");
         let finalRepData = [];
         if (VAL({charObj}, "getRepStats")) {
             // STEP ONE: USE THE ROW FILTER TO GET VALID ROW IDS TO SEARCH
-            const filter = VAL({string: statName, list: rowFilter}) ? Object.assign({[statName]: "*"}, rowFilter) : rowFilter;
+            const filter = (statNames.length === 1 && VAL({list: rowFilter})) ? Object.assign({[statNames[0]]: "*"}, rowFilter) : rowFilter;
             const rowIDs = _.compact(getRepIDs(charObj, section, filter, funcName));
             const attrObjs = [];
             if (filter === "top" && !rowIDs.length)
@@ -2751,39 +2752,40 @@ const D = (() => {
                         if (data.obj) {
                             data.val = data.obj.get("current");
                             [, , data.attrName] = parseRepStat(data.obj.get("name"));
-                            DB(`NameData --> ValObject: NAME: ${data.name}, VAL: ${data.val}, OBJ: ${jStrL(data.obj)}`, "getRepStats");
+                            // DB(`NameData --> ValObject: NAME: ${data.name}, VAL: ${data.val}, OBJ: ${jStrL(data.obj)}`, "getRepStats");
                             return data;
                         } else {
                             return false;
                         }
                     })
                 );
-                // IF a STATNAME has been specified...
-                if (statName) {
-                    const foundStat
-                        = _.find(attrNameData, (v) => looseMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FIRST match it against an EXACT ATTRIBUTE NAME already found above.
-                        || _.find(attrNameData, (v) => looseMatch(parseRepStat(v.name)[2], statName)) // SECOND try to match with the EXACT "FOUND" NAME of a NAME/VALUE link.
-                        || _.find(rowAttrObjs, (v) => looseMatch(parseRepStat(v.get("name"))[2], statName)); // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
-                        /* || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FINALLY repeat the above but with fuzzy matching. match it against an EXACT ATTRIBUTE NAME already found above.
-                        || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.name)[2], statName))
-                        || _.find(rowAttrObjs, (v) => fuzzyMatch(parseRepStat(v.get("name"))[2], statName)) */
-                    if (foundStat) {
+                // IF STATNAMES have been specified...
+                if (statNames.length) {
+                    for (const statName of statNames) {
+                        const foundStat = _.find(attrNameData, (v) => looseMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FIRST match it against an EXACT ATTRIBUTE NAME already found above.
+                                       || _.find(attrNameData, (v) => looseMatch(parseRepStat(v.name)[2], statName)) // SECOND try to match with the EXACT "FOUND" NAME of a NAME/VALUE link.
+                                       || _.find(rowAttrObjs, (v) => looseMatch(parseRepStat(v.get("name"))[2], statName)); // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
+                            /* || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FINALLY repeat the above but with fuzzy matching. match it against an EXACT ATTRIBUTE NAME already found above.
+                            || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.name)[2], statName))
+                            || _.find(rowAttrObjs, (v) => fuzzyMatch(parseRepStat(v.get("name"))[2], statName)) */
+                        if (foundStat) {
                         // If a stat was found, change it to a data set if it isn't one already
-                        finalRepData.push(
-                            foundStat.fullName
-                                ? foundStat
-                                : {
-                                    charID: charObj.id,
-                                    rowID,
-                                    name: parseRepStat(foundStat.get("name"))[2],
-                                    section: parseRepStat(foundStat.get("name"))[0],
-                                    attrName: parseRepStat(foundStat.get("name"))[2],
-                                    fullName: foundStat.get("name"),
-                                    obj: foundStat,
-                                    val: foundStat.get("current")
-                                }
-                        );
-                        DB(`STAT FOUND - FinalRepData: ${D.JSL(finalRepData, true)}`, "getRepStats");
+                            finalRepData.push(
+                                foundStat.fullName
+                                    ? foundStat
+                                    : {
+                                        charID: charObj.id,
+                                        rowID,
+                                        name: parseRepStat(foundStat.get("name"))[2],
+                                        section: parseRepStat(foundStat.get("name"))[0],
+                                        attrName: parseRepStat(foundStat.get("name"))[2],
+                                        fullName: foundStat.get("name"),
+                                        obj: foundStat,
+                                        val: foundStat.get("current")
+                                    }
+                            );
+                            DB(`'${statName}' FOUND - FinalRepData: ${D.JSL(finalRepData, true)}`, "getRepStats");
+                        }
                     }
                     // IF a STATEMENT has NOT been specified, return ALL the row attribute objects (after parsing them into data sets)
                 } else {
@@ -2968,6 +2970,7 @@ const D = (() => {
             VAL({string: funcName}) && THROW(`Unable to find a player object for reference '${jStrL(playerRef)}`, `${D.JSL(funcName)} > getPlayer`)
         );
     };
+    const isPlayerOnline = (playerRef) => (getPlayer(playerRef) || {get: () => false}).get("online");
     // #endregion
 
     // #region SETTERS: Attributes
@@ -3231,6 +3234,7 @@ const D = (() => {
         Bound: boundNum,
         Cycle: cycleNum,
         Pad: padNum,
+        Sign: signNum,
         NumToText: numToText,
         TextToNum: textToNum,
         Ordinal: ordinal,
@@ -3289,6 +3293,8 @@ const D = (() => {
         TraceStop: traceFuncStop,
 
         GMID: getGMID,
+        IsOnline: isPlayerOnline,
+        get GMOnline() { return isPlayerOnline(getGMID()) },
         GetSelected: getSelected,
         GetName: getName,
         GetChars: getChars,

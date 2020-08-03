@@ -167,11 +167,11 @@
 /*		#region Colors & Text Shadows */
 .charsheet {	
 	--engravedTextColor: rgba(0, 0, 0, 0.6);
-	--engravedTextShadow: -0.5px -0.5px 1px #000, 0.5px 0.5px 1px #fff;
+	--engravedTextShadow: 0px 0px 0px #000, -0.5px -0.5px 1px #444, 0.5px 0.5px 1px #fff;
 	--engravedLightTextColor: transparent;
 	--engravedLightTextShadow: -0.5px -0.5px 1px #222, 0.5px 0.5px 1px #fff;
 	--engravedTextHoverColor: rgba(200, 0, 0, 1);
-	--engravedTextHoverShadow: -0.5px -0.5px 1px #000, 0.5px 0.5px 1px #fff, 0px 0px 2px #f00, 0px 0px 6px #f00;	
+	--engravedTextHoverShadow: 0px 0px 0px #000, -0.5px -0.5px 1px #444, 0.5px 0.5px 1px #fff, 0px 0px 2px #f00, 0px 0px 6px #f00;	
 
 	--onBlackTextColor: white;
 	--onBlackTextShadow: 0px 0px 1px #fff, 0px 0px 2px #ddd;
@@ -2683,9 +2683,46 @@
 
 	.charsheet div.sheet-scheme div.sheet-rightbox {
 		width: 45px;
-		height: 50px;
+		height: 80px;
 		font-size: 0px !important;
-		margin: 5px 0px;
+		margin: 0px 0px 5px 0px;
+	}
+
+	.charsheet div.sheet-scheme div.sheet-rightbox button {
+		width: 50px;
+		height: 20px;
+		background-color: rgba(255, 255, 255, 0.3);
+		border-radius: 5px;
+		border: 3px white outset !important;
+		margin: 5px 10% 0px -20% !important;
+		line-height: 18px;
+		opacity: 1;
+	}
+
+	.charsheet div.sheet-scheme div.sheet-rightbox button + span {
+		height: 20px;
+		width: 44px;
+		margin: 0px 0px;
+		margin: 8px 0px 0px -56px !important;
+		line-height: 20px;
+		font-family: 'Oswald';
+		font-style: italic;
+		font-variant: small-caps;
+		pointer-events: none;
+		font-size: 14px;
+		text-align: center;
+		text-align-last: center;
+		text-indent: 3px;
+	}
+
+	.charsheet div.sheet-scheme div.sheet-rightbox button:hover + span {
+		color: var(--engravedTextHoverColor) !important;
+		text-shadow: var(--engravedTextHoverShadow) !important;
+	}
+
+	.charsheet div.sheet-scheme div.sheet-rightbox input.sheet-containerselector.sheet-doneselector:checked ~ button,
+	.charsheet div.sheet-scheme div.sheet-rightbox input.sheet-containerselector.sheet-doneselector:checked ~ button + span {
+		display: none;
 	}
 
 	.charsheet div.sheet-scheme div.sheet-dotline.sheet-schemeselector {
@@ -2943,6 +2980,33 @@
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox select {
 		width: 60px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-projectresults textarea {
+		overflow: hidden;
+		text-shadow: none;
+		color: black;
+		font-weight: normal;	
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-projectresults textarea.sheet-projectresultstatus {
+		height: 30px;
+		margin-top: -2px;
+		padding-top: 6px;
+
+		font-family: 'Voltaire';
+		font-size: 32px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-projectresults textarea.sheet-projectstakestatus {
+		font-size: 14px;
+		font-weight: normal;
+	}
+	
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-projectresults textarea.sheet-projectmargin {
+		transform: scale(0.75, 1);
+		width: 60px;
+		margin-left: -10px;
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-launchroll {
@@ -3217,6 +3281,11 @@
 		padding: 0px;
 	}
 
+	.charsheet div.sheet-timeline.sheet-doublerow.sheet-timebody textarea {
+		padding-left: 3px;
+		margin-left: 5px;
+	}
+
 	.charsheet div.sheet-timeline.sheet-timedate textarea {
 		height: 20px;
 		line-height: 20px;
@@ -3225,15 +3294,15 @@
 	}
 
 	.charsheet div.sheet-timeline textarea.sheet-outset {
-		width: calc(100% - 9px);
+		width: calc(100% - 9px - 5px);
 		height: calc(25px - 6px);
 		background-color: rgba(255, 255, 255, 0.3);
 		border-radius: 5px;
 		border: 3px white outset;
 		margin-top: -3px;
-		line-height: 22px;
+		line-height: 18px;
 		font-size: 14px;
-		text-indent: 3px;
+		margin-left: 5px;
 	}
 
 	.charsheet div.sheet-timeline.sheet-timesummary {

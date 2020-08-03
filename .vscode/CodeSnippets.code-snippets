@@ -19,7 +19,7 @@
 		"scope": "javascript,typescript",
 		"prefix": "matchgroups",
 		"body": [
-			"match(/${0}/u).pop();"
+			"match(/${0}/u).slice(1); // Returns simple array of capture groups in order, but only the first instance of each capture group."
 		],
 		"description": "= Capture Groups (Array)"
 	},

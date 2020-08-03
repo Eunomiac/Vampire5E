@@ -40,10 +40,10 @@ const TimeTracker = (() => {
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
-        const splashObj = Media.GetImg("SplashMoon");
-        splashObj.set({height: 2374, width: 1590, left: 795});
+        // const splashObj = Media.GetImg("SplashMoon");
+        // splashObj.set({height: 2374, width: 1590, left: 795});
         const funcID = ONSTACK();
-
+        delete STATE.REF.weatherOverride;
         Soundscape.SetVolume("ScoreSplash", 30);
         STATE.REF.SessionDate = {
             start: [0, 19, 30],
@@ -93,7 +93,6 @@ const TimeTracker = (() => {
 
         STATE.REF.dateObj = STATE.REF.currentDate ? new Date(STATE.REF.currentDate) : null;
         STATE.REF.lastDate = STATE.REF.lastDate || 0;
-        STATE.REF.weatherOverride = STATE.REF.weatherOverride || {};
         STATE.REF.timezoneOffset = -4;
         STATE.REF.weatherData = STATE.REF.weatherData || RAWWEATHERDATA;
 
@@ -111,7 +110,7 @@ const TimeTracker = (() => {
             STATE.REF.currentDate = STATE.REF.dateObj.getTime();
         }
 
-        if (Object.keys(STATE.REF.weatherOverride).length)
+        if (STATE.REF.weatherOverride)
             D.Alert(
                 `Weather Override in effect: ${D.JS(STATE.REF.weatherOverride)}<br><b>!time set weather</b> to clear.`,
                 "Alert: Weather Override"
@@ -898,6 +897,7 @@ const TimeTracker = (() => {
     };
     const formatTimeString = (date, isIncludingSeconds = false) => {
         // const funcID = ONSTACK();
+        date = getDateObj(date);
         const [hours, minutes, secs] = [date.getUTCHours(), ...[date.getUTCMinutes(), date.getUTCSeconds()].map((x) => D.Pad(x, 2))];
         if (hours === 0 || hours === 12)
             return /* OFFSTACK(funcID) && */ `12:${minutes}${isIncludingSeconds ? `:${secs}` : ""} ${hours === 0 ? "A.M." : "P.M."}`;
@@ -1655,28 +1655,34 @@ const TimeTracker = (() => {
     const convertTempToCode = (tempC, monthNum) => WEATHERTEMP[tempC - getTempFromCode(MONTHTEMP[monthNum]) + 26];
     const convertWeatherDataToCode = (weatherData) => {
         const funcID = ONSTACK();
-        const weatherCodes = Object.values({
+        const weatherCode = Object.values({
             event: weatherData.event,
             foggy: (weatherData.isFoggy && weatherData.event !== "f") || "x",
             temp: convertTempToCode(weatherData.tempC, weatherData.month), // getTemp(weatherCode[2]) = tempC - monthTemp
-            wind: weatherData.wind,
             humid: weatherData.humidity,
+            wind: weatherData.wind,
             ground: weatherData.groundCover
         }).join("");
-        D.Alert(`Converted data to '${weatherCodes}' = '${weatherData.weatherCode}'?<br><br>${D.JS(weatherData)}`, "BIG TEST");
-        OFFSTACK(funcID);
+        DB({weatherCode, weatherData}, "convertWeatherDataToCode");
+        return OFFSTACK(funcID) && weatherCode;
     };
-    const getWeatherCode = (dateRefs) => (dateRefs
-        ? STATE.REF.weatherData[dateRefs[0]][dateRefs[1]][dateRefs[2]]
-        : STATE.REF.weatherData[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()]);
-    const getWeatherData = (monthNum, dateNum, hourNum, numUpgrades = 0, isGettingRawData = false) => {
+    const getWeatherCode = (dateRefs) => {
+        if (STATE.REF.weatherOverride)
+            return STATE.REF.weatherOverride.weatherCode;
+        else if (VAL({array: dateRefs}) && dateRefs.length === 3)
+            return STATE.REF.weatherData[dateRefs[0]][dateRefs[1]][dateRefs[2]];
+        return STATE.REF.weatherData[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()];
+    };
+    const getWeatherData = (monthNum, dateNum, hourNum, numUpgrades = 0, isGettingRawData = false, overrideCode) => {
         const funcID = ONSTACK();
         const dateObj = new Date(STATE.REF.dateObj);
         monthNum = VAL({number: monthNum}) ? monthNum : dateObj.getUTCMonth();
         dateNum = VAL({number: dateNum}) ? dateNum : dateObj.getUTCDate();
         hourNum = VAL({number: hourNum}) ? hourNum : dateObj.getUTCHours();
         try {
-            const weatherCode = ((isGettingRawData && RAWWEATHERDATA) || STATE.REF.weatherData)[monthNum][dateNum][hourNum];
+            const weatherCode = overrideCode
+                || (STATE.REF.weatherOverride && STATE.REF.weatherOverride.weatherCode)
+                || ((isGettingRawData && RAWWEATHERDATA) || STATE.REF.weatherData)[monthNum][dateNum][hourNum];
             const weatherData = upgradeWeatherSeverity(
                 {
                     month: monthNum,
@@ -1694,6 +1700,8 @@ const TimeTracker = (() => {
                 },
                 numUpgrades
             );
+            if (overrideCode)
+                STATE.REF.weatherOverride = weatherData;
             return OFFSTACK(funcID) && weatherData;
         } catch (errObj) {
             return OFFSTACK(funcID) && false;
@@ -1935,21 +1943,44 @@ const TimeTracker = (() => {
         Soundscape.Sync();
         return OFFSTACK(funcID) && weatherData;
     };
-    const setManualWeather = (event, tempC, wind, humidity) => {
+    const setManualWeather = (eventOrCode, tempC, wind, humidity) => {
+        // setManualWeather(...args);  // !time set weather 
         const funcID = ONSTACK();
-        const weatherData = {};
-        if (tempC || tempC === 0)
-            weatherData.tempC = tempC;
-        if (event) {
-            weatherData.event = event;
-            if (weatherData.event.length === 1)
-                weatherData.event += "x";
+        if (!eventOrCode) {
+            delete STATE.REF.weatherOverride;
+            D.Flag("Manual Weather Override Cleared.");
+        } else {
+            const weatherData = {};
+            if (VAL({string: eventOrCode})) {
+                if (eventOrCode.length === 6) {
+                    Object.assign(weatherData, getWeatherData(null, null, null, 0, false, eventOrCode));
+                } else {
+                    eventOrCode = eventOrCode === "f" ? "xf" : eventOrCode;
+                    const monthNum = STATE.REF.dateObj.getUTCMonth();
+                    const dateNum = STATE.REF.dateObj.getUTCDate();
+                    const hourNum = STATE.REF.dateObj.getUTCHours();
+                    weatherData.month = monthNum; 
+                    weatherData.date = dateNum;
+                    weatherData.hour = hourNum;
+                    weatherData.event = eventOrCode.charAt(0);
+                    weatherData.isFoggy = eventOrCode.includes("f");
+                    if (VAL({number: tempC}))
+                        weatherData.tempC = D.Int(tempC);
+                    if (wind)
+                        weatherData.wind = wind;
+                    if (humidity)
+                        weatherData.humidity = humidity;
+                    if (["w", "p", "t"].includes(weatherData.event))
+                        weatherData.isRaining = true;
+                }
+            }
+            STATE.REF.weatherOverride = weatherData;
+            D.Alert([
+                "<h3>Manual Weather Set</h3>",
+                `setManualWeather(${eventOrCode}, ${VAL({number: tempC}) ? tempC : "null"}, ${VAL({string: wind}) ? wind : "null"}, ${VAL({string: humidity}) ? humidity : "null"})`,
+                D.JS(STATE.REF.weatherOverride)
+            ].join("<br>"), "Setting Manual Weather");
         }
-        if (wind)
-            weatherData.wind = wind;
-        if (humidity)
-            weatherData.humidity = humidity;
-        STATE.REF.weatherOverride = weatherData;
         setWeather();
         OFFSTACK(funcID);
     };
@@ -2698,8 +2729,8 @@ const TimeTracker = (() => {
         isCountdownFrozen = false;
         isTweeningClock = false;
         isFastTweeningClock = false;
-        if (Session.IsSessionActive && (!Session.IsTesting || Session.IsFullTest)) {
-            isCountdownRunning = false;
+        if (Session.IsSessionActive) {
+            isCountdownRunning = !isInBlackout();
             isTickingClock = true;
         } else if (Session.IsFullTest) {
             isCountdownRunning = true;
@@ -2756,6 +2787,9 @@ const TimeTracker = (() => {
         get WeatherCode() {
             return getWeatherCode();
         },
+        get WeatherData() {
+            return getWeatherData();
+        },
         get IsRaining() {
             return getWeatherData().isRaining;
         },
@@ -2766,6 +2800,8 @@ const TimeTracker = (() => {
             isFastTweeningClock = false;
             isTickingClock = false;
         },
+
+        SetWeatherOverride: setManualWeather,
 
         GetRandomTimeline: getRandomEventTriggers,
 

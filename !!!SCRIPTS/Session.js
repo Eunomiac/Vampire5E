@@ -1374,6 +1374,9 @@ const Session = (() => {
             ]
         });
     };
+    const getDistrictsList = () => {
+
+    };
     const getSiteMenuCode = (districtName, isSecondSite = false) => {
         districtName = VAL({array: districtName}) ? districtName[0] : districtName;
         DB({districtName}, "getSiteMenuCode");
@@ -2757,6 +2760,7 @@ const Session = (() => {
             return STATE.REF.quadScene.isActive;
         },
 
+        SetLocation: setLocation,
         SetMacro: setMacro,
         SubmitPrompt: submitSpotlightPrompt,
         ReviewPrompts: reviewSpotlightPrompts,

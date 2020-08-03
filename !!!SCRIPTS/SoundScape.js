@@ -534,7 +534,7 @@ const Soundscape = (() => {
             case "w":
                 weatherSounds.push("RainLight");
                 break;
-            case "d":
+            case "p":
             case "t":
                 weatherSounds.push("RainHeavy");
                 break;

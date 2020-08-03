@@ -1609,13 +1609,15 @@ const Media = (() => {
     // #region GENERAL MEDIA OBJECT SETTERS:
     const trySet = (mediaObj, params) => {
         if (VAL({obj: mediaObj, list: params}, "trySet")) {
-            /* const errorLog = [];
+            const errorLog = [];
             ["left", "top", "height", "width"].forEach((x) => {
                 if (x in params && !VAL({number: params[x]}))
                     errorLog.push(`SET ERROR: [${mediaObj.get("name")}] {${x}: ${D.JSL(params[x])}}`);
-            }); */
+            });
             const setParams = D.FilterForObjAttrs(mediaObj, params);
             mediaObj.set(setParams);
+            if (errorLog.length)
+                DB({errorLog}, "trySet");
             return true;
         }
         return false;
@@ -2867,11 +2869,11 @@ const Media = (() => {
         if (VAL({imgObj}, "setImgTemp")) {
             const imgData = getImgData(imgRef);
             if ("top" in params || "shiftTop" in params)
-                params.top = (VAL({number: params.top}) ? params.top : imgData.top)
-                    + (VAL({number: params.shiftTop}) ? params.shiftTop : imgData.shiftTop);
+                params.top = (VAL({number: params.top}) ? D.Int(params.top) : D.Int(imgData.top))
+                    + (VAL({number: params.shiftTop}) ? D.Int(params.shiftTop) : D.Int(imgData.shiftTop));
             if ("left" in params || "shiftLeft" in params)
-                params.left = (VAL({number: params.left}) ? params.left : imgData.left)
-                    + (VAL({number: params.shiftLeft}) ? params.shiftLeft : imgData.shiftLeft);
+                params.left = (VAL({number: params.left}) ? D.Int(params.left) : D.Int(imgData.left))
+                    + (VAL({number: params.shiftLeft}) ? D.Int(params.shiftLeft) : D.Int(imgData.shiftLeft));
             trySet(imgObj, params);
             return TRACEOFF(traceID, imgObj);
         }
@@ -3344,17 +3346,14 @@ const Media = (() => {
     };
     const spreadImgs = (leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap = 20, maxOverlap = 40) => {
         const traceID = TRACEON("spreadImgs", [leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap, maxOverlap]);
-        DB(
-            {
-                leftImgRef,
-                rightImgRef,
-                midImgRefOrRefs,
-                width,
-                minOverlap,
-                maxOverlap
-            },
-            "spreadImgs"
-        );
+        const dbObj = {
+            leftImgRef,
+            rightImgRef,
+            midImgRefOrRefs,
+            width,
+            minOverlap,
+            maxOverlap
+        };
         midImgRefOrRefs = _.flatten([midImgRefOrRefs]);
         const [leftObj, rightObj, ...midObjs] = [getImgObj(leftImgRef), getImgObj(rightImgRef), ...midImgRefOrRefs.map((x) => getImgObj(x))];
         const [leftData, rightData, ...midData] = [leftObj, rightObj, ...midObjs].map(
@@ -3372,29 +3371,26 @@ const Media = (() => {
             const buffer = (endPos - startPos) / (midObjs.length + 1);
             for (let i = 0; i < midObjs.length; i++)
                 setImgTemp(midObjs[i], {left: startPos + (i + 1) * buffer});
+            dbObj.startPos = startPos;
+            dbObj.endPos = endPos;
+            dbObj.buffer = buffer;
+            DB(dbObj, "spreadImgs");
             return TRACEOFF(traceID, true);
         }
         const spread = parseFloat(VAL({number: width}) ? width : rightData.left - leftData.left);
-        let dbString = `Width: ${spread}, MinOverlap: ${parseFloat(minOverlap)}, MaxOverlap: ${parseFloat(maxOverlap)}<br><br>`;
-        DB(`minOverlap: ${minOverlap}, maxOverlap: ${maxOverlap}`);
+        dbObj.spread = spread;
         if (VAL({list: [leftData, rightData, ...midData], number: [spread]}, "spreadImgs", true)) {
             for (const imgRef of [leftData.name, rightData.name])
                 toggleImg(imgRef, true);
             setImgTemp(leftData.id, {left: leftData.left});
-            dbString += `Setting Left to {left: ${D.Int(leftData.left)}}<br>`;
+            dbObj.leftImgLeft = D.Int(leftData.left);
             // If the spread is smaller than the combined width of the bookends, then set the minimum possible spread and blank all mid imgs.
             if (spread <= leftData.width + rightData.width - maxOverlap) {
-                dbString += `Spread ${D.Int(spread)} less than ${D.Int(leftData.width + rightData.width - 2 * maxOverlap)} (${D.Int(
-                    leftData.width
-                )} + ${D.Int(rightData.width)} - ${2 * D.Int(maxOverlap)})<br>`;
+                dbObj.widthTooSmall = `Spread <= (leftWidth:${D.Int(leftData.width)} + rightWidth:${D.Int(rightData.width)} - 2 * maxOverlap)`;
                 for (const imgData of midData)
                     toggleImg(imgData.id, false);
-                DB(
-                    `${dbString}Setting Right to {left: ${D.Int(leftData.rightEdge)} + 0.5x${D.Int(rightData.width)} - ${D.Int(maxOverlap)} = ${D.Int(
-                        leftData.rightEdge + 0.5 * rightData.width
-                    ) - D.Int(maxOverlap)}`,
-                    "spreadImgs"
-                );
+                dbObj.rightImgLeft = D.Int(leftData.rightEdge + 0.5 * rightData.width);
+                DB(dbObj, "spreadImgs");
                 return TRACEOFF(
                     traceID,
                     setImgTemp(rightData.id, {
@@ -3404,47 +3400,16 @@ const Media = (() => {
             }
             // Otherwise, determine how much space will be in the middle.  Does NOT count overlap of left and right sides.
             let totalMidWidth = spread - leftData.width - rightData.width + 2 * minOverlap;
-            dbString += `Total Mid Width = ${D.Int(totalMidWidth)} (spr:${D.Int(spread)} - L.w:${D.Int(leftData.width)} - R.w:${D.Int(
-                rightData.width
-            )})<br>`;
-            /* if (midData.length === 1) {
-                    // If only one middle img, stretch it out... BUT have to stretch the minOverlap by the same ratio.
-                    // So: need to determine percentage of width that is taken up by minOverlap
-                    // Then, need to set overall width such that the remaining percentage is enough to cover the spread.
-                    // HOWEVER: if the resulting stretchOverlap EXCEEDS maxOverlap, cap it there.
-                    const overlapPercent = 2*minOverlap / midData[0].width,
-                        coveragePercent = 1 - overlapPercent,
-                        stretchFactor = Math.min(totalMidWidth / (coveragePercent * midData[0].width), maxOverlap / minOverlap),
-                        stretchOverlap = minOverlap * stretchFactor,
-                        stretchWidth = midData[0].width * stretchFactor
-                    dbString += `overlapPercent = ${D.Int(overlapPercent * 100)/100} = (2×mO:${D.Int(minOverlap)} / M.w:${D.Int(midData[0].width)})<br>`
-                    dbString += `coveragePercent = ${D.Int(coveragePercent * 100)/100} = (1 - O%:${D.Int(overlapPercent * 100)/100})<br>`
-                    dbString += `stretchFactor = ${D.Int(stretchFactor * 100)/100} = MIN(TM.w:${D.Int(totalMidWidth)} / (C%:${D.Int(coveragePercent * 100)/100} × M.w:${D.Int(midData[0].width)}), xO:${D.Int(maxOverlap)}/mO:${D.Int(minOverlap)})<br>`
-                    dbString += `stretchOverlap = ${D.Int(stretchOverlap)} = (mO:${D.Int(minOverlap)} × SF:${D.Int(stretchFactor * 100)/100})<br>`
-                    dbString += `stretchWidth = ${D.Int(stretchWidth)}<br>`
-                    // Now, set the left side of the mid img to account for the stretched overlap, and the stretched width
-                    dbString += `Setting Mid Img to: {left: ${D.Int(leftData.rightEdge - stretchOverlap + 0.5*stretchWidth)} (L.re:${D.Int(leftData.rightEdge)} - sO:${D.Int(stretchOverlap)} + 0.5×sW:${D.Int(stretchWidth)})}<br>`
-                    setImg(midData[0].id, "base")
-                    setImgTemp(midData[0].id, {
-                        top: leftData.top + 20,
-                        left: leftData.rightEdge - stretchOverlap + 0.5*stretchWidth,
-                        width: stretchWidth
-                    })
-                    dbString += `Setting Right Img to: {left: ${D.Int(leftData.rightEdge - 2*stretchOverlap + stretchWidth + 0.5*rightData.width)} (L.re:${D.Int(leftData.rightEdge)} - 2×sO:${D.Int(stretchOverlap)} + sW:${D.Int(stretchWidth)} + 0.5×R.w:${D.Int(rightData.width)})}<br>`
-                    setImgTemp(rightData.id, {
-                        top: leftData.top + 40,
-                        left: leftData.rightEdge - 2*stretchOverlap + stretchWidth + 0.5*rightData.width
-                    })
-                    DB(dbString, "spreadImg")
-                    return TRACEOFF(traceID, true)
-                } else { */
-
+            dbObj.totalMidWidth = totalMidWidth;
             // If multiple middle imgs were specified, first determine the minimum and maximum amount each can cover based on overlap.
             // The "real" minOverlap is twice the given value, since offsetting an image by one minOverlap width will result in a minOverlap covering another minOverlap.
             const midImgWidth = midData[0].width;
             const [minCover, maxCover] = [Math.max(0, midImgWidth - 2 * maxOverlap), Math.max(0, midImgWidth - 1.5 * minOverlap)];
             const midImgIDs = [];
-            dbString += `midWidth: ${D.Int(midData[0].width)}, maxCover: ${D.Int(maxCover)}, minCover: ${D.Int(minCover)}<br>`;
+            dbObj.midImgWidth = midImgWidth;
+            dbObj.minCover = minCover;
+            dbObj.maxCover = maxCover;
+            dbObj.midImgCollection = [];
             // Now add mid imgs one by one until their total MAX cover equals or exceeds the spread:
             let coveredSpread = 0;
             while (coveredSpread < totalMidWidth)
@@ -3453,24 +3418,26 @@ const Media = (() => {
                     setImg(_.last(midData).id, "base", true, true);
                     midImgIDs.push(midData.pop().id);
                     coveredSpread += maxCover;
-                    dbString += `... adding ${getImgKey(_.last(midImgIDs))} (cover: ${D.Int(coveredSpread)}), ${midData.length} remaining<br>`;
+                    dbObj.midImgCollection.push(`... adding ${getImgKey(_.last(midImgIDs))}. CoveredSpread: ${D.Int(coveredSpread)} (${midData.length} remaining)`);
                 } else {
-                    dbString += `Ran out of mid images! ${totalMidWidth - coveredSpread} to cover!`;
+                    dbObj.midImgCollection.push(`Ran out of mid images! ${totalMidWidth - coveredSpread} to cover!`);
                     totalMidWidth = coveredSpread;
                     break;
                 }
 
             // Now divide up the spread among the imgs, and check that each img's cover is between min and max:
             const spreadPerImg = totalMidWidth / midImgIDs.length;
+            
 
             // Toggle off unused mid sections
+            dbObj.disablingUnused = [];
             while (midData.length) {
-                dbString += `... turning off ${_.last(midData).name}<br>`;
+                dbObj.disablingUnused.push(`... disabling ${_.last(midData).name}`);
                 toggleImg(midData.pop().id, false);
             }
-            dbString += "<br>";
-
-            dbString += `SPI = ${D.Int(spreadPerImg)} = TMW:${D.Int(totalMidWidth)} / #Mids:${midImgIDs.length}<br>`;
+            dbObj.spreadPerImg = spreadPerImg;
+            dbObj.totalMidWidth = totalMidWidth;
+            dbObj.numMidImgs = midImgIDs.length;
             if (spreadPerImg < minCover || spreadPerImg > maxCover)
                 THROW(
                     `Unable to spread given images over spread ${spread}: per-img spread of ${spreadPerImg} outside bounds of ${minCover} - ${maxCover}`,
@@ -3480,45 +3447,26 @@ const Media = (() => {
             // and use this number to get the left position for the first middle img.
             const sideOverlap = 0.5 * (midImgWidth - spreadPerImg);
             const firstMidLeft = leftData.rightEdge - 2 * sideOverlap + 0.5 * midImgWidth;
-            dbString += `Side Overlap: ${D.Int(sideOverlap)} = 0.5x(M.w:${D.Int(midImgWidth)} - SPI:${D.Int(spreadPerImg)})<br>`;
-            dbString += `L.l: ${D.Int(leftData.left)}, L.re: ${D.Int(leftData.rightEdge)}, firstMidLeft: ${D.Int(firstMidLeft)} (L.re - sO:${D.Int(
-                sideOverlap
-            )} + 0.5xM.w:${D.Int(midImgWidth)})<br><br>`;
-            dbString += `LEFT: ${D.Int(leftData.left - 0.5 * leftData.width)} - ${D.Int(leftData.rightEdge)}<br>`;
+            dbObj.sideOverlap = `${D.Int(sideOverlap)} = 0.5 * midImgWidth:${D.Int(midImgWidth)} - spreadPerImg:${D.Int(spreadPerImg)}`;
+            dbObj.firstMidLeft = firstMidLeft;
             // Turn on each midImg being used and set the left positioning of each mid img by recursively adding the spreadPerImg:
             let lastRightEdge = D.Int(leftData.rightEdge),
                 currentLeft = firstMidLeft;
+            dbObj.settingMidPositions = [];
             for (const imgID of midImgIDs) {
-                setImgTemp(imgID, {
-                    left: currentLeft
-                });
-                dbString += `... Spreading Mid ${getImgKey(imgID).replace(/^.*_(\d\d?)$/gu, "$1")} to ${D.Int(
-                    currentLeft - 0.5 * midImgWidth
-                )} - ${D.Int(currentLeft + 0.5 * midImgWidth)} (-${lastRightEdge - D.Int(currentLeft - 0.5 * midImgWidth)})<br>`;
+
+                setImgTemp(imgID, {left: currentLeft});
                 lastRightEdge = D.Int(currentLeft + 0.5 * midImgWidth);
+                dbObj.settingMidPositions.push(`... Setting ${getImgKey(imgID)} to {left: ${currentLeft}}. LastRightEdge:${lastRightEdge}`);
                 currentLeft += spreadPerImg;
-                // testVertSpread += 5
             }
 
             // Finally, set the position of the rightmost img to the far side of the total width:
             setImgTemp(rightData.id, {
                 left: leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2 * minOverlap - 0.5 * rightData.width
             });
-            dbString += `RIGHT: ${D.Int(
-                leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2 * minOverlap - 0.5 * rightData.width - 0.5 * rightData.width
-            )} - ${D.Int(
-                leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2 * minOverlap - 0.5 * rightData.width + 0.5 * rightData.width
-            )} (${lastRightEdge
-            - D.Int(
-                leftData.leftEdge
-                + totalMidWidth
-                + leftData.width
-                + rightData.width
-                - 2 * minOverlap
-                - 0.5 * rightData.width
-                - 0.5 * rightData.width
-            )})`;
-            DB(dbString, "spreadImgs");
+            dbObj.settingRightPosition = `{left: ${leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2 * minOverlap - 0.5 * rightData.width}}`;
+            DB(dbObj, "spreadImgs");
             // for (const imgData of midData)
             //    setImg(imgData.id, "blank")
             return TRACEOFF(traceID, true);
@@ -4526,7 +4474,7 @@ const Media = (() => {
                 REGISTRY.TEXT[textKey].activeText = textData.curText;
                 REGISTRY.TEXT[textKey].isActive = false;
                 // setLayer(textObj, "walls", isForcing)
-                trySet(textObj, "layer", "walls");
+                trySet(textObj, {layer: "walls"});
                 if (textData.shadowID)
                     trySet(getObj("text", textData.shadowID), {layer: "walls"});
                 return TRACEOFF(traceID, false);

@@ -1,291 +1,288 @@
 ﻿(() => {
-    // #region ---- BEGIN: TheAaronSheet.js ----
+    // #region TheAaronSheet.js
     /* eslint-disable */
     // Github:   https://github.com/shdwjk/TheAaronSheet/blob/master/TheAaronSheet.js
-    // By:       The Aaron, Arcane Scriptomancer
-    // Contact:  https://app.roll20.net/users/104025/the-aaron
 
-    const TAS = TAS || (function () {
-        var version = "0.2.5",
-            lastUpdate = 1504710542,
+    var TAS = TAS || (function () {
+        const version = "0.2.5";
+        const lastUpdate = 1504710542;
 
-            loggingSettings = {
-                debug: {
-                    key: "debug",
-                    title: "DEBUG",
-                    color: {
-                        bgLabel: "#7732A2",
-                        label: "#F2EF40",
-                        bgText: "#FFFEB7",
-                        text: "#7732A2"
-                    }
-                },
-                error: {
-                    key: "error",
-                    title: "Error",
-                    color: {
-                        bgLabel: "#C11713",
-                        label: "white",
-                        bgText: "#C11713",
-                        text: "white"
-                    }
-                },
-                warn: {
-                    key: "warn",
-                    title: "Warning",
-                    color: {
-                        bgLabel: "#F29140",
-                        label: "white",
-                        bgText: "#FFD8B7",
-                        text: "black"
-                    }
-                },
-                info: {
-                    key: "info",
-                    title: "Info",
-                    color: {
-                        bgLabel: "#413FA9",
-                        label: "white",
-                        bgText: "#B3B2EB",
-                        text: "black"
-                    }
-                },
-                notice: {
-                    key: "notice",
-                    title: "Notice",
-                    color: {
-                        bgLabel: "#33C133",
-                        label: "white",
-                        bgText: "#ADF1AD",
-                        text: "black"
-                    }
-                },
-                log: {
-                    key: "log",
-                    title: "Log",
-                    color: {
-                        bgLabel: "#f2f240",
-                        label: "black",
-                        bgText: "#ffff90",
-                        text: "black"
-                    }
-                },
-                callstack: {
-                    key: "TAS",
-                    title: "function",
-                    color: {
-                        bgLabel: "#413FA9",
-                        label: "white",
-                        bgText: "#B3B2EB",
-                        text: "black"
-                    }
-                },
-                callstack_async: {
-                    key: "TAS",
-                    title: "ASYNC CALL",
-                    color: {
-                        bgLabel: "#413FA9",
-                        label: "white",
-                        bgText: "#413FA9",
-                        text: "white"
-                    }
-                },
-                TAS: {
-                    key: "TAS",
-                    title: "TAS",
-                    color: {
-                        bgLabel: "grey",
-                        label: "black;background:linear-gradient(#304352,#d7d2cc,#d7d2cc,#d7d2cc,#304352)",
-                        bgText: "grey",
-                        text: "black;background:linear-gradient(#304352,#d7d2cc,#d7d2cc,#d7d2cc,#304352)"
-                    }
+        const loggingSettings = {
+            debug: {
+                key: "debug",
+                title: "DEBUG",
+                color: {
+                    bgLabel: "#7732A2",
+                    label: "#F2EF40",
+                    bgText: "#FFFEB7",
+                    text: "#7732A2"
                 }
             },
-
-
-            config = {
-                debugMode: false,
-                logging: {
-                    log: true,
-                    notice: true,
-                    info: true,
-                    warn: true,
-                    error: true,
-                    debug: false
+            error: {
+                key: "error",
+                title: "Error",
+                color: {
+                    bgLabel: "#C11713",
+                    label: "white",
+                    bgText: "#C11713",
+                    text: "white"
                 }
             },
+            warn: {
+                key: "warn",
+                title: "Warning",
+                color: {
+                    bgLabel: "#F29140",
+                    label: "white",
+                    bgText: "#FFD8B7",
+                    text: "black"
+                }
+            },
+            info: {
+                key: "info",
+                title: "Info",
+                color: {
+                    bgLabel: "#413FA9",
+                    label: "white",
+                    bgText: "#B3B2EB",
+                    text: "black"
+                }
+            },
+            notice: {
+                key: "notice",
+                title: "Notice",
+                color: {
+                    bgLabel: "#33C133",
+                    label: "white",
+                    bgText: "#ADF1AD",
+                    text: "black"
+                }
+            },
+            log: {
+                key: "log",
+                title: "Log",
+                color: {
+                    bgLabel: "#f2f240",
+                    label: "black",
+                    bgText: "#ffff90",
+                    text: "black"
+                }
+            },
+            callstack: {
+                key: "TAS",
+                title: "function",
+                color: {
+                    bgLabel: "#413FA9",
+                    label: "white",
+                    bgText: "#B3B2EB",
+                    text: "black"
+                }
+            },
+            callstack_async: {
+                key: "TAS",
+                title: "ASYNC CALL",
+                color: {
+                    bgLabel: "#413FA9",
+                    label: "white",
+                    bgText: "#413FA9",
+                    text: "white"
+                }
+            },
+            TAS: {
+                key: "TAS",
+                title: "TAS",
+                color: {
+                    bgLabel: "grey",
+                    label: "black;background:linear-gradient(#304352,#d7d2cc,#d7d2cc,#d7d2cc,#304352)",
+                    bgText: "grey",
+                    text: "black;background:linear-gradient(#304352,#d7d2cc,#d7d2cc,#d7d2cc,#304352)"
+                }
+            }
+        };
 
-            callstackRegistry = [],
-            queuedUpdates = {}, // < Used for delaying saves till the last moment.
+        let config = {
+            debugMode: false,
+            logging: {
+                log: true,
+                notice: true,
+                info: true,
+                warn: true,
+                error: true,
+                debug: false
+            }
+        };
 
-            complexType = function (o) {
-                switch (typeof o) {
+        const callstackRegistry = [];
+        let queuedUpdates = {}; // < Used for delaying saves till the last moment.
+
+        const complexType = function (o) {
+            switch (typeof o) {
+                case "string":
+                    return "string";
+                case "boolean":
+                    return "boolean";
+                case "number":
+                    return (_.isNaN(o) ? "NaN" : (o.toString().match(/\./) ? "decimal" : "integer"));
+                case "function":
+                    return `function: ${o.name ? `${o.name}()` : "(anonymous)"}`;
+                case "object":
+                    return (_.isArray(o) ? "array" : (_.isArguments(o) ? "arguments" : (_.isNull(o) ? "null" : "object")));
+                default:
+                    return typeof o;
+            }
+        };
+
+        const dataLogger = function (primaryLogger, secondaryLogger, data) {
+            _.each(data, (m) => {
+                const type = complexType(m);
+                switch (type) {
                     case "string":
-                        return "string";
-                    case "boolean":
-                        return "boolean";
+                        primaryLogger(m);
+                        break;
+                    case "undefined":
+                    case "null":
+                    case "NaN":
+                        primaryLogger(`[${type}]`);
+                        break;
                     case "number":
-                        return (_.isNaN(o) ? "NaN" : (o.toString().match(/\./) ? "decimal" : "integer"));
-                    case "function":
-                        return `function: ${o.name ? `${o.name}()` : "(anonymous)"}`;
-                    case "object":
-                        return (_.isArray(o) ? "array" : (_.isArguments(o) ? "arguments" : (_.isNull(o) ? "null" : "object")));
+                    case "not a number":
+                    case "integer":
+                    case "decimal":
+                    case "boolean":
+                        primaryLogger(`[${type}]: ${m}`);
+                        break;
                     default:
-                        return typeof o;
+                        primaryLogger(`[${type}]:=========================================`);
+                        secondaryLogger(m);
+                        primaryLogger("=========================================================");
+                        break;
                 }
-            },
-
-            dataLogger = function (primaryLogger, secondaryLogger, data) {
-                _.each(data, (m) => {
-                    const type = complexType(m);
-                    switch (type) {
-                        case "string":
-                            primaryLogger(m);
-                            break;
-                        case "undefined":
-                        case "null":
-                        case "NaN":
-                            primaryLogger(`[${type}]`);
-                            break;
-                        case "number":
-                        case "not a number":
-                        case "integer":
-                        case "decimal":
-                        case "boolean":
-                            primaryLogger(`[${type}]: ${m}`);
-                            break;
-                        default:
-                            primaryLogger(`[${type}]:=========================================`);
-                            secondaryLogger(m);
-                            primaryLogger("=========================================================");
-                            break;
-                    }
-                });
-            },
+            });
+        };
 
 
-            colorLog = function (options) {
-                let coloredLoggerFunction;
-                const key = options.key;
-                const label = options.title || "TAS";
-                const lBGColor = (options.color && options.color.bgLabel) || "blue";
-                const lTxtColor = (options.color && options.color.label) || "white";
-                const mBGColor = (options.color && options.color.bgText) || "blue";
-                const mTxtColor = (options.color && options.color.text) || "white";
+        const colorLog = function (options) {
+            let coloredLoggerFunction;
+            const key = options.key;
+            const label = options.title || "TAS";
+            const lBGColor = (options.color && options.color.bgLabel) || "blue";
+            const lTxtColor = (options.color && options.color.label) || "white";
+            const mBGColor = (options.color && options.color.bgText) || "blue";
+            const mTxtColor = (options.color && options.color.text) || "white";
 
-                coloredLoggerFunction = function (message) {
-                    console.log(
-                        `%c ${label}: %c ${message} `,
-                        `background-color: ${lBGColor};color: ${lTxtColor}; font-weight:bold;`,
-                        `background-color: ${mBGColor};color: ${mTxtColor};`
-                    );
-                };
-                return function () {
-                    if (key === "TAS" || config.logging[key])
-                        dataLogger(coloredLoggerFunction, (m) => { console.log(m) }, _.toArray(arguments));
-                };
-            },
+            coloredLoggerFunction = function (message) {
+                console.log(
+                    `%c ${label}: %c ${message} `,
+                    `background-color: ${lBGColor};color: ${lTxtColor}; font-weight:bold;`,
+                    `background-color: ${mBGColor};color: ${mTxtColor};`
+                );
+            };
+            return function () {
+                if (key === "TAS" || config.logging[key])
+                    dataLogger(coloredLoggerFunction, (m) => { console.log(m) }, _.toArray(arguments));
+            };
+        };
 
-            logDebug = colorLog(loggingSettings.debug),
-            logError = colorLog(loggingSettings.error),
-            logWarn = colorLog(loggingSettings.warn),
-            logInfo = colorLog(loggingSettings.info),
-            logNotice = colorLog(loggingSettings.notice),
-            logLog = colorLog(loggingSettings.log),
-            log = colorLog(loggingSettings.TAS),
-            logCS = colorLog(loggingSettings.callstack),
-            logCSA = colorLog(loggingSettings.callstack_async),
+        const logDebug = colorLog(loggingSettings.debug);
+        const logError = colorLog(loggingSettings.error);
+        const logWarn = colorLog(loggingSettings.warn);
+        const logInfo = colorLog(loggingSettings.info);
+        const logNotice = colorLog(loggingSettings.notice);
+        const logLog = colorLog(loggingSettings.log);
+        const log = colorLog(loggingSettings.TAS);
+        const logCS = colorLog(loggingSettings.callstack);
+        const logCSA = colorLog(loggingSettings.callstack_async);
 
-            registerCallstack = function (callstack, label) {
-                let idx = _.findIndex(callstackRegistry, (o) => (_.difference(o.stack, callstack).length === _.difference(callstack, o.stack).length)
+        const registerCallstack = function (callstack, label) {
+            let idx = _.findIndex(callstackRegistry, (o) => (_.difference(o.stack, callstack).length === _.difference(callstack, o.stack).length)
                     && _.difference(o.stack, callstack).length === 0
                     && o.label === label);
-                if (idx === -1) {
-                    idx = callstackRegistry.length;
-                    callstackRegistry.push({
-                        stack: callstack,
-                        label
-                    });
-                }
-                return idx;
-            },
-
-            setConfigOption = function (options) {
-                const newconf = _.defaults(options, config);
-                newconf.logging = _.defaults(
-                    (options && options.logging) || {},
-                    config.logging
-                );
-                config = newconf;
-            },
-
-            isDebugMode = function () {
-                return config.debugMode;
-            },
-
-            debugMode = function () {
-                config.logging.debug = true;
-                config.debugMode = true;
-            },
-
-            getCallstack = function () {
-                const e = new Error("dummy");
-                const stack = _.map(_.rest(e.stack.replace(/^[^(]+?[\n$]/gm, "")
-                    .replace(/^\s+at\s+/gm, "")
-                    .replace(/^Object.<anonymous>\s*\(/gm, "{anonymous}()@")
-                    .split("\n")), (l) => l.replace(/\s+.*$/, ""));
-                return stack;
-            },
-            logCallstackSub = function (cs) {
-                let matches, csa;
-                _.find(cs, (line) => {
-                    matches = line.match(/TAS_CALLSTACK_(\d+)/);
-                    if (matches) {
-                        csa = callstackRegistry[matches[1]];
-                        logCSA(`====================${csa.label ? `> ${csa.label} <` : ""}====================`);
-                        logCallstackSub(csa.stack);
-                        return true;
-                    }
-                    logCS(line);
-                    return false;
+            if (idx === -1) {
+                idx = callstackRegistry.length;
+                callstackRegistry.push({
+                    stack: callstack,
+                    label
                 });
-            },
-            logCallstack = function () {
-                let cs;
-                if (config.debugMode) {
-                    cs = getCallstack();
-                    cs.shift();
-                    log("==============================> CALLSTACK <==============================");
-                    logCallstackSub(cs);
-                    log("=========================================================================");
+            }
+            return idx;
+        };
+
+        const setConfigOption = function (options) {
+            const newconf = _.defaults(options, config);
+            newconf.logging = _.defaults(
+                (options && options.logging) || {},
+                config.logging
+            );
+            config = newconf;
+        };
+
+        const isDebugMode = function () {
+            return config.debugMode;
+        };
+
+        const debugMode = function () {
+            config.logging.debug = true;
+            config.debugMode = true;
+        };
+
+        const getCallstack = function () {
+            const e = new Error("dummy");
+            const stack = _.map(_.rest(e.stack.replace(/^[^(]+?[\n$]/gm, "")
+                .replace(/^\s+at\s+/gm, "")
+                .replace(/^Object.<anonymous>\s*\(/gm, "{anonymous}()@")
+                .split("\n")), (l) => l.replace(/\s+.*$/, ""));
+            return stack;
+        };
+        const logCallstackSub = function (cs) {
+            let matches, csa;
+            _.find(cs, (line) => {
+                matches = line.match(/TAS_CALLSTACK_(\d+)/);
+                if (matches) {
+                    csa = callstackRegistry[matches[1]];
+                    logCSA(`====================${csa.label ? `> ${csa.label} <` : ""}====================`);
+                    logCallstackSub(csa.stack);
+                    return true;
                 }
-            },
+                logCS(line);
+                return false;
+            });
+        };
+        const logCallstack = function () {
+            let cs;
+            if (config.debugMode) {
+                cs = getCallstack();
+                cs.shift();
+                log("==============================> CALLSTACK <==============================");
+                logCallstackSub(cs);
+                log("=========================================================================");
+            }
+        };
 
 
-            wrapCallback = function (label, callback, context) {
-                let callstack;
-                if (typeof label === "function") {
-                    context = callback;
-                    callback = label;
-                    label = undefined;
-                }
-                if (!config.debugMode)
-                    return (function (cb, ctx) {
-                        return function () {
-                            cb.apply(ctx || {}, arguments);
-                        };
-                    }(callback, context));
+        const wrapCallback = function (label, callback, context) {
+            let callstack;
+            if (typeof label === "function") {
+                context = callback;
+                callback = label;
+                label = undefined;
+            }
+            if (!config.debugMode)
+                return (function (cb, ctx) {
+                    return function () {
+                        cb.apply(ctx || {}, arguments);
+                    };
+                }(callback, context));
 
 
-                callstack = getCallstack();
-                callstack.shift();
+            callstack = getCallstack();
+            callstack.shift();
 
-                return (function (cb, ctx, cs, lbl) {
-                    const ctxref = registerCallstack(cs, lbl);
+            return (function (cb, ctx, cs, lbl) {
+                const ctxref = registerCallstack(cs, lbl);
 
-                    /* jshint -W054 */
-                    return new Function("cb", "ctx", "TASlog",
-                                        `return function TAS_CALLSTACK_${ctxref}(){`
+                /* jshint -W054 */
+                return new Function("cb", "ctx", "TASlog",
+                                    `return function TAS_CALLSTACK_${ctxref}(){`
                         + "var start,end;"
                         + "TASlog('Entering: '+(cb.name||'(anonymous function)'));"
                         + "start=_.now();"
@@ -294,322 +291,323 @@
                         + "TASlog('Exiting: '+(cb.name||'(anonymous function)')+' :: '+(end-start)+'ms elapsed');"
                     + "};")(cb, ctx, log);
                 /* jshint +W054 */
-                }(callback, context, callstack, label));
-            },
+            }(callback, context, callstack, label));
+        };
 
 
-            prepareUpdate = function (attribute, value) {
-                queuedUpdates[attribute] = value;
-            },
+        const prepareUpdate = function (attribute, value) {
+            queuedUpdates[attribute] = value;
+        };
 
-            applyQueuedUpdates = function () {
-                setAttrs(queuedUpdates);
-                queuedUpdates = {};
-            },
+        const applyQueuedUpdates = function () {
+            setAttrs(queuedUpdates);
+            queuedUpdates = {};
+        };
 
-            namesFromArgs = function (args, base) {
-                return _.chain(args)
-                    .reduce((memo, attr) => {
-                        if (typeof attr === "string")
-                            memo.push(attr);
-                        else if (_.isArray(args) || _.isArguments(args))
-                            memo = namesFromArgs(attr, memo);
+        const namesFromArgs = function (args, base) {
+            return _.chain(args)
+                .reduce((memo, attr) => {
+                    if (typeof attr === "string")
+                        memo.push(attr);
+                    else if (_.isArray(args) || _.isArguments(args))
+                        memo = namesFromArgs(attr, memo);
 
-                        return memo;
-                    }, (_.isArray(base) && base) || [])
-                    .uniq()
-                    .value();
-            },
+                    return memo;
+                }, (_.isArray(base) && base) || [])
+                .uniq()
+                .value();
+        };
 
-            addId = function (obj, value) {
-                Object.defineProperty(obj, "id", {
-                    value,
-                    writable: false,
-                    enumerable: false
-                });
-            },
+        const addId = function (obj, value) {
+            Object.defineProperty(obj, "id", {
+                value,
+                writable: false,
+                enumerable: false
+            });
+        };
 
-            addProp = function (obj, prop, value, fullname) {
-                (function () {
-                    let pname = (_.contains(["S", "F", "I", "D"], prop) ? `_${prop}` : prop),
-                        full_pname = fullname || prop,
-                        pvalue = value;
+        const addProp = function (obj, prop, value, fullname) {
+            (function () {
+                let pname = (_.contains(["S", "F", "I", "D"], prop) ? `_${prop}` : prop),
+                    full_pname = fullname || prop,
+                    pvalue = value;
 
-                    _.each(["S", "I", "F"], (p) => {
-                        if (!_.has(obj, p))
-                            Object.defineProperty(obj, p, {
-                                value: {},
-                                enumerable: false,
-                                readonly: true
-                            });
-                    });
-                    if (!_.has(obj, "D"))
-                        Object.defineProperty(obj, "D", {
-                            value: _.reduce(_.range(10), (m, d) => {
-                                Object.defineProperty(m, d, {
-                                    value: {},
-                                    enumerable: true,
-                                    readonly: true
-                                });
-                                return m;
-                            }, {}),
+                _.each(["S", "I", "F"], (p) => {
+                    if (!_.has(obj, p))
+                        Object.defineProperty(obj, p, {
+                            value: {},
                             enumerable: false,
                             readonly: true
                         });
-
-
-                    // Raw value
-                    Object.defineProperty(obj, pname, {
-                        enumerable: true,
-                        set(v) {
-                            if (v !== pvalue) {
-                                pvalue = v;
-                                prepareUpdate(full_pname, v);
-                            }
-                        },
-                        get() {
-                            return pvalue;
-                        }
+                });
+                if (!_.has(obj, "D"))
+                    Object.defineProperty(obj, "D", {
+                        value: _.reduce(_.range(10), (m, d) => {
+                            Object.defineProperty(m, d, {
+                                value: {},
+                                enumerable: true,
+                                readonly: true
+                            });
+                            return m;
+                        }, {}),
+                        enumerable: false,
+                        readonly: true
                     });
 
-                    // string value
-                    Object.defineProperty(obj.S, pname, {
+
+                // Raw value
+                Object.defineProperty(obj, pname, {
+                    enumerable: true,
+                    set(v) {
+                        if (v !== pvalue) {
+                            pvalue = v;
+                            prepareUpdate(full_pname, v);
+                        }
+                    },
+                    get() {
+                        return pvalue;
+                    }
+                });
+
+                // string value
+                Object.defineProperty(obj.S, pname, {
+                    enumerable: true,
+                    set(v) {
+                        const val = v.toString();
+                        if (val !== pvalue) {
+                            pvalue = val;
+                            prepareUpdate(full_pname, val);
+                        }
+                    },
+                    get() {
+                        return pvalue.toString();
+                    }
+                });
+
+                // int value
+                Object.defineProperty(obj.I, pname, {
+                    enumerable: true,
+                    set(v) {
+                        const val = parseInt(v, 10) || 0;
+                        if (val !== pvalue) {
+                            pvalue = val;
+                            prepareUpdate(full_pname, val);
+                        }
+                    },
+                    get() {
+                        return parseInt(pvalue, 10) || 0;
+                    }
+                });
+
+                // float value
+                Object.defineProperty(obj.F, pname, {
+                    enumerable: true,
+                    set(v) {
+                        const val = parseFloat(v) || 0;
+                        if (val !== pvalue) {
+                            pvalue = val;
+                            prepareUpdate(full_pname, val);
+                        }
+                    },
+                    get() {
+                        return parseFloat(pvalue) || 0;
+                    }
+                });
+                _.each(_.range(10), (d) => {
+                    Object.defineProperty(obj.D[d], pname, {
                         enumerable: true,
                         set(v) {
-                            const val = v.toString();
+                            const val = (parseFloat(v) || 0).toFixed(d);
                             if (val !== pvalue) {
                                 pvalue = val;
                                 prepareUpdate(full_pname, val);
                             }
                         },
                         get() {
-                            return pvalue.toString();
+                            return (parseFloat(pvalue) || 0).toFixed(d);
                         }
                     });
+                });
+            }());
+        };
 
-                    // int value
-                    Object.defineProperty(obj.I, pname, {
-                        enumerable: true,
-                        set(v) {
-                            const val = parseInt(v, 10) || 0;
-                            if (val !== pvalue) {
-                                pvalue = val;
-                                prepareUpdate(full_pname, val);
-                            }
-                        },
-                        get() {
-                            return parseInt(pvalue, 10) || 0;
-                        }
-                    });
+        const sectionSequence = [];
 
-                    // float value
-                    Object.defineProperty(obj.F, pname, {
-                        enumerable: true,
-                        set(v) {
-                            const val = parseFloat(v) || 0;
-                            if (val !== pvalue) {
-                                pvalue = val;
-                                prepareUpdate(full_pname, val);
-                            }
-                        },
-                        get() {
-                            return parseFloat(pvalue) || 0;
-                        }
-                    });
-                    _.each(_.range(10), (d) => {
-                        Object.defineProperty(obj.D[d], pname, {
-                            enumerable: true,
-                            set(v) {
-                                const val = (parseFloat(v) || 0).toFixed(d);
-                                if (val !== pvalue) {
-                                    pvalue = val;
-                                    prepareUpdate(full_pname, val);
-                                }
-                            },
-                            get() {
-                                return (parseFloat(pvalue) || 0).toFixed(d);
-                            }
+        const repeating = function (section) {
+            sectionSequence.push(section);
+            return (function () {
+                let attrNames = [],
+                    fieldNames = [],
+                    operations = [],
+                    after = [],
+
+                    repAttrs = function TAS_Repeating_Attrs() {
+                        attrNames = namesFromArgs(arguments, attrNames);
+                        return this;
+                    },
+                    repFields = function TAS_Repeating_Fields() {
+                        fieldNames = namesFromArgs(arguments, fieldNames);
+                        return this;
+                    },
+                    repReduce = function TAS_Repeating_Reduce(func, initial, final, context) {
+                        operations.push({
+                            type: "reduce",
+                            func: (func && _.isFunction(func) && func) || _.noop,
+                            memo: (_.isUndefined(initial) && 0) || initial,
+                            final: (final && _.isFunction(final) && final) || _.noop,
+                            context: context || {}
                         });
-                    });
-                }());
-            },
+                        return this;
+                    },
+                    repMap = function TAS_Repeating_Map(func, final, context) {
+                        operations.push({
+                            type: "map",
+                            func: (func && _.isFunction(func) && func) || _.noop,
+                            final: (final && _.isFunction(final) && final) || _.noop,
+                            context: context || {}
+                        });
+                        return this;
+                    },
+                    repEach = function TAS_Repeating_Each(func, final, context) {
+                        operations.push({
+                            type: "each",
+                            func: (func && _.isFunction(func) && func) || _.noop,
+                            final: (final && _.isFunction(final) && final) || _.noop,
+                            context: context || {}
+                        });
+                        return this;
+                    },
+                    repTap = function TAS_Repeating_Tap(final, context) {
+                        operations.push({
+                            type: "tap",
+                            final: (final && _.isFunction(final) && final) || _.noop,
+                            context: context || {}
+                        });
+                        return this;
+                    },
+                    repAfter = function TAS_Repeating_After(callback, context) {
+                        after.push({
+                            callback: (callback && _.isFunction(callback) && callback) || _.noop,
+                            context: context || {}
+                        });
+                        return this;
+                    },
+                    repExecute = function TAS_Repeating_Execute(callback, context) {
+                        let rowSet = {},
+                            attrSet = {},
+                            fieldIds = [],
+                            fullFieldNames = [];
 
-            repeating = function (section) {
-                return (function (s) {
-                    let sectionName = s,
-                        attrNames = [],
-                        fieldNames = [],
-                        operations = [],
-                        after = [],
+                        repAfter(callback, context);
 
-                        repAttrs = function TAS_Repeating_Attrs() {
-                            attrNames = namesFromArgs(arguments, attrNames);
-                            return this;
-                        },
-                        repFields = function TAS_Repeating_Fields() {
-                            fieldNames = namesFromArgs(arguments, fieldNames);
-                            return this;
-                        },
-                        repReduce = function TAS_Repeating_Reduce(func, initial, final, context) {
-                            operations.push({
-                                type: "reduce",
-                                func: (func && _.isFunction(func) && func) || _.noop,
-                                memo: (_.isUndefined(initial) && 0) || initial,
-                                final: (final && _.isFunction(final) && final) || _.noop,
-                                context: context || {}
-                            });
-                            return this;
-                        },
-                        repMap = function TAS_Repeating_Map(func, final, context) {
-                            operations.push({
-                                type: "map",
-                                func: (func && _.isFunction(func) && func) || _.noop,
-                                final: (final && _.isFunction(final) && final) || _.noop,
-                                context: context || {}
-                            });
-                            return this;
-                        },
-                        repEach = function TAS_Repeating_Each(func, final, context) {
-                            operations.push({
-                                type: "each",
-                                func: (func && _.isFunction(func) && func) || _.noop,
-                                final: (final && _.isFunction(final) && final) || _.noop,
-                                context: context || {}
-                            });
-                            return this;
-                        },
-                        repTap = function TAS_Repeating_Tap(final, context) {
-                            operations.push({
-                                type: "tap",
-                                final: (final && _.isFunction(final) && final) || _.noop,
-                                context: context || {}
-                            });
-                            return this;
-                        },
-                        repAfter = function TAS_Repeating_After(callback, context) {
-                            after.push({
-                                callback: (callback && _.isFunction(callback) && callback) || _.noop,
-                                context: context || {}
-                            });
-                            return this;
-                        },
-                        repExecute = function TAS_Repeating_Execute(callback, context) {
-                            let rowSet = {},
-                                attrSet = {},
-                                fieldIds = [],
-                                fullFieldNames = [];
-
-                            repAfter(callback, context);
-
-                            // call each operation per row.
-                            // call each operation's final
-                            getSectionIDs(`repeating_${sectionName}`, (ids) => {
-                                fieldIds = ids;
-                                fullFieldNames = _.reduce(fieldIds, (memo, id) => memo.concat(_.map(fieldNames, (name) => `repeating_${sectionName}_${id}_${name}`)), []);
-                                getAttrs(_.uniq(attrNames.concat(fullFieldNames)), (values) => {
-                                    _.each(attrNames, (aname) => {
-                                        if (values.hasOwnProperty(aname))
-                                            addProp(attrSet, aname, values[aname]);
-                                    });
-
-                                    rowSet = _.reduce(fieldIds, (memo, id) => {
-                                        const r = {};
-                                        addId(r, id);
-                                        _.each(fieldNames, (name) => {
-                                            const fn = `repeating_${sectionName}_${id}_${name}`;
-                                            addProp(r, name, values[fn], fn);
-                                        });
-
-                                        memo[id] = r;
-
-                                        return memo;
-                                    }, {});
-
-                                    _.each(operations, (op) => {
-                                        let res;
-                                        switch (op.type) {
-                                            case "tap":
-                                                _.bind(op["final"], op.context, rowSet, attrSet)();
-                                                break;
-
-                                            case "each":
-                                                _.each(rowSet, (r) => {
-                                                    _.bind(op.func, op.context, r, attrSet, r.id, rowSet)();
-                                                });
-                                                _.bind(op["final"], op.context, rowSet, attrSet)();
-                                                break;
-
-                                            case "map":
-                                                res = _.map(rowSet, (r) => _.bind(op.func, op.context, r, attrSet, r.id, rowSet)());
-                                                _.bind(op["final"], op.context, res, rowSet, attrSet)();
-                                                break;
-
-                                            case "reduce":
-                                                res = op.memo;
-                                                _.each(rowSet, (r) => {
-                                                    res = _.bind(op.func, op.context, res, r, attrSet, r.id, rowSet)();
-                                                });
-                                                _.bind(op["final"], op.context, res, rowSet, attrSet)();
-                                                break;
-                                        }
-                                    });
-
-                                    // finalize attrs
-                                    applyQueuedUpdates();
-                                    _.each(after, (op) => {
-                                        _.bind(op.callback, op.context)();
-                                    });
+                        // call each operation per row.
+                        // call each operation's final
+                        getSectionIDs(`repeating_${sectionName}`, (ids) => {
+                            fieldIds = ids;
+                            fullFieldNames = _.reduce(fieldIds, (memo, id) => memo.concat(_.map(fieldNames, (name) => `repeating_${sectionName}_${id}_${name}`)), []);
+                            getAttrs(_.uniq(attrNames.concat(fullFieldNames)), (values) => {
+                                _.each(attrNames, (aname) => {
+                                    if (values.hasOwnProperty(aname))
+                                        addProp(attrSet, aname, values[aname]);
                                 });
+
+                                rowSet = _.reduce(fieldIds, (memo, id) => {
+                                    const r = {};
+                                    addId(r, id);
+                                    _.each(fieldNames, (name) => {
+                                        const fn = `repeating_${sectionName}_${id}_${name}`;
+                                        addProp(r, name, values[fn], fn);
+                                    });
+
+                                    memo[id] = r;
+
+                                    return memo;
+                                }, {});
+
+                                _.each(operations, (op) => {
+                                    let res;
+                                    switch (op.type) {
+                                        case "tap":
+                                            _.bind(op["final"], op.context, rowSet, attrSet)();
+                                            break;
+
+                                        case "each":
+                                            _.each(rowSet, (r) => {
+                                                _.bind(op.func, op.context, r, attrSet, r.id, rowSet)();
+                                            });
+                                            _.bind(op["final"], op.context, rowSet, attrSet)();
+                                            break;
+
+                                        case "map":
+                                            res = _.map(rowSet, (r) => _.bind(op.func, op.context, r, attrSet, r.id, rowSet)());
+                                            _.bind(op["final"], op.context, res, rowSet, attrSet)();
+                                            break;
+
+                                        case "reduce":
+                                            res = op.memo;
+                                            _.each(rowSet, (r) => {
+                                                res = _.bind(op.func, op.context, res, r, attrSet, r.id, rowSet)();
+                                            });
+                                            _.bind(op["final"], op.context, res, rowSet, attrSet)();
+                                            break;
+                                    }
+                                });
+
+                                // finalize attrs
+                                applyQueuedUpdates();
+                                _.each(after, (op) => {
+                                    _.bind(op.callback, op.context)();
+                                });
+
+                                // wipe sectionSequence
+                                sectionSequence.length = 0;
                             });
-                        };
-
-                    return {
-                        attrs: repAttrs,
-                        attr: repAttrs,
-
-                        column: repFields,
-                        columns: repFields,
-                        field: repFields,
-                        fields: repFields,
-
-                        reduce: repReduce,
-                        inject: repReduce,
-                        foldl: repReduce,
-
-                        map: repMap,
-                        collect: repMap,
-
-                        each: repEach,
-                        forEach: repEach,
-
-                        tap: repTap,
-                        do: repTap,
-
-                        after: repAfter,
-                        last: repAfter,
-                        done: repAfter,
-
-                        execute: repExecute,
-                        go: repExecute,
-                        run: repExecute
+                        });
                     };
-                }(section));
-            },
+
+                return {
+                    attrs: repAttrs,
+                    attr: repAttrs,
+
+                    column: repFields,
+                    columns: repFields,
+                    field: repFields,
+                    fields: repFields,
+
+                    reduce: repReduce,
+                    inject: repReduce,
+                    foldl: repReduce,
+
+                    map: repMap,
+                    collect: repMap,
+
+                    each: repEach,
+                    forEach: repEach,
+
+                    tap: repTap,
+                    do: repTap,
+
+                    after: repAfter,
+                    last: repAfter,
+                    done: repAfter,
+
+                    execute: repExecute,
+                    go: repExecute,
+                    run: repExecute
+                };
+            }(sectionSequence));
+        };
 
 
-            repeatingSimpleSum = function (section, field, destination) {
-                repeating(section)
-                    .attr(destination)
-                    .field(field)
-                    .reduce((m, r) => m + (r.F[field]), 0, (t, r, a) => {
-                        a.S[destination] = t;
-                    })
-                    .execute();
-            };
-
-        console.log(`%c•.¸¸.•*´¨\`*•.¸¸.•*´¨\`*•.¸  The Aaron Sheet  v${version}  ¸.•*´¨\`*•.¸¸.•*´¨\`*•.¸¸.•`, "background: linear-gradient(to right,green,white,white,green); color:black;text-shadow: 0 0 8px white;");
-        console.log(`%c•.¸¸.•*´¨\`*•.¸¸.•*´¨\`*•.¸  Last update: ${new Date(lastUpdate * 1000)}  ¸.•*´¨\`*•.¸¸.•*´¨\`*•.¸¸.•`, "background: linear-gradient(to right,green,white,white,green); color:black;text-shadow: 0 0 8px white;");
-
+        const repeatingSimpleSum = function (section, field, destination) {
+            repeating(section)
+                .attr(destination)
+                .field(field)
+                .reduce((m, r) => m + (r.F[field]), 0, (t, r, a) => {
+                    a.S[destination] = t;
+                })
+                .execute();
+        };
 
         return {
             /* Repeating Sections */
@@ -638,6 +636,71 @@
 
     /* eslint-enable */
     // #endregion ---- TheAaronSheet.js ----
+
+    /* === GUIDE: THE AARON SHEET ===
+
+        === LOGGING ===
+        TAS.log() --- "Log:" (Yellow): For general messages.
+        TAS.notice() --- "Notice:" (Green): For non-error alerts you want to flag.
+        TAS.info() --- "Info:" (Blue): For documenting things like status changes.
+        TAS.warn() --- "Warning:" (Orange): For problems or indications of potential issues.
+        TAS.error() --- "Error:" (Red): For errors.
+        TAS.debug() --- "DEBUG:" (Purp/Yellow): Other things to keep track of while editing.
+
+        === REPEATING SECTIONS ===
+        1): INITIALIZATION:  INITIALIZE THE OPERATION BY DEFINING THE SECTION
+            TAS.repeating('section')
+
+        2): ATTRIBUTES & FIELDS: SPECIFY THE ATTRIBUTES AND FIELDS TO GET FROM THE SHEET
+            .attrs(['attrName', 'attrName'])  --- NON-repeating attributes to load from the sheet.
+            .fields(['fieldName', 'fieldName']) --- REPEATING attributes to load from the specified section.
+
+        3): OPERATIONS: EXECUTE OPERATIONS IN ORDER. SEE GITHUB PAGE FOR MORE DETAIL
+            .tap(finalFunc) --- Executes finalFunc ONCE (period) with parameters RowSet, AttrSet
+            .each(func, [finalFunc]) --- Executes func(Row, AttrSet, ID, RowSet) once for each row and THEN executes finalFunc(RowSet, AttrSet)
+            .map(func, [finalFunc]) --- Like each, except results of func are collected into a Results array and finalFunc is finalFunc(Results, RowSet, AttrSet)
+            .after(finalFunc) --- Executes finalFunc AFTER setAttrs has been called.
+
+        4): EXECUTE: RUN THE EXECUTE OPERATION TO FINISH
+            .execute();
+
+        === REPEATING SECTIONS: EXAMPLE ===
+
+            on('change:repeating_inventory', function(){
+
+            // all of these operations could likely have been done in a single reduce operation, but
+            // doing them in multiple operations shows that this is something that can be done.
+
+                TAS.repeating('inventory')
+                    .attrs('total_weight','total_cost','summary')  //< getting the attributes for the totals
+                    .fields('item','quantity','weight','totalweight','cost','runningtotal') //< specifying the fields we care about
+                    .tap(function(rows,attrs){
+                        attrs.summary=_.pluck(_.values(rows),'item').join(', ');  //< grabing all the names of items and setting summary
+                    })
+                    .each(function(r){
+                        r.D[3].totalweight=(r.I.quantity*r.F.weight);  //< for each row, set the total weight with 3 decimal places (use integer quantity and floating weight)
+                    })
+                    .map(function(r){
+                        return r.F.weight*r.I.quantity; //< calculate the weight for the row (could have used the totalweight)
+                    },function(m,r,a){
+                        a.D[3].total_weight=_.reduce(m,function(m,v){ //<sum the array of total weights and set it on the total weight attribute
+                            return m+v;
+                        },0);
+                    })
+                    .reduce(function(m,r){
+                        m+=(r.I.quantity*r.F.cost); //< Generate a running cost
+                        r.D[2].runningtotal=m; //< set it for the current row (the running part)
+                        return m;
+                    },0,function(m,r,a){
+                        a.D[2].total_cost=m;  //< take the final sum and set it on the total cost attribute
+                    })
+                    .execute();  //< begin executing the above operations
+            });
+
+        ====================================
+
+    */
+
     // #region Variable Declarations
     let APIROWID = null,
         ISOFFLINE = false,
@@ -647,6 +710,7 @@
         start: 19 * 60 + 30,
         end: 22 * 60 + 30
     };
+    const DELIM = "ɸ";
     const LOGOPTIONS = {
         /* get isDebugging() {
             const curDate = new Date((new Date()).getTime());
@@ -1719,11 +1783,15 @@
     // #region UTILITY: Debugging Decorator, Logging, Checks & String Formatting
 
     const log = (msg, titles, isWarn, isLoud) => {
-        if (LOGOPTIONS.isDebugging && !LOGOPTIONS.isMuted) {
-            const logTitle = LOGOPTIONS.silent ? `  ([${_.compact([titles]).join(":")}])` : `[${_.compact([titles]).join(":")}]`;
-            if (isLoud || !LOGOPTIONS.silent)
-                console[isWarn ? "warn" : "log"]([logTitle, msg].join(" "));
-        }
+        if (LOGOPTIONS.isDebugging && !LOGOPTIONS.isMuted)
+            if (isLoud) {
+                TAS.notice(_.compact([titles]).join(":"), msg);
+            } else if (!LOGOPTIONS.silent) {
+                if (isWarn)
+                    TAS.warn(_.compact([titles]).join(":"), msg);
+                else
+                    TAS.log(_.compact([titles]).join(":"), msg);
+            }
     };
     const isBlacklisted = (attr = "") => {
         /* if (TEMPTHROTTLE.includes(attr)) {
@@ -1997,16 +2065,21 @@
     // #endregion
 
     // #region ACTIVATION: Sheetworker Toggle
-    on("change:sheetworkertoggle", (eInfo) => {
-        log("Toggling Sheetworker...");
-        if (eInfo.sourceType !== "sheetworker") {
-            ISOFFLINE = !ISOFFLINE;
-            log(`Sheetworker: ${JSON.stringify(ISOFFLINE)}`);
-            if (ISOFFLINE)
-                setAttrs({sheetworkertoggle: "1"});
-            else
-                setAttrs({sheetworkertoggle: "0"});
-        }
+    let isThrottlingSheetworker = false;
+    on("change:sheetworkertoggle", (eInfo) => {        
+        if (eInfo.sourceType !== "sheetworker")
+            if (isThrottlingSheetworker) {
+                TAS.warn("Sheetworker THROTTLED.");
+            } else {
+                isThrottlingSheetworker = true;
+                ISOFFLINE = !ISOFFLINE;
+                TAS.log("Toggling Sheetworker:", ISOFFLINE, eInfo);
+                if (ISOFFLINE)
+                    setAttrs({sheetworkertoggle: "1"});
+                else
+                    setAttrs({sheetworkertoggle: "0"});
+                setTimeout(() => { isThrottlingSheetworker = false }, 1000);
+            }
     });
     // #endregion
 
@@ -2680,6 +2753,11 @@
                 _.each(
                     [
                         "projectlaunchroll_toggle",
+                        "projectlaunchtrait1",
+                        "projectlaunchtrait2",
+                        "projectlaunchtrait1_name",
+                        "projectlaunchtrait2_name",
+                        "projectinccounter_damage",
                         "projecttotalstake",
                         "projectstake1",
                         "projectstake2",
@@ -2687,6 +2765,7 @@
                         "projectstartdate",
                         "projectenddate",
                         "projectinccounter",
+                        "projectinccounter_damage",
                         "projectlaunchroll_toggle",
                         "projectlaunchresults"
                     ],
@@ -2701,6 +2780,7 @@
                 // log(`Retrieved IDs: ${JSON.stringify(simpleRepAttrs(ids))}`, funcName)
                 _.each(ids, (rowID) => {
                     const [, p, pV, pI] = pFuncs(ATTRS, `repeating_project_${rowID}`);
+                    attrList[p("projectrushroll_toggle")] = 0;
                     let counterPos = 11;
                     // log(`p-Test: p("projectinccounter) = ${JSON.stringify(p("projectinccounter"))}`, funcName)
                     const stakeRemaining
@@ -2715,9 +2795,14 @@
                         && (pV("projectlaunchresults").includes("SUCCESS")
                             || pV("projectlaunchresults").includes("COMPLICATION")
                             || pV("projectlaunchresults").includes("CRITICAL"))
-                    )
+                    ) {
                         counterPos
-                            = 10 - Math.floor(10 * getProgress(new Date(parseInt(ATTRS.date_today)), pV("projectstartdate"), pV("projectenddate")));
+                            = Math.max(0, 10 - Math.floor(10 * getProgress(new Date(parseInt(ATTRS.date_today)), pV("projectstartdate"), pV("projectenddate"))) - pI("projectinccounter_damage"));
+                        if (counterPos > 0) {
+                            attrList[p("projectrushroll_toggle")] = 1;
+                            attrList[p("projectrushrollparams")] = `@{character_name}|${pV("projectlaunchtrait1_name")}${DELIM}${pV("projectlaunchtrait2_name")}|${counterPos}|${rowID}|quickflags:waitforopposing`;
+                        }
+                    }
                     if (counterPos === 0 && pI("projectlaunchroll_toggle") !== 3)
                         attrList[p("projectlaunchroll_toggle")] = 3;
                     else if (counterPos !== 0 && pI("projectlaunchroll_toggle") === 3)
@@ -2763,6 +2848,7 @@
                 else
                     attrList[p("projectlaunchresultsmargin")] = `${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} Staked`;
             }
+
 
             setAttrs(attrList, {}, () => {
                 log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName);
@@ -3243,7 +3329,8 @@
     const doRolls = (targetAttr, opts = {}) => {
         const [repAttrs, attrList] = [[], {}];
         const repStatData = Object.assign({}, DISCREPREFS, ADVREPREFS);
-        const repSecs = Object.keys(repStatData);
+        const repSecs = [...Object.keys(DISCREPREFS), ...Object.keys(ADVREPREFS)];
+
         const getRepAttrs = (repSec) => {
             if (repSec)
                 getSectionIDs(repSec, (rowIDs) => {
