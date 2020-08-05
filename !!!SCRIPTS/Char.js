@@ -644,10 +644,10 @@ const Char = (() => {
                         for (const playerObj of allPlayers) {
                             const charObj = allChars.find((x) => x.get("controlledby").includes(playerObj.id));
                             if (VAL({charObj})) {
-                                const quad = _.findKey(Character.REGISTRY, (v) => v.id === charObj.id);
+                                const quad = _.findKey(REGISTRY, (v) => v.id === charObj.id);
                                 if (VAL({string: quad})) {
-                                    Character.REGISTRY[quad].playerID = playerObj.id;
-                                    Character.REGISTRY[quad].playerName = playerObj.get("_displayname");
+                                    REGISTRY[quad].playerID = playerObj.id;
+                                    REGISTRY[quad].playerName = playerObj.get("_displayname");
                                 }
                                 D.Alert(
                                     `Registering <b>${playerObj.get("_displayname")}</b> with <b>${charObj.get("name")}</b> at <b>${quad}</b>`,
@@ -678,7 +678,7 @@ const Char = (() => {
                         } else {
                             D.Alert("Invalid character.<br><br>Syntax: !char reg weekly <charRef> <resName> <resAmount>", "!char reg weekly");
                         }
-                        Character.RefreshDisplays();
+                        Char.RefreshDisplays();
                         break;
                     }
                     case "stake": {
@@ -700,7 +700,7 @@ const Char = (() => {
                                 break;
                             }
                         }
-                        Character.RefreshDisplays();
+                        Char.RefreshDisplays();
                         break;
                     }
                     default: {
@@ -727,7 +727,7 @@ const Char = (() => {
                             unregResource(charData.initial, D.Int(args.shift()));
                         else
                             D.Alert("Invalid character.<br><br>Syntax: !char unreg weekly <charRef> <rowNum>", "!char unreg weekly");
-                        Character.RefreshDisplays();
+                        Char.RefreshDisplays();
                         break;
                     }
                     case "stake": {
@@ -754,7 +754,7 @@ const Char = (() => {
                                 break;
                             }
                         }
-                        Character.RefreshDisplays();
+                        Char.RefreshDisplays();
                         break;
                     }
                     // no default
@@ -1256,9 +1256,9 @@ const Char = (() => {
             }
             // no default
         }
-        const charInst = Character.Get(attrObj.get("_characterid"));
+        /* const charInst = Character.Get(attrObj.get("_characterid"));
         if (charInst)
-            charInst.Update(attrObj);
+            charInst.Update(attrObj); */
     };
     const onAttrAdd = (call, attrObj) => {
         switch (call) {
@@ -1282,9 +1282,9 @@ const Char = (() => {
             }
             // no default
         }
-        const charInst = Character.Get(attrObj.get("_characterid"));
+        /* const charInst = Character.Get(attrObj.get("_characterid"));
         if (charInst)
-            charInst.Update(attrObj);
+            charInst.Update(attrObj); */
     };
     const onAttrDestroy = (call, attrObj) => {
         switch (call) {
@@ -1295,9 +1295,9 @@ const Char = (() => {
             }
             // no default
         }
-        const charInst = Character.Get(attrObj.get("_characterid"));
+        /* const charInst = Character.Get(attrObj.get("_characterid"));
         if (charInst)
-            charInst.Update(attrObj);
+            charInst.Update(attrObj); */
     };
     const onCharAdd = (charObj) => {
         const charInst = new Character(charObj);
@@ -2303,7 +2303,7 @@ const Char = (() => {
             const [quad] = _.values(D.GetCharVals(charObj, "quadrant"));
             const [pcTokenObj] = Media.GetTokens(charObj.id);
             if (npcName === "base") {
-                delete Character.REGISTRY[quad].isNPC;
+                delete REGISTRY[quad].isNPC;
                 Media.ToggleImg(`Tombstone${quad}`, false);
                 Media.ToggleImg(`TombstoneToken${quad}`, false);
                 Media.ToggleText(`TombstoneName${quad}`, false);
@@ -2312,7 +2312,7 @@ const Char = (() => {
                 let nameString = D.GetName(npcObj);
                 if (Media.GetTextWidth(`TombstoneName${quad}`, nameString) > 200)
                     nameString = npcName;
-                Character.REGISTRY[quad].isNPC = npcObj.id;
+                REGISTRY[quad].isNPC = npcObj.id;
                 Media.SetImg(`TombstoneToken${quad}`, npcObj);
                 DB({charRef, npcRef, quad, npcName, nameString}, "setCharNPC");
                 Media.SetText(`TombstoneName${quad}`, nameString, true);
@@ -2371,7 +2371,7 @@ const Char = (() => {
 
     // #region Handouts & Displays: Desires, Advantages, Hunger & Weekly Resources
     const displayDesires = (addAttrData) => {
-        for (const charData of _.values(Character.REGISTRY)) {
+        for (const charData of _.values(REGISTRY)) {
             const desireObj = Media.GetText(`${charData.shortName}Desire`);
             if (VAL({textObj: desireObj})) {
                 let desireVal = (D.GetRepStat(charData.id, "desire", "top", "desire") || {val: false}).val;

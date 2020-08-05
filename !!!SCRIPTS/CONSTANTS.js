@@ -327,6 +327,7 @@ const C = (() => {
                 fontFamily: options.fontFamily || "Voltaire",
                 fontVariant: options.fontVariant || "none",
                 fontWeight: options.fontWeight || "bold",
+                textTransform: options.textTransform || "none",
                 border: options.border || `1px solid ${options.color || COLORS.brightred}`,
                 textShadow: options.textShadow || "none",
                 boxShadow: options.boxShadow || "none",
@@ -350,6 +351,7 @@ const C = (() => {
                     font-weight: ${params.fontWeight};
                     font-variant: ${params.fontVariant};
                     font-size: ${params.fontSize};
+                    text-transform: ${params.textTransform};
                     background-color: ${params.bgColor};
                     border: ${params.border};
                     text-shadow: ${params.textShadow};

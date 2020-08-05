@@ -427,6 +427,10 @@ const Roller = (() => {
                 clearRoller();
                 break;
             }
+            case "kill": {
+                killRoller();
+                break;
+            }
             case "build": {
                 initFrame();
                 break;
@@ -607,8 +611,9 @@ const Roller = (() => {
     // #region CONFIGURATION: Image Links, Color Schemes */
     const SETTINGS = {
         dice: {
-            Main: {qty: 30, spread: 33},
-            Big: {qty: 2, spread: 50}
+            Main: {qty: 30, spread: 33, isSelectable: true},
+            Big: {qty: 2, spread: 50, isSelectable: false},
+            Opp: {qty: 30, spread: 5, isSelectable: false}
         },
         frame: {
             mids: {qty: 6, minSpread: 50, maxSpread: 125},
@@ -628,7 +633,12 @@ const Roller = (() => {
             "margin",
             "resultCount",
             "outcome",
-            "subOutcome"
+            "subOutcome",
+            "oppRollerName",
+            "oppDicePool",
+            "oppMainRoll",
+            "oppMarginOpp",
+            "oppMarginMain"
         ],
         shifts: {
             // Must set TEXT and TOGGLE STATE of all roller objects before applying shifts.
@@ -806,9 +816,39 @@ const Roller = (() => {
             margin: C.COLORS.gold,
             resultCount: C.COLORS.white,
             outcome: C.COLORS.white,
-            subOutcome: C.COLORS.white
+            subOutcome: C.COLORS.white,
+            oppRollerName: C.COLORS.gold,
+            oppDicePool: C.COLORS.gold,
+            oppMainRoll: C.COLORS.gold,
+            oppMarginOpp: C.COLORS.gold,
+            oppMarginMain: C.COLORS.white
         },
         project: {
+            rollerName: C.COLORS.white,
+            mainRoll: C.COLORS.white,
+            posMods: C.COLORS.white,
+            negMods: C.COLORS.brightred,
+            dicePool: C.COLORS.white,
+            difficulty: C.COLORS.white,
+            resultCount: C.COLORS.white,
+            margin: {
+                good: C.COLORS.white,
+                bad: C.COLORS.brightred
+            },
+            outcome: {
+                best: C.COLORS.white,
+                good: C.COLORS.white,
+                bad: C.COLORS.midgold,
+                worst: C.COLORS.brightred
+            },
+            subOutcome: {
+                best: C.COLORS.white,
+                good: C.COLORS.white,
+                bad: C.COLORS.midgold,
+                worst: C.COLORS.brightred
+            }
+        },
+        rush: {
             rollerName: C.COLORS.white,
             mainRoll: C.COLORS.white,
             posMods: C.COLORS.white,
@@ -1064,7 +1104,6 @@ const Roller = (() => {
         const traceID = TRACEON("makeDie", [diceCat, dieNum]);
         const rootData = Media.GetImgData(`RollerDie_${diceCat}_1`);
         const dieKey = `RollerDie_${diceCat}_${dieNum}`;
-        const padShift = -0.5 * rootData.width;
         Media.MakeImg(
             dieKey,
             {
@@ -1085,7 +1124,10 @@ const Roller = (() => {
         );
         Media.AddImgSrc(null, dieKey, `ref:${rootData.name}`, true);
         Media.SetImg(dieKey, "Bf", true);
-        DragPads.MakePad(dieKey, "selectDie", {deltaHeight: padShift, deltaWidth: padShift});
+        if (SETTINGS.dice[diceCat].isSelectable) {
+            const padShift = -0.5 * rootData.width;
+            DragPads.MakePad(dieKey, "selectDie", {deltaHeight: padShift, deltaWidth: padShift});
+        }
         return TRACEOFF(traceID, true);
     };
     const clearDice = (diceCat) => {
@@ -1111,8 +1153,6 @@ const Roller = (() => {
         const returnLines = [];
         if (Media.IsRegistered(`RollerDie_${diceCat}_2`))
             clearDice(diceCat);
-        const padShift = -0.5 * Media.GetImgData(`RollerDie_${diceCat}_1`).width;
-        DragPads.MakePad(`RollerDie_${diceCat}_1`, "selectDie", {deltaHeight: padShift, deltaWidth: padShift});
         for (let i = 2; i <= SETTINGS.dice[diceCat].qty; i++)
             returnLines.push(
                 `[${i}] ${makeDie(diceCat, i) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`
@@ -1134,8 +1174,12 @@ const Roller = (() => {
         );
     };
     const resetDiceVals = () => {
-        STATE.REF.selected = {Main: [], Big: []};
-        STATE.REF.diceVals = {Main: [null, ...new Array(30).fill(false)], Big: [null, ...new Array(2).fill(false)]};
+        STATE.REF.selected = {};
+        STATE.REF.diceVals = {};
+        for (const [diceCat, catData] of Object.entries(SETTINGS.dice)) {
+            STATE.REF.selected[diceCat] = [];
+            STATE.REF.diceVals[diceCat] = [null, ...new Array(catData.qty).fill(false)];
+        }
     };
     const clearRoller = () => {
         const traceID = TRACEON("clearRoller", []);
@@ -1153,12 +1197,26 @@ const Roller = (() => {
         Media.ToggleImg("RollerFrame_Left", true, true);
         Media.SetImg("RollerFrame_Left", "top");
         Media.ToggleImg("RollerFrame_BottomEnd", false, true);
-        Media.Spread("RollerFrame_Left", "RollerFrame_TopEnd", topMidRefs, 1, SETTINGS.frame.mids.minSpread, SETTINGS.frame.mids.maxSpread);
+        Media.Spread("RollerFrame_Left", "RollerFrame_TopEnd", topMidRefs.filter((x) => Media.IsRegistered(x)), 1, SETTINGS.frame.mids.minSpread, SETTINGS.frame.mids.maxSpread);
         DragPads.Toggle("wpReroll", false);
         Media.ToggleAnim("Roller_WPReroller_1", false);
         Media.ToggleImg("Roller_WPReroller_Base_1", false);
         Media.ToggleAnim("Roller_WPReroller_2", false);
         Media.ToggleImg("Roller_WPReroller_Base_2", false);
+        Media.ToggleImg("RollerFrame_OppCompVS_1", false, true);
+        Media.ToggleImg("RollerFrame_OppDiceBoxLeft_1", false, true);
+        Media.ToggleImg("RollerFrame_OppDiceBoxMid_1", false, true);
+        Media.ToggleImg("RollerFrame_OppDiceBoxRight_1", false, true);
+        Media.ToggleImg("RollerFrame_OppDicePool_1", false, true);
+        Media.ToggleImg("RollerFrame_OppMainLeft_1", false, true);
+        Media.ToggleImg("RollerFrame_OppMainMid_1", false, true);
+        Media.ToggleImg("RollerFrame_OppMainRight_1", false, true);
+        Media.ToggleImg("RollerFrame_OppMarginMain_1", false, true);
+        Media.ToggleImg("RollerFrame_OppMarginOpp_1", false, true);
+        Media.ToggleImg("RollerFrame_OppNameLeft_1", false, true);
+        Media.ToggleImg("RollerFrame_OppNameMid_1", false, true);
+        Media.ToggleImg("RollerFrame_OppNameRight_1", false, true);
+        Media.ToggleImg("RollerFrame_OppOutcome_1", false, true);
         resetDiceVals();
         TRACEOFF(traceID);
         // Media.Fix()
@@ -1185,12 +1243,9 @@ const Roller = (() => {
             );
         }
         DragPads.DelPad("selectDie");
-        returnLines[1].entries.push(
-            "... Removing <b>Main Dice</b> Drag Pads (x30): <span style='color:green;'><b>OK!</b></span> (x30)",
-            "... Removing <b>Big Dice</b> Drag Pads (x2): <span style='color:green;'><b>OK!</b></span> (x2)"
-        );
+        returnLines[1].entries.push("... Removing <b>selectDie</b> Drag Pads");
         DragPads.DelPad("wpReroll");
-        returnLines[1].entries.push("... Removing <b>Willpower Reroll</b> Drag Pad: <span style='color:green;'><b>OK!</b></span>");
+        returnLines[1].entries.push("... Removing <b>Willpower Reroll</b> Drag Pad");
         for (const diceCat of Object.keys(SETTINGS.dice))
             returnLines[2].entries.push(clearDice(diceCat).join(", "));
         TRACEOFF(traceID);
@@ -1246,11 +1301,8 @@ const Roller = (() => {
                     `... Creating <b>${imgKeyBottom}</b>: <span style='color: green;'><b>OK!</b></span>`
                 );
             }
-            returnLines[1].entries.push(
-                "... Creating <b>Main Dice</b> Drag Pads (x30): <span style='color:green;'><b>OK!</b></span> (x30)",
-                "... Creating <b>Big Dice</b> Drag Pads (x2): <span style='color:green;'><b>OK!</b></span> (x2)"
-            );
-            returnLines[1].entries.push("... Creating <b>Willpower Reroll</b> Drag Pad: <span style='color:green;'><b>OK!</b></span>");
+            returnLines[1].entries.push("... Creating <b>'selectDie'</b> Drag Pads");
+            returnLines[1].entries.push("... Creating <b>Willpower Reroll</b> Drag Pad");
             for (const diceCat of Object.keys(SETTINGS.dice))
                 returnLines[2].entries.push(makeAllDice(diceCat).join(", "));
             DragPads.MakePad("Roller_WPReroller_Base_1", "wpReroll");
