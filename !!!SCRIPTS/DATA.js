@@ -810,7 +810,7 @@ const D = (() => {
             return match;
         };
         return (
-            JSON.stringify(data, null, "^@")
+            (JSON.stringify(data, null, "^@") || "")
                 .replace(/"(?=.*:)/gu, "")
                 .replace(/(\r\n|\n|\r)/gu, "")
                 .replace(/((?:\^@)+)/gu, "\n$1")
@@ -2361,7 +2361,7 @@ const D = (() => {
         return "(UNNAMED)";
     };
     const getChars = (charRef, funcName = false, isFuzzyMatching = false) => {
-        /* Returns an ARRAY OF CHARACTERS given: "all", "registered", a character ID, a character Name,
+        /* Returns an ARRAY OF CHARACTERS given: "all", "registered", a character ID, a registered player ID, a character Name,
 				a token object, a message with selected tokens, OR an array of such parameters. */
         const charObjs = new Set();
         let [searchParams, dbstring] = [[], ""];

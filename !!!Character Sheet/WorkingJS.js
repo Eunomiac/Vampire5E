@@ -710,6 +710,17 @@
         start: 19 * 60 + 30,
         end: 22 * 60 + 30
     };
+    const SESSIONDATE = {
+        start: [0, 19, 30],
+        end: [0, 22, 30],
+        startBlackout: [0, 19, 30],
+        stopBlackout: [0, 22, 30],
+        TimeZoneShift: -4
+    };
+    /* SESSIONDATE.start = [5, 4, 0];
+    SESSIONDATE.startBlackout = [5, 4, 0];
+    SESSIONDATE.end = [5, 4, 45];
+    SESSIONDATE.stopBlackout = [5, 4, 45]; */
     const DELIM = "ɸ";
     const LOGOPTIONS = {
         /* get isDebugging() {
@@ -767,6 +778,7 @@
             "applybloodsurge",
             "applyspecialty",
             "applyresonance",
+            "applyopposed",
             "incap",
             "Stains",
             "resonance",
@@ -1781,16 +1793,32 @@
     // #endregion
 
     // #region UTILITY: Debugging Decorator, Logging, Checks & String Formatting
-
+    const isInBlackout = () => {
+        const dateObj = new Date();
+        dateObj.setUTCHours(dateObj.getUTCHours() + SESSIONDATE.TimeZoneShift);
+        const [weekDay, hour, minute] = [dateObj.getUTCDay(), dateObj.getUTCHours(), dateObj.getUTCMinutes()];
+        const dayMins = hour * 60 + minute;
+        const [startWeekDay, startHour, startMinute] = SESSIONDATE.startBlackout;
+        const startDayMins = startHour * 60 + startMinute;
+        const [stopWeekDay, stopHour, stopMinute] = SESSIONDATE.stopBlackout;
+        const stopDayMins = stopHour * 60 + stopMinute;
+        return weekDay === startWeekDay && dayMins >= startDayMins && dayMins < stopDayMins;
+    };
     const log = (msg, titles, isWarn, isLoud) => {
+        if (isInBlackout()) {
+            TAS.error("IN BLACKOUT!");
+            return false;
+        }
+        titles = _.compact(_.flatten([titles])).join(":");
+        msg = [titles, ..._.flatten([msg])];
         if (LOGOPTIONS.isDebugging && !LOGOPTIONS.isMuted)
             if (isLoud) {
-                TAS.notice(_.compact([titles]).join(":"), msg);
+                TAS.notice(...msg);
             } else if (!LOGOPTIONS.silent) {
                 if (isWarn)
-                    TAS.warn(_.compact([titles]).join(":"), msg);
+                    TAS.warn(...msg);
                 else
-                    TAS.log(_.compact([titles]).join(":"), msg);
+                    TAS.log(...msg);
             }
     };
     const isBlacklisted = (attr = "") => {
@@ -2066,7 +2094,7 @@
 
     // #region ACTIVATION: Sheetworker Toggle
     let isThrottlingSheetworker = false;
-    on("change:sheetworkertoggle", (eInfo) => {        
+    on("change:sheetworkertoggle", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker")
             if (isThrottlingSheetworker) {
                 TAS.warn("Sheetworker THROTTLED.");
@@ -2279,7 +2307,7 @@
                 // Apply New Damage & Healing
                 if (pI("sdmg") + pI("sdmg_social") !== 0) {
                     attrList[p("sdmg")] = pI("sdmg") + pI("sdmg_social");
-                    log(`>>@@>> attrList[${p("sdmg")}] = ${attrList[p("sdmg")]}`);
+                    log(`>>> attrList[${p("sdmg")}] = ${attrList[p("sdmg")]}`);
                     while (attrList[p("sdmg")] > 0)
                         if (dmgBins[0].length) {
                             // There's enough blank boxes for the superficial hit.
@@ -2294,7 +2322,7 @@
                         }
 
                     while (attrList[p("sdmg")] < 0) {
-                        log(`>>@@>> attrList[${p("sdmg")}] = ${attrList[p("sdmg")]}`);
+                        log(`>>> attrList[${p("sdmg")}] = ${attrList[p("sdmg")]}`);
                         if (dmgBins[1].length) {
                             // Superficial damage present, so heal.
                             dmgBins[0].push(dmgBins[1].pop());
@@ -2306,7 +2334,7 @@
                 }
                 if (pI("admg") + pI("admg_social") !== 0) {
                     attrList[p("admg")] = pI("admg") + pI("admg_social");
-                    log(`>>@@>> attrList[${p("admg")}] = ${attrList[p("admg")]}`);
+                    log(`>>> attrList[${p("admg")}] = ${attrList[p("admg")]}`);
                     while (attrList[p("admg")] > 0)
                         if (dmgBins[0].length) {
                             dmgBins[2].push(dmgBins[0].shift());
@@ -2319,7 +2347,7 @@
                         }
 
                     while (attrList[p("admg")] < 0) {
-                        log(`>>@@>> attrList[${p("admg")}] = ${attrList[p("admg")]}`);
+                        log(`>>> attrList[${p("admg")}] = ${attrList[p("admg")]}`);
                         if (dmgBins[2].length) {
                             dmgBins[1].push(dmgBins[2].pop());
                             attrList[p("admg")]++;
@@ -3349,7 +3377,8 @@
                 });
             else
                 getAttrs([...ALLATTRS, ..._.flatten(repAttrs)], (ATTRS) => {
-                    log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
+                    log(targetAttr, ATTRS[targetAttr]);
+                    log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`);
                     const [rArray, prevRArray, clearAttrs] = [[], [], {}];
                     const stat = isIn(targetAttr, ROLLFLAGS.all) || trimAttr(isIn(targetAttr, ATTRS));
                     const checkType = (attr) => {
@@ -3442,6 +3471,18 @@
                             topDisplayStrings.push(`Blood Surge (+${bpDependants[parseInt(ATTRS.blood_potency)].bp_surge})`);
                             lastTopDisplayStrings.push("Rouse Check Is Automatic");
                         }
+                        if (parseInt(ATTRS.applyopposed) === 1) {
+                            topDisplayStrings.push("Will Wait for Opposing Roll");
+                            if (targetAttr === "applyopposed") {
+                                log("Apply Opposed ON and Target Attr = applyopposed SO Diff = 0");
+                                [ATTRS.rolldiff, attrList.rolldiff] = [0, 0];
+                            }
+                        } else if (targetAttr === "applyopposed" && parseInt(ATTRS.rolldiff) === 0) {
+                            log("Apply Opposed OFF and Target Attr = applyopposed and Diff = 0 SO Diff = 3");
+                            [ATTRS.rolldiff, attrList.rolldiff] = [3, 3];
+                        } else {
+                            log("Apply Opposed Check N/A --- no difficulty change.");
+                        }
                         if (parseInt(ATTRS.applyspecialty) === 1)
                             topDisplayStrings.push("Specialty (+1)");
                         if (parseInt(ATTRS.applyresonance) === 1)
@@ -3491,7 +3532,7 @@
                         _.each([...ROLLFLAGS.num, ..._.map(prevRArray, (v) => `${v}_flag`)], (v) => {
                             [attrList[v], ATTRS[v]] = [0, 0];
                         });
-                        attrList.rollpooldisplay = "Simple Roll or Check";
+                        attrList.rollpooldisplay = " ";
                         attrList.rollparams = "@{character_name}|";
                     } else if (targetAttr && targetAttr.includes("_flag")) {
                         /* If this function was triggered when a flagged trait changed, create a new rArray
@@ -3501,9 +3542,9 @@
                         //     ... then add it back if the flag was toggled ON:
                         if (checkFlag(stat) === 1)
                             rArray.push(stat);
-                        // Next, reset the various roll parameters to default, which is zero EXCEPT for difficulty, which is 3:
+                        // Next, reset the various roll parameters to default, which is zero EXCEPT for difficulty, which is 3 UNLESS opposed roll is flagged:
                         for (const val of ROLLFLAGS.num) {
-                            const defaultVal = val === "rolldiff" ? 3 : 0;
+                            const defaultVal = (parseInt(ATTRS.applyopposed) === 0 && val === "rolldiff") ? 3 : 0;
                             if (parseInt(ATTRS[val]) !== defaultVal)
                                 [ATTRS[val], attrList[val]] = [defaultVal, defaultVal];
                         }
@@ -3552,15 +3593,21 @@
                         if (parseInt(ATTRS.rollmod) !== 0)
                             attrList.rollpooldisplay += ` ${parseInt(ATTRS.rollmod) < 0 ? "-" : "+"} ${Math.abs(parseInt(ATTRS.rollmod))}`;
                     }
-                    if (parseInt(ATTRS.rolldiff) !== 0)
-                        attrList.rollpooldisplay += ` vs. ${parseInt(ATTRS.rolldiff)}`;
-                    log(`>>> ROLL DISPLAY: ${JSON.stringify(attrList.rollpooldisplay)}`);
-
                     // Clear any result messages from the bottom display:
                     attrList.bottomdisplay = "";
 
                     // Create the top display string based on existing roll flags:
                     attrList.topdisplay = checkEffects(rArray);
+
+                    if (parseInt(ATTRS.rolldiff) !== 0)
+                        attrList.rollpooldisplay += ` vs. ${parseInt(ATTRS.rolldiff)}`;
+
+                    if (attrList.rollpooldisplay.startsWith("Simple") && parseInt(ATTRS.rollmod) === 0)
+                        attrList.rollpooldisplay = " ";
+
+                    log(`>>> ROLL DISPLAY: ${JSON.stringify(attrList.rollpooldisplay)}`);
+
+
 
                     // Set roll parameter string:
                     attrList.rollparams = `@{character_name}|${rArray.join(",")}`;
@@ -3763,24 +3810,35 @@
            JS figures out which null and bonusdots need to be activated, and toggles strengthnull_X / strengthbonus_X dots ON.
            This is STRICTLY DISPLAY --- the actual penalty must be covered in a roll effect (e.g. resolve/0.5/-(<.>) Redemption House) */
 
-        // STEP ONE: Check to make sure this is a valid VALUE attribute, and not a "_name", "_details", etc. attribute
-        const regExpBlacklist = [
+        const masterStat = sourceAttr.replace(/mod$/gu, "");
+
+        // STEP ONE: Check to make sure this is a valid VALUE attribute with bonus and null dots, and not a "_name", "_details", etc. attribute
+        if (BASICMODATTRS.includes(masterStat)
+            || _.any(_.uniq(_.flatten([...Object.values(DISCMODREPREFS), ...Object.values(ADVMODREPREFS)])), (v) => masterStat.endsWith(v))) {
+            log(`... ${sourceAttr} (${masterStat}) VALID BONUS ATTRIBUTE.`);
+        } else {
+            log(`... ${sourceAttr} (${masterStat}) INVALID BONUS ATTRIBUTE: EXITING`);
+            return;
+        }
+        /* const regExpBlacklist = [
             "_name$",
             "power_\\d+$",
             "_flag$",
             "_toggle$",
             "_type$",
-            "_details$"
+            "_details$",
+            "^apply",
+            "display$"
         ];
         for (const pattern of regExpBlacklist)
             if (sourceAttr.match(new RegExp(pattern))) {
                 log(`updateModDots CALLED: ${sourceAttr}\nSource Attr BLACKLISTED: Returning...`);
                 return;
-            }
+            } */
         const repStatData = {};
         const [repAttrs, attrList] = [[], {}];
         const statsList = [];
-        const masterStat = sourceAttr.replace(/mod$/gu, "");
+
         const modStat = `${masterStat}mod`;
         log(`updateModDots CALLED: ${sourceAttr}\nMaster Stat: ${JSON.stringify(masterStat)}\nMod Stat: ${JSON.stringify(modStat)}`, "UMD");
         statsList.push(modStat, masterStat);
