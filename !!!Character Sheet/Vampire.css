@@ -1863,7 +1863,7 @@
 	.charsheet div.sheet-rollflagscol {
 		height: calc(100% - 10px);
 		width: 87px;
-		margin-top: 8px;
+		margin-top: 2px;
 	}
 
 	.charsheet div.sheet-rollflagscol input,

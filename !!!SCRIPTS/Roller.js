@@ -27,9 +27,9 @@ const Roller = (() => {
         // STATE.REF.selected = {Main: [], Big: []}
         // STATE.REF.diceVals = {Main: new Array(31).fill(false), Big: new Array(3).fill(false)}
 
-        Media.SetTextData("oppDicePool", {font_size: 20});
-        Media.SetTextData("oppMarginOpp", {font_size: 20});
-        Media.SetTextData("oppMarginMain", {font_size: 20});
+        // Media.SetTextData("oppDicePool", {font_size: 20});
+        // Media.SetTextData("oppMarginOpp", {font_size: 20});
+        // Media.SetTextData("oppMarginMain", {font_size: 20});
 
         STATE.REF.rollRecord = STATE.REF.rollRecord || [];
         STATE.REF.rollIndex = STATE.REF.rollIndex || 0;
@@ -68,7 +68,7 @@ const Roller = (() => {
         if (_.compact(_.flatten(_.values(STATE.REF.forcedMods))).length)
             D.Alert("WARNING: Roll Mod Overrides Set for Roller<br><b>!roll force mods</b> to clear.");
 
-        displayRoll();
+        // displayRoll();
     };
 
     // #endregion
@@ -103,8 +103,14 @@ const Roller = (() => {
     const onChatCall = (call, args, objects, msg) => {
         switch (call) {
             case "opp": {
-                STATE.REF.isNextRollWaitForOpposed = true;
-                D.Flag("Next Roll Will Wait For Opposed.");
+                switch (D.LCase(call = args.shift())) {
+                    case "flip": flipOppRolls(); break;
+                    default: {
+                        STATE.REF.isNextRollWaitForOpposed = true;
+                        D.Flag("Next Roll Will Wait For Opposed.");
+                        break;
+                    }
+                }
                 break;
             }
             case "test": {
@@ -112,6 +118,7 @@ const Roller = (() => {
                 D.Flag("Next Roll Set to Test.");
                 break;
             }
+            case "wp": wpReroll("Main", false, D.LCase(args.join(" ").replace(/\s*/gu, "")).split("")); break;
             case "dice": {
                 const [charObj] = Listener.GetObjects(objects, "character");
                 let rollType;
@@ -269,6 +276,20 @@ const Roller = (() => {
             case "resonance": {
                 const [charObj] = Listener.GetObjects(objects, "character");
                 displayResonance(charObj);
+                break;
+            }
+            case "get": {
+                switch (D.LCase(call = args.shift())) {
+                    case "oppreport": {
+                        const {rollData, rollResults} = getCurrentRoll();
+                        if (rollData.rollID in STATE.REF.oppRolls) {
+                            const {oppData, oppResults} = STATE.REF.oppRolls[rollData.rollID];
+                            D.Show({rollResults, oppResults});
+                        }
+                        break;
+                    }
+                    // no default
+                }
                 break;
             }
             case "set": {
@@ -2917,7 +2938,7 @@ const Roller = (() => {
                 margin: 5,
                 commit: 0
               } */
-        DB({"ROLL DATA": rollData}, "rollDice");
+        // DB({"ROLL DATA": rollData}, "rollDice");
         if (addVals)
             DB({"ADDED VALS": addVals}, "rollDice");
         const forcedRolls = null; /* {
@@ -3078,16 +3099,16 @@ const Roller = (() => {
                 break;
             case "rouse2":
             case "rouse":
-                if (rollData.isOblivionRoll) {
-                    D.Alert(`Oblivion Roll: ${D.JS(rollResults.rolls)}`);
+                if (rollData.isOblivionRoll)
+                    // D.Alert(`Oblivion Roll: ${D.JS(rollResults.rolls)}`);
                     rollResults.diceVals = _.map(
                         rollResults.rolls,
                         (rol) => (D.Int(rol.slice(1)) === 1 && "Of") || (D.Int(rol.slice(1)) === 10 && "Os") || (D.Int(rol.slice(1)) < 6 && "Hb") || "Bs"
                     );
-                    D.Alert(`Oblivion Vals: ${D.JS(rollResults.diceVals)}`);
-                } else {
+                    // D.Alert(`Oblivion Vals: ${D.JS(rollResults.diceVals)}`);
+                else
                     rollResults.diceVals = _.map(rollResults.rolls, (rol) => (D.Int(rol.slice(1)) < 6 ? "Hb" : "Bs"));
-                }
+
                 if (rollResults.diceVals.length > 1) {
                     // let newDiceVals = []
                     // Of Hb Os Bs
@@ -3107,7 +3128,7 @@ const Roller = (() => {
             const scope = rollData.diff - rollData.diffMod - 2;
             rollResults.commit = Math.max(1, scope + 1 - rollResults.margin);
         }
-        DB({rollResults}, "rollDice");
+        // DB({rollResults}, "rollDice");
 
         rollResults = applyRollEffects(Object.assign(rollResults, rollData));
 
@@ -3164,19 +3185,72 @@ const Roller = (() => {
             ];
         }
 
-        // If this is an opposing roll, determine main, opp and final Margin values:
-        if (rollData.rollFlags.isOpposedRoll) {
-            const mainRollResults = getCurrentRoll().rollResults;
-            rollResults.yourMargin = VAL({number: mainRollResults.margin}) ? D.Int(mainRollResults.margin) : D.Int(mainRollResults.total);
-            rollResults.myMargin = VAL({number: rollResults.margin}) ? D.Int(rollResults.margin) : D.Int(rollResults.total);
-            rollResults.finalMargin = rollResults.yourMargin - Math.max(0, rollResults.myMargin);
-        }
+        const [syncedData, syncedResults] = syncOpposedRoll(rollData, rollResults);
+        return TRACEOFF(traceID, syncedResults);
+    };
+    const syncOpposedRoll = (rollData, rollResults) => {
+        // Finds paired opposed roll and adjusts its values to fit rollResults given in parameters.
+        // Two possibilities: Either parameters are an opposed roll following a main roll (standard behavior),
+        //    or they're a main roll following an opposed roll (e.g. after a WP reroll)
+        // Will return rolLData and rollResults after adjusting them with yourMargin, myMargin and finalMargin
 
-        return TRACEOFF(traceID, rollResults);
+        if (rollData.rollFlags.isOpposedRoll) {
+            // Applying opposed roll outcome to main roll (standard opposed roll behavior)
+            const mainRoll = getCurrentRoll();
+            const [mainData, mainResults] = [mainRoll.rollData, mainRoll.rollResults];
+            const mainMargin = VAL({number: mainResults.margin}) ? D.Int(mainResults.margin) : D.Int(mainResults.total);
+            const oppMargin = VAL({number: rollResults.margin}) ? D.Int(rollResults.margin) : D.Int(rollResults.total);
+            rollResults.myMargin = oppMargin;
+            rollResults.yourMargin = mainMargin;
+            rollResults.finalMargin = oppMargin - Math.max(0, mainMargin);
+            rollResults.finalOutcome = getRollOutcome(rollData, rollResults);
+            mainResults.myMargin = mainMargin;
+            mainResults.yourMargin = oppMargin;
+            mainResults.finalMargin = mainMargin - Math.max(0, oppMargin);
+            mainResults.finalOutcome = getRollOutcome(mainData, mainResults);
+            DB({
+                roll: `${D.GetName(rollData.charID, true)} - OPP REROLLED`,
+                mainMargin,
+                oppMargin,
+                finalMarginMain: mainResults.finalMargin,
+                finalMarginOpp: rollResults.finalMargin,
+                finalOutcomeMain: mainResults.finalOutcome,
+                finalOutcomeOpp: rollResults.finalOutcome
+            }, "syncOpposedRoll");
+            replaceRoll(mainData, mainResults, STATE.REF.rollIndex);
+        } else if (rollData.rollFlags.isWaitingForOpposed && rollData.rollID in STATE.REF.oppRolls) {
+            // Applying main roll outcome to opposed roll (e.g. after WP reroll)
+            const {oppData, oppResults} = STATE.REF.oppRolls[rollData.rollID];
+            const mainMargin = VAL({number: rollResults.margin}) ? D.Int(rollResults.margin) : D.Int(rollResults.total);
+            const oppMargin = VAL({number: oppResults.margin}) ? D.Int(oppResults.margin) : D.Int(oppResults.total);
+            STATE.REF.oppRolls[rollData.rollID].oppResults.myMargin = oppMargin;
+            STATE.REF.oppRolls[rollData.rollID].oppResults.yourMargin = mainMargin;
+            STATE.REF.oppRolls[rollData.rollID].oppResults.finalMargin = oppMargin - Math.max(0, mainMargin);
+            STATE.REF.oppRolls[rollData.rollID].oppResults.finalOutcome = getRollOutcome(STATE.REF.oppRolls[rollData.rollID].oppData, STATE.REF.oppRolls[rollData.rollID].oppResults);
+            rollResults.myMargin = mainMargin;
+            rollResults.yourMargin = oppMargin;
+            rollResults.finalMargin = mainMargin - Math.max(0, oppMargin);
+            rollResults.finalOutcome = getRollOutcome(rollData, rollResults);
+            DB({
+                roll: `${D.GetName(rollData.charID, true)} - MAIN REROLLED`,
+                mainMargin,
+                oppMargin,
+                finalMarginMain: rollResults.finalMargin,
+                finalMarginOpp: STATE.REF.oppRolls[rollData.rollID].oppResults.finalMargin,
+                finalOutcomeMain: rollResults.finalOutcome,
+                finalOutcomeOpp: STATE.REF.oppRolls[rollData.rollID].oppResults.finalOutcome
+            }, "syncOpposedRoll");
+        }
+        return [rollData, rollResults];
     };
     const getRollOutcome = (rollData, rollResults, isGettingFinal = true) => {
-        const isOpposedRoll = rollData.rollID in STATE.REF.oppRolls;
-        const finalMargin = (isGettingFinal && isOpposedRoll) ? STATE.REF.oppRolls[rollData.rollID].oppResults.finalMargin : rollResults.margin;
+        let finalMargin;
+        if (isGettingFinal && "finalMargin" in rollResults)
+            finalMargin = rollResults.finalMargin;
+        else if (VAL({number: rollResults.margin}))
+            finalMargin = rollResults.margin;
+        else
+            finalMargin = rollResults.total;
 
         // First do a basic check:
         let outcome;
@@ -3186,7 +3260,7 @@ const Roller = (() => {
             outcome = "messyCrit";
         else if (rollResults.total === 0)
             outcome = "totalFail";
-        else if (finalMargin < -2 || (isOpposedRoll && finalMargin < 0))
+        else if (finalMargin < -2 || (("finalMargin" in rollResults) && finalMargin < 0))
             outcome = "Fail";
         else if (finalMargin < 0)
             outcome = "costlyFail";
@@ -3535,7 +3609,7 @@ const Roller = (() => {
                 }
 
                 rollLines.oppRoll.oppMainRoll = {text: _.compact(Object.values(rollLines.oppRoll.oppMainRoll)).join(" "), color: C.COLORS.gold};
-                rollResults.finalMargin = D.Int(oppResults.finalMargin);
+                // rollResults.finalMargin = D.Int(oppResults.finalMargin);
                 rollResults.finalOutcome = getRollOutcome(rollData, rollResults);
                 Object.assign(rollLines.oppRoll, {
                     // oppResultCount: {text: oppResults.total},
@@ -4281,7 +4355,7 @@ const Roller = (() => {
                         top: oa.RollerFrame_OppDiceBoxLeft.top + 1
                     }));
                 }
-                if (!oppResults.rollFlags.isHidingOutcome) {
+                if (!oppResults.rollFlags.isHidingOutcome)
                     Object.assign(oa.RollerFrame_OppOutcome, {
                         isActive: true,
                         left: oa.RollerFrame_OppDiceBoxMid.left,
@@ -4289,7 +4363,6 @@ const Roller = (() => {
                         src: D.LCase(getRollOutcome(oppData, oppResults, false))
                     });
                     // D.Show({showing: "RollerFrame_OppOutcome", oa});
-                }
             }
             if ("oppMarginOpp" in rollLines.oppRoll) {
                 Object.assign(oa.RollerFrame_OppMarginOpp, {
@@ -4392,17 +4465,22 @@ const Roller = (() => {
         }
         TRACEOFF(traceID);
     };
-    const wpReroll = (dieCat, isNPCRoll) => {
+    const wpReroll = (dieCat, isNPCRoll, directRerolls = []) => {
         const traceID = TRACEON("wpReroll", [dieCat, isNPCRoll]);
-        const rollRecord = getCurrentRoll(isNPCRoll);
-        const rollData = _.clone(rollRecord.rollData);
-        const rolledDice = D.KeyMapObj(STATE.REF.diceVals[dieCat], null, (v, k) => (!STATE.REF.selected[dieCat].includes(D.Int(k)) && v) || false);
+        let {rollData, rollResults} = getCurrentRoll(isNPCRoll),
+            rolledDice;
+        if (directRerolls.length) {
+            rolledDice = D.Clone(rollResults.diceVals);
+            directRerolls.forEach((x) => { D.PullOut(rolledDice, (xx) => xx.charAt(0) === "B" && xx.charAt(1) === x) });
+            rollData.rerollAmt = rollResults.diceVals.length - rolledDice.length;
+            DB({rollData, directRerolls, rolledDice}, "wpReroll");
+        } else {
+            rolledDice = _.compact(_.values(D.KeyMapObj(STATE.REF.diceVals[dieCat], null, (v, k) => (!STATE.REF.selected[dieCat].includes(D.Int(k)) && v) || false)));
+            rollData.rerollAmt = STATE.REF.selected[dieCat].length;
+            DB({rollData, rolledDice}, "wpReroll");
+        }
         const charObj = getObj("character", rollData.charID);
-        DB(`Rolled Dice: ${D.JS(rolledDice)}<br><br>RETRIEVED ROLL RECORD: ${D.JSL(rollRecord)}`, "wpReroll");
-        rollData.rerollAmt = STATE.REF.selected[dieCat].length;
-        const rollResults = rollDice(rollData, _.compact(_.values(rolledDice)));
-        rollResults.wpCost = rollRecord.rollResults.wpCost;
-        rollResults.wpCostAfterReroll = rollRecord.rollResults.wpCostAfterReroll;
+        rollResults = rollDice(rollData, rolledDice);
         rollData.wasRerolled = true;
 
         if (charObj) {
@@ -4410,7 +4488,7 @@ const Roller = (() => {
             if (VAL({number: rollResults.wpCostAfterReroll})) {
                 if (rollResults.wpCost === 0 && rollResults.wpCostAfterReroll > 0)
                     rollResults.goldFlagLines = _.reject(rollResults.goldFlagLines, (v) => v.includes("Free Reroll"));
-                rollResults.wpCost = rollRecord.rollResults.wpCostAfterReroll;
+                rollResults.wpCost = rollResults.wpCostAfterReroll;
                 delete rollResults.wpCostAfterReroll;
             }
         }
@@ -4437,19 +4515,19 @@ const Roller = (() => {
                         contents: [
                             {
                                 name: "<< Prev",
-                                command: "!reply cycle@-1",
+                                command: "!roll change prev",
                                 styles: {bgColor: C.COLORS.darkpurple}
                             } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
                             9,
                             {
                                 name: "Clear Roller",
-                                command: "!reply clear",
+                                command: "!roll clear",
                                 styles: {width: "36%"}
                             } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
                             9,
                             {
                                 name: "Next >>",
-                                command: "!reply cycle@1",
+                                command: "!roll change next",
                                 styles: {bgColor: C.COLORS.darkpurple}
                             } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
                         ],
@@ -4462,35 +4540,33 @@ const Roller = (() => {
                         type: "ButtonLine",
                         contents: [
                             {
-                                text: "Add Dice:",
-                                styles: {width: "19%", textIndent: "0px", textAlign: "right"}
+                                text: "Add:"
                             } /* height, width, fontFamily, fontSize, bgColor, color, margin, textAlign, textIndent, padding, lineHeight */,
                             {
                                 name: "+1",
-                                command: "!reply change@1",
+                                command: "!roll change roll 1",
                                 styles: {}
                             } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
                             {
                                 name: "+2",
-                                command: "!reply change@2",
+                                command: "!roll change roll 2",
                                 styles: {}
                             } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
                             {
                                 name: "+3",
-                                command: "!reply change@3",
+                                command: "!roll change roll 3",
                                 styles: {}
                             } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
                             {
                                 name: "+4",
-                                command: "!reply change@4",
+                                command: "!roll change roll 4",
                                 styles: {}
                             } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
                             {
                                 name: "+5",
-                                command: "!reply change@5",
+                                command: "!roll change roll 5",
                                 styles: {}
-                            } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
-                            15
+                            } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
                         ],
                         buttonStyles: {
                             color: C.COLORS.black,
@@ -4502,57 +4578,119 @@ const Roller = (() => {
                         type: "ButtonLine",
                         contents: [
                             {
-                                text: "Remove Dice:",
-                                styles: {width: "19%", textIndent: "0px", textAlign: "right"}
+                                text: "Remove:"
                             } /* height, width, fontFamily, fontSize, bgColor, color, margin, textAlign, textIndent, padding, lineHeight */,
                             {
                                 name: "-1",
-                                command: "!reply change@-1",
+                                command: "!roll change roll -1",
                                 styles: {}
                             } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
                             {
                                 name: "-2",
-                                command: "!reply change@-2",
+                                command: "!roll change roll -2",
                                 styles: {}
                             } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
                             {
                                 name: "-3",
-                                command: "!reply change@-3",
+                                command: "!roll change roll -3",
                                 styles: {}
                             } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
                             {
                                 name: "-4",
-                                command: "!reply change@-4",
+                                command: "!roll change roll -4",
                                 styles: {}
                             } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
                             {
                                 name: "-5",
-                                command: "!reply change@-5",
+                                command: "!roll change roll -5",
                                 styles: {}
-                            } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
-                            15
+                            } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
                         ],
                         buttonStyles: {
                             color: C.COLORS.black,
                             bgColor: C.COLORS.lightred
                         } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
                         styles: {margin: "0px 0px 5px 0px"} /* height, width, margin, textAlign */
-                    }
+                    },
+                    {
+                        type: "ClearBody", contents: "~ WP Reroll ~", styles: {textAlign: "center"}
+                    },
+                    {
+                        type: "ButtonLine",
+                        contents: [
+                            0,
+                            {
+                                name: "F", command: "!roll wp f"
+                            },
+                            {
+                                name: "FF", command: "!roll wp ff"
+                            },
+                            {
+                                name: "FFF", command: "!roll wp fff"
+                            },
+                            0
+                        ],
+                        buttonStyles: {
+                            color: C.COLORS.white,
+                            bgColor: C.COLORS.grey
+                        } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
+                        styles: {margin: "0px 0px 5px 0px"} /* height, width, margin, textAlign */
+                    },
+                    {
+                        type: "ButtonLine",
+                        contents: [
+                            0,
+                            {
+                                name: "C", command: "!roll wp c"
+                            },
+                            {
+                                name: "CC", command: "!roll wp cc"
+                            },
+                            {
+                                name: "CCC", command: "!roll wp ccc"
+                            },
+                            0
+                        ],
+                        buttonStyles: {
+                            color: C.COLORS.white,
+                            bgColor: C.COLORS.grey
+                        } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
+                        styles: {margin: "0px 0px 5px 0px"} /* height, width, margin, textAlign */
+                    },
+                    {
+                        type: "ButtonLine",
+                        contents: [
+                            0,
+                            {
+                                name: "CF", command: "!roll wp cf"
+                            },
+                            {
+                                name: "CCF", command: "!roll wp ccf"
+                            },
+                            {
+                                name: "CFF", command: "!roll wp cff"
+                            },
+                            0
+                        ],
+                        buttonStyles: {
+                            color: C.COLORS.white,
+                            bgColor: C.COLORS.grey
+                        } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
+                        styles: {margin: "0px 0px 5px 0px"} /* height, width, margin, textAlign */
+                    },
+                    {
+                        type: "ButtonLine",
+                        contents: [
+                            {
+                                name: "Flip Opp",
+                                command: "!roll opp flip",
+                                styles: {width: "45%", bgColor: C.COLORS.darkblue}
+                            }
+                        ],
+                        styles: {margin: "0px 0px 5px 0px"} /* height, width, margin, textAlign */
+                    },
                 ],
                 blockStyles: {} /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */
-            },
-            (commandString) => {
-                // IMPORTANT: return 'true' if you want to hold this function open for more commands
-                const params = D.ParseToObj(commandString, ",", "@"); // key:value pairs must be in key@pairs for this to work. Multiple commands comma-delimited.
-                if ("clear" in params)
-                    clearRoller();
-                if ("cycle" in params)
-                    if (params.cycle === -1)
-                        loadPrevRoll();
-                    else if (params.cycle === 1)
-                        loadNextRoll();
-                if ("change" in params)
-                    changeRoll(params.change);
             }
         );
         TRACEOFF(traceID);
@@ -4821,6 +4959,35 @@ const Roller = (() => {
         if (rollFlags.isHidingResult)
             return diceVals.map((x) => "g");
         return diceVals;
+    };
+    const flipOppRolls = () => {
+        const {rollData, rollResults} = D.Clone(getCurrentRoll());
+        if (rollData.rollID in STATE.REF.oppRolls) {
+            const {oppData, oppResults} = D.Clone(STATE.REF.oppRolls[rollData.rollID]);
+            // Toggle isWaiting && isOpposed before switching:
+            rollData.rollFlags.isWaitingForOpposed = false;
+            rollData.rollFlags.isOpposedRoll = oppData.rollID;
+            rollResults.rollFlags.isWaitingForOpposed = false;
+            rollResults.rollFlags.isOpposedRoll = oppData.rollID;
+            oppData.rollFlags.isWaitingForOpposed = true;
+            oppData.rollFlags.isOpposedRoll = false;
+            oppResults.rollFlags.isWaitingForOpposed = true;
+            oppResults.rollFlags.isOpposedRoll = false;
+
+            // Delete entry from oppRolls
+            delete STATE.REF.oppRolls[rollData.rollID];
+
+            // Log main roll into oppRolls
+            STATE.REF.oppRolls[oppData.rollID] = {oppData: rollData, oppResults: rollResults};
+
+            // Overwrite main roll with opp roll
+            replaceRoll(oppData, oppResults, STATE.REF.rollIndex);
+
+            // Log new final outcome
+            STATE.REF.rollRecord[STATE.REF.rollIndex].rollResults.finalOutcome = getRollOutcome(oppData, oppResults);
+
+            displayRoll();
+        }
     };
     // #endregion
 

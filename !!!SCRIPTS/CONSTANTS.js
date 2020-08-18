@@ -260,7 +260,7 @@ const C = (() => {
                     display: block;
                     margin: ${params.margin};
                     height: auto;
-                    min-height: 25px;
+                    min-height: 30px;
                     min-width: ${CHATWIDTH}px;
                     font-size: 0px;
                     width: ${params.width};
@@ -793,7 +793,7 @@ const C = (() => {
                 display: block;
                 margin: ${params.margin};
                 height: auto;
-                min-height: 25px;
+                min-height: 30px;
                 min-width: ${CHATWIDTH}px;
                 font-size: 0px;
                 width: ${params.width};

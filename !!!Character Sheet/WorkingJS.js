@@ -1806,7 +1806,7 @@
     };
     const log = (msg, titles, isWarn, isLoud) => {
         if (isInBlackout()) {
-            TAS.error("IN BLACKOUT!");
+            // TAS.error("IN BLACKOUT!");
             return false;
         }
         titles = _.compact(_.flatten([titles])).join(":");

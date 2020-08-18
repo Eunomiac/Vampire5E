@@ -412,8 +412,8 @@ const D = (() => {
                         "Storyteller",
                         C.HTML.Block(
                             C.HTML.Header(`Done <b>${queueName}</b>!`, {
-                                lineHeight: "25px",
-                                height: "25px",
+                                lineHeight: "30px",
+                                height: "30px",
                                 margin: "0px",
                                 fontFamily: "Candal",
                                 fontSize: "10px",
@@ -443,8 +443,8 @@ const D = (() => {
                             C.HTML.Body(
                                 `<b>${FunctionQueue[queueName][current][1]}</b> (${queueName} ${current + 1} / ${FunctionQueue[queueName].length})`,
                                 {
-                                    lineHeight: "25px",
-                                    height: "25px",
+                                    lineHeight: "30px",
+                                    height: "30px",
                                     margin: "0px",
                                     fontFamily: "Candal",
                                     fontSize: "10px",
@@ -1278,7 +1278,7 @@ const D = (() => {
                 display: block;
                 margin: -35px 0px -7px -42px;
                 height: auto;
-                min-height: 25px;
+                min-height: 30px;
                 min-width: 267px;
                 width: auto;
                 background-color: white;
@@ -1290,7 +1290,7 @@ const D = (() => {
             "><span style="
                     display: block;
                     height: auto;
-                    line-height: 25px;
+                    line-height: 30px;
                     width: auto;
                     margin: 0px;
                     padding: 0px 5px;
@@ -1327,7 +1327,7 @@ const D = (() => {
                         C.HTML.Header(message, {
                             height: "auto",
                             width: "auto",
-                            lineHeight: "25px",
+                            lineHeight: "30px",
                             padding: "0px 5px",
                             margin: "0px",
                             fontFamily: "Oswald",
@@ -1349,7 +1349,7 @@ const D = (() => {
                             C.HTML.Header(title, {
                                 height: "auto",
                                 width: "auto",
-                                lineHeight: "25px",
+                                lineHeight: "30px",
                                 padding: "0px 5px",
                                 margin: "0px",
                                 fontFamily: "Voltaire",
