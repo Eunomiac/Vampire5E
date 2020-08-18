@@ -642,51 +642,63 @@
 	}
 
 	.charsheet input.sheet-tab1 + span {
-		background: url("https://i.imgur.com/n9ZUm0N.png") no-repeat center;
+		background: url("https://i.imgur.com/IFwnX7k.png") no-repeat center;
+		background-size: 90%;
 	}
 
 	.charsheet input.sheet-tab1:checked + span {
-		background: url("https://i.imgur.com/UKf9Utd.png") no-repeat center;
+		background: url("https://i.imgur.com/IzFCQio.png") no-repeat center;
+		background-size: 90%;
 	}
 
 	.charsheet input.sheet-tab2 + span {
-		background: url("https://i.imgur.com/Huyeyla.png") no-repeat center;
+		background: url("https://i.imgur.com/3mcp2vT.png") no-repeat center;
+		background-size: 90%;
 	}
 
 	.charsheet input.sheet-tab2:checked + span {
-		background: url("https://i.imgur.com/7X0Yd7L.png") no-repeat center;
+		background: url("https://i.imgur.com/jZEWsHL.png") no-repeat center;
+		background-size: 90%;
 	}
 
 	.charsheet input.sheet-tab3 + span {
-		background: url("https://i.imgur.com/Jd3cDeh.png") no-repeat center;
+		background: url("https://i.imgur.com/VVDFZd2.png") no-repeat center;
+		background-size: 90%;
 	}
 
 	.charsheet input.sheet-tab3:checked + span {
-		background: url("https://i.imgur.com/ohn2ui6.png") no-repeat center;
+		background: url("https://i.imgur.com/YwjPnGB.png") no-repeat center;
+		background-size: 90%;
 	}
 
 	.charsheet input.sheet-tab4 + span {
-		background: url("https://i.imgur.com/G35HEdC.png") no-repeat center;
+		background: url("https://i.imgur.com/0wJ4PwK.png") no-repeat center;
+		background-size: 90%;
 	}
 
 	.charsheet input.sheet-tab4:checked + span {
-		background: url("https://i.imgur.com/sgt3kyQ.png") no-repeat center;
+		background: url("https://i.imgur.com/2LMiJMn.png") no-repeat center;
+		background-size: 90%;
 	}
 
 	.charsheet input.sheet-tab5 + span {
-		background: url("https://i.imgur.com/Fe8tW8v.png") no-repeat center;
+		background: url("https://i.imgur.com/9ds1Udy.png") no-repeat center;
+		background-size: 90%;
 	}
 
 	.charsheet input.sheet-tab5:checked + span {
-		background: url("https://i.imgur.com/c29Guhd.png") no-repeat center;
+		background: url("https://i.imgur.com/bl1NyXS.png") no-repeat center;
+		background-size: 90%;
 	}
 
 	.charsheet input.sheet-tab9 + span {
-		background: url("https://i.imgur.com/59zUk2e.png") no-repeat center;
+		background: url("https://i.imgur.com/2Nz0lMP.png") no-repeat center;
+		background-size: 90%;
 	}
 
 	.charsheet input.sheet-tab9:checked + span {
-		background: url("https://i.imgur.com/lI1fhK7.png") no-repeat center;
+		background: url("https://i.imgur.com/CHjX0Rq.png") no-repeat center;
+		background-size: 90%;
 	}
 
 /* 		#endregion*/
