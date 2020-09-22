@@ -756,6 +756,12 @@ const Session = (() => {
             Active: () => {
                 // Media.ToggleTokens("registered", true);
                 Media.ToggleTokens("disabled", false);
+                Media.ToggleImg("Horizon-CNTower-Underlay", false);
+                Media.ToggleAnim("CN-LED-1", true);
+                Media.ToggleAnim("CN-LED-2", false);
+                Media.ToggleAnim("CN-LED-3", false);
+                Media.ToggleAnim("CN-LED-4", false);
+                Media.SetImg("Horizon-CNTower-Overlay", "black");
             },
             Inactive: () => {},
             Downtime: () => {
@@ -799,6 +805,25 @@ const Session = (() => {
             TopRight: "blank",
             Right: "blank",
             BotRight: "blank"
+        }
+    };
+    const NEWBLANKLOCRECORD = {
+        center: false,
+        left: false,
+        right: false,
+        topLeft: false,
+        topRight: false,
+        botLeft: false,
+        botRight: false,
+        dummy: {
+            district: "YongeStreet",
+            site: "Vehicle2",
+            siteName: "Harker's Car",
+            siteRes: "m+",
+            siteAspectTitle: "A Song Name",
+            siteAspectText: "The aspect text.",
+            isActive: true
+
         }
     };
     const verifyStateIntegrity = () => {
@@ -880,10 +905,10 @@ const Session = (() => {
     };
     const endSession = (isCheckingForMonologues = true, isSkippingMonologues = false) => {
         DB({mode: Session.Mode, spotlightChar: STATE.REF.spotlightChar, monologues: D.JS(STATE.REF.SessionMonologues)}, "endSession");
-        if (Session.IsCasaLomaActive) {
-            D.Flag("Toggle CasaLoma Off First!");
-            return;
-        }
+        // if (Session.IsCasaLomaActive) {
+        //     D.Flag("Toggle CasaLoma Off First!");
+        //     return;
+        // }
         if (
             (STATE.REF.isTestingActive && !STATE.REF.isFullTest)
             || (isCheckingForMonologues && startSessionMonologue())
@@ -1484,14 +1509,14 @@ const Session = (() => {
         return (activePos && STATE.REF.curLocation[activePos] && STATE.REF.curLocation[activePos][0]) || false;
     };
     const getActiveSite = (isReturningSiteName = false) => {
-        if (STATE.REF.quadScene.isActive) {
-            const activePos = Media.GetImgSrc("SiteFocusHub");
-            if (activePos === "blank")
-                return ["blank"];
-            const activeSiteRef = `Site${activePos}`;
-            const activeSiteName = Media.GetImgSrc(activeSiteRef);
-            return [activeSiteName];
-        }
+        // if (STATE.REF.quadScene.isActive) {
+        //     const activePos = Media.GetImgSrc("SiteFocusHub");
+        //     if (activePos === "blank")
+        //         return ["blank"];
+        //     const activeSiteRef = `Site${activePos}`;
+        //     const activeSiteName = Media.GetImgSrc(activeSiteRef);
+        //     return [activeSiteName];
+        // }
         const [activePos] = getActivePositions().filter((x) => x.startsWith("Site"));
         return (
             (activePos
@@ -1659,43 +1684,53 @@ const Session = (() => {
         );
         for (const [sitePos, siteData] of Object.entries(
             _.omit(newLocData, (v, k) => k === "subLocs" || k.includes("District") || (v && v[0] === "blank"))
-        )) {
+        ))
             // Only interested in non-blank sites; We'll deal with sub-locations afterwards.
-            const [siteRef, siteName] = siteData;
-            const customLocRef
-                = (siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName])
-                || (siteRef in STATE.REF.customLocs && STATE.REF.customLocs[siteRef])
-                || false;
-            if (sitePos === "SiteCenter")
-                newLocData.subLocs = Object.assign(
-                    {},
-                    BLANKLOCRECORD.subLocs,
-                    (customLocRef && customLocRef.subLocs) || {},
-                    newLocData.subLocs || {}
-                );
-            else
-                newLocData.subLocs = Object.assign({}, BLANKLOCRECORD.subLocs);
-            reportStrings.push(`... SitePos: ${sitePos}, SiteData: ${D.JS(siteData)}, SubLocs: ${D.JS(newLocData.subLocs)}`);
-
-            if (siteName) {
-                STATE.REF.customLocs[siteName] = STATE.REF.customLocs[siteName] || {};
-                STATE.REF.customLocs[siteName].district
-                    = STATE.REF.customLocs[siteName].district || newLocData[sitePos.replace(/Site/gu, "District")][0];
-                STATE.REF.customLocs[siteName].site = siteRef;
-                STATE.REF.customLocs[siteName].siteName = siteName;
-            }
-            if (sitePos === "SiteCenter" && Object.values(newLocData.subLocs || {}).some((x) => x !== "blank"))
-                if (customLocRef)
-                    customLocRef.subLocs = D.Clone(newLocData.subLocs);
-                else if (siteName)
-                    STATE.REF.customLocs[siteName].subLocs = D.Clone(newLocData.subLocs);
+            try {
+                const [siteRef, siteName] = siteData;
+                const customLocRef = (siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName])
+                                    || (siteRef in STATE.REF.customLocs && STATE.REF.customLocs[siteRef])
+                                    || false;
+                if (sitePos === "SiteCenter")
+                    newLocData.subLocs = Object.assign(
+                        {},
+                        BLANKLOCRECORD.subLocs,
+                        (customLocRef && customLocRef.subLocs) || {},
+                        newLocData.subLocs || {}
+                    );
                 else
-                    STATE.REF.customLocs[siteRef] = {
-                        district: newLocData[sitePos.replace(/Site/gu, "District")],
-                        site: siteRef,
-                        subLocs: D.Clone(newLocData.subLocs)
-                    };
-        }
+                    newLocData.subLocs = Object.assign({}, BLANKLOCRECORD.subLocs);
+                reportStrings.push(`... SitePos: ${sitePos}, SiteData: ${D.JS(siteData)}, SubLocs: ${D.JS(newLocData.subLocs)}`);
+
+                if (siteName) {
+                    STATE.REF.customLocs[siteName] = STATE.REF.customLocs[siteName] || {};
+                    STATE.REF.customLocs[siteName].district
+                    = STATE.REF.customLocs[siteName].district || newLocData[sitePos.replace(/Site/gu, "District")][0];
+                    STATE.REF.customLocs[siteName].site = siteRef;
+                    STATE.REF.customLocs[siteName].siteName = siteName;
+                }
+                if (sitePos === "SiteCenter" && Object.values(newLocData.subLocs || {}).some((x) => x !== "blank"))
+                    if (customLocRef)
+                        customLocRef.subLocs = D.Clone(newLocData.subLocs);
+                    else if (siteName)
+                        STATE.REF.customLocs[siteName].subLocs = D.Clone(newLocData.subLocs);
+                    else
+                        STATE.REF.customLocs[siteRef] = {
+                            district: newLocData[sitePos.replace(/Site/gu, "District")],
+                            site: siteRef,
+                            subLocs: D.Clone(newLocData.subLocs)
+                        };
+            } catch (errObj) {
+                D.Alert([
+                    "Error Processing [siteRef, siteName] of Filtered newLocData",
+                    "",
+                    `newLocData: ${D.JS(newLocData, false, true)}`,
+                    "",
+                    `filteredNewLocData: ${D.JS(_.omit(newLocData, (v, k) => k === "subLocs" || k.includes("District") || (v && v[0] === "blank")), false, true)}`
+                ].join("<br>"), "Error: SetLocation");
+                return;
+            }
+
 
         // FINALLY: Set the current location in STATE to the new location record, and record it in the location record for the active Mode.
         STATE.REF.curLocation = D.Clone(newLocData);
@@ -1720,7 +1755,8 @@ const Session = (() => {
                 locDataDelta[`SubLoc${subLocPos}`] = subLocName;
         reportStrings.push(`Loc Data Delta: ${D.JS(locDataDelta)}`);
         reportStrings.push(`New STATE.REF Record: ${D.JS(STATE.REF.locationRecord[Session.Mode])}`);
-        DB(`<h3>Set Location Processing:</h3>${D.JS(reportStrings.join("<br>"))}`, "setLocation");
+        DB({report: ["<h3>Set Location Processing:</h3>",
+                     ...reportStrings.map((x) => D.JS(x, false, true))]}, "setLocation");
         for (const [locPos, locData] of Object.entries(locDataDelta)) {
             const locSrc = VAL({string: locData}) ? locData : locData[0];
             if (locPos.includes("Site"))
@@ -1774,12 +1810,13 @@ const Session = (() => {
                 PENDINGLOCCOMMAND.Districts[cmdIndex] = [commandString];
                 Media.Notify("panel", `● District${cmdIndex === 1 ? " RIGHT" : " (First)"} set: "${D.UCase(commandString)}"`);
                 if (commandString === "blank") {
-                    PENDINGLOCCOMMAND.Sites[cmdIndex] = ["blank"];
                     if (cmdIndex === 0) {
-                        PENDINGLOCCOMMAND.Districts[1] = ["blank"];
-                        PENDINGLOCCOMMAND.Sites[1] = ["blank"];
+                        PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND);
+                        setLocation(D.Clone(BLANKLOCRECORD));
+                    } else {
+                        PENDINGLOCCOMMAND.Sites[cmdIndex] = ["blank"];
+                        processPendingLocCommand();
                     }
-                    processPendingLocCommand();
                     Media.Notify("panel", "● FINISHED! Setting Location Cards...");
                 } else {
                     siteCommandMenu();
@@ -1817,7 +1854,7 @@ const Session = (() => {
                         break;
                     }
                     case "focus": {
-                        STATE.REF.sceneFocus = D.LCase(value.charAt(0));
+                        PENDINGLOCCOMMAND.sceneFocus = D.LCase(value.charAt(0));
                         Media.Notify("panel", `● Scene Focus switched to: ${D.Capitalize(value)}`);
                         break;
                     }
@@ -2036,7 +2073,7 @@ const Session = (() => {
             }
             // no default
         }
-        setLocation(locParams);
+        setLocation(locParams, PENDINGLOCCOMMAND.sceneFocus);
         PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND);
     };
     const sceneFocusCommandMenu = () => {
@@ -2597,84 +2634,91 @@ const Session = (() => {
             || (VAL({string: locPos}) && D.LCase(locPos).charAt(0))
             || (isLocCentered() === false && ["r", "l", "c"].includes(STATE.REF.sceneFocus) && STATE.REF.sceneFocus)
             || "c";
+        const oldSceneFocus = STATE.REF.sceneFocus;
+        const [oldDistrict, oldSite] = [Session.District, Session.Site];
         STATE.REF.sceneFocus = locPos;
         STATE.REF.sceneFocusRecord[Session.Mode] = locPos;
-        DB({locPos, ["state Scene Focus"]: STATE.REF.sceneFocus, activeLocs: getActivePositions()}, "setSceneFocus");
-        const allLocations = getAllLocations();
-        const activePositions = getActivePositions();
-        const inactivePositions = Object.keys(getAllLocations(false)).filter((x) => !activePositions.includes(x));
-        const tokenObjs = Media.GetTokens().filter((x) => x.get("layer") !== "gmlayer");
-        if (activePositions.includes("DistrictCenter") || locPos === "c") {
-            Media.ToggleImg("DisableLocLeft", false);
-            Media.ToggleImg("DisableLocRight", false);
-            Media.ToggleImg("DisableSiteLeft", false);
-            Media.ToggleImg("DisableSiteRight", false);
-            for (const tokenObj of tokenObjs) {
-                Media.ToggleToken(tokenObj, true);
-                if (tokenObj.get("layer") !== "objects")
-                    tokenObj.set({layer: "objects"});
+        const [newDistrict, newSite] = [Session.District, Session.Site];
+        const curLocations = getAllLocations();
+
+        DB({locPos, oldSceneFocus, oldDistrict, oldSite, newDistrict, newSite, curLocations}, "setSceneFocus");
+        // STEP ONE: Check whether current Site/District has an 'onExitCall' and run it if so:
+        if (oldDistrict && oldDistrict !== newDistrict && C.DISTRICTS[oldDistrict].onExitCall)
+            D.Call(C.DISTRICTS[oldDistrict].onExitCall);
+        if (oldSite && oldSite !== newSite && C.SITES[oldSite].onExitCall)
+            D.Call(C.SITES[oldSite].onExitCall);
+
+        // STEP TWO: Divide all tokens into LEFT or RIGHT scenes.
+        const allTokenObjs = Media.GetTokens().filter((x) => x.get("layer") !== "gmlayer");
+        const divTokenObjs = Object.assign({all: [...allTokenObjs], left: [], right: []}, _.groupBy(allTokenObjs, (token) => {
+            if (Media.IsInside("DistrictLeft", token, 40) || Media.IsInside("SiteLeft", token, 40))
+                return "left";
+            if (Media.IsInside("DistrictRight", token, 40) || Media.IsInside("SiteRight", token, 40))
+                return "right";
+            if (Media.IsInside("DistrictCenter", token, 40) || Media.IsInside("SiteCenter", token, 40))
+                return D.Int(token.get("left")) < C.SANDBOX.left ? "left" : "right";
+            return "outOfBounds";
+        }));
+        DB({locPos, oldSceneFocus, curLocations, divTokenObjs, activeSite: Session.Site}, "setSceneFocus");
+        // STEP THREE: Do a quick change of the graphics --- blank tokens first, then add curtains:
+        try {
+            divTokenObjs[{l: "right", r: "left"}[locPos]].forEach((token) => Media.ToggleToken(token, false));
+        } catch (errObj) {
+            // Nothing to see here...
+        }
+        Media.ToggleImg("DisableLocLeft", locPos === "r" && curLocations.DistrictLeft !== curLocations.DistrictRight);
+        Media.ToggleImg("DisableSiteLeft", locPos === "r" && curLocations.DistrictLeft === curLocations.DistrictRight);
+        Media.ToggleImg("DisableLocRight", locPos === "l" && curLocations.DistrictLeft !== curLocations.DistrictRight);
+        Media.ToggleImg("DisableSiteRight", locPos === "l" && curLocations.DistrictLeft === curLocations.DistrictRight);
+
+        // STEP FOUR: Do the next bit after a short timeout so everything above catches up:
+
+        setTimeout(() => {
+            // Now turn the tokens on that are active in the scene:
+            try {
+                divTokenObjs[{l: "left", r: "right", c: "all", a: "all"}[locPos]].forEach((token) => {
+                    Media.ToggleToken(token, true);
+                    Media.Scale(token);
+                    if (_.isEmpty(curLocations))
+                        if (VAL({pc: token}))
+                            Char.SendHome(token.get("represents"));
+                        else
+                            Media.ToggleToken(token, false);
+                });
+            } catch (errObj) {
+                // Nothing to see here...
             }
-        } else if (allLocations.DistrictLeft && allLocations.DistrictLeft === allLocations.DistrictRight) {
-            Media.ToggleImg("DisableLocLeft", false);
-            Media.ToggleImg("DisableLocRight", false);
-            Media.ToggleImg("DisableSiteLeft", locPos === "r");
-            Media.ToggleImg("DisableSiteRight", locPos === "l");
-            for (const tokenObj of tokenObjs) {
-                Media.ToggleToken(tokenObj, true);
-                if (tokenObj.get("layer") !== "objects")
-                    tokenObj.set({layer: "objects"});
-            }
-        } else {
-            Media.ToggleImg("DisableSiteLeft", false);
-            Media.ToggleImg("DisableSiteRight", false);
-            Media.ToggleImg("DisableLocLeft", locPos === "r");
-            Media.ToggleImg("DisableLocRight", locPos === "l");
-            for (const tokenObj of _.compact(
-                _.flatten(activePositions.map((x) => Media.GetContents(x, {padding: 25}, {layer: "walls", _subtype: "token"})))
-            ))
-                if (tokenObj.get("layer") !== "gmlayer")
-                    Media.ToggleToken(tokenObj, true);
-            for (const tokenObj of _.compact(
-                _.flatten(inactivePositions.map((x) => Media.GetContents(x, {padding: 25}, {layer: "objects", _subtype: "token"})))
-            ))
-                if (tokenObj.get("layer") !== "gmlayer")
-                    Media.ToggleToken(tokenObj, false);
-        }
-        const [sitePos] = activePositions.filter((x) => x.startsWith("Site"));
-        const siteName = sitePos in STATE.REF.curLocation && STATE.REF.curLocation[sitePos][1];
-        const pointerPos
-            = (siteName && siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName].pointerPos)
-            || (Session.Site in STATE.REF.customLocs && STATE.REF.customLocs[Session.Site].pointerPos)
-            || (Session.Site in STATE.REF.locationPointer && STATE.REF.locationPointer[Session.Site].pointerPos)
-            || false;
-        if (VAL({list: pointerPos})) {
-            Media.ToggleImg("MapIndicator_Base_1", true);
-            Media.ToggleAnim("MapIndicator", true);
-            Media.SetImgData("MapIndicator_Base_1", {left: pointerPos.left, top: pointerPos.top}, true);
-            Media.GetImg("MapIndicator").set({left: pointerPos.left, top: pointerPos.top});
-        } else {
-            Media.ToggleImg("MapIndicator_Base_1", false);
-            Media.ToggleAnim("MapIndicator", false);
-        }
-        const [prevDistrict, prevSite] = Object.values(STATE.REF.prevLocFocus || getActiveLocations());
-        const [curDistrict, curSite] = Object.values(getActiveLocations());
-        const locCalls = [];
-        if (prevDistrict !== curDistrict) {
-            if (prevDistrict)
-                locCalls.unshift(C.DISTRICTS[prevDistrict].onExitCall);
-            if (curDistrict)
-                locCalls.push(C.DISTRICTS[curDistrict].onEntryCall);
-        }
-        if (prevSite !== curSite) {
-            if (prevSite)
-                locCalls.unshift(C.SITES[prevSite].onExitCall);
-            if (curSite)
-                locCalls.push(C.SITES[curSite].onEntryCall);
-        }
-        for (const locCall of _.compact(locCalls))
-            D.Call(locCall);
-        STATE.REF.prevLocFocus = getActiveLocations();
-        Soundscape.Sync();
+            setTimeout(() => {
+                if (newDistrict && oldDistrict !== newDistrict && C.DISTRICTS[newDistrict].onEntryCall)
+                    D.Call(C.DISTRICTS[newDistrict].onEntryCall);
+                if (newSite && oldSite !== newSite && C.SITES[newSite].onEntryCall)
+                    D.Call(C.SITES[newSite].onEntryCall);
+                setTimeout(() => {
+                    STATE.REF.prevLocFocus = getActiveLocations();
+                    Soundscape.Sync();
+                    setTimeout(() => {
+                        // Set map animation pointer:
+                        const [siteRef, siteName] = STATE.REF.curLocation[{l: "SiteLeft", r: "SiteRight", c: "SiteCenter"}[locPos] || "none"] || [];
+
+                        // Set map pointer as a timeout
+                        const pointerPos
+                            = (siteName && siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName].pointerPos)
+                            || (Session.Site in STATE.REF.customLocs && STATE.REF.customLocs[Session.Site].pointerPos)
+                            || (Session.Site in STATE.REF.locationPointer && STATE.REF.locationPointer[Session.Site].pointerPos)
+                            || false;
+                        if (pointerPos) {
+                            Media.ToggleImg("MapIndicator_Base_1", true);
+                            Media.ToggleAnim("MapIndicator", true);
+                            Media.SetImgData("MapIndicator_Base_1", {left: pointerPos.left, top: pointerPos.top}, true);
+                            Media.GetImg("MapIndicator").set({left: pointerPos.left, top: pointerPos.top});
+                        } else {
+                            Media.ToggleImg("MapIndicator_Base_1", false);
+                            Media.ToggleAnim("MapIndicator", false);
+                        }
+                    }, 500);
+                }, 500);
+            }, 500);
+        }, 500);
     };
     const addSceneAlarm = (alarm) => {
         STATE.REF.SceneAlarms.push(alarm);
@@ -2700,10 +2744,8 @@ const Session = (() => {
 
         AddSceneAlarm: addSceneAlarm,
         ChangeMode: changeMode,
-        CharsIn: getCharsInLocation,
         ResetLocations: setModeLocations,
         IsInScene: (charRef) => isInScene(charRef),
-        IsInLocation: (charRef, locRef) => isInLocation(charRef, locRef),
         get SceneChars() {
             return getCharsInLocation(STATE.REF.sceneFocus);
         }, // ARRAY: [charObj, charObj, ...]
@@ -2711,24 +2753,21 @@ const Session = (() => {
             return STATE.REF.sceneFocus;
         }, // STRING: "r", "l", "c"
 
-        get Locations() {
-            return getAllLocations();
-        }, // LIST: { DistrictCenter: "YongeStreet", SiteCenter: "SiteLotus", SubLocs: {TopRight: "Laboratory", TopLeft: "Security"} }
         get ActiveLocations() {
             return getActiveLocations();
         }, // LIST: { DistrictLeft: "YongeStreet", SiteLeft: "SiteLotus" }
-        get ActivePositions() {
-            return getActivePositions();
-        }, // ARRAY: ["DistrictCenter", "SiteCenter"]
-        get InactiveLocations() {
-            return _.omit(getAllLocations(false), (v, k) => getActivePositions().includes(k));
-        },
+        // get ActivePositions() {
+        //     return getActivePositions();
+        // }, // ARRAY: ["DistrictCenter", "SiteCenter"]
+        // get InactiveLocations() {
+        //     return _.omit(getAllLocations(false), (v, k) => getActivePositions().includes(k));
+        // },
 
         get District() {
-            return getActiveDistrict();
+            return getActiveDistrict(); // STRING: District Name OR FALSE
         },
         get Site() {
-            return getActiveSite();
+            return getActiveSite(); // STRING: Site Name OR FALSE
         },
         get IsOutside() {
             return isOutside();
@@ -2756,9 +2795,9 @@ const Session = (() => {
         get SpotlightPrompts() {
             return STATE.REF.SpotlightPrompts;
         },
-        get IsCasaLomaActive() {
-            return STATE.REF.quadScene.isActive;
-        },
+        // get IsCasaLomaActive() {
+        //     return STATE.REF.quadScene.isActive;
+        // },
 
         SetLocation: setLocation,
         SetMacro: setMacro,

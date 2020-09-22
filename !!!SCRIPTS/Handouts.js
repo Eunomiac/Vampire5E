@@ -91,6 +91,17 @@ const Handouts = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const onChatCall = (call, args, objects, msg) => {
         switch (call) {
+            case "test": {
+                switch (D.LCase(call = args.shift())) {
+                    case "rolleffects": {
+                        parseRollEffects("Location Effects", state.VAMPIRE.Location, "rollEffects", "location");
+                        parseRollEffects("Roll Effects", state.VAMPIRE.Location);
+                        break;
+                    }
+                    // no default
+                }
+                break;
+            }
             case "kill": {
                 let category;
                 switch (D.LCase((call = args.shift()))) {
@@ -143,7 +154,7 @@ const Handouts = (() => {
     // #region GETTERS: Retrieving Notes, Data
     const getCount = (category) => (STATE.REF.categoryLogs[category] || []).length;
     const getCatNum = (category) => D.Int(D.LCase(D.Last(STATE.REF.categoryLogs[category])).replace(/^.*? (\d*)$/gu, "$1")) + 1;
-    const getHandoutCode = (titleRef, storageRef, storageKey) => {
+    const parseHandoutGMCode = (titleRef, storageRef, storageKey) => {
         if (storageRef && storageKey) {
             const handoutObj = getHandoutObj(titleRef);
             if (handoutObj)
@@ -153,6 +164,31 @@ const Handouts = (() => {
                 });
         } else {
             D.Flag("Must provide a storage reference and a key to store the code!");
+        }
+    };
+    const parseHandoutTable = (titleRef, callback) => {
+        const handoutObj = getHandoutObj(titleRef);
+        const parseRow = (rowString, headerCells = []) => {
+            const cells = (rowString.match(/<t\w>.*?<\/t\w>/gu) || []).map((x) => x.replace(/^<t\w>(.*?)(<br>)?\s*<\/t\w>/gu, "$1").replace(/<br>|<p>|<\/p>/gu, ""));
+            if (cells && cells.length && cells.length === headerCells.length)
+                return _.object(headerCells, cells);
+            return cells;
+        };
+        if (handoutObj) {
+            const tableData = {headerCells: [], rowCells: []};
+            handoutObj.get("notes", (notes) => {
+                const [headerRowString] = (notes.match(/<thead>.*?<\/thead>/gu) || [""]).map((x) => x.replace(/^<thead><tr>(.*?)<\/tr><\/thead>/gu, "$1"));
+                if (headerRowString)
+                    tableData.headerCells = parseRow(headerRowString);
+                const [bodyRowStrings] = (notes.match(/<tbody>.*?<\/tbody>/gu) || [""]).map((x) => x.replace(/^<tbody><tr>(.*?)<\/tr><\/tbody>/gu, "$1").split("</tr><tr>"));
+                if (bodyRowStrings && bodyRowStrings.length)
+                    tableData.rowCells = bodyRowStrings.map((x) => parseRow(x, tableData.headerCells));
+                if (VAL({function: callback}))
+                    callback(tableData);
+            });
+        } else {
+            D.Flag(`No Handout Found with Title "${D.JS(titleRef)}"`);
+            return [];
         }
     };
     const getHandoutObj = (titleRef, charRef) => {
@@ -284,6 +320,71 @@ const Handouts = (() => {
     // #endregion
 
     // #region HANDOUTS: Specific Handouts
+    const parseRollEffects = (handoutRef, stateRef = state.VAMPIRE.Location, ...stateKeys) => {
+        stateKeys = stateKeys && stateKeys.length ? stateKeys : ["rollEffects", "general"];
+        if (handoutRef && stateRef && stateKeys.length) {
+            const lastKey = stateKeys.pop();
+            while (stateKeys.length) {
+                const thisKey = stateKeys.shift();
+                stateRef[thisKey] = stateRef[thisKey] || {};
+                stateRef = stateRef[thisKey];
+            }
+            parseHandoutTable(handoutRef, (tableData) => {
+                const rollEffectsData = tableData.rowCells.filter((x) => x["On?"] === "X").map((x) => _.omit(x, "On?"));
+                if (!_.isEmpty(rollEffectsData))
+                    stateRef[lastKey] = rollEffectsData.map((x) => {
+                        const scopeExclusions = [];
+                        const rollEffect = Object.assign(
+                            {scope: ["all"], sheetnote: ""},
+                            D.KeyMapObj(
+                                _.pick(x, (v) => v !== ""),
+                                (k) => {
+                                    switch (k) {
+                                        case "Ends": return "endDate";
+                                        default: return D.LCase(k);
+                                    }
+                                },
+                                (v, k) => {
+                                    switch (k) {
+                                        case "Scope": {
+                                            const charRefs = v.split("/");
+                                            scopeExclusions.push(..._.flatten(charRefs
+                                                .filter((xx) => xx.startsWith("NOT:"))
+                                                .map((xx) => xx.slice(4))
+                                                .map((xx) => D.GetChars(xx).map((xxx) => xxx.id))));
+                                            const charInclusions = _.flatten(charRefs
+                                                .filter((xx) => !xx.startsWith("NOT:"))
+                                                .map((xx) => {
+                                                    if (xx === "all")
+                                                        return "all";
+                                                    if (xx === "npc") {
+                                                        scopeExclusions.push(...D.GetChars("pc").map((xxx) => xxx.id));
+                                                        return "all";
+                                                    }
+                                                    return D.GetChars(xx).map((xxx) => xxx.id);
+                                                }));
+                                            if (!charInclusions.length)
+                                                return ["all"];
+                                            return charInclusions;
+                                        }
+                                        case "Ends": return TimeTracker.GetDate(v, false).getTime();
+                                        default: return v;
+                                    }
+                                }
+                            )
+                        );
+                        if (scopeExclusions.length)
+                            rollEffect.scopeExclusions = scopeExclusions;
+                        return rollEffect;
+                    });
+                else if (lastKey in stateRef)
+                    delete stateRef[lastKey];
+            });
+        } else {
+            D.Flag("Must provide state reference!");
+        }
+    };
+
     const updateCharSummary = () => {
         const html = C.HANDOUTHTML.TraitSummaryDoc;
         const colorScheme = {
@@ -1029,12 +1130,16 @@ const Handouts = (() => {
         Remove: delHandoutObj,
         RemoveAll: delHandoutObjs,
         Get: getHandoutObj,
-        ParseCode: getHandoutCode,
+        ParseCode: parseHandoutGMCode,
         Count: getCount,
 
         UpdateReferenceHandouts: () => {
             updateCharSummary();
             updateCharDetails();
+        },
+        UpdateRollEffects: () => {
+            parseRollEffects("Location Effects", state.VAMPIRE.Roller, "newRollEffects", "location");
+            parseRollEffects("Roll Effects", state.VAMPIRE.Roller, "newRollEffects", "general");
         }
     };
 })();

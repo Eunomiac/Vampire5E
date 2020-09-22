@@ -771,9 +771,11 @@ const TimeTracker = (() => {
 
     // #region Date & Time Functions
 
-    const getDateObj = (dateRef) => {
+    const getDateObj = (dateRef, defaultDate = STATE.REF.dateObj) => {
         const funcID = ONSTACK(); // Takes almost any date format and converts it into a Date object.
-        dateRef = dateRef || STATE.REF.dateObj;
+        dateRef = dateRef || defaultDate;
+        if (!dateRef)
+            return false;
         let returnDate;
         const curDateString = formatDateString(new Date(STATE.REF.dateObj));
         DB(

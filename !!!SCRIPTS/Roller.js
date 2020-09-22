@@ -26,7 +26,7 @@ const Roller = (() => {
     const initialize = () => {
         // STATE.REF.selected = {Main: [], Big: []}
         // STATE.REF.diceVals = {Main: new Array(31).fill(false), Big: new Array(3).fill(false)}
-
+        delete STATE.REF.newRollEffects;
         // Media.SetTextData("oppDicePool", {font_size: 20});
         // Media.SetTextData("oppMarginOpp", {font_size: 20});
         // Media.SetTextData("oppMarginMain", {font_size: 20});
@@ -57,6 +57,8 @@ const Roller = (() => {
                 STATE.REF.diceStatus = STATE.REF.diceStatus || {};
                 Object.assign(STATE.REF.diceStatus, {[k]: []});
             });
+        if (!STATE.REF.newRollEffects)
+            Handouts.UpdateRollEffects();
 
         for (const [dieCat, catData] of Object.entries(SETTINGS.dice)) {
             STATE.REF.diceVals[dieCat] = STATE.REF.diceVals[dieCat] || [];
@@ -243,9 +245,17 @@ const Roller = (() => {
             }
             case "secret": {
                 const charObjs = Listener.GetObjects(objects, "character");
-                if (args.length) {
+                if (args.includes("selected")) {
                     const params = Char.SelectedTraits;
                     makeSecretRoll(getRollChars(charObjs), params.join(","));
+                } else if (args.length) {
+                    makeSecretRoll(getRollChars(D.GetChars("registered")), args.map((x, i) => {
+                        if (D.LCase(x) === "int")
+                            return i ? "intelligence" : "intimidation";
+                        if (`${x}`.length === 3 && (D.LCase(x) in C.TRAITLOOKUP))
+                            return C.TRAITLOOKUP[D.LCase(x)];
+                        return D.LCase(x).replace(/ /gu, "_");
+                    }).join(","));
                 } else {
                     Char.PromptTraitSelect(
                         charObjs.map((x) => x.id),
@@ -1174,6 +1184,12 @@ const Roller = (() => {
         subOutcomeWhite: `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
         resultDice: {
             // ♦◊
+            /*
+
+            .X. = CANCELLED (an 'X' in the middle means the die has been cancelled by something else)
+            HCb = Bestial Hunger Die that's Cancelling Other Dice
+            ... don't think the HcRb and HcLb dice are ever used?
+            */
             colStart: "<div style=\"display: inline-block ; width: XXXpx ; height: auto; margin-bottom: 5px\">",
             lineStart: `<div style="display: block ; width: 100% ; height: 24px ; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} ; ">`,
             lineBreak: `</div><div style="display: block ; width: 100% ; height: 24px ; margin-top: -10px; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} ; ">`,
@@ -1236,6 +1252,17 @@ const Roller = (() => {
             "nobestialfail",
             "nocrit"
         ]
+    };
+    const ROLLRESTRICTIONS = {
+        success: ["result"],
+        failure: ["result"],
+        basicfail: ["result"],
+        critical: ["result"],
+        basiccrit: ["result"],
+        messycrit: ["result"],
+        bestialfail: ["result"],
+        totalfail: ["result"]
+
     };
     const OPPROLLDEFAULTS = {
         RollerFrame_OppNameLeft: {isActive: false, height: 40, width: 40},
@@ -1619,6 +1646,8 @@ const Roller = (() => {
 
     // #region ROLL EFFECTS: Applying, Creating, Removing
     const applyRollEffects = (rollInput) => {
+
+        applyRollEffectsNew(rollInput);
         const traceID = TRACEON("applyRollEffects", [rollInput]);
         const rollEffectString = D.GetStatVal(rollInput.charID, "rolleffects") || "";
         let isReapplying = false;
@@ -2350,6 +2379,108 @@ const Roller = (() => {
             }
         }
         return TRACEOFF(traceID, THROW(`Bad Roll Input!${D.JSL(rollInput)}`, "applyRollEffects"));
+    };
+    const applyRollEffectsNew = (rollDetails) => {
+        const isReapplying = false;
+        const validEffects = [];
+        if (VAL({list: rollDetails}, "applyRollEffects")) {
+            rollDetails.appliedRollEffects = rollDetails.appliedRollEffects || [];
+
+            // #region FIND APPLICABLE ROLL EFFECTS
+            // #region SCOPE FILTER: Filter out roll effects that don't match the roll's scope (i.e. character, location, result)
+            const effectsInScope = [
+                ...STATE.REF.newRollEffects.general,
+                ...STATE.REF.newRollEffects.location.filter((x) => [Session.District, Session.Site].includes(x.location))
+            ]
+                .filter((x) => (x.scope.includes("all") || x.scope.includes(rollDetails.charID))
+                                && (!x.scopeExclusions || !x.scopeExclusions.includes(rollDetails.charID)))
+                .filter((x) => "total" in rollDetails || !(x.requirements || "").match("result"));
+            // #endregion
+
+            // #region RESTRICTIONS FILTER: Now filter for the effects where at least one requirement is met
+            const checkRequirement = (reqSet) => {
+                const allReqs = reqSet.split("+").map((x) => x.split(":"));
+                for (const [reqType, req] of allReqs)
+                    switch (reqType) {
+                        case "name": {
+                            if (D.LCase(req) !== D.LCase(D.GetName(rollDetails.charID)))
+                                return false;
+                            break;
+                        }
+                        case "clan": {
+                            if (D.LCase(req) !== D.LCase(D.GetStatVal(rollDetails.charID, "clan")))
+                                return false;
+                            break;
+                        }
+                        case "trait": {
+                            const validTraits = [];
+                            const rollTraits = Object.values(rollDetails.traitData).map((x) => D.LCase(x.display));
+                            switch (req) {
+                                case "physical":
+                                case "social":
+                                case "mental": {
+                                    validTraits.push(...D.LCase(C.ATTRIBUTES[req]), ...D.LCase(C.SKILLS[req]));
+                                    break;
+                                }
+                                default: {
+                                    validTraits.push(D.LCase(req));
+                                    break;
+                                }
+                            }
+                            if (_.intersection(validTraits, rollTraits).length === 0)
+                                return false;
+                            break;
+                        }
+                        case "aura": {
+                            if (!Media.GetAuras(rollDetails.charID).includes(req))
+                                return false;
+                            break;
+                        }
+                        case "result": {
+                            if (req === "any")
+                                break;
+                            if (req.length >= 4 && !{
+                                crit: ["crit", "basiccrit", "succ"],
+                                messycrit: ["crit", "messycrit", "succ"],
+                                succ: ["succ", "basicsucc"],
+                                fail: ["fail", "basicfail"],
+                                costlyfail: ["fail", "basicfail", "costlyfail"],
+                                totalfail: ["fail", "totalfail"],
+                                bestialfail: ["fail", "bestialfail"]
+                            }[getRollOutcome(false, rollDetails)].includes(req))
+                                return false;
+                            if (!(
+                                _.any(rollDetails.diceVals, (x) => x.startsWith(req))
+                                || (req.length === 1 && _.any(rollDetails.diceVals, (x) => x.includes(req)))
+                            ))
+                                return false;
+                            break;
+                        }
+                        default: {
+                            D.Flag(`Unknown Requirement Type: "${D.JS(reqType)}"`);
+                            return false;
+                        }
+                        // no default
+                    }
+                return true;
+            };
+            for (const effect of effectsInScope) {
+                if ("requirements" in effect)
+                    if (!_.any(effect.requirements.split("/"), checkRequirement))
+                        continue;
+
+                const thisEffect = _.pick(effect, "effect");
+                if ("flag" in effect) {
+                    const [flagType, flagText] = (effect.flag.match(/^(\w)=(.*)$/u) || []).slice(1);
+                    thisEffect[flagType] = flagText;
+                }
+                validEffects.push(thisEffect);
+            }
+            // #endregion
+
+            D.Alert(["<h3>Valid Roll Effects</h3>",
+                     D.JS(validEffects)].join("<br>"), "Valid Roll Effects");
+        }
     };
     const addCharRollEffect = (charRef, effectString) => {
         const traceID = TRACEON("addCharRollEffect", [charRef, effectString]);
@@ -3194,53 +3325,54 @@ const Roller = (() => {
         //    or they're a main roll following an opposed roll (e.g. after a WP reroll)
         // Will return rolLData and rollResults after adjusting them with yourMargin, myMargin and finalMargin
 
-        if (rollData.rollFlags.isOpposedRoll) {
-            // Applying opposed roll outcome to main roll (standard opposed roll behavior)
-            const mainRoll = getCurrentRoll();
-            const [mainData, mainResults] = [mainRoll.rollData, mainRoll.rollResults];
-            const mainMargin = VAL({number: mainResults.margin}) ? D.Int(mainResults.margin) : D.Int(mainResults.total);
-            const oppMargin = VAL({number: rollResults.margin}) ? D.Int(rollResults.margin) : D.Int(rollResults.total);
-            rollResults.myMargin = oppMargin;
-            rollResults.yourMargin = mainMargin;
-            rollResults.finalMargin = oppMargin - Math.max(0, mainMargin);
-            rollResults.finalOutcome = getRollOutcome(rollData, rollResults);
-            mainResults.myMargin = mainMargin;
-            mainResults.yourMargin = oppMargin;
-            mainResults.finalMargin = mainMargin - Math.max(0, oppMargin);
-            mainResults.finalOutcome = getRollOutcome(mainData, mainResults);
-            DB({
-                roll: `${D.GetName(rollData.charID, true)} - OPP REROLLED`,
-                mainMargin,
-                oppMargin,
-                finalMarginMain: mainResults.finalMargin,
-                finalMarginOpp: rollResults.finalMargin,
-                finalOutcomeMain: mainResults.finalOutcome,
-                finalOutcomeOpp: rollResults.finalOutcome
-            }, "syncOpposedRoll");
-            replaceRoll(mainData, mainResults, STATE.REF.rollIndex);
-        } else if (rollData.rollFlags.isWaitingForOpposed && rollData.rollID in STATE.REF.oppRolls) {
-            // Applying main roll outcome to opposed roll (e.g. after WP reroll)
-            const {oppData, oppResults} = STATE.REF.oppRolls[rollData.rollID];
-            const mainMargin = VAL({number: rollResults.margin}) ? D.Int(rollResults.margin) : D.Int(rollResults.total);
-            const oppMargin = VAL({number: oppResults.margin}) ? D.Int(oppResults.margin) : D.Int(oppResults.total);
-            STATE.REF.oppRolls[rollData.rollID].oppResults.myMargin = oppMargin;
-            STATE.REF.oppRolls[rollData.rollID].oppResults.yourMargin = mainMargin;
-            STATE.REF.oppRolls[rollData.rollID].oppResults.finalMargin = oppMargin - Math.max(0, mainMargin);
-            STATE.REF.oppRolls[rollData.rollID].oppResults.finalOutcome = getRollOutcome(STATE.REF.oppRolls[rollData.rollID].oppData, STATE.REF.oppRolls[rollData.rollID].oppResults);
-            rollResults.myMargin = mainMargin;
-            rollResults.yourMargin = oppMargin;
-            rollResults.finalMargin = mainMargin - Math.max(0, oppMargin);
-            rollResults.finalOutcome = getRollOutcome(rollData, rollResults);
-            DB({
-                roll: `${D.GetName(rollData.charID, true)} - MAIN REROLLED`,
-                mainMargin,
-                oppMargin,
-                finalMarginMain: rollResults.finalMargin,
-                finalMarginOpp: STATE.REF.oppRolls[rollData.rollID].oppResults.finalMargin,
-                finalOutcomeMain: rollResults.finalOutcome,
-                finalOutcomeOpp: STATE.REF.oppRolls[rollData.rollID].oppResults.finalOutcome
-            }, "syncOpposedRoll");
-        }
+        if (rollData && rollData.rollFlags)
+            if (rollData.rollFlags.isOpposedRoll) {
+                // Applying opposed roll outcome to main roll (standard opposed roll behavior)
+                const mainRoll = getCurrentRoll();
+                const [mainData, mainResults] = [mainRoll.rollData, mainRoll.rollResults];
+                const mainMargin = VAL({number: mainResults.margin}) ? D.Int(mainResults.margin) : D.Int(mainResults.total);
+                const oppMargin = VAL({number: rollResults.margin}) ? D.Int(rollResults.margin) : D.Int(rollResults.total);
+                rollResults.myMargin = oppMargin;
+                rollResults.yourMargin = mainMargin;
+                rollResults.finalMargin = oppMargin - Math.max(0, mainMargin);
+                rollResults.finalOutcome = getRollOutcome(rollData, rollResults);
+                mainResults.myMargin = mainMargin;
+                mainResults.yourMargin = oppMargin;
+                mainResults.finalMargin = mainMargin - Math.max(0, oppMargin);
+                mainResults.finalOutcome = getRollOutcome(mainData, mainResults);
+                DB({
+                    roll: `${D.GetName(rollData.charID, true)} - OPP REROLLED`,
+                    mainMargin,
+                    oppMargin,
+                    finalMarginMain: mainResults.finalMargin,
+                    finalMarginOpp: rollResults.finalMargin,
+                    finalOutcomeMain: mainResults.finalOutcome,
+                    finalOutcomeOpp: rollResults.finalOutcome
+                }, "syncOpposedRoll");
+                replaceRoll(mainData, mainResults, STATE.REF.rollIndex);
+            } else if (rollData.rollFlags.isWaitingForOpposed && rollData.rollID in STATE.REF.oppRolls) {
+                // Applying main roll outcome to opposed roll (e.g. after WP reroll)
+                const {oppData, oppResults} = STATE.REF.oppRolls[rollData.rollID];
+                const mainMargin = VAL({number: rollResults.margin}) ? D.Int(rollResults.margin) : D.Int(rollResults.total);
+                const oppMargin = VAL({number: oppResults.margin}) ? D.Int(oppResults.margin) : D.Int(oppResults.total);
+                STATE.REF.oppRolls[rollData.rollID].oppResults.myMargin = oppMargin;
+                STATE.REF.oppRolls[rollData.rollID].oppResults.yourMargin = mainMargin;
+                STATE.REF.oppRolls[rollData.rollID].oppResults.finalMargin = oppMargin - Math.max(0, mainMargin);
+                STATE.REF.oppRolls[rollData.rollID].oppResults.finalOutcome = getRollOutcome(STATE.REF.oppRolls[rollData.rollID].oppData, STATE.REF.oppRolls[rollData.rollID].oppResults);
+                rollResults.myMargin = mainMargin;
+                rollResults.yourMargin = oppMargin;
+                rollResults.finalMargin = mainMargin - Math.max(0, oppMargin);
+                rollResults.finalOutcome = getRollOutcome(rollData, rollResults);
+                DB({
+                    roll: `${D.GetName(rollData.charID, true)} - MAIN REROLLED`,
+                    mainMargin,
+                    oppMargin,
+                    finalMarginMain: rollResults.finalMargin,
+                    finalMarginOpp: STATE.REF.oppRolls[rollData.rollID].oppResults.finalMargin,
+                    finalOutcomeMain: rollResults.finalOutcome,
+                    finalOutcomeOpp: STATE.REF.oppRolls[rollData.rollID].oppResults.finalOutcome
+                }, "syncOpposedRoll");
+            }
         return [rollData, rollResults];
     };
     const getRollOutcome = (rollData, rollResults, isGettingFinal = true) => {
@@ -3251,33 +3383,34 @@ const Roller = (() => {
             finalMargin = rollResults.margin;
         else
             finalMargin = rollResults.total;
-
         // First do a basic check:
         let outcome;
         if ((!rollResults.total || D.Int(finalMargin) < 0) && rollResults.H.botches)
-            outcome = "bestialFail";
+            outcome = "bestialfail";
         else if ((!finalMargin || finalMargin >= 0) && (rollResults.critPairs.hb + rollResults.critPairs.hh))
-            outcome = "messyCrit";
+            outcome = "messycrit";
         else if (rollResults.total === 0)
-            outcome = "totalFail";
+            outcome = "totalfail";
         else if (finalMargin < -2 || (("finalMargin" in rollResults) && finalMargin < 0))
-            outcome = "Fail";
+            outcome = "fail";
         else if (finalMargin < 0)
-            outcome = "costlyFail";
+            outcome = "costlyfail";
         else if (rollResults.critPairs.hh + rollResults.critPairs.bb + rollResults.critPairs.hb > 0)
-            outcome = "Crit";
+            outcome = "crit";
         else
-            outcome = "Succ";
+            outcome = "succ";
 
         DB({isGettingFinal, finalMargin, outcome}, "getRollOutcome");
 
-        // Then check for relevant rollFlags:
-        if (rollData.noBestialFail && outcome === "bestialFail")
-            outcome = rollResults.total === 0 ? "totalFail" : "Fail";
-        if (rollData.noMessyCrit && outcome === "messyCrit")
-            outcome = "Crit";
-        if (rollData.noCrit && ["Crit", "messyCrit"].includes(outcome))
-            outcome = "Succ";
+        // Then, if rollData was provided, check for relevant rollFlags:
+        if (rollData) {
+            if (rollData.noBestialFail && outcome === "bestialfail")
+                outcome = rollResults.total === 0 ? "totalfail" : "fail";
+            if (rollData.noMessyCrit && outcome === "messycrit")
+                outcome = "crit";
+            if (rollData.noCrit && ["crit", "messycrit"].includes(outcome))
+                outcome = "succ";
+        }
 
         return outcome;
     };
@@ -3870,36 +4003,11 @@ const Roller = (() => {
                 }
                 case "outcome": {
                     const outcome = getRollOutcome(rollData, rollResults);
-
-
-                    /* const finalOutcome = rollResults.finalOutcome || false;
-                    if (finalOutcome) {
-                        switch (finalOutcome) {
-                            case "messyCrit": {
-                                break;
-                            }
-                            case "bestialFail": {
-                                break; }
-                            case "totalFail": {
-                                break; }
-                            case "Crit": {
-                                break; }
-                            case "costlyFail": {
-                                break; }
-                            case "Succ": {
-                                break; }
-                            case "Fail": {
-                                break;
-                            }
-                            // no default
-                        }
-                        break;
-                    } */
                     switch (rollData.type) {
                         case "project": {
                             STATE.REF.LastProjectCommit = rollResults.commit;
                             switch (outcome) {
-                                case "totalFail": {
+                                case "totalfail": {
                                     stLines.outcome = `${CHATSTYLES.outcomeRed}TOTAL FAILURE!</span></div>`;
                                     stLines.subOutcome = `${CHATSTYLES.subOutcomeRed}Enemies Close In</span></div>`;
                                     rollLines.outcome.text = "TOTAL FAILURE!";
@@ -3911,7 +4019,7 @@ const Roller = (() => {
                                     deltaAttrs[p("projectlaunchresultsmargin")] = "You've Angered Someone...";
                                     break;
                                 }
-                                case "Fail": case "costlyFail": case "bestialFail": {
+                                case "fail": case "costlyfail": case "bestialfail": {
                                     stLines.outcome = `${CHATSTYLES.outcomeOrange}FAILURE!</span></div>`;
                                     stLines.subOutcome = `${CHATSTYLES.subOutcomeOrange}+1 Difficulty to Try Again</span></div>`;
                                     rollLines.outcome.text = "FAILURE!";
@@ -3923,7 +4031,7 @@ const Roller = (() => {
                                     deltaAttrs[p("projectlaunchdiff")] = rollData.diff + 1;
                                     break;
                                 }
-                                case "Crit": case "messyCrit": {
+                                case "crit": case "messycrit": {
                                     stLines.outcome = `${CHATSTYLES.outcomeWhite}CRITICAL WIN!</span></div>`;
                                     stLines.subOutcome = `${CHATSTYLES.subOutcomeWhite}No Commit Needed!</span></div>`;
                                     rollLines.outcome.text = "CRITICAL WIN!";
@@ -3935,7 +4043,7 @@ const Roller = (() => {
                                     deltaAttrs[p("projectlaunchresultsmargin")] = "No Stake Needed!";
                                     break;
                                 }
-                                case "Succ": {
+                                case "succ": {
                                     stLines.outcome = `${CHATSTYLES.outcomeWhite}SUCCESS!</span></div>`;
                                     stLines.subOutcome = `${CHATSTYLES.subOutcomeWhite}Stake ${rollResults.commit} Dot${
                                         rollResults.commit > 1 ? "s" : ""
@@ -3959,14 +4067,14 @@ const Roller = (() => {
                         case "trait": {
                             let isOutcomeFound = false;
                             switch (outcome) {
-                                case "bestialFail": {
+                                case "bestialfail": {
                                     stLines.outcome = `${CHATSTYLES.outcomeRed}BESTIAL FAILURE!</span></div>`;
                                     rollLines.outcome.text = "BESTIAL FAILURE!";
                                     rollLines.outcome.color = getColor(rollData.type, "outcome", "worst");
                                     isOutcomeFound = true;
                                     break;
                                 }
-                                case "messyCrit": {
+                                case "messycrit": {
                                     rollLines.outcome.text = "MESSY CRITICAL!";
                                     stLines.outcome = `${CHATSTYLES.outcomeRed}MESSY CRITICAL!</span></div>`;
                                     rollLines.outcome.color = getColor(rollData.type, "outcome", "worst");
@@ -3982,31 +4090,31 @@ const Roller = (() => {
                         case "willpower":
                         case "humanity": {
                             switch (outcome) {
-                                case "totalFail": {
+                                case "totalfail": {
                                     stLines.outcome = `${CHATSTYLES.outcomeRed}TOTAL FAILURE!</span></div>`;
                                     rollLines.outcome.text = "TOTAL FAILURE!";
                                     rollLines.outcome.color = getColor(rollData.type, "outcome", "worst");
                                     break;
                                 }
-                                case "Fail": {
+                                case "fail": {
                                     stLines.outcome = `${CHATSTYLES.outcomeGrey}FAILURE</span></div>`;
                                     rollLines.outcome.text = "FAILURE";
                                     rollLines.outcome.color = getColor(rollData.type, "outcome", "grey");
                                     break;
                                 }
-                                case "costlyFail": {
+                                case "costlyfail": {
                                     stLines.outcome = `${CHATSTYLES.outcomeOrange}COSTLY SUCCESS?</span></div>`;
                                     rollLines.outcome.text = "COSTLY SUCCESS?";
                                     rollLines.outcome.color = getColor(rollData.type, "outcome", "bad");
                                     break;
                                 }
-                                case "Crit": {
+                                case "crit": {
                                     stLines.outcome = `${CHATSTYLES.outcomeWhite}CRITICAL WIN!</span></div>`;
                                     rollLines.outcome.text = "CRITICAL WIN!";
                                     rollLines.outcome.color = getColor(rollData.type, "outcome", "best");
                                     break;
                                 }
-                                case "Succ": {
+                                case "succ": {
                                     stLines.outcome = `${CHATSTYLES.outcomeWhite}SUCCESS!</span></div>`;
                                     rollLines.outcome.text = "SUCCESS!";
                                     rollLines.outcome.color = getColor(rollData.type, "outcome", "good");
@@ -4018,19 +4126,19 @@ const Roller = (() => {
                         }
                         case "frenzy": {
                             switch (outcome) {
-                                case "totalFail": case "Fail": case "costlyFail": case "bestialFail": {
+                                case "totalfail": case "fail": case "costlyfail": case "bestialfail": {
                                     stLines.outcome = `${CHATSTYLES.outcomeRed}FRENZY!</span></div>`;
                                     rollLines.outcome.text = "YOU FRENZY!";
                                     rollLines.outcome.color = getColor(rollData.type, "outcome", "worst");
                                     break;
                                 }
-                                case "Crit": case "messyCrit": {
+                                case "crit": case "messycrit": {
                                     stLines.outcome = `${CHATSTYLES.outcomeWhite}RESISTED!</span></div>`;
                                     rollLines.outcome.text = "RESISTED!";
                                     rollLines.outcome.color = getColor(rollData.type, "outcome", "best");
                                     break;
                                 }
-                                case "Succ": {
+                                case "succ": {
                                     stLines.outcome = `${CHATSTYLES.outcomeWhite}RESTRAINED...</span></div>`;
                                     rollLines.outcome.text = "RESTRAINED...";
                                     rollLines.outcome.color = getColor(rollData.type, "outcome", "good");
@@ -4688,7 +4796,7 @@ const Roller = (() => {
                             }
                         ],
                         styles: {margin: "0px 0px 5px 0px"} /* height, width, margin, textAlign */
-                    },
+                    }
                 ],
                 blockStyles: {} /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */
             }
@@ -5261,16 +5369,15 @@ const Roller = (() => {
         const traceID = TRACEON("displayResonance", [charRef, posRes, negRes, isDoubleAcute, testCycles]);
         const marginBonus = Number(STATE.REF.resMarginBonus);
         STATE.REF.resMarginBonus = 0;
-        const locations = Session.ActiveLocations;
-        for (const location of Object.keys(locations))
-            if (location.includes("District")) {
-                posRes += C.DISTRICTS[locations[location]].resonance[0] || "";
-                negRes += C.DISTRICTS[locations[location]].resonance[1] || "";
-            } else {
-                posRes += C.SITES[locations[location]].resonance[0] || "";
-                negRes += C.SITES[locations[location]].resonance[1] || "";
-            }
-        DB({locations, posRes, negRes}, "displayResonance");
+        if (Session.District && Session.District !== "blank") {
+            posRes += C.DISTRICTS[Session.District].resonance[0] || "";
+            negRes += C.DISTRICTS[Session.District].resonance[1] || "";
+        }
+        if (Session.Site && Session.Site !== "blank") {
+            posRes += C.SITES[Session.Site].resonance[0] || "";
+            negRes += C.SITES[Session.Site].resonance[1] || "";
+        }
+        DB({District: Session.District, Site: Session.Site, posRes, negRes}, "displayResonance");
         posRes = posRes === "x" ? "" : posRes;
         negRes = negRes === "x" ? "" : negRes;
         const resonance = getResonance(charRef, posRes, negRes, marginBonus, isDoubleAcute, testCycles);

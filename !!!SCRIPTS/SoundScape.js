@@ -55,9 +55,13 @@ const Soundscape = (() => {
             case "initialize":
                 importFromJukebox();
                 break;
-            case "sync":
-                syncSoundscape(args[0] === "reset");
+            case "sync": {
+                if (STATE.REF.isSoundscapeActive)
+                    syncSoundscape(args[0] === "reset");
+                else
+                    startSoundscape(args[0] === "reset");                   
                 break;
+            }
             case "start":
                 startSoundscape(args[0] === "reset");
                 break;
@@ -68,7 +72,7 @@ const Soundscape = (() => {
                 if (args[0] && args[0] !== "all")
                     stopSound(args[0]);
                 else
-                    stopSoundscape();
+                    stopSoundscape(args.includes("now"));
                 break;
             case "inc":
             case "increase": {
@@ -582,22 +586,22 @@ const Soundscape = (() => {
     };
     const getPlayingSounds = () => {
         let activeSounds;
-        if (Session.IsCasaLomaActive) {
-            DB({casaLomaActive: Session.IsCasaLomaActive}, "getPlayingSounds");
-            const [activeSite] = Session.Site;
-            activeSounds = activeSite in CASALOMASOUNDS ? Object.keys(CASALOMASOUNDS[activeSite].activeSounds) : [];
-            if (activeSounds.length) {
-                STATE.REF.outsideOverride = CASALOMASOUNDS[activeSite].isOutside;
-                STATE.REF.volumeMults = CASALOMASOUNDS[activeSite].activeSounds;
-                if (STATE.REF.outsideOverride)
-                    activeSounds.push(...getWeatherSounds(true));
-            }
-            activeSounds = _.compact(activeSounds);
-        } else {
+        // if (Session.IsCasaLomaActive) {
+        //     DB({casaLomaActive: Session.IsCasaLomaActive}, "getPlayingSounds");
+        //     const [activeSite] = Session.Site;
+        //     activeSounds = activeSite in CASALOMASOUNDS ? Object.keys(CASALOMASOUNDS[activeSite].activeSounds) : [];
+        //     if (activeSounds.length) {
+        //         STATE.REF.outsideOverride = CASALOMASOUNDS[activeSite].isOutside;
+        //         STATE.REF.volumeMults = CASALOMASOUNDS[activeSite].activeSounds;
+        //         if (STATE.REF.outsideOverride)
+        //             activeSounds.push(...getWeatherSounds(true));
+        //     }
+        //     activeSounds = _.compact(activeSounds);
+        // } else {
             STATE.REF.outsideOverride = null;
             STATE.REF.volumeMults = {};
             activeSounds = _.compact([getScore(), getLocationSounds(), ...getWeatherSounds()]);
-        }
+        // }
         return activeSounds;
     };
     const sendVolumeAlert = (isShowingAllVolumeSettings = false) => {
@@ -913,7 +917,7 @@ const Soundscape = (() => {
         log(`SOUNDSCAPE INACTIVE: IGNORING PLAYSOUND(${D.JS(soundRef)})`);
         return false;
     };
-    const stopSound = (soundRef, trackKey) => {
+    const stopSound = (soundRef, trackKey, isAbrupt = false) => {
         DB({soundRef}, "stopSound");
         const soundKey = getSoundKey(soundRef);
         STATE.REF.activeSounds = _.without(STATE.REF.activeSounds, soundKey);
@@ -923,20 +927,23 @@ const Soundscape = (() => {
             if (trackKey) {
                 playlistData.currentTracks = _.without(playlistData.currentTracks, trackKey);
                 playlistData.isPlaying = Boolean(playlistData.currentTracks.length);
-                stopSound(trackKey);
+                stopSound(trackKey, undefined, isAbrupt);
             } else {
                 playlistData.currentTracks = [];
                 playlistData.isPlaying = false;
-                curTracks.forEach((x) => stopSound(x));
+                curTracks.forEach((x) => stopSound(x, undefined, isAbrupt));
             }
         } else if (isTrack(soundKey)) {
             const trackData = getTrackData(soundKey);
             if (trackData.masterPlaylist && REGISTRY.Playlists[trackData.masterPlaylist].currentTracks.includes(soundKey)) {
-                stopSound(trackData.masterPlaylist, soundKey);
+                stopSound(trackData.masterPlaylist, soundKey, isAbrupt);
             } else {
                 trackData.isPlaying = false;
                 trackData.masterPlaylist = false;
                 fadeTrackObj(trackData.name, 0);
+                const trackObj = getTrackObj(trackData.name);
+                if (trackObj && isAbrupt)
+                    trackObj.set({volume: 0, playing: false, softstop: false});
             }
         }
     };
@@ -1102,7 +1109,7 @@ const Soundscape = (() => {
         log([
             {
                 volumeChanges: D.JS(volumeChanges.map((x) => D.JS(x))),
-                CasaLoma: Session.IsCasaLomaActive,
+                // CasaLoma: Session.IsCasaLomaActive,
                 outsideOverride: STATE.REF.outsideOverride,
                 volumeMults: STATE.REF.volumeMults
             },
@@ -1113,10 +1120,10 @@ const Soundscape = (() => {
         STATE.REF.isSoundscapeActive = true;
         syncSoundscape(isResetting);
     };
-    const stopSoundscape = () => {
+    const stopSoundscape = (isAbrupt = false) => {
         STATE.REF.isSoundscapeActive = false;
         for (const soundKey of STATE.REF.activeSounds)
-            stopSound(soundKey);
+            stopSound(soundKey, undefined, isAbrupt);
     };
     const playNextSound = (trackRef) => {
         // Playlist must have been initialized for sequencing: First play should be with playSound()

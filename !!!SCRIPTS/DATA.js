@@ -47,6 +47,7 @@ const D = (() => {
         STATE.REF.ISFORCINGDEBUGGING = STATE.REF.ISFORCINGDEBUGGING === true;
         STATE.REF.TRACELASTTIME = 0;
         STATE.REF.SessionNotes = STATE.REF.SessionNotes || {};
+        STATE.REF.SessionNotesIndex = STATE.REF.SessionNotesIndex || Session.SessionNum;
 
         // Initialize STATSDICT Fuzzy Dictionary
         try {
@@ -94,15 +95,23 @@ const D = (() => {
     const onChatCall = (call, args, objects, msg) => {
         switch (call) {
             case "!note": {
-                let noteString = msg.content.replace(/^!note /gu, "");
-                const [noteCategory] = noteString.match(/^!([^ ]*)/gu) || ["general"];
-                noteString = noteString.replace(/^![^ ]* */gu, "");
-                STATE.REF.SessionNotes[Session.SessionNum] = STATE.REF.SessionNotes[Session.SessionNum] || {};
-                STATE.REF.SessionNotes[Session.SessionNum][noteCategory] = STATE.REF.SessionNotes[Session.SessionNum][noteCategory] || [];
-                STATE.REF.SessionNotes[Session.SessionNum][noteCategory].push({
-                    time: TimeTracker.GetRealDate().getTime(),
-                    content: _.escape(noteString)
-                });
+                if (args.length) {
+                    let noteString = msg.content.replace(/^!note /gu, "");
+                    const [noteCategory] = noteString.match(/^!([^ ]*)/gu) || ["general"];
+                    noteString = noteString.replace(/^![^ ]* */gu, "");
+                    STATE.REF.SessionNotes[STATE.REF.SessionNotesIndex] = STATE.REF.SessionNotes[STATE.REF.SessionNotesIndex] || {};
+                    STATE.REF.SessionNotes[STATE.REF.SessionNotesIndex][noteCategory] = STATE.REF.SessionNotes[STATE.REF.SessionNotesIndex][noteCategory] || [];
+                    STATE.REF.SessionNotes[STATE.REF.SessionNotesIndex][noteCategory].push({
+                        time: TimeTracker.GetRealDate().getTime(),
+                        content: _.escape(noteString)
+                    });
+                } else {
+                    D.Alert([
+                        "<h3>Note-Taking Syntax</h3>",
+                        "<b>!note &lt;text&gt;</b> --- Simple note, general category",
+                        "<b>!note !&lt;category&gt; &lt;text&gt;</b> --- Add '!category' to categorize"
+                    ].join("<br>"), "!note");
+                }
                 break;
             }
             case "!data": {
@@ -110,6 +119,16 @@ const D = (() => {
                     case "add":
                     case "set": {
                         switch (D.LCase((call = args.shift()))) {
+                            case "note": {
+                                const sessNum = args.shift() || Session.SessionNum;
+                                if (VAL({int: sessNum})) {
+                                    STATE.REF.SessionNotesIndex = D.Int(sessNum);
+                                    D.Flag(`Notes Now Logging to Session ${D.NumToText(STATE.REF.SessionNotesIndex, true)}`);
+                                } else {
+                                    D.Flag("Syntax Error: !data set note &lt;SessNum&gt;");
+                                }
+                                break;
+                            }
                             case "blacklist":
                                 setBlackList(args);
                                 break;
@@ -141,6 +160,10 @@ const D = (() => {
                     }
                     case "get": {
                         switch (D.LCase((call = args.shift()))) {
+                            case "traitlookup": {
+                                D.Show(C.TRAITLOOKUP);
+                                break;
+                            }
                             case "notes": {
                                 printSessionNotes();
                                 break;
@@ -174,7 +197,7 @@ const D = (() => {
                     case "reset": {
                         switch (D.LCase((call = args.shift()))) {
                             case "notes": {
-                                const sessNum = D.Int(args[0] || Session.SessionNum);
+                                const sessNum = D.Int(args[0] || STATE.REF.SessionNotesIndex);
                                 printSessionNotes(sessNum);
                                 delete STATE.REF.SessionNotes[sessNum];
                                 break;
@@ -895,8 +918,8 @@ const D = (() => {
         return `${leftDigits}${rightDigits}`;
     };
     const signNum = (num, delim = "") => `${D.Float(num) < 0 ? "-" : "+"}${delim}${Math.abs(D.Float(num))}`;
-    const pLowerCase = (strRef) => `${strRef || ""}`.toLowerCase();
-    const pUpperCase = (strRef) => `${strRef || ""}`.toUpperCase();
+    const pLowerCase = (ref) => (VAL({array: ref}) ? ref.map((x) => `${x || ""}`.toLowerCase()) : `${ref || ""}`.toLowerCase());
+    const pUpperCase = (ref) => (VAL({array: ref}) ? ref.map((x) => `${x || ""}`.toUpperCase()) : `${ref || ""}`.toUpperCase());
     const numToText = (num, isTitleCase = false) => {
         const numString = `${num}`;
         const parseThreeDigits = (v) => {
@@ -1413,7 +1436,7 @@ const D = (() => {
         sendChatMessage(getGMID(), msg, title, isPureCode);
     };
     const printSessionNotes = (sessionNum) => {
-        sessionNum = sessionNum || Session.SessionNum;
+        sessionNum = sessionNum || STATE.REF.SessionNotesIndex;
         if ((sessionNum - 1) in STATE.REF.SessionNotes) {
             printSessionNotes(sessionNum - 1);
             delete STATE.REF.SessionNotes[sessionNum - 1];
