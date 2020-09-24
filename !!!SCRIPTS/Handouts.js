@@ -93,9 +93,12 @@ const Handouts = (() => {
         switch (call) {
             case "test": {
                 switch (D.LCase(call = args.shift())) {
-                    case "rolleffects": {
-                        parseRollEffects("Location Effects", state.VAMPIRE.Location, "rollEffects", "location");
-                        parseRollEffects("Roll Effects", state.VAMPIRE.Location);
+                    case "addrow": {
+                        addTableRow("Roll Effects", args);
+                        break;
+                    }
+                    case "delrow": {
+                        delTableRow("Roll Effects", args.join(" "));
                         break;
                     }
                     // no default
@@ -121,6 +124,16 @@ const Handouts = (() => {
             }
             case "get":
                 switch (D.LCase((call = args.shift()))) {
+                    case "code": {
+                        const handoutObj = getHandoutObj(args.join(" "));
+                        if (handoutObj)
+                            handoutObj.get("notes", (notes) => {
+                                D.Alert(_.escape(notes), "Alert(notes, title, false, true)", false, true);                                
+                            });
+                        else
+                            D.Flag(`No Handout Found with Name '${D.JSL(args.join(" "))}'`);
+                        break;
+                    }
                     case "projects": {
                         // summarizeProjects("Project Summary", D.GetChars("registered"));
                         break;
@@ -304,6 +317,59 @@ const Handouts = (() => {
         } else {
             makeHandoutObj(title, category, contents, isWritingGM, isVerbose, isRawCode);
         }
+    };
+    const buildTableHTML = (tableData = {}) => {
+        // tableData: {headerCells: [], rowCells: [[]]}
+        const htmlCode = ["<table class=\"userscript-table userscript-table-bordered\">"];
+        if ("headerCells" in tableData)
+            htmlCode.push(...[
+                "<thead><tr>",
+                ...tableData.headerCells.map((x) => `<th>${x}</th>`),
+                "</tr></thead>"
+            ]);
+        if ("rowCells" in tableData) {
+            htmlCode.push("<tbody>");
+            tableData.rowCells.forEach((row) => {
+                htmlCode.push(...[
+                    "<tr>",
+                    ...Object.values(row).map((x) => `<td>${x}</td>`),
+                    "</tr>"
+                ]);
+            });
+            htmlCode.push("</tbody>");
+        }
+        htmlCode.push("</table>");
+        return htmlCode.join("");
+    };
+    const updateHandoutTable = (title, tableData) => {
+        const handoutObj = getHandoutObj(title);
+        if (handoutObj)
+            handoutObj.get("notes", (notes) => {
+                handoutObj.set("notes", notes.replace(/<table .*?<\/table>/u, buildTableHTML(tableData)));
+            });
+    };
+    const addTableRow = (title, cells) => {
+        const handoutObj = getHandoutObj(title);
+        if (handoutObj)
+            parseHandoutTable(title, (tableData) => {
+                DB({tableData}, "addTableRow");
+                tableData.rowCells.push(_.object(tableData.headerCells, cells));
+                DB({tableData}, "addTableRow");
+                updateHandoutTable(title, tableData);
+            });
+    };
+    const delTableRow = (title, cellRef) => {
+        const handoutObj = getHandoutObj(title);
+        if (handoutObj)
+            parseHandoutTable(title, (tableData) => {
+                DB({tableData, cellRef}, "delTableRow");
+                tableData.rowCells = tableData.rowCells.filter((v) => !_.any(Object.values(v), (vv) => vv.includes(cellRef)));
+                DB({tableData}, "delTableRow");
+                updateHandoutTable(title, tableData);
+
+
+
+            });
     };
     const delHandoutObjs = (titleRef, category) => {
         const handoutObjs = findObjs({_type: "handout"}).filter((x) => (!category || STATE.REF.categoryLogs[category].includes(x.get("name"))) && D.LCase(x.get("name")).includes(D.LCase(titleRef)));

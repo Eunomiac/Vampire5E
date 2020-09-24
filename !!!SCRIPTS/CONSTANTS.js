@@ -252,10 +252,9 @@ const C = (() => {
                 margin: options.margin || "-35px 0px -7px -42px",
                 width: options.width || `${CHATWIDTH}px`,
                 padding: options.padding || "0px",
-                textAlign: options.textAlign || "center"
+                textAlign: options.textAlign || "center",
+                custom: options.custom && _.flatten([options.custom])
             };
-            if (D.WatchList.includes("HTML-Block") && !options.isSilent)
-                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "Block", content: {options, params, content}})}`);
             return D.JSH(`<div style="
                     display: block;
                     margin: ${params.margin};
@@ -271,6 +270,7 @@ const C = (() => {
                     border: ${params.border};
                     padding: ${params.padding};
                     position: relative;
+                    ${params.custom ? params.custom.join("`n") : ""}
             ">${_.flatten([content]).join("")}</div>`);
         },
         SubBlock: (content, options = {}) => {
@@ -278,14 +278,12 @@ const C = (() => {
                 width: options.width || "100%",
                 border: options.border || "none"
             };
-            if (D.WatchList.includes("HTML-SubBlock") && !options.isSilent)
-                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "SubBlock", content: {options, params, content}})}`);
-            return D.JSH(`<div style="
+            return content ? D.JSH(`<div style="
                     display: inline-block;
                     width: ${params.width};
                     font-size: 0px;
                     border: ${params.border};
-                ">${_.flatten([content]).join("")}</div>`);
+                ">${_.flatten([content]).join("")}</div>`) : "";
         },
         Title: (content, options = {}) => {
             const params = {
@@ -298,9 +296,7 @@ const C = (() => {
                 bgColor: options.bgColor || "transparent",
                 border: options.border || "none"
             };
-            if (D.WatchList.includes("HTML-Title") && !options.isSilent)
-                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "Title", content: {options, params, content}})}`);
-            return D.JSH(`<span style="
+            return content ? D.JSH(`<span style="
                     display: block;
                     margin: ${params.margin};
                     font-weight: bold;
@@ -313,7 +309,7 @@ const C = (() => {
                     height: ${params.height};
                     line-height: ${params.lineHeight};
                     border: ${params.border};
-                ">${_.flatten([content]).join("")}</span>`);
+                ">${_.flatten([content]).join("")}</span>`) : "";
         },
         Header: (content, options = {}) => {
             const params = {
@@ -334,9 +330,7 @@ const C = (() => {
                 textAlign: options.textAlign || "center",
                 lineHeight: options.lineHeight || options.height || "20px"
             };
-            if (D.WatchList.includes("HTML-Header") && !options.isSilent)
-                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "Header", content: {options, params, content}})}`);
-            return D.JSH(`<span style="
+            return content ? D.JSH(`<span style="
                     display: block;
                     height: ${params.height};
                     line-height: ${params.lineHeight}; 
@@ -357,7 +351,7 @@ const C = (() => {
                     text-shadow: ${params.textShadow};
                     box-shadow: ${params.boxShadow};
                     overflow: hidden;
-            ">${_.flatten([content]).join("<br>")}</span>`);
+            ">${_.flatten([content]).join("<br>")}</span>`) : "";
         },
         SubHeader: (content, options = {}) => {
             const params = {
@@ -379,8 +373,6 @@ const C = (() => {
                 textAlign: options.textAlign || "center",
                 lineHeight: options.lineHeight || options.height || "20px"
             };
-            if (D.WatchList.includes("HTML-SubHeader") && !options.isSilent)
-                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "SubHeader", content: {options, params, content}})}`);
             return D.JSH(`<span style="
                     display: block;
                     height: ${params.height};
@@ -419,11 +411,10 @@ const C = (() => {
                     || `0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}`,
                 border: options.border || "none",
                 boxShadow: options.boxShadow || "none",
-                lineHeight: options.lineHeight || options.fontSize || "22px"
+                lineHeight: options.lineHeight || options.fontSize || "22px",
+                custom: options.custom && _.flatten([options.custom])
             };
-            if ((D.WatchList.includes("HTML-Body") && !options.isSilent) || (D.WatchList.includes("HTML-ClearBody") && !options.isSilent))
-                sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "Column", content: {options, params, content}})}`);
-            return D.JSH(`<span style="
+            return content ? D.JSH(`<span style="
                     display: block; 
                     height: ${params.height};
                     width: ${params.width}; 
@@ -438,8 +429,9 @@ const C = (() => {
                     font-weight: ${params.fontWeight};
                     text-shadow: ${params.textShadow};
                     box-shadow: ${params.boxShadow};
-                    border: ${params.border};
-                ">${_.flatten([content]).join("<br>")}</span>`);
+                    border: ${params.border};                    
+                    ${params.custom ? params.custom.join("`n") : ""}
+                ">${_.flatten([content]).join("<br>")}</span>`) : "";
         },
         ClearBody: (content, options = {}) => {
             const params = Object.assign(

@@ -79,26 +79,26 @@ const Roller = (() => {
     const onChatCallAlert = (callTerms, who) => {
         if (callTerms[1] === "dice")
             if (isLocked)
-                D.Chat(who, "Roller Locked: Please Wait...", "none", false, true);
+                D.Chat(who, null, "Roller Locked: Please Wait...", false, true);
             else
                 switch (callTerms[2]) {
                     case "frenzyinit":
-                        D.Chat(who, "Resist Frenzy: Waiting on Difficulty...", "none", false, true);
+                        D.Chat(who, null, "Resist Frenzy: Waiting on Difficulty...", false, true);
                         break;
                     case "frenzy":
-                        D.Chat(who, "Resist Frenzy: ROLLING...", "none", false, true);
+                        D.Chat(who, null, "Resist Frenzy: ROLLING...", false, true);
                         break;
                     case "rouse":
                     case "rouseobv":
                     case "rouse2":
                     case "rouse2obv":
-                        D.Chat(who, "Rouse Check: ROLLING...", "none", false, true);
+                        D.Chat(who, null, "Rouse Check: ROLLING...", false, true);
                         break;
                     case "check":
-                        D.Chat(who, "Simple Check: ROLLING...", "none", false, true);
+                        D.Chat(who, null, "Simple Check: ROLLING...", false, true);
                         break;
                     default:
-                        D.Chat(who, "ROLLING...", "none", false, true);
+                        D.Chat(who, null, "ROLLING...", false, true);
                         break;
                 }
     };
@@ -1407,9 +1407,12 @@ const Roller = (() => {
         Media.ToggleImg("RollerFrame_OppNameRight_1", false, true);
         Media.ToggleImg("RollerFrame_OppOutcome_1", false, true);
         resetDiceVals();
+        STATE.REF.rollRecord = [];
+        STATE.REF.rollIndex = 0;
+        STATE.REF.oppRolls = {};
+        STATE.REF.curOppWaitID = false;
         TRACEOFF(traceID);
-        // Media.Fix()
-    }; // "<h3><span style='color: green;'>Time, Weather & Horizon Data Updated!</span></h3>"
+    };
     const killRoller = () => {
         const traceID = TRACEON("killRoller", []);
         const returnLines = [
@@ -2480,6 +2483,7 @@ const Roller = (() => {
 
             D.Alert(["<h3>Valid Roll Effects</h3>",
                      D.JS(validEffects)].join("<br>"), "Valid Roll Effects");
+            // #endregion
         }
     };
     const addCharRollEffect = (charRef, effectString) => {
@@ -4906,7 +4910,7 @@ const Roller = (() => {
                         })}`
                     );
                 } else if (D.LCase(rollFlagKey) === "done") {
-                    D.Alert("Secrecy Set, Roller Unlocked!", "none");
+                    D.Alert(null, "Secrecy Set, Roller Unlocked!");
                 } else if (D.LCase(rollFlagKey) === "default") {
                     STATE.REF.nextRollFlags = D.Clone(SECRECYDEFAULTS);
                     D.Call(

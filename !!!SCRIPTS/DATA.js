@@ -46,8 +46,7 @@ const D = (() => {
         STATE.REF.TRACELOGSTOPS = {};
         STATE.REF.ISFORCINGDEBUGGING = STATE.REF.ISFORCINGDEBUGGING === true;
         STATE.REF.TRACELASTTIME = 0;
-        STATE.REF.SessionNotes = STATE.REF.SessionNotes || {};
-        STATE.REF.SessionNotesIndex = STATE.REF.SessionNotesIndex || Session.SessionNum;
+        STATE.REF.SessionNotes = STATE.REF.SessionNotes || [];
 
         // Initialize STATSDICT Fuzzy Dictionary
         try {
@@ -96,12 +95,9 @@ const D = (() => {
         switch (call) {
             case "!note": {
                 if (args.length) {
-                    let noteString = msg.content.replace(/^!note /gu, "");
-                    const [noteCategory] = noteString.match(/^!([^ ]*)/gu) || ["general"];
-                    noteString = noteString.replace(/^![^ ]* */gu, "");
-                    STATE.REF.SessionNotes[STATE.REF.SessionNotesIndex] = STATE.REF.SessionNotes[STATE.REF.SessionNotesIndex] || {};
-                    STATE.REF.SessionNotes[STATE.REF.SessionNotesIndex][noteCategory] = STATE.REF.SessionNotes[STATE.REF.SessionNotesIndex][noteCategory] || [];
-                    STATE.REF.SessionNotes[STATE.REF.SessionNotesIndex][noteCategory].push({
+                    const [noteCategory, noteString] = (msg.content.match(/^!note *(?:!([^ ]*))? *(.*)$/u) || []).slice(1);
+                    STATE.REF.SessionNotes.push({
+                        category: noteCategory || "general",
                         time: TimeTracker.GetRealDate().getTime(),
                         content: _.escape(noteString)
                     });
@@ -119,16 +115,6 @@ const D = (() => {
                     case "add":
                     case "set": {
                         switch (D.LCase((call = args.shift()))) {
-                            case "note": {
-                                const sessNum = args.shift() || Session.SessionNum;
-                                if (VAL({int: sessNum})) {
-                                    STATE.REF.SessionNotesIndex = D.Int(sessNum);
-                                    D.Flag(`Notes Now Logging to Session ${D.NumToText(STATE.REF.SessionNotesIndex, true)}`);
-                                } else {
-                                    D.Flag("Syntax Error: !data set note &lt;SessNum&gt;");
-                                }
-                                break;
-                            }
                             case "blacklist":
                                 setBlackList(args);
                                 break;
@@ -507,6 +493,7 @@ const D = (() => {
 
     // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
 
+    const jsRaw = (data) => _.escape(JSON.stringify(data, undefined, 4)); // Returns stringified, escaped code without other changes.
     const jStrTest = (data, isVerbose = false, isAlwaysBreakingLines = false) => {
         const colorRef = {
             REGIMG: C.COLORS.palegreen,
@@ -1291,119 +1278,65 @@ const D = (() => {
     const sendAPICommand = (command) => {
         sendChat(getName(getGMID()), command);
     };
-    const sendChatMessage = (who, message = "", title, isPureCode = false, isPublicDuringTesting = false) => {
+    const sendChatMessage = (who, message, title, isPureCode = false, isPublicDuringTesting = false) => {
         /* Whispers chat message to player given: display name OR player ID.
-                If no Title, message is sent without formatting. */
+                If no Title, message is sent without formatting.
+                If no Message, title is sent alone as a flag. */
         const player = getPlayer(who) || who;
-        const html
-            = (isPureCode
-                && `<div style="
-                display: block;
-                margin: -35px 0px -7px -42px;
-                height: auto;
-                min-height: 30px;
-                min-width: 267px;
-                width: auto;
-                background-color: white;
-                text-align: center;
-                border: 2px solid rgba( 0 , 0 , 0 , 1 );
-                padding: 0px;
-                position: relative;
-                overflow-x: scroll;
-            "><span style="
-                    display: block;
-                    height: auto;
-                    line-height: 30px;
-                    width: auto;
-                    margin: 0px;
-                    padding: 0px 5px;
-                    text-align: left;
-                    color: rgba( 255 , 255 , 255 , 1 );
-                    font-family: Voltaire;
-                    font-weight: normal;
-                    font-variant: small-caps;
-                    font-size: 16px;
-                    background-color: rgba( 80 , 80 , 80 , 1 );
-                    border: none;
-                    text-shadow: none;
-                    box-shadow: none;
-                ">${D.JSL(title)}</span>
-                <span style="
-                    display: block;
-                    height: auto;
-                    width: auto;
-                    line-height: 10px;
-                    margin: 0px;
-                    padding: 5px;
-                    color: rgba( 0 , 0 , 0 , 1 );
-                    font-size: 8px;
-                    text-align: left;
-                    font-family: 'Fira Code';
-                    font-weight: normal;
-                    box-shadow: none;
-                    border: none;
-                    white-space: nowrap;
-                ">${message}</span></div>`.replace(/\s+/gu, " "))
-            || (title === "none"
-                && jStr(
-                    C.HTML.Block(
-                        C.HTML.Header(message, {
-                            height: "auto",
-                            width: "auto",
-                            lineHeight: "30px",
-                            padding: "0px 5px",
-                            margin: "0px",
-                            fontFamily: "Oswald",
-                            // fontVariant: "small-caps",
-                            fontWeight: "normal",
-                            textTransform: "uppercase",
-                            bgColor: C.COLORS.darkgrey,
-                            color: C.COLORS.white,
-                            border: "none",
-                            textAlign: "left"
-                        }),
-                        {width: "auto", border: `2px solid ${C.COLORS.black}`}
-                    )
-                ))
-            || (title
-                && jStr(
-                    C.HTML.Block(
-                        [
-                            C.HTML.Header(title, {
-                                height: "auto",
-                                width: "auto",
-                                lineHeight: "30px",
-                                padding: "0px 5px",
-                                margin: "0px",
-                                fontFamily: "Voltaire",
-                                fontVariant: "small-caps",
-                                fontWeight: "normal",
-                                bgColor: C.COLORS.darkgrey,
-                                color: C.COLORS.white,
-                                border: "none",
-                                textAlign: "left"
-                            }),
-                            C.HTML.Body(message, {
-                                padding: "5px",
-                                fontFamily: "input, verdana, sans-serif",
-                                fontSize: "10px",
-                                bgColor: C.COLORS.white,
-                                border: "none",
-                                lineHeight: "14px",
-                                fontWeight: "normal",
-                                color: C.COLORS.black,
-                                margin: "0px",
-                                textShadow: "none",
-                                textAlign: "left"
-                            })
-                        ].join(""),
-                        {
-                            width: "auto",
-                            border: `2px solid ${C.COLORS.black}`
-                        }
-                    )
-                ))
-            || message;
+        let html;
+        if (isPureCode)
+            html = C.HTML.Block([
+                C.HTML.Title(title, {height: "auto",
+                                     lineHeight: "30px",
+                                     color: C.COLORS.white,
+                                     fontFamily: "Voltaire",
+                                     fontSize: "16px",
+                                     bgColor: C.COLORS.darkgrey}),
+                C.HTML.Body(message, {lineHeight: "10px",
+                                      margin: "0px",
+                                      padding: "5px",
+                                      color: C.COLORS.black,
+                                      fontSize: "8px",
+                                      fontFamily: "'Fira Code'",
+                                      textAlign: "left",
+                                      fontWeight: "normal",
+                                      textShadow: "none"}) // custom: "white-space: nowrap;"
+            ], {width: "auto",
+                bgColor: C.COLORS.white,
+                border: `2px solid ${C.COLORS.black}`,
+                custom: "overflow-x: scroll;"});
+        else if (title)
+            html = C.HTML.Block([
+                C.HTML.Header(title, {
+                    height: "auto",
+                    width: "auto",
+                    lineHeight: "30px",
+                    padding: "0px 5px",
+                    margin: "0px",
+                    fontFamily: "Oswald",
+                    fontWeight: "normal",
+                    bgColor: C.COLORS.darkgrey,
+                    color: C.COLORS.white,
+                    border: "none",
+                    textAlign: "left"
+                }),
+                C.HTML.Body(message, {
+                    padding: "5px",
+                    fontFamily: "input, verdana, sans-serif",
+                    fontSize: "10px",
+                    bgColor: C.COLORS.white,
+                    border: "none",
+                    lineHeight: "14px",
+                    fontWeight: "normal",
+                    color: C.COLORS.black,
+                    margin: "0px",
+                    textShadow: "none",
+                    textAlign: "left"
+                })
+            ], {width: "auto", border: `2px solid ${C.COLORS.black}`});
+        else
+            html = message;
+
         // sendChat(from, `/direct <pre>${JSON.stringify(html)}</pre>`)
         if (who === "all" || player === "all" || !player) {
             if (!isPublicDuringTesting && Session.IsTesting && !Session.IsFullTest)
@@ -1435,23 +1368,42 @@ const D = (() => {
         }
         sendChatMessage(getGMID(), msg, title, isPureCode);
     };
-    const printSessionNotes = (sessionNum) => {
-        sessionNum = sessionNum || STATE.REF.SessionNotesIndex;
-        if ((sessionNum - 1) in STATE.REF.SessionNotes) {
-            printSessionNotes(sessionNum - 1);
-            delete STATE.REF.SessionNotes[sessionNum - 1];
+    const printSessionNotes = () => {
+        const buildNoteTableRows = (date, notes) => [
+            `<tr><td colspan="2" style="
+                padding: 10px 3px 3px 3px;
+                font-family: 'Oswald';
+                font-size: 16px;
+                border: none;
+                border-bottom: 2px solid black;
+                line-height: 16px;
+            ">${date}</td></tr>`,
+            ...notes.map((x, i) => `<tr style="
+                background-color: ${i % 2 ? "#DDD" : "#EEE"};
+            "><td style="
+                    padding: 5px;
+                    border: none;
+                    line-height: 14px;
+                ">${x.content}</td><td style="
+                width: 50px;
+                padding: 0px;
+                border: none;
+                text-align: right;
+                font-family: Economica;
+            ">${TimeTracker.FormatTime(x.time, false)}</td></tr>`)
+        ].join("");
+        const groupedNotes = _.groupBy(_.sortBy(STATE.REF.SessionNotes, "time"), "category");
+        for (const [category, notes] of Object.entries(groupedNotes))
+            groupedNotes[category] = _.groupBy(notes, (x) => TimeTracker.FormatDate(x.time));
+        const handoutStrings = [];
+        for (const category of ["general", ..._.without(Object.keys(groupedNotes), "general")]) {
+            handoutStrings.push(`<h3>${D.UCase(category)}</h3><table style="font-family: Voltaire; font-size: 12px; border: none;"><tbody>`);
+            const notesByDate = groupedNotes[category];
+            for (const [date, notes] of Object.entries(notesByDate))
+                handoutStrings.push(buildNoteTableRows(date, notes));
+            handoutStrings.push("</tbody></table>");
         }
-        if (sessionNum in STATE.REF.SessionNotes) {
-            const sessNotes = kvpMap(STATE.REF.SessionNotes[sessionNum], null, (v) => _.sortBy(v, (vv) => vv.time).map((x) => `[${TimeTracker.FormatTime(x.time, true)}] ${x.content}<br>`));
-            const sessStrings = [...sessNotes.general, "<br>"];
-            for (const [cat, notes] of Object.entries(_.omit(sessNotes, "general")))
-                sessStrings.push(...[
-                    `<h3>${D.UCase(cat)}</h3>`,
-                    ...notes,
-                    "<br>"
-                ]);
-            Handouts.Make(`Session Notes: ${sessionNum}`, null, sessStrings.join(""), false, false, true);
-        }
+        Handouts.Make("Session Notes", null, handoutStrings.join(""), false, false, true);
     };
     // #endregion
 
@@ -3240,6 +3192,7 @@ const D = (() => {
         Queue: queueFunc,
         Run: runFuncQueue,
         IsFuncQueueClear: isFuncQueueClear,
+        JSRaw: jsRaw,
         JS: jStr,
         JSL: jStrL,
         JSH: jStrH,
@@ -3279,7 +3232,7 @@ const D = (() => {
         Chat: sendChatMessage,
         Alert: sendToGM,
         Show: (object) => sendToGM(jStrX(object), "Showing Object", 0, true),
-        Flag: (msg) => sendToGM(msg, "none"),
+        Flag: (msg) => sendToGM(null, msg),
         Poke: (msg, title = "[ALERT]") => {
             if (Session.IsTesting)
                 sendToGM(msg, title);
