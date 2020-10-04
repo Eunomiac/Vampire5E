@@ -78,6 +78,143 @@ const Session = (() => {
             ]
         }; */
 
+        STATE.REF.SITokensAlwaysOn = STATE.REF.SITokensAlwaysOn || [];
+        STATE.REF.MORTUARYTIER = STATE.REF.MORTUARYTIER || 0;
+        STATE.REF.savedSceneLocs = {
+            Locke_Hunting: [
+                {
+                    DistrictCenter: ["Cabbagetown"],
+                    SiteCenter: ["AptStreetside", "Queen Street East"]
+                },
+                "c",
+                false,
+                {left: 1340, top: 1998}
+            ],
+            The_Line_Arrives: [
+                {
+                    DistrictCenter: ["DistilleryDist"],
+                    SiteCenter: ["DistilleryExterior"]
+                },
+                "c",
+                false,
+                {left: 1352, top: 2138}
+            ],
+            The_Line_Inside: [
+                {
+                    DistrictLeft: ["DistilleryDist"],
+                    DistrictRight: ["DistilleryDist"],
+                    SiteLeft: ["DistilleryGround"],
+                    SiteRight: ["DistilleryUpper"]
+                },
+                "l",
+                false,
+                {left: 1352, top: 2138}
+            ],
+            "Locke_Hunting_&_Napier's_Van": [
+                {
+                    DistrictLeft: ["Cabbagetown"],
+                    DistrictRight: ["Cabbagetown"],
+                    SiteLeft: ["Sidewalk1", "Approaching Parliament Street"],
+                    SiteRight: ["MobBloodDrive"]
+                },
+                "l",
+                false,
+                {left: 1294, top: 2016}
+            ],
+            Line_Separated: [
+                {
+                    DistrictLeft: ["DistilleryDist"],
+                    DistrictRight: ["DistilleryDist"],
+                    SiteLeft: ["DistilleryGround"],
+                    SiteRight: ["DistilleryUpper"]
+                },
+                "r",
+                false,
+                {left: 1352, top: 2138}
+            ],
+            GHOST_CEREMONY: [
+                {
+                    DistrictCenter: ["Wychwood"],
+                    SiteCenter: ["GiovanniMortuary"]
+                },
+                "c",
+                false,
+                {left: 100, top: 1464}
+            ],
+            Ghosts_or_Earthquake_NOSFERATUFIRST: [
+                {
+                    DistrictLeft: ["DistilleryDist"],
+                    DistrictRight: ["DistilleryDist"],
+                    SiteLeft: ["DistilleryGround"],
+                    SiteRight: ["DistilleryUpper"]
+                },
+                "r",
+                false,
+                {left: 1352, top: 2138}
+            ],
+            Napier_Flees: [
+                {
+                    DistrictCenter: ["Cabbagetown"],
+                    SiteCenter: ["Sidewalk2", "Poorly-Lit Street"]
+                },
+                "c",
+                false,
+                {left: 1304, top: 2058}
+            ],
+            Napier_Flees_Into_Sewers: [
+                {
+                    DistrictLeft: ["Cabbagetown"],
+                    SiteLeft: ["Sidewalk2", "Poorly-Lit Street"],
+                    DistrictRight: ["Sewers"],
+                    SiteRight: ["SewerTunnel1", "In the Tunnels"]
+                },
+                "l",
+                false,
+                {left: 1304, top: 2058}
+            ],
+            "Mason_Captured_&_Sage_Sam_Flees": [
+                {
+                    DistrictLeft: ["DistilleryDist"],
+                    SiteLeft: ["DistilleryGround"],
+                    DistrictRight: ["Sewers"],
+                    SiteRight: ["SewerTunnel1", "In the Tunnels"]
+                },
+                "l",
+                false,
+                {left: 1352, top: 2138}
+            ],
+            Ava_Setting_Bombs: [
+                {
+                    DistrictCenter: ["Corktown"],
+                    SiteCenter: ["Sidewalk1", "Lightly-Travelled Side Street"]
+                },
+                "c",
+                false,
+                {left: 1161, top: 2102}
+            ],
+            Napier_Arrives: [
+                {
+                    DistrictLeft: ["Sewers"],
+                    DistrictRight: ["Sewers"],
+                    SiteLeft: ["SewerTunnel1", "In the Tunnels"],
+                    SiteRight: ["SewerJunc", "Tunnel Crossroads"]
+                },
+                "l",
+                false,
+                {left: 1372, top: 2187}
+            ],
+            Madness_Meeting: [
+                {
+                    DistrictCenter: ["Sewers"],
+                    SiteCenter: ["SewerJunc", "A Crossroads In More Ways Than One"]
+                },
+                "c",
+                false,
+                {left: 1372, top: 2187}
+            ]
+        };
+
+        STATE.REF.savedSceneLocs = STATE.REF.savedSceneLocs || {};
         STATE.REF.isTestingActive = STATE.REF.isTestingActive || false;
         STATE.REF.isFullTest = STATE.REF.isFullTest || false;
         STATE.REF.sceneChars = STATE.REF.sceneChars || [];
@@ -161,133 +298,63 @@ const Session = (() => {
         setPlayerPage();
         verifyStateIntegrity();
         buildLocationMenus();
+
+        D.Flag("Delta Units Set to Auto-Appear at Distillery."); // See ~1816, at end of setLocation() function.
     };
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
+
     const onChatCall = (call, args, objects, msg) => {
         const charObjs = Listener.GetObjects(objects, "character");
         switch (call) {
-            case "casaloma": {
-                switch (D.LCase((call = args.shift()))) {
-                    case "toggle": {
-                        if (STATE.REF.quadScene.isActive) {
-                            fireOnExit(getActiveSite());
-                            Media.ToggleImg("DistrictCenter", true);
-                            Media.ToggleImg("SiteCenter", true);
-                            Media.ToggleImg("SiteLeft", false);
-                            Media.ToggleImg("SiteRight", false);
-                            Media.ToggleImg("SiteMidCenter", false);
-                            Media.ToggleImg("SiteTopCenter", false);
-                            Media.ToggleImg("SiteTopLeft", false);
-                            Media.ToggleImg("SiteTopRight", false);
-                            Media.ToggleImg("SiteCenterTint", false);
-                            Media.ToggleImg("SiteLeftTint", false);
-                            Media.ToggleImg("SiteRightTint", false);
-                            Media.ToggleImg("SiteMidCenterTint", false);
-                            Media.ToggleImg("SiteTopCenterTint", false);
-                            Media.ToggleImg("SiteTopLeftTint", false);
-                            Media.ToggleImg("SiteTopRightTint", false);
-                            Media.ToggleImg("SiteFocusHub", false);
-                            Media.ToggleImg("DisableLocLeft", false);
-                            Media.ToggleImg("DisableLocRight", false);
-                            Media.ToggleImg("DisableSiteBottomAll", false);
-                            Media.ToggleImg("DisableSiteLeft", false);
-                            Media.ToggleImg("DisableSiteRight", false);
-                            // Media.SetImgData("SiteCenter", {width: 440, height: 325});
-                            // Media.SetImgData("SiteLeft", {top: 876, left: 595, width: 400, height: 295});
-                            // Media.SetImgData("SiteRight", {top: 876, left: 995, width: 400, height: 295});
-                            // Media.SetImgData("SiteCenterTint", {width: 441, height: 326});
-                            // Media.SetImgData("SiteLeftTint", {top: 876, left: 595, width: 401, height: 296});
-                            // Media.SetImgData("SiteRightTint", {top: 876, left: 995, width: 401, height: 296});
-                            Media.SetImgData("SignalLightBotLeft", {top: 759});
-                            Media.SetImgData("SignalLightBotRight", {top: 759});
-                            Media.SetTextData("testSessionNotice", {top: 300});
-                            Media.SetTextData("playerPageAlertMessage", {top: 275});
-                            Media.SetTextData("clockStatusNotice", {top: 320});
-                            Media.SetTextData("TimeTracker", {top: 350});
-                            STATE.REF.quadScene.isActive = false;
-                            Media.SetImg("DistrictCenter", "DupontByTheCastle");
-                            Media.SetImg("SiteCenter", "CLGrounds");
-                            setLocation({DistrictCenter: ["DupontByTheCastle"], SiteCenter: ["CLGrounds"]});
-                            // setTimeout(() => {
-                            //     Media.ToggleText("HubAspectsNotice", false);
-                            //     Media.ToggleText("HubAspectsTitle", false);
-                            // }, 1000);
-                        } else {
-                            Media.ToggleImg("DistrictCenter", false);
-                            Media.ToggleImg("SiteCenter", false);
-                            Media.ToggleImg("SiteLeft", false);
-                            Media.ToggleImg("SiteRight", false);
-                            Media.ToggleImg("SiteMidCenter", false);
-                            Media.ToggleImg("SiteTopCenter", false);
-                            Media.ToggleImg("SiteTopLeft", false);
-                            Media.ToggleImg("SiteTopRight", false);
-                            Media.ToggleImg("SiteCenterTint", false);
-                            Media.ToggleImg("SiteLeftTint", false);
-                            Media.ToggleImg("SiteRightTint", false);
-                            Media.ToggleImg("SiteMidCenterTint", false);
-                            Media.ToggleImg("SiteTopCenterTint", false);
-                            Media.ToggleImg("SiteTopLeftTint", false);
-                            Media.ToggleImg("SiteTopRightTint", false);
-                            Media.ToggleImg("DisableLocLeft", false);
-                            Media.ToggleImg("DisableLocRight", false);
-                            Media.ToggleImg("DisableSiteBottomAll", false);
-                            Media.ToggleImg("DisableSiteLeft", false);
-                            Media.ToggleImg("DisableSiteRight", false);
-                            Media.SetImg("SiteCenter", "CLVestibule");
-                            Media.SetImg("SiteLeft", "CLGallery");
-                            Media.SetImg("SiteRight", "CLDrawingRoom");
-                            // Media.SetImg("SiteMidCenter", "CLGreatHall");
-                            // Media.SetImg("SiteTopCenter", "CLOverlook");
-                            // Media.SetImg("SiteTopLeft", "CLLibrary");
-                            // Media.SetImg("SiteTopRight", "CLTerrace");
-                            // Media.SetImgData("SiteCenter", {width: 352, height: 258});
-                            // Media.SetImgData("SiteLeft", {top: 740, left: 520, width: 317, height: 233});
-                            // Media.SetImgData("SiteRight", {top: 740, left: 1070, width: 317, height: 233});
-                            // Media.SetImgData("SiteCenterTint", {width: 353, height: 259});
-                            // Media.SetImgData("SiteLeftTint", {top: 740, left: 520, width: 318, height: 234});
-                            // Media.SetImgData("SiteRightTint", {top: 740, left: 1070, width: 318, height: 234});
-                            Media.SetImgData("SignalLightBotLeft", {top: 900});
-                            Media.SetImgData("SignalLightBotRight", {top: 900});
-                            Media.SetTextData("testSessionNotice", {top: 200});
-                            Media.SetTextData("playerPageAlertMessage", {top: 225});
-                            Media.SetTextData("clockStatusNotice", {top: 225});
-                            Media.SetTextData("TimeTracker", {top: 265});
-                            STATE.REF.quadScene.isActive = true;
-                            if (D.LCase(args[0]) in HUBFOCUS) {
-                                Media.SetImg("SiteFocusHub", HUBFOCUS[D.LCase(args[0])], true);
-                            } else {
-                                Media.SetImg("SiteFocusHub", "blank");
-                                Media.ToggleImg("SiteFocusHub", false);
-                            }
-                            // D.Call("!sound inc casaloma 5");
-                            Soundscape.Sync();
-                            // D.Call("!sound inc casaloma 5");
-                            // C.SITES.CLGreatHall.onEntryCall = "!sound inc casaloma 10 0 20";
-                            // C.SITES.CLGreatHall.onExitCall = "!sound inc casaloma 1.5";
-                        }
-                        break;
+            case "si": {
+                if (args.length)
+                    if (args[0] === "clear") {
+                        STATE.REF.SITokensAlwaysOn = [];
+                    } else {
+                        args = _.flatten(args.map((x) => {
+                            const prefix = x.charAt(0) === "!" ? "!" : "";
+                            x = x.replace(/^!/u, "");
+                            if (["uriel", "michael", "gabriel", "raphael"].includes(D.LCase(x)))
+                                return `${prefix}temp${D.Capitalize(x)}`;
+                            if (["teams", "squads", "deltas"].includes(D.LCase(x)))
+                                return [`${prefix}tempUriel`, `${prefix}tempGabriel`, `${prefix}tempRaphael`, `${prefix}tempMichael`];
+                            if (["men", "people", "leaders", "bosses"].includes(D.LCase(x)))
+                                return [`${prefix}Cardinal Collins`, `${prefix}Jonathan Harker`, `${prefix}Flamenco`];
+                            if (D.LCase(x) === "all")
+                                return [`${prefix}tempUriel`, `${prefix}tempGabriel`, `${prefix}tempRaphael`, `${prefix}tempMichael`, `${prefix}Cardinal Collins`, `${prefix}Jonathan Harker`, `${prefix}Flamenco`];
+                            return `${prefix}${x}`;
+                        }));
+                        DB(args, "si");
+                        for (const arg of args)
+                            if (arg.charAt(0) === "!")
+                                STATE.REF.SITokensAlwaysOn = _.without(STATE.REF.SITokensAlwaysOn, arg.slice(1));
+                            else
+                                STATE.REF.SITokensAlwaysOn = _.uniq([...STATE.REF.SITokensAlwaysOn, arg]);
                     }
-                    case "focus": {
-                        const [curFocus] = getActiveSite();
-                        if (D.LCase(args[0]) in HUBFOCUS) {
-                            Media.SetImg("SiteFocusHub", HUBFOCUS[D.LCase(args[0])], true);
-                        } else {
-                            Media.SetImg("SiteFocusHub", "blank");
-                            Media.ToggleImg("SiteFocusHub", false);
-                        }
-                        const [newFocus] = getActiveSite();
-                        // D.Alert(`CurFocus: ${D.JSL(curFocus)}, New Focus: ${D.JSL(newFocus)}`, "Session Set Focus");
-                        if (curFocus && curFocus !== newFocus)
-                            fireOnExit(curFocus);
-                        if (newFocus && newFocus !== curFocus)
-                            fireOnEntry(newFocus);
-                        Soundscape.Sync();
-                        break;
+                D.Alert([
+                    "<h4>SI Tokens Permanently On:</h4>",
+                    STATE.REF.SITokensAlwaysOn.join("<br>")
+                ].join(""), "SI Token Status");
+                ["tempRaphael", "tempUriel", "tempGabriel", "tempMichael"].forEach((x) => {
+                    if (STATE.REF.SITokensAlwaysOn.includes(x) || Session.District === "DistilleryDist") {
+                        Media.SetImgData(x, {layer: "objects", activeLayer: "objects"}, true);
+                        Media.ToggleImg(x, true);
+                    } else {
+                        Media.SetImgData(x, {layer: "gmlayer", activeLayer: "gmlayer"}, true);
+                        Media.ToggleImg(x, false);
                     }
-                    // no default
-                }
+                });
+                ["Flamenco", "Jonathan Harker", "Cardinal Collins"].forEach((x) => {
+                    if (STATE.REF.SITokensAlwaysOn.includes(x) || Session.District === "DistilleryDist") {
+                        Media.GetTokens(x).pop().set({layer: "objects"});
+                        Media.ToggleToken(x, true);
+                    } else {
+                        Media.ToggleToken(x, false);
+                        Media.GetTokens(x).pop().set({layer: "gmlayer"});
+                    }
+                });
                 break;
             }
             case "lock": {
@@ -455,6 +522,21 @@ const Session = (() => {
             }
             case "set": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "soundtier": {
+                        const [tier] = args;
+                        if (VAL({number: tier}))
+                            if (D.Int(tier) > 0)
+                                STATE.REF.MORTUARYTIER = Math.min(MORTUARYSOUNDS.length - 1, Math.max(0, STATE.REF.MORTUARYTIER + 1));
+                            else if (D.Int(tier) < 0)
+                                STATE.REF.MORTUARYTIER = Math.min(MORTUARYSOUNDS.length - 1, Math.max(0, STATE.REF.MORTUARYTIER - 1));
+                            else
+                                STATE.REF.MORTUARYTIER = 0;
+                        else
+                            STATE.REF.MORTUARYTIER = 0;
+                        syncMortuarySounds();
+                        D.Flag(`Mortuary Sound Tier: ${STATE.REF.MORTUARYTIER}`);
+                        break;
+                    }
                     case "prompt": {
                         const [charObj] = charObjs;
                         const [assignByID] = args;
@@ -553,9 +635,139 @@ const Session = (() => {
                 }
                 break;
             }
-            case "scene":
-                endScene();
+            case "scene": {
+                if (args.length)
+                    if (args[0] in STATE.REF.savedSceneLocs)
+                        setLocation(...STATE.REF.savedSceneLocs[args[0]]);
+                    else
+                        savedSceneCommandMenu();
+                else
+                    endScene();
+
                 break;
+            }
+            case "casaloma": {
+                switch (D.LCase((call = args.shift()))) {
+                    case "toggle": {
+                        if (STATE.REF.quadScene.isActive) {
+                            fireOnExit(getActiveSite());
+                            Media.ToggleImg("DistrictCenter", true);
+                            Media.ToggleImg("SiteCenter", true);
+                            Media.ToggleImg("SiteLeft", false);
+                            Media.ToggleImg("SiteRight", false);
+                            Media.ToggleImg("SiteMidCenter", false);
+                            Media.ToggleImg("SiteTopCenter", false);
+                            Media.ToggleImg("SiteTopLeft", false);
+                            Media.ToggleImg("SiteTopRight", false);
+                            Media.ToggleImg("SiteCenterTint", false);
+                            Media.ToggleImg("SiteLeftTint", false);
+                            Media.ToggleImg("SiteRightTint", false);
+                            Media.ToggleImg("SiteMidCenterTint", false);
+                            Media.ToggleImg("SiteTopCenterTint", false);
+                            Media.ToggleImg("SiteTopLeftTint", false);
+                            Media.ToggleImg("SiteTopRightTint", false);
+                            Media.ToggleImg("SiteFocusHub", false);
+                            Media.ToggleImg("DisableLocLeft", false);
+                            Media.ToggleImg("DisableLocRight", false);
+                            Media.ToggleImg("DisableSiteBottomAll", false);
+                            Media.ToggleImg("DisableSiteLeft", false);
+                            Media.ToggleImg("DisableSiteRight", false);
+                            // Media.SetImgData("SiteCenter", {width: 440, height: 325});
+                            // Media.SetImgData("SiteLeft", {top: 876, left: 595, width: 400, height: 295});
+                            // Media.SetImgData("SiteRight", {top: 876, left: 995, width: 400, height: 295});
+                            // Media.SetImgData("SiteCenterTint", {width: 441, height: 326});
+                            // Media.SetImgData("SiteLeftTint", {top: 876, left: 595, width: 401, height: 296});
+                            // Media.SetImgData("SiteRightTint", {top: 876, left: 995, width: 401, height: 296});
+                            Media.SetImgData("SignalLightBotLeft", {top: 759});
+                            Media.SetImgData("SignalLightBotRight", {top: 759});
+                            Media.SetTextData("testSessionNotice", {top: 300});
+                            Media.SetTextData("playerPageAlertMessage", {top: 275});
+                            Media.SetTextData("clockStatusNotice", {top: 320});
+                            Media.SetTextData("TimeTracker", {top: 350});
+                            STATE.REF.quadScene.isActive = false;
+                            Media.SetImg("DistrictCenter", "DupontByTheCastle");
+                            Media.SetImg("SiteCenter", "CLGrounds");
+                            setLocation({DistrictCenter: ["DupontByTheCastle"], SiteCenter: ["CLGrounds"]});
+                            // setTimeout(() => {
+                            //     Media.ToggleText("HubAspectsNotice", false);
+                            //     Media.ToggleText("HubAspectsTitle", false);
+                            // }, 1000);
+                        } else {
+                            Media.ToggleImg("DistrictCenter", false);
+                            Media.ToggleImg("SiteCenter", false);
+                            Media.ToggleImg("SiteLeft", false);
+                            Media.ToggleImg("SiteRight", false);
+                            Media.ToggleImg("SiteMidCenter", false);
+                            Media.ToggleImg("SiteTopCenter", false);
+                            Media.ToggleImg("SiteTopLeft", false);
+                            Media.ToggleImg("SiteTopRight", false);
+                            Media.ToggleImg("SiteCenterTint", false);
+                            Media.ToggleImg("SiteLeftTint", false);
+                            Media.ToggleImg("SiteRightTint", false);
+                            Media.ToggleImg("SiteMidCenterTint", false);
+                            Media.ToggleImg("SiteTopCenterTint", false);
+                            Media.ToggleImg("SiteTopLeftTint", false);
+                            Media.ToggleImg("SiteTopRightTint", false);
+                            Media.ToggleImg("DisableLocLeft", false);
+                            Media.ToggleImg("DisableLocRight", false);
+                            Media.ToggleImg("DisableSiteBottomAll", false);
+                            Media.ToggleImg("DisableSiteLeft", false);
+                            Media.ToggleImg("DisableSiteRight", false);
+                            Media.SetImg("SiteCenter", "CLVestibule");
+                            Media.SetImg("SiteLeft", "CLGallery");
+                            Media.SetImg("SiteRight", "CLDrawingRoom");
+                            // Media.SetImg("SiteMidCenter", "CLGreatHall");
+                            // Media.SetImg("SiteTopCenter", "CLOverlook");
+                            // Media.SetImg("SiteTopLeft", "CLLibrary");
+                            // Media.SetImg("SiteTopRight", "CLTerrace");
+                            // Media.SetImgData("SiteCenter", {width: 352, height: 258});
+                            // Media.SetImgData("SiteLeft", {top: 740, left: 520, width: 317, height: 233});
+                            // Media.SetImgData("SiteRight", {top: 740, left: 1070, width: 317, height: 233});
+                            // Media.SetImgData("SiteCenterTint", {width: 353, height: 259});
+                            // Media.SetImgData("SiteLeftTint", {top: 740, left: 520, width: 318, height: 234});
+                            // Media.SetImgData("SiteRightTint", {top: 740, left: 1070, width: 318, height: 234});
+                            Media.SetImgData("SignalLightBotLeft", {top: 900});
+                            Media.SetImgData("SignalLightBotRight", {top: 900});
+                            Media.SetTextData("testSessionNotice", {top: 200});
+                            Media.SetTextData("playerPageAlertMessage", {top: 225});
+                            Media.SetTextData("clockStatusNotice", {top: 225});
+                            Media.SetTextData("TimeTracker", {top: 265});
+                            STATE.REF.quadScene.isActive = true;
+                            if (D.LCase(args[0]) in HUBFOCUS) {
+                                Media.SetImg("SiteFocusHub", HUBFOCUS[D.LCase(args[0])], true);
+                            } else {
+                                Media.SetImg("SiteFocusHub", "blank");
+                                Media.ToggleImg("SiteFocusHub", false);
+                            }
+                            // D.Call("!sound inc casaloma 5");
+                            Soundscape.Sync();
+                            // D.Call("!sound inc casaloma 5");
+                            // C.SITES.CLGreatHall.onEntryCall = "!sound inc casaloma 10 0 20";
+                            // C.SITES.CLGreatHall.onExitCall = "!sound inc casaloma 1.5";
+                        }
+                        break;
+                    }
+                    case "focus": {
+                        const [curFocus] = getActiveSite();
+                        if (D.LCase(args[0]) in HUBFOCUS) {
+                            Media.SetImg("SiteFocusHub", HUBFOCUS[D.LCase(args[0])], true);
+                        } else {
+                            Media.SetImg("SiteFocusHub", "blank");
+                            Media.ToggleImg("SiteFocusHub", false);
+                        }
+                        const [newFocus] = getActiveSite();
+                        // D.Alert(`CurFocus: ${D.JSL(curFocus)}, New Focus: ${D.JSL(newFocus)}`, "Session Set Focus");
+                        if (curFocus && curFocus !== newFocus)
+                            fireOnExit(curFocus);
+                        if (newFocus && newFocus !== curFocus)
+                            fireOnEntry(newFocus);
+                        Soundscape.Sync();
+                        break;
+                    }
+                    // no default
+                }
+                break;
+            }
             case "downtime":
                 toggleDowntime();
                 break;
@@ -852,6 +1064,33 @@ const Session = (() => {
         bc: "Center",
         r: "Right"
     };
+    const MORTUARYSOUNDS = [
+        {
+            WhisperingGhosts: 0,
+            WindMax: 0,
+            WindWinterMax: 0
+        },
+        {
+            WhisperingGhosts: 10,
+            WindMax: 0,
+            WindWinterMax: 0
+        },
+        {
+            WhisperingGhosts: 30,
+            WindMax: 15,
+            WindWinterMax: 0
+        },
+        {
+            WhisperingGhosts: 50,
+            WindMax: 50,
+            WindWinterMax: 50
+        },
+        {
+            WhisperingGhosts: 80,
+            WindMax: 80,
+            WindWinterMax: 100
+        }
+    ];
     // #endregion
 
     // #region Getting & Setting Session Data
@@ -1640,7 +1879,7 @@ const Session = (() => {
                 Media.SetImg(`SubLoc${locRef}`, subLocRef);
             }
     };
-    const setLocation = (locParams, sceneFocus, isForcing = false) => {
+    const setLocation = (locParams, sceneFocus, isForcing = false, pointerPos) => {
         const newLocData = Object.assign(
             {},
             _.omit(BLANKLOCRECORD, "subLocs"),
@@ -1767,7 +2006,27 @@ const Session = (() => {
                 setSubLocImg(locPos.replace(/SubLoc/gu, ""), locSrc);
         }
         // cleanLocationRegistry()
-        setSceneFocus(sceneFocus);
+        setSceneFocus(sceneFocus, pointerPos);
+    };
+    const syncMortuarySounds = () => {
+        if (Session.Site === "GiovanniMortuary") {
+            const soundData = MORTUARYSOUNDS[STATE.REF.MORTUARYTIER || 0];
+            for (const soundKey of Object.keys(soundData)) {
+                Soundscape.SetVolume(soundKey, soundData[soundKey]);
+                if (soundData[soundKey] === 0)
+                    Soundscape.Stop(soundKey);
+                else
+                    Soundscape.Play(soundKey);
+            }
+        } else {
+            Soundscape.SetVolume("WindWinterMax", 30);
+            Soundscape.SetVolume("WindMax", 50);
+            Soundscape.SetVolume("WhisperingGhosts", 0);
+            Soundscape.Stop("WhisperingGhosts");
+            Soundscape.Stop("WindMax");
+            Soundscape.Stop("WindWinterMax");
+            Soundscape.Sync();
+        }
     };
     const distCommandMenu = () => {
         DB({["Into District PENDINGLOCCOMMAND:"]: PENDINGLOCCOMMAND}, "distCommandMenu");
@@ -2056,8 +2315,30 @@ const Session = (() => {
             }
         );
     };
+    const savedSceneCommandMenu = () => {
+        const savedSceneList = Object.keys(STATE.REF.savedSceneLocs).map((x) => {
+            const data = D.Clone(STATE.REF.savedSceneLocs[x][0]);
+            DB({x, data}, "savedSceneCommandMenu");
+            const sceneStringComps = [`<span style="display: block; width: 95%; color: white; font-family: Voltaire; font-size: 14px; background-color: blue;"><a style="display: block; width: 100%; color: white; font-family: Voltaire; font-size: 14px; background-color: blue;" href="!sess scene ${x}">${x}</a></span>`];
+            if ("DistrictLeft" in data)
+                if (_.isEqual(data.DistrictLeft, data.DistrictRight)) {
+                    sceneStringComps.push(`<b>${D.UCase(data.DistrictLeft[0])}</b><br>`);
+                    sceneStringComps.push(`<b>L:</b> ${data.SiteLeft.pop()}<br>`);
+                    sceneStringComps.push(`<b>R:</b> ${data.SiteRight.pop()}<br>`);
+                } else {
+                    sceneStringComps.push(`<b>${D.UCase(data.DistrictLeft[0])}</b>: ${data.SiteLeft.pop()}<br>`);
+                    sceneStringComps.push(`<b>${D.UCase(data.DistrictRight[0])}</b>: ${data.SiteRight.pop()}<br>`);
+                }
+            else
+                sceneStringComps.push(`<b>${D.UCase(data.DistrictCenter[0])}</b>: ${data.SiteCenter.pop()}<br>`);
+
+            return sceneStringComps.join("");
+        });
+        D.Alert(savedSceneList.join("<span style=\"display: block; height: 5px;\">&nbsp;</span>"), "Saved Scene List");
+    };
     const processPendingLocCommand = () => {
         const locParams = {};
+        DB({PENDINGLOCCOMMAND}, "processPendingLocCommand");
         switch (PENDINGLOCCOMMAND.workingIndex) {
             case 0: {
                 [locParams.DistrictCenter] = PENDINGLOCCOMMAND.Districts;
@@ -2073,6 +2354,7 @@ const Session = (() => {
             }
             // no default
         }
+        DB({locParams, sceneFocus: PENDINGLOCCOMMAND.sceneFocus}, "processPendingLocCommand");
         setLocation(locParams, PENDINGLOCCOMMAND.sceneFocus);
         PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND);
     };
@@ -2629,7 +2911,7 @@ const Session = (() => {
         else if (locRef in C.DISTRICTS && C.DISTRICTS[locRef].onEntryCall)
             D.Call(C.DISTRICTS[locRef].onEntryCall);
     };
-    const setSceneFocus = (locPos) => {
+    const setSceneFocus = (locPos, pointerPos) => {
         locPos = (isLocCentered() === true && "c")
             || (VAL({string: locPos}) && D.LCase(locPos).charAt(0))
             || (isLocCentered() === false && ["r", "l", "c"].includes(STATE.REF.sceneFocus) && STATE.REF.sceneFocus)
@@ -2685,6 +2967,24 @@ const Session = (() => {
                         else
                             Media.ToggleToken(token, false);
                 });
+                ["tempRaphael", "tempUriel", "tempGabriel", "tempMichael"].forEach((x) => {
+                    if (STATE.REF.SITokensAlwaysOn.includes(x) || Session.District === "DistilleryDist") {
+                        Media.SetImgData(x, {layer: "objects", activeLayer: "objects"}, true);
+                        Media.ToggleImg(x, true);
+                    } else {
+                        Media.SetImgData(x, {layer: "gmlayer", activeLayer: "gmlayer"}, true);
+                        Media.ToggleImg(x, false);
+                    }
+                });
+                ["Flamenco", "Jonathan Harker", "Cardinal Collins"].forEach((x) => {
+                    if (STATE.REF.SITokensAlwaysOn.includes(x) || Session.District === "DistilleryDist") {
+                        Media.GetTokens(x).pop().set({layer: "objects"});
+                        Media.ToggleToken(x, true);
+                    } else {
+                        Media.ToggleToken(x, false);
+                        Media.GetTokens(x).pop().set({layer: "gmlayer"});
+                    }
+                });
             } catch (errObj) {
                 // Nothing to see here...
             }
@@ -2696,13 +2996,15 @@ const Session = (() => {
                 setTimeout(() => {
                     STATE.REF.prevLocFocus = getActiveLocations();
                     Soundscape.Sync();
+                    syncMortuarySounds();
                     setTimeout(() => {
                         // Set map animation pointer:
                         const [siteRef, siteName] = STATE.REF.curLocation[{l: "SiteLeft", r: "SiteRight", c: "SiteCenter"}[locPos] || "none"] || [];
 
                         // Set map pointer as a timeout
-                        const pointerPos
-                            = (siteName && siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName].pointerPos)
+                        pointerPos
+                            = pointerPos
+                            || (siteName && siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName].pointerPos)
                             || (Session.Site in STATE.REF.customLocs && STATE.REF.customLocs[Session.Site].pointerPos)
                             || (Session.Site in STATE.REF.locationPointer && STATE.REF.locationPointer[Session.Site].pointerPos)
                             || false;

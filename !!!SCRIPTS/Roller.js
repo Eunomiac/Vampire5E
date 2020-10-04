@@ -1237,7 +1237,7 @@ const Roller = (() => {
         }
     };
     const ROLLRESULTEFFECTS = {
-        restriction: ["success", "failure", "basicfail", "critical", "basiccrit", "messycrit", "bestialfail", "totalfail"],
+        restriction: ["success", "failure", "basicfail", "critical", "basiccrit", "messycrit", "bestialfail", "totalfail", "costlyfail"],
         rollMod: [
             "restrictwpreroll1",
             "restrictwpreroll2",
@@ -1250,7 +1250,8 @@ const Roller = (() => {
             "totalfailure",
             "nomessycrit",
             "nobestialfail",
-            "nocrit"
+            "nocrit",
+            "mustcostlyfail"
         ]
     };
     const ROLLRESTRICTIONS = {
@@ -1649,7 +1650,6 @@ const Roller = (() => {
 
     // #region ROLL EFFECTS: Applying, Creating, Removing
     const applyRollEffects = (rollInput) => {
-
         applyRollEffectsNew(rollInput);
         const traceID = TRACEON("applyRollEffects", [rollInput]);
         const rollEffectString = D.GetStatVal(rollInput.charID, "rolleffects") || "";
@@ -1807,6 +1807,14 @@ const Roller = (() => {
                                 "checkRestriction"
                             );
                             return TRACEOFF(innerTraceID, input.B.succs + input.H.succs === 0);
+                        case "costlyfail": {
+                            // DB({
+                            //     effectiveMargin,
+                            //     HBotches: input.H.botches,
+
+                            // })
+                            return TRACEOFF(innerTraceID, effectiveMargin < 0 && effectiveMargin >= -2 && input.H.botches === 0 && input.total !== 0);
+                        }
                         // no default
                     }
                 }
@@ -1849,21 +1857,64 @@ const Roller = (() => {
                     DB("... Check PASSED. Moving on...", "checkRestriction");
                 } else if (restriction.startsWith("loc:")) {
                     DB("Restriction = LOCATION", "checkRestriction");
-
                     const loc = restriction.replace(/loc:/gu, "");
-                    const locations = {
-                        center: _.without([Media.GetImgData("DistrictCenter").activeSrc, Media.GetImgData("SiteCenter").activeSrc], "blank"),
-                        left: _.without([Media.GetImgData("DistrictLeft").activeSrc, Media.GetImgData("SiteLeft").activeSrc], "blank"),
-                        right: _.without([Media.GetImgData("DistrictRight").activeSrc, Media.GetImgData("SiteRight").activeSrc], "blank")
-                    };
+                    const locations = {center: [], left: [], right: []};
+                    if (Media.IsActive("DistrictCenter")) {
+                        locations.center.push(Media.GetImgData("DistrictCenter").activeSrc);
+                        if (!Media.IsActive("DiscableLocLeft"))
+                            locations.left.push(Media.GetImgData("DistrictCenter").activeSrc);
+                        if (!Media.IsActive("DiscableLocRight"))
+                            locations.right.push(Media.GetImgData("DistrictCenter").activeSrc);
+                    } else if (Media.IsActive("DistrictLeft")) {
+                        delete locations.center;
+                        if (!Media.IsActive("DiscableLocLeft"))
+                            locations.left.push(Media.GetImgData("DistrictLeft").activeSrc);                            
+                        if (!Media.IsActive("DiscableLocRight"))
+                            locations.right.push(Media.GetImgData("DistrictRight").activeSrc);
+                    }
+                    for (const locPos of Object.keys(locations))
+                        switch (locPos) {
+                            case "center": {
+                                if (Media.IsActive("SiteCenter")) {
+                                    locations.center.push(Media.GetImgData("SiteCenter").activeSrc);
+                                    delete locations.left;
+                                    delete locations.right;
+                                } else {
+                                    if (Media.IsActive("SiteLeft") && !Media.IsActive("DiscableLocLeft") && !Media.IsActive("DisableSiteLeft") && !Media.IsActive("DisableSiteBottomAll")) {
+                                        delete locations.center;
+                                        locations.left.push(Media.GetImgData("SiteLeft").activeSrc);
+                                    }
+                                    if (Media.IsActive("SiteRight") && !Media.IsActive("DiscableLocRight") && !Media.IsActive("DisableSiteRight") && !Media.IsActive("DisableSiteBottomAll")) {
+                                        delete locations.center;
+                                        locations.right.push(Media.GetImgData("SiteRight").activeSrc);
+                                    }
+                                }
+                                break;
+                            }
+                            case "left": {
+                                if (Media.IsActive("SiteLeft") && !Media.IsActive("DiscableLocLeft") && !Media.IsActive("DisableSiteLeft") && !Media.IsActive("DisableSiteBottomAll"))
+                                    locations.left.push(Media.GetImgData("SiteLeft").activeSrc);
+                                break;
+                            }
+                            case "right": {
+                                if (Media.IsActive("SiteRight") && !Media.IsActive("DiscableLocRight") && !Media.IsActive("DisableSiteRight") && !Media.IsActive("DisableSiteBottomAll"))
+                                    locations.right.push(Media.GetImgData("SiteRight").activeSrc);
+                                break;
+                            }
+                            // no default
+                        }
+                    locations.center = locations.center || [];
+                    locations.left = locations.left || [];
+                    locations.right = locations.right || [];
                     DB(`... ${D.JSL(loc)} vs. ${D.JSL(locations)}`, "checkRestriction");
+                    const [charToken] = Media.GetTokens(input.charID);
                     if (locations.center.length) {
                         if (!D.IsIn(loc, locations.center, true)) {
                             DB("... CENTER LOCATION Check FAILED.  Returning FALSE", "checkRestriction");
                             return TRACEOFF(innerTraceID, false);
                         }
                         DB("... Check PASSED. Moving on...", "checkRestriction");
-                    } else if (Media.IsInside(Char.GetToken(input.charID), "sandboxLeft")) {
+                    } else if (Media.IsInside(charToken, "sandboxLeft")) {
                         if (!D.IsIn(loc, locations.left, true)) {
                             DB("... LEFT LOCATION Check FAILED.  Returning FALSE", "checkRestriction");
                             return TRACEOFF(innerTraceID, false);
@@ -2017,13 +2068,13 @@ const Roller = (() => {
                         // (If no rollTarget, apply mod as a straight modifier --- i.e. unchanged until capping, below.)
                     } else {
                         // If rollMod isn't a number, is it adding or subtracting a trait value?
-                        if (rollMod.includes("postrait"))
+                        if (rollMod.includes("postrait")) {
                             rollMod = D.Int(D.GetStatVal(rollData.charID, rollMod.replace(/postrait/gu, "")));
-                        else if (rollMod.includes("negtrait"))
+                        } else if (rollMod.includes("negtrait")) {
                             rollMod = -1 * D.Int(D.GetStatVal(rollData.charID, rollMod.replace(/negtrait/gu, "")));
                         // If not postrait/negtrait, is it a multiplier?
-                        else if (rollMod.startsWith("x") && VAL({number: rollMod.replace(/x/gu, "")}))
-                            if (VAL({string: rollTarget})) {
+                        } else if (rollMod.startsWith("x") && VAL({number: rollMod.replace(/x/gu, "")})) {
+                            if (VAL({string: rollTarget}))
                                 // If so, is there a rollTarget?
                                 // If so, is the rollTarget present in traits?
                                 if (D.IsIn(rollTarget, Object.keys(rollTraits), true))
@@ -2039,10 +2090,17 @@ const Roller = (() => {
                                             1,
                                             Math.floor(_.find(rollFlags, (v, k) => k.includes(rollTarget)) * parseFloat(rollMod.replace(/x/gu, "")))
                                         ) - _.find(rollFlags, (v, k) => k.includes(rollTarget));
-                                // Otherwise, multiply the whole dice pool by the multiplier, rounding DOWN to a minimum of one, and set rollMod to the difference.
-                            } else {
+                            // Otherwise, multiply the whole dice pool by the multiplier, rounding DOWN to a minimum of one, and set rollMod to the difference.
+                            else
                                 rollMod = Math.max(1, Math.floor(rollData.dicePool * parseFloat(rollMod.replace(/x/gu, "")))) - rollData.dicePool;
-                            }
+
+                        // If not a multiplier, is it a dice changer?
+                        } else if (rollMod === "nohungerdice") {
+                            rollMod = 0;
+                            rollData.hunger = 0;
+                            rollData.basePool += rollData.hungerPool;
+                            rollData.hungerPool = 0;
+                        }
                     }
 
                     // FIRST ROLLMOD PASS COMPLETE: ROLLMOD SHOULD BE AN INTEGER BY THIS POINT.
@@ -2334,6 +2392,11 @@ const Roller = (() => {
                             isReapplying = true;
                             break;
                         }
+                        case "mustcostlyfail": {
+                            rollResults.isCostlyMandatory = true;
+                            isReapplying = true;
+                            break;
+                        }
                         default:
                             break;
                     }
@@ -2481,8 +2544,7 @@ const Roller = (() => {
             }
             // #endregion
 
-            D.Alert(["<h3>Valid Roll Effects</h3>",
-                     D.JS(validEffects)].join("<br>"), "Valid Roll Effects");
+            DB({validEffects}, "applyRollEffectsNew");
             // #endregion
         }
     };
@@ -4107,9 +4169,9 @@ const Roller = (() => {
                                     break;
                                 }
                                 case "costlyfail": {
-                                    stLines.outcome = `${CHATSTYLES.outcomeOrange}COSTLY SUCCESS?</span></div>`;
-                                    rollLines.outcome.text = "COSTLY SUCCESS?";
-                                    rollLines.outcome.color = getColor(rollData.type, "outcome", "bad");
+                                    stLines.outcome = `${CHATSTYLES.outcomeOrange}COSTLY SUCCESS${rollResults.isCostlyMandatory ? "!" : "?"}</span></div>`;
+                                    rollLines.outcome.text = `COSTLY SUCCESS${rollResults.isCostlyMandatory ? "!" : "?"}`;
+                                    rollLines.outcome.color = getColor(rollData.type, "outcome", rollResults.isCostlyMandatory ? "worst" : "bad");
                                     break;
                                 }
                                 case "crit": {

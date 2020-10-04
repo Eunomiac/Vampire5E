@@ -2698,14 +2698,17 @@ const Media = (() => {
         const [tokenObj] = getTokenObjs(charRef);
         const tokenName = tokenObj && tokenObj.get("name");
         const tokenSrc = (tokenName && tokenName in REGISTRY.TOKEN) ? REGISTRY.TOKEN[tokenName].curSrc : "base";
-        const splitTokenSrcs = D.Capitalize(tokenSrc).match(/[A-Z][a-z]*/gu);
-        const tokenAuras = [];
-        for (const srcName of splitTokenSrcs)
-            if (D.Capitalize(srcName) in STATE.REF.tokenAuras)
-                tokenAuras.push(STATE.REF.tokenAuras[srcName]);
+        if (tokenSrc) {
+            const splitTokenSrcs = D.Capitalize(tokenSrc).match(/[A-Z][a-z]*/gu);
+            const tokenAuras = [];
+            for (const srcName of splitTokenSrcs)
+                if (D.Capitalize(srcName) in STATE.REF.tokenAuras)
+                    tokenAuras.push(STATE.REF.tokenAuras[srcName]);
 
-        DB({splitTokenSrcs, tokenAuras}, "getActiveTokenAuras");
-        return tokenAuras;
+            DB({splitTokenSrcs, tokenAuras}, "getActiveTokenAuras");
+            return tokenAuras;
+        }
+        return [];
     };
     const regImg = (imgRef, imgName, srcName, activeLayer, options = {}, funcName = false, isSilent = false) => {
         const traceID = TRACEON("regImg", [imgRef, imgName, srcName, activeLayer, options, funcName, isSilent]);
