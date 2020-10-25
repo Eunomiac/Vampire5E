@@ -25,6 +25,7 @@ const InitCommands = (() => {
     const initialize = () => {
         if (!SKIPINITIALIZATION) {
             D.Flag("Initializing API...");
+            Media.ToggleImg("Horizon-CNTower-Underlay_1", true);
             const delayTime = Session.IsTesting ? 1 : 2000;
             Listener.Lock();
             setTimeout(() => {

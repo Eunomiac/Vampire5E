@@ -3691,7 +3691,7 @@ const Media = (() => {
             const animObj = getImgObj(animName);
             trySet(animObj, {layer: animData.activeLayer});
             if (animData.soundEffect && animData.validModes.includes(Session.Mode))
-                Soundscape.Play(animData.soundEffect);
+                Soundscape.Play(animData.soundEffect, undefined, undefined, false);
             if (animData.timeOut)
                 setTimeout(() => killAnimation(animObj), animData.timeOut);
         }

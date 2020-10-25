@@ -98,7 +98,7 @@ const Roller = (() => {
                         D.Chat(who, null, "Simple Check: ROLLING...", false, true);
                         break;
                     default:
-                        D.Chat(who, null, "ROLLING...", false, true);
+                        // D.Chat(who, null, "ROLLING...", false, true);
                         break;
                 }
     };
@@ -5502,7 +5502,9 @@ const Roller = (() => {
             huntString += ` at ${C.SITES[Session.Site].fullName} `;
         else
             huntString += " ";
-        huntString += `in ${C.DISTRICTS[Session.District].fullName}.`;
+        if (Session.District && C.DISTRICTS[Session.District])
+            huntString += `in ${C.DISTRICTS[Session.District].fullName}`;
+        huntString += "."
         if (marginBonus > 0)
             huntString += `<span style="display: block; text-align: right; text-align-last: right; margin-right: 5px; font-size: 10px; height: 11px; line-height: 11px; color: #AAAAAA; font-weight: normal; font-family: Voltaire;">(Resonance Bonus: +${marginBonus}0%)</span>`;
         D.Chat(

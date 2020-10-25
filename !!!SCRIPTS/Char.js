@@ -1032,6 +1032,34 @@ const Char = (() => {
                 displayResources();
                 break;
             }
+            case "daysleep": {
+                const predatorPools = {
+                    A: ["Charisma", "Subterfuge"],
+                    B: ["Manipulation", "Persuasion", "Herd"],
+                    L: ["Charisma", "Subterfuge"],
+                    N: ["Intelligence", "Streetwise", "Herd (Bookies)"],
+                    R: ["Manipulation", "Persuasion"]
+                };
+                const [charObj] = charObjs;
+                const pool = predatorPools[D.GetCharData(charObj).initial];
+                D.Call(`!char set stat @${D.GetCharData(charObj).initial} Hunger 0`);
+                adjustDamage(charObj, "health", "superficial", -15);
+                adjustDamage(charObj, "willpower", "superficial", -15);
+                adjustHunger();
+                setTimeout(() => {
+                    D.Call(`!roll dice trait ${D.GetCharData(charObj).name}|${pool.join(",")}`);
+                    D.Alert([
+                        `<a href="!char @${D.GetCharData(charObj).initial} change Hunger 5">Total Fail</a>`,
+                        `<a href="!char @${D.GetCharData(charObj).initial} change Hunger 4">Fail</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="!char @${D.GetCharData(charObj).initial} change Hunger 3">KILL or Bestial Fail</a>`,
+                        `<a href="!char @${D.GetCharData(charObj).initial} change Hunger 3">Margin 0-1</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="!char @${D.GetCharData(charObj).initial} change Hunger 2">KILL</a>`,
+                        `<a href="!char @${D.GetCharData(charObj).initial} change Hunger 2">Margin 2-4</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="!char @${D.GetCharData(charObj).initial} change Hunger 1">KILL</a>`,
+                        `<a href="!char @${D.GetCharData(charObj).initial} change Hunger 1">Margin 5+</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="!char @${D.GetCharData(charObj).initial} change Hunger 0">KILL</a>`,
+                        " ",
+                        `<a href="!roll @${D.GetCharData(charObj).initial} resonance">RESONANCE</a>`
+                    ].join("<br>"), "Hunger Results");
+                }, 1000);
+                break;
+            }
             case "change": {
                 const fullCommand = `!char ${(charObjs.length && charObjs.map((x) => x.id).join(",")) || ""} ${call} ${args.join(" ")}`;
                 if (VAL({char: charObjs}, "!char change", true)) {
@@ -3318,7 +3346,7 @@ const Char = (() => {
                     }
                 } else {
                     returnLines.push(`Excluding ${rowID}: ${statData[0].val}`);
-                }                
+                }
                 returnLines.push(...[
                     statData.find((x) => x.attrName === "projectscope").name,
                     `     !char @${charObj.id} set stat repeating_project_${rowID}_projectmargin &lt;#&gt;`,

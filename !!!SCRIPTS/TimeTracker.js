@@ -1943,6 +1943,7 @@ const TimeTracker = (() => {
                 Media.ToggleImg("WeatherFrost", false);
             }
         Soundscape.Sync();
+        Media.ToggleImg("Horizon-CNTower-Underlay_1", true);
         return OFFSTACK(funcID) && weatherData;
     };
     const setManualWeather = (eventOrCode, tempC, wind, humidity) => {

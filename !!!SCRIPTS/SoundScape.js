@@ -45,6 +45,8 @@ const Soundscape = (() => {
         for (const [trackKey, fadeData] of Object.entries(STATE.REF.soundsFading))
             fadeTrackObj(trackKey, fadeData.targetVol, fadeData.startVol);
 
+        STATE.REF.playlistregistry.Thunder.playModes.isLooping = false;
+
         // syncSoundscape(true);
     };
     // #endregion
@@ -59,7 +61,7 @@ const Soundscape = (() => {
                 if (STATE.REF.isSoundscapeActive)
                     syncSoundscape(args[0] === "reset");
                 else
-                    startSoundscape(args[0] === "reset");                   
+                    startSoundscape(args[0] === "reset");
                 break;
             }
             case "start":
@@ -209,10 +211,10 @@ const Soundscape = (() => {
         if (trackObj.get("softstop") && !prevData.softstop) {
             DB(
                 {
-                    trackName: `${trackObj.get("title")}<br>`,
-                    playing: `${prevData.playing} >> ${trackObj.get("playing")}<br>`,
-                    looping: `${prevData.loop} >> ${trackObj.get("loop")}<br>`,
-                    softstop: `${prevData.softstop} >> ${trackObj.get("softstop")}<br>`
+                    trackName: `${trackObj.get("title")}`,
+                    playing: `${prevData.playing} >> ${trackObj.get("playing")}`,
+                    looping: `${prevData.loop} >> ${trackObj.get("loop")}`,
+                    softstop: `${prevData.softstop} >> ${trackObj.get("softstop")}`
                 },
                 "onTrackChange"
             );
@@ -585,7 +587,6 @@ const Soundscape = (() => {
         return OFFSTACK(funcID) && false;
     };
     const getPlayingSounds = () => {
-        let activeSounds;
         // if (Session.IsCasaLomaActive) {
         //     DB({casaLomaActive: Session.IsCasaLomaActive}, "getPlayingSounds");
         //     const [activeSite] = Session.Site;
@@ -598,11 +599,10 @@ const Soundscape = (() => {
         //     }
         //     activeSounds = _.compact(activeSounds);
         // } else {
-            STATE.REF.outsideOverride = null;
-            STATE.REF.volumeMults = {};
-            activeSounds = _.compact([getScore(), getLocationSounds(), ...getWeatherSounds()]);
+        STATE.REF.outsideOverride = null;
+        STATE.REF.volumeMults = {};
         // }
-        return activeSounds;
+        return _.compact([getScore(), getLocationSounds(), ...getWeatherSounds()]);
     };
     const sendVolumeAlert = (isShowingAllVolumeSettings = false) => {
         const trackObjs = getPlayingTrackObjs();
@@ -800,7 +800,7 @@ const Soundscape = (() => {
     // #endregion
 
     // #region CONTROLLERS: Playing & Stopping Sounds, Playing Next Sound
-    const playSound = (soundRef, masterSound, isCyclingToNext = false) => {
+    const playSound = (soundRef, masterSound, isCyclingToNext = false, isFading = true) => {
         // Initializes any playlist as if playing it for the first time. To preserve sequences, use playNextSound()
         if (STATE.REF.isSoundscapeActive !== false) {
             const soundKey = getSoundKey(soundRef);
@@ -828,19 +828,19 @@ const Soundscape = (() => {
                     // If MORE THAN ONE currentTrack in a playlist that can't do that, fix the problem.
                     if (otherSounds.length && !playlistData.playModes.isOverloopOK) {
                         logPackage["!!!STOPPING EXCESS SOUNDS!!!"] = ["ERROR: TOO MANY TRACKS PLAYING! STOPPING EXCESS...", ...otherSounds];
-                        otherSounds.forEach((x) => stopSound(playlistData.name, x));
+                        otherSounds.forEach((x) => stopSound(playlistData.name, x, !isFading));
                     }
                     // If isCyclingToNext, stop all current tracks then recur so a new one can be chosen.
                     if (isCyclingToNext) {
                         logPackage["!!!CYCLING TO NEXT: RECURRING after STOPPING ALL PLAYING TRACKS!!!"] = D.Clone(playlistData.currentTracks);
-                        playlistData.currentTracks.forEach((x) => stopSound(playlistData.name, x));
+                        playlistData.currentTracks.forEach((x) => stopSound(playlistData.name, x, !isFading));
                         log(logPackage);
-                        return playSound(soundKey, masterSound);
+                        return playSound(soundKey, masterSound, false, isFading);
                     } else {
                         // Check to see if any of the sounds that are supposed to be playing aren't.
                         const soundsToPlay = playlistData.currentTracks.filter((x) => !isTrackObjPlaying(getTrackObj(x)));
                         logPackage["!!!PLAYLIST ALREADY PLAYING and NOT CYCLING TO NEXT: RECURRING THROUGH ACTIVE SOUNDS THAT AREN'T PLAYING!!!"] = [...soundsToPlay];
-                        soundsToPlay.forEach((x) => playSound(x, playlistData.name));
+                        soundsToPlay.forEach((x) => playSound(x, playlistData.name, false, isFading));
                         // Finally, if Overlooping is okay, proceed to play another track. Otherwise, return without changing anything else.
                         if (!playlistData.playModes.isOverloopOK) {
                             logPackage["###-RETURN-### NOT CYCLING & OVERLOOP NOT OKAY; CURRENTTRACK SHOULD ONE, AND BE ENOUGH!"] = [...playlistData.currentTracks];
@@ -873,16 +873,16 @@ const Soundscape = (() => {
                     logPackage.playlistData["NEW TRACK SEQUENCE OKAY!"] = [...playlistData.trackSequence];
                     logPackage["###-RETURN-### !!!RECURRING with FULL TRACKSEQUENCE!!!"] = {soundRef: playlistData.name, masterSound};
                     log(logPackage);
-                    return playSound(playlistData.name, masterSound);
+                    return playSound(playlistData.name, masterSound, false, isFading);
                 }
                 if (playlistData.playModes.isTogether) {
                     logPackage.playlistData.playMode = "TOGETHER";
                     logPackage["!!!RECURRING THROUGH ALL TO PLAY TOGETHER!!!"] = playlistData.trackKeys.map((x) => ({soundRef: x, masterSound: playlistData.name}));
-                    playlistData.trackKeys.map((x) => playSound(x, playlistData.name));
+                    playlistData.trackKeys.map((x) => playSound(x, playlistData.name, false, isFading));
                 } else {
                     logPackage.playlistData.playMode = "NOT TOGETHER";
                     logPackage.playlistData["!!!RECURRING THROUGH NEXT SOUND: PUSH TO CURRENTTRACKS!!!"] = {soundRef: playlistData.trackSequence[0], masterSound: playlistData.name};
-                    playlistData.currentTracks.push(playSound(playlistData.trackSequence.shift(), playlistData.name));
+                    playlistData.currentTracks.push(playSound(playlistData.trackSequence.shift(), playlistData.name, false, isFading));
                 }
                 playlistData.isPlaying = true;
                 logPackage["###-RETURN-### true"] = true;
@@ -906,7 +906,7 @@ const Soundscape = (() => {
                 const trackObj = getTrackObj(soundKey);
                 if (trackObj) {
                     const trackVolume = isTrackObjPlaying(trackObj) ? trackObj.get("volume") : 0;
-                    fadeTrackObj(trackObj, getVolume(soundKey));
+                    fadeTrackObj(trackObj, getVolume(soundKey), isFading ? undefined : getVolume(soundKey));
                 }
                 STATE.REF.activeSounds = _.uniq([...STATE.REF.activeSounds, masterSound || soundKey]);
                 logPackage["###-RETURN-### soundKey"] = soundKey;
@@ -972,108 +972,112 @@ const Soundscape = (() => {
                 startVol
             }
         };
-        if (trackKey && trackObj) {
-            const curVol = D.Float(trackObj.get("volume"), 2);
-            startVol = (startVol || startVol === 0) ? startVol : curVol;
-            const isSoundFading = trackKey in STATE.REF.soundsFading && STATE.REF.soundsFading.timer;
-            STATE.REF.soundsFading[trackKey] = {targetVol, startVol};
-            // If trackObj is ALREADY PLAYING:
-            if (isTrackObjPlaying(trackObj)) {
-                // First check to see if a fade is even necessary.  If not, stop sound and delete from fade registry.
-                if (curVol === targetVol) {
-                    logPackage["NO FADE NEEDED: curVol === targetVol"] = {curVol, targetVol};
-                    if (targetVol === 0) {
-                        trackObj.set({playing: false, softstop: false});
-                        logPackage["STOPPING SOUND"] = D.JS(trackObj);
-                    }
-                    clearFade(trackKey);
-                    log(logPackage);
-                    return false;
-                }
-                // Second, check to see if the sound is already being faded.  If so, just change the fade registry data so
-                // the fadeStep function will update on its next iteration with the new data.
-                // Clear the timer, and set a new timer with a lead time equal to the standard step so it continues smoothly.
-                if (isSoundFading) {
-                    logPackage["SOUND ALREADY FADING: UPDATING STATE DATA, RESETTING FADE"] = {startVol: trackObj.get("volume"), targetVol, curVol};
-                    STATE.REF.soundsFading[trackKey] = {
-                        targetVol,
-                        startVol: trackObj.get("volume")
-                    };
-                    fadeLeadTime = STATE.REF.fadeStepTime;
-                } else {
-                    // If CHANGING VOLUME (i.e. not going to zero), SKIP the default lead time UNLESS one was specified in parameters.
-                    if (targetVol > 0)
-                        fadeLeadTime = fadeLeadTime || 0;
-                    else // OTHERWISE, apply ONE THIRD the default lead time if none specified in parameters.
-                        fadeLeadTime = (fadeLeadTime || fadeLeadTime === 0) ? fadeLeadTime : (STATE.REF.fadeLeadTime / 3);
-                }
-            } else {
-                // If trackObj is NOT PLAYING ...
-                if (targetVol > 0) {
-                    // ... and the target volume is greater than zero, START IT at MINIMAL VOLUME
-                    trackObj.set({playing: true, softstop: false, volume: 0.1});
-                    startVol = 0.1;
-                    STATE.REF.soundsFading[trackKey].startVol = startVol;
-                    // ... and set the lead time to the default, unless one specified
-                    fadeLeadTime = (fadeLeadTime || fadeLeadTime === 0) ? fadeLeadTime : STATE.REF.fadeLeadTime;
-                } else {
-                    // OTHERWISE, it's not playing and the target volume is zero: No fade necessary.
-                    clearFade(trackKey);
-                    log(logPackage);
-                    return false;
-                }
-            }
-            const fadeStep = (fadeID) => {
-                // Can't log timers to state. So, must create a random fadeID, log that, and pass it through each fadeStep timer.
-                // FadeStep checks state to see if its ID is the one set for the active timer.
-                // If not, it stops and does nothing.
-                if (trackKey && trackObj && (trackKey in STATE.REF.soundsFading)) {
-                    if (!fadeID) {
-                        fadeID = D.RandomString(10);
-                        STATE.REF.soundsFading[trackKey].timer = fadeID;
-                    }
-                    if (STATE.REF.soundsFading[trackKey].timer === fadeID) {
-                        const cVol = D.Float(trackObj.get("volume"), 2);
-                        targetVol = STATE.REF.soundsFading[trackKey].targetVol;
-                        startVol = STATE.REF.soundsFading[trackKey].startVol;
-                        const fullDeltaVol = targetVol - startVol;
-                        const deltaVolStep = Math.min(fullDeltaVol / (STATE.REF.fadeDuration / STATE.REF.fadeStepTime), STATE.REF.maxFadeStep);
-                        if (deltaVolStep > 0 && cVol < targetVol) {
-                            log(`... [${fadeID}] Fading ${trackKey}: ${cVol} -> ${cVol + deltaVolStep}`);
-                            trackObj.set({volume: Math.min(targetVol, cVol + deltaVolStep)});
-                        } else if (deltaVolStep < 0 && cVol > targetVol) {
-                            log(`... [${fadeID}] Fading ${trackKey}: ${cVol} -> ${cVol + deltaVolStep}`);
-                            trackObj.set({volume: Math.max(targetVol, cVol + deltaVolStep)});
-                        } else { // Either cVol equals targetVol OR fade has overstepped: Either way, end the fade.
-                            if (targetVol === 0) {
-                                log(`... [${fadeID}] ${trackKey} Fade Complete! (cVol = ${cVol}) : Stopping Track`);
-                                trackObj.set({playing: false, softstop: false});
-                            } else if (cVol !== targetVol) {
-                                log(`... [${fadeID}] ${trackKey} Fade Overstepped? (cVol = ${cVol}, tVol = ${targetVol}, sVol = ${startVol}, fDVol = ${fullDeltaVol}, vStep = ${deltaVolStep}) : Setting Volume to ${targetVol}`);
-                                trackObj.set({volume: targetVol});
-                            }
-                            clearFade(trackKey);
-                            return false;
+        if (targetVol === startVol) {
+            trackObj.set({playing: true, softstop: false, volume: targetVol});
+        } else {
+            if (trackKey && trackObj) {
+                const curVol = D.Float(trackObj.get("volume"), 2);
+                startVol = (startVol || startVol === 0) ? startVol : curVol;
+                const isSoundFading = trackKey in STATE.REF.soundsFading && STATE.REF.soundsFading.timer;
+                STATE.REF.soundsFading[trackKey] = {targetVol, startVol};
+                // If trackObj is ALREADY PLAYING:
+                if (isTrackObjPlaying(trackObj)) {
+                    // First check to see if a fade is even necessary.  If not, stop sound and delete from fade registry.
+                    if (curVol === targetVol) {
+                        logPackage["NO FADE NEEDED: curVol === targetVol"] = {curVol, targetVol};
+                        if (targetVol === 0) {
+                            trackObj.set({playing: false, softstop: false});
+                            logPackage["STOPPING SOUND"] = D.JS(trackObj);
                         }
-                        // Fade is continuing; set timer.
-                        setTimeout(() => fadeStep(fadeID), STATE.REF.fadeStepTime);
-                        return true;
+                        clearFade(trackKey);
+                        log(logPackage);
+                        return false;
+                    }
+                    // Second, check to see if the sound is already being faded.  If so, just change the fade registry data so
+                    // the fadeStep function will update on its next iteration with the new data.
+                    // Clear the timer, and set a new timer with a lead time equal to the standard step so it continues smoothly.
+                    if (isSoundFading) {
+                        logPackage["SOUND ALREADY FADING: UPDATING STATE DATA, RESETTING FADE"] = {startVol: trackObj.get("volume"), targetVol, curVol};
+                        STATE.REF.soundsFading[trackKey] = {
+                            targetVol,
+                            startVol: trackObj.get("volume")
+                        };
+                        fadeLeadTime = STATE.REF.fadeStepTime;
                     } else {
-                        log(`... [${fadeID}] ID Mismatch: This Timer No Longer Valid, Replaced by ${STATE.REF.soundsFading[trackKey].timer}`);
+                        // If CHANGING VOLUME (i.e. not going to zero), SKIP the default lead time UNLESS one was specified in parameters.
+                        if (targetVol > 0)
+                            fadeLeadTime = fadeLeadTime || 0;
+                        else // OTHERWISE, apply ONE THIRD the default lead time if none specified in parameters.
+                            fadeLeadTime = (fadeLeadTime || fadeLeadTime === 0) ? fadeLeadTime : (STATE.REF.fadeLeadTime / 3);
+                    }
+                } else {
+                    // If trackObj is NOT PLAYING ...
+                    if (targetVol > 0) {
+                        // ... and the target volume is greater than zero, START IT at MINIMAL VOLUME
+                        trackObj.set({playing: true, softstop: false, volume: 0.1});
+                        startVol = 0.1;
+                        STATE.REF.soundsFading[trackKey].startVol = startVol;
+                        // ... and set the lead time to the default, unless one specified
+                        fadeLeadTime = (fadeLeadTime || fadeLeadTime === 0) ? fadeLeadTime : STATE.REF.fadeLeadTime;
+                    } else {
+                        // OTHERWISE, it's not playing and the target volume is zero: No fade necessary.
+                        clearFade(trackKey);
+                        log(logPackage);
+                        return false;
                     }
                 }
-                log(`... [${fadeID || "(NEW)"}] ${D.JS(trackKey)} Invalid or Not Registered in STATE.`);
-                return false;
-            };
-            logPackage[`INITIALIZING FADE in ${D.Float(fadeLeadTime / 1000, 2)} SECONDS`] = {startVol, targetVol, curVol};
-            log(logPackage);
-            if (fadeLeadTime > 0)
-                setTimeout(fadeStep, fadeLeadTime);
-            else
-                fadeStep();
-            return true;
+                const fadeStep = (fadeID) => {
+                    // Can't log timers to state. So, must create a random fadeID, log that, and pass it through each fadeStep timer.
+                    // FadeStep checks state to see if its ID is the one set for the active timer.
+                    // If not, it stops and does nothing.
+                    if (trackKey && trackObj && (trackKey in STATE.REF.soundsFading)) {
+                        if (!fadeID) {
+                            fadeID = D.RandomString(10);
+                            STATE.REF.soundsFading[trackKey].timer = fadeID;
+                        }
+                        if (STATE.REF.soundsFading[trackKey].timer === fadeID) {
+                            const cVol = D.Float(trackObj.get("volume"), 2);
+                            targetVol = STATE.REF.soundsFading[trackKey].targetVol;
+                            startVol = STATE.REF.soundsFading[trackKey].startVol;
+                            const fullDeltaVol = targetVol - startVol;
+                            const deltaVolStep = Math.min(fullDeltaVol / (STATE.REF.fadeDuration / STATE.REF.fadeStepTime), STATE.REF.maxFadeStep);
+                            if (deltaVolStep > 0 && cVol < targetVol) {
+                                log(`... [${fadeID}] Fading ${trackKey}: ${cVol} -> ${cVol + deltaVolStep}`);
+                                trackObj.set({volume: Math.min(targetVol, cVol + deltaVolStep)});
+                            } else if (deltaVolStep < 0 && cVol > targetVol) {
+                                log(`... [${fadeID}] Fading ${trackKey}: ${cVol} -> ${cVol + deltaVolStep}`);
+                                trackObj.set({volume: Math.max(targetVol, cVol + deltaVolStep)});
+                            } else { // Either cVol equals targetVol OR fade has overstepped: Either way, end the fade.
+                                if (targetVol === 0) {
+                                    log(`... [${fadeID}] ${trackKey} Fade Complete! (cVol = ${cVol}) : Stopping Track`);
+                                    trackObj.set({playing: false, softstop: false});
+                                } else if (cVol !== targetVol) {
+                                    log(`... [${fadeID}] ${trackKey} Fade Overstepped? (cVol = ${cVol}, tVol = ${targetVol}, sVol = ${startVol}, fDVol = ${fullDeltaVol}, vStep = ${deltaVolStep}) : Setting Volume to ${targetVol}`);
+                                    trackObj.set({volume: targetVol});
+                                }
+                                clearFade(trackKey);
+                                return false;
+                            }
+                            // Fade is continuing; set timer.
+                            setTimeout(() => fadeStep(fadeID), STATE.REF.fadeStepTime);
+                            return true;
+                        } else {
+                            log(`... [${fadeID}] ID Mismatch: This Timer No Longer Valid, Replaced by ${STATE.REF.soundsFading[trackKey].timer}`);
+                        }
+                    }
+                    log(`... [${fadeID || "(NEW)"}] ${D.JS(trackKey)} Invalid or Not Registered in STATE.`);
+                    return false;
+                };
+                logPackage[`INITIALIZING FADE in ${D.Float(fadeLeadTime / 1000, 2)} SECONDS`] = {startVol, targetVol, curVol};
+                log(logPackage);
+                if (fadeLeadTime > 0)
+                    setTimeout(fadeStep, fadeLeadTime);
+                else
+                    fadeStep();
+                return true;
+            }
+            logPackage["... TRACK NOT FOUND"] = [D.JS(trackKey), D.JS(trackObj, true)];
         }
-        logPackage["... TRACK NOT FOUND"] = [D.JS(trackKey), D.JS(trackObj, true)];
         clearFade(trackKey);
         log(logPackage);
         return false;
