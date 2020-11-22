@@ -163,6 +163,10 @@ const Tester = (() => {
                 rowFilter = rowFilter.startsWith("[") ? rowFilter.replace(/[\[\]]/gu, "").split(/, ?/gu) : rowFilter;
                 rowFilter = rowFilter.includes(":") ? D.ParseParams(rowFilter, ",") : rowFilter;
                 rowFilter = rowFilter === "null" ? null : rowFilter;
+
+                // !test repstats "Johannes Napier" advantage null "Haven (Harbord Village)"
+                // !char set stat <name> <value>   OR   !char set stat <section> <name> <value>
+
                 let repStatData = D.GetRepStats(charRef, section, rowFilter, statName, groupBy, pickProperty);
                 if (!pickProperty)
                     if (VAL({array: repStatData}))

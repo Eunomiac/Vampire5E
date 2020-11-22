@@ -2959,11 +2959,15 @@ const D = (() => {
     const setStat = (charRef, statName, statValue) => setStats(charRef, {[statName]: statValue});
     const setRepStats = (charRef, section, rowID, statList, funcName = false) => {
         const charObj = getChar(charRef, funcName);
+        DB({charObj, section, rowID, statList}, "setRepStats");
         if (VAL({char: [charObj], string: [section], list: [statList]}, "setRepAttrs", true)) {
             const attrList = {};
             _.each(statList, (value, statName) => {
+                if (["val", "value"].includes(statName))
+                    statName = section.replace(/(left|mid|right)$/u, "");
                 attrList[`repeating_${section}_${rowID}_${statName}`] = value;
             });
+            DB({attrList}, "setRepStats");
             setAttrs(charObj.id, attrList);
         }
     };

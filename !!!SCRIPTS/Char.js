@@ -544,7 +544,26 @@ const Char = (() => {
     const onChatCall = (call, args, objects, msg) => {
         DB({call, args, objects, msg}, "onChatCall");
         const charObjs = Listener.GetObjects(objects, "character");
+        const syntax = [
+            "<h3>SYNTAX:</h3>",
+            "<b>!char get repstat &quot;&lt;lookupStat:lookupVal&gt;&quot; &lt;statName&gt;",
+            "<b>!char set stat &lt;statName&gt; &lt;value&gt;",
+            "!char set stat &quot;&lt;lookupStat:lookupVal&gt;&quot; &quot;&lt;setStat:setVal&gt;&quot;</b>",
+            "('setStat' and 'statName' can be &quot;value&quot; to get/set a dot value)",
+            "",
+            "E.G.",
+            "<i>!char get stat @B &quot;name:Haven (Cabbagetown)&quot; advantage_details</i>",
+            "<i>!char set stat @L &quot;name:Haven (Cabbagetown)&quot; &quot;value:7&quot;</i>"
+        ];
         switch (call) {
+            case "launch": {
+                const [margin, resultString, rowID] = args;
+                if (rowID)
+                    launchProject(D.Int(margin), resultString, charObjs[0], `repeating_project_${rowID}_`);
+                else
+                    launchProject(D.Int(margin), resultString);
+                break;
+            }
             case "class": {
                 const charInsts = _.compact(charObjs.map((x) => Character.Get(x)));
                 switch (D.LCase(call = args.shift())) {
@@ -763,6 +782,19 @@ const Char = (() => {
             }
             case "get": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "repstats": case "repsecs": case "repdata": {
+                        if (args.length && args[0] in C.REPATTRS)
+                            D.Alert([
+                                D.JS(C.REPATTRS[args.shift()], true, true),
+                                ...syntax
+                            ].join("<br>"), "RepStat Data");
+                        else
+                            D.Alert([
+                                D.JS(C.REPATTRS, true, true),
+                                ...syntax
+                            ].join("<br>"), "RepStat Data");
+                        break;
+                    }
                     case "badattrs": case "badstats": {
                         const [, badAttrs, badAttrsByRegExp] = findBadAttrs(true);
                         if (args[0] === "regexp")
@@ -779,6 +811,37 @@ const Char = (() => {
                     case "allattrs": case "allstats": {
                         const allAttrs = getAllAttributes();
                         D.Alert(D.JS(allAttrs.map((x) => x[0]).sort()), `${allAttrs.length} Unique Attribute Names`);
+                        break;
+                    }
+                    case "repstat": {
+                        const [charObj] = charObjs;
+                        if (VAL({charObj}, "!char get repstat"))
+                            // !test repstats "Johannes Napier" advantage null "Haven (Harbord Village)"
+                            // !char set stat <name>   OR   !char set stat <lookupStat:lookupVal>
+                            if (args.length >= 1) {
+                                const [statName, getStat] = args;
+                                if (statName.includes(":")) { // This is a rep stat reference
+                                    try {
+                                        const [lookupStatName, lookupStatVal] = statName.split(":");
+                                        const rowFilter = {[lookupStatName]: lookupStatVal};
+                                        D.Alert(D.JS(D.GetRepStats(charObj, null, rowFilter, getStat)), "!char get repstat");
+                                    } catch (errObj) {
+                                        const alertLines = [
+                                            "Can't find rep stat!",
+                                            D.JS({statName, getStat, errObj}, true)
+                                        ];
+                                        D.Alert(D.JS(C.REPATTRS));
+                                        D.Alert([...alertLines, ...syntax].join("<br>"), "ERROR: !char get repstat");
+                                    }
+                                    break;
+                                }
+                            }
+
+                        D.Alert([
+                            "Syntax Error!",
+                            D.JS({charObj, args}),
+                            ...syntax
+                        ].join("<br>"), "!char get repstat");
                         break;
                     }
                     case "attr": {
@@ -893,7 +956,64 @@ const Char = (() => {
                         adjustTempStat(charObj, statName, D.Int(delta), repRowStatName);
                         break;
                     }
-                    case "stat":
+                    case "stat": {
+                        const [charObj] = charObjs;
+                        const attrList = {};
+                        if (VAL({charObj}, "!char set stat")) {
+                            // !test repstats "Johannes Napier" advantage null "Haven (Harbord Village)"
+                            // !char set stat <name> <value>   OR   !char set stat <section> <lookupStat:lookupVal> <setStat:setVal>
+                            if (args.length === 2) { // Simple Set Stat
+                                const [statName, statVal] = args;
+                                if (statName.includes(":")) { // This is a rep stat reference
+                                    const repStatData = {};
+                                    try {
+                                        const [lookupStatName, lookupStatVal] = statName.split(":");
+                                        const rowFilter = {[lookupStatName]: lookupStatVal};
+                                        const [repStatName, repStatVal] = statVal.split(":");
+                                        if (["val", "value"].includes(repStatName)) {
+                                            const allRepStats = D.GetRepStats(charObj, null, rowFilter, null);
+                                            const [sampleRepStat] = allRepStats;
+                                            const section = sampleRepStat.section;
+                                            const repStat = D.GetRepStat(charObj, null, rowFilter, section);
+                                            DB({allRepStats, sampleRepStat, section, repStat}, "charSetStat");
+                                            Object.assign(repStatData, D.GetRepStat(charObj, null, rowFilter, D.GetRepStats(charObj, null, rowFilter, null)[0].section), {repStatVal});
+                                        } else {
+                                            Object.assign(repStatData, D.GetRepStat(charObj, null, rowFilter, repStatName), {repStatVal});
+                                        }
+                                        DB({rowFilter, repStatName, repStatVal, repStatData}, "charSetStat");
+                                    } catch (errObj) {
+                                        const alertLines = [
+                                            "Can't find rep stat!",
+                                            D.JS({statName, statVal, repStatData, errObj}, true)
+                                        ];
+                                        D.Alert(D.JS(C.REPATTRS));
+                                        D.Alert([...alertLines, ...syntax].join("<br>"), "ERROR: !char set stat");
+                                        break;
+                                    }
+                                    DB({repStatData}, "charSetStat");
+                                    attrList[repStatData.fullName] = repStatData.repStatVal;
+                                } else {
+                                    attrList[statName] = statVal;
+                                }
+                            } else {
+                                D.Alert([
+                                    "Syntax Error!",
+                                    D.JS({charObj, args}),
+                                    ...syntax
+                                ].join("<br>"), "!char set stat");
+                                break;
+                            }
+                            DB({attrList}, "charSetStat");
+                            setAttrs(charObj.id, attrList);
+                        } else {
+                            D.Alert([
+                                "Syntax Error!",
+                                D.JS({charObj, args}),
+                                ...syntax
+                            ].join("<br>"), "!char set stat");
+                        }
+                        break;
+                    }
                     case "stats":
                     case "attr":
                     case "attrs": {
@@ -3299,11 +3419,12 @@ const Char = (() => {
     const sortTimeline = (charRef) => {
         D.SortRepSec(charRef, "timeline", "tlsortby", true, (val) => val || -200);
     };
-    const launchProject = (margin = 0, resultString = "SUCCESS") => {
-        const charObj = D.GetChar(Roller.LastProjectCharID);
-        const p = (v) => Roller.LastProjectPrefix + v;
+    const launchProject = (margin = 0, resultString = "SUCCESS", charRef, projectPrefix) => {
+        const charObj = D.GetChar(charRef || Roller.LastProjectCharID);
+        const p = (v) => `${projectPrefix || Roller.LastProjectPrefix}${v}`;
         const rowID = Roller.LastProjectPrefix.split("_")[2];
         const attrList = {};
+        DB({margin, resultString, charObj, projectPrefix, rowID}, "launchProject");
         const [trait1name, trait1val, trait2name, trait2val, diff, scope] = [
             D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait1_name").val,
             D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait1").val,
