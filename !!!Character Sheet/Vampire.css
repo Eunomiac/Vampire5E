@@ -1663,7 +1663,7 @@
 		margin-top: -21px;
 		margin-right: 5px;
 		padding-top: 21px;
-		background: url('https://i.imgur.com/FdIw7ak.png') no-repeat top/100%;
+		background: url('https://i.imgur.com/VjKJZrn.png') no-repeat top/100%;
 	}
 
 	.charsheet div.sheet-rouserollblock {
@@ -1708,22 +1708,42 @@
 		background: url('https://i.imgur.com/IXOpb3d.png') no-repeat center/100%;
 	}
 	
+	.charsheet div.sheet-rouserollblock div.sheet-oppdiscblock {
+		height: 24px;
+		width: 31px;
+	}
+
+	.charsheet div.sheet-rouserollblock div.sheet-oppdiscblock:hover {
+		background: url('https://i.imgur.com/FKbs1Et.png') no-repeat center/100%;
+	}
+
+	
 	.charsheet div.sheet-rouserollblock div.sheet-discblock {
 		height: 24px;
-		width: 110px;
+		width: 79px;
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-discblock:hover {
-		background: url('https://i.imgur.com/zpDPLYo.png') no-repeat center/100%;
+		background: url('https://i.imgur.com/JSwjCyh.png') no-repeat center/100%;
 	}
+
+	.charsheet div.sheet-rouserollblock div.sheet-opprollblock {
+		height: 24px;
+		width: 53px;
+	}
+
+	.charsheet div.sheet-rouserollblock div.sheet-opprollblock:hover {
+		background: url('https://i.imgur.com/Q5oFtYy.png') no-repeat center/100%;
+	}
+
 
 	.charsheet div.sheet-rouserollblock div.sheet-rollblock {
 		height: 24px;
-		width: 110px;
+		width: 57px;
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rollblock:hover {
-		background: url('https://i.imgur.com/4S7qkbt.png') no-repeat center/100%;
+		background: url('https://i.imgur.com/zgS8YXV.png') no-repeat center/100%;
 	}
 
 	.charsheet div.sheet-longbuttonblock {

@@ -77,7 +77,13 @@
         <img src="https://i.imgur.com/VtlVAFf.png" /> <!-- Ambition & Desires -->
         <img src="https://i.imgur.com/9LphM6F.png" /> <!-- Experience -->
 
-        <!-- DICE ROLLER -->
+        <!-- DICE ROLLER -->        
+        <img src="https://i.imgur.com/zgS8YXV.png" />
+        <img src="https://i.imgur.com/VjKJZrn.png" />
+        <img src="https://i.imgur.com/Q5oFtYy.png" />
+        <img src="https://i.imgur.com/FKbs1Et.png" />
+        <img src="https://i.imgur.com/JSwjCyh.png" />
+
         <img src="https://i.imgur.com/voHakVj.png" />
         <img src="https://i.imgur.com/bgcyS98.png" />
         <img src="https://i.imgur.com/IXOpb3d.png" />
@@ -1296,7 +1302,6 @@
             <input class="sheet-attr" type="checkbox" name="attr_applybloodsurge" value="1" /><span>Blood Surge</span>
             <input class="sheet-attr" type="checkbox" name="attr_applyspecialty" value="1" /><span>Specialty</span>
             <input class="sheet-attr" type="checkbox" name="attr_applyresonance" value="1" /><span>Resonant</span>
-            <input class="sheet-attr" type="checkbox" name="attr_applyopposed" value="1" /><span>Opposed</span>
         </div>
         <div class="sheet-coltight1 sheet-dicebuttonblock">
             <div class="sheet-coltight1 sheet-rouserollblock">
@@ -1312,8 +1317,14 @@
                 <div class="sheet-coltight1 sheet-rouse2block">
                     <button class="sheet-button" type="roll" value="!roll dice rouse2 @{rollparams}"></button>
                 </div>
+                <div class="sheet-coltight1 sheet-oppdiscblock">
+                    <button class="sheet-button" type="roll" value="!roll dice oppdisc @{rollparams}"></button>
+                </div>
                 <div class="sheet-coltight1 sheet-discblock">
                     <button class="sheet-button" type="roll" value="!roll dice disc @{rollparams}"></button>
+                </div>
+                <div class="sheet-coltight1 sheet-opprollblock">
+                    <button class="sheet-button" type="roll" value="!roll dice opproll @{rollparams}"></button>
                 </div>
                 <div class="sheet-coltight1 sheet-rollblock">
                     <button class="sheet-button" type="roll" value="!roll dice trait @{rollparams}"></button>
@@ -4866,7 +4877,6 @@
                 "applybloodsurge",
                 "applyspecialty",
                 "applyresonance",
-                "applyopposed",
                 "incap",
                 "Stains",
                 "resonance",
@@ -7559,18 +7569,6 @@
                                 topDisplayStrings.push(`Blood Surge (+${bpDependants[parseInt(ATTRS.blood_potency)].bp_surge})`);
                                 lastTopDisplayStrings.push("Rouse Check Is Automatic");
                             }
-                            if (parseInt(ATTRS.applyopposed) === 1) {
-                                topDisplayStrings.push("Will Wait for Opposing Roll");
-                                if (targetAttr === "applyopposed") {
-                                    log("Apply Opposed ON and Target Attr = applyopposed SO Diff = 0");
-                                    [ATTRS.rolldiff, attrList.rolldiff] = [0, 0];
-                                }
-                            } else if (targetAttr === "applyopposed" && parseInt(ATTRS.rolldiff) === 0) {
-                                log("Apply Opposed OFF and Target Attr = applyopposed and Diff = 0 SO Diff = 3");
-                                [ATTRS.rolldiff, attrList.rolldiff] = [3, 3];
-                            } else {
-                                log("Apply Opposed Check N/A --- no difficulty change.");
-                            }
                             if (parseInt(ATTRS.applyspecialty) === 1)
                                 topDisplayStrings.push("Specialty (+1)");
                             if (parseInt(ATTRS.applyresonance) === 1)
@@ -7632,7 +7630,7 @@
                                 rArray.push(stat);
                             // Next, reset the various roll parameters to default, which is zero EXCEPT for difficulty, which is 3 UNLESS opposed roll is flagged:
                             for (const val of ROLLFLAGS.num) {
-                                const defaultVal = (parseInt(ATTRS.applyopposed) === 0 && val === "rolldiff") ? 3 : 0;
+                                const defaultVal = val === "rolldiff" ? 3 : 0;
                                 if (parseInt(ATTRS[val]) !== defaultVal)
                                     [ATTRS[val], attrList[val]] = [defaultVal, defaultVal];
                             }

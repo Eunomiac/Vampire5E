@@ -168,6 +168,8 @@ const Roller = (() => {
                                 DB({"Parsing Frenzy Args": args}, "!roll dice frenzy");
                             }
                             /* falls through */
+                            case "oppdisc":
+                            case "opproll":
                             case "disc":
                             case "trait": {
                                 rollType = rollType || "trait";
@@ -222,9 +224,16 @@ const Roller = (() => {
                                         ? {}
                                         : _.clone(STATE.REF.nextRollFlags);
                                     const rollID = D.RandomString(20);
-                                    rollFlags.isOpposedRoll = quickFlags.includes("opposed") || STATE.REF.curOppWaitID;
+                                    if (call.startsWith("opp") || Boolean(quickFlags.includes("waitforopposing"))) {
+                                        rollFlags.oppRollStatus = "wait";
+                                        rollFlags.isWaitingForOpposed = true;
+                                    } else if (quickFlags.includes("opposed") || STATE.REF.curOppWaitID) {
+                                        rollFlags.oppRollStatus = "opp";
+                                        rollFlags.isOpposedRoll = quickFlags.includes("opposed") || STATE.REF.curOppWaitID;
+                                    } else {
+                                        rollFlags.oppRollStatus = false;
+                                    }
                                     STATE.REF.curOppWaitID = false;
-                                    rollFlags.isWaitingForOpposed = D.Int(D.GetStatVal(msg.playerid, "applyopposed")) === 1 || Boolean(quickFlags.includes("waitforopposing"));
                                     rollFlags.isNPCRoll = Boolean(STATE.REF.isNextRollNPC && playerIsGM(msg.playerid));
                                     rollFlags.isDiscRoll = call === "disc";
                                     rollFlags.isOblivionRoll = Boolean(call.includes("obv")
@@ -1155,9 +1164,12 @@ const Roller = (() => {
     const CHATSTYLES = {
         // "-35px 0px -7px -42px"
         fullBox: `<div style="display: block;width: 259px;padding: 5px 5px;margin: -35px 0px -7px -42px; color: ${C.COLORS.white};font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset ${C.COLORS.darkred};background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;">`,
+        waitBox: `<div style="display: block;width: 259px;padding: 5px 5px;margin: -35px 0px 12px -42px; color: ${C.COLORS.white};font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset ${C.COLORS.darkred};background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;">`,
+        oppBox: `<div style="display: block;width: 259px;padding: 5px 5px;margin: -40px 0px -7px -42px; color: ${C.COLORS.white};font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset ${C.COLORS.darkred};background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;">`,
         space10: "<span style=\"display: inline-block; width: 10px;\"></span>",
         space30: "<span style=\"display: inline-block; width: 30px;\"></span>",
         space40: "<span style=\"display: inline-block; width: 40px;\"></span>",
+        oppRoll: "<div style='display: block ; width: 265px; font-variant: small-caps ; font-size: 16px ; padding: 0 0 0 4px; border: 3px outset rgba( 132 , 0 , 2 , 1 ) ; text-transform: uppercase ; font-family: \"voltaire\" ; color: black ; overflow: hidden ; text-align: left ; margin: -28px 0px 0px -8px; height: 20px; background: gold; line-height: 20px;'>Final Outcome of Opposed Roll:</div>",
         rollerName: `<div style="display: block; width: 100%; font-variant: small-caps; font-size: 16px; height: 15px; padding-bottom: 5px; border-bottom: 1px solid ${C.COLORS.white}; overflow: hidden;">`,
         mainRoll: `<div style="display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid ${C.COLORS.white};"><span style="display: block; height: 16px; line-height: 16px; width: 100%; font-size: 14px; ">`,
         mainRollSub: "<span style=\"display: block; height: auto; line-height: 12px; width: 100%; margin-left: 24px; font-size: 10px;\">",
@@ -1182,6 +1194,7 @@ const Roller = (() => {
         subOutcomeOrange:
             "<div style=\"display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;\"><span style=\"color: midgold; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
         subOutcomeWhite: `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
+        waitRoll: `<div style='display: block ; width: 254px ; font-variant: small-caps ; font-size: 16px ; padding: 0 15px 0 0; border: 3px outset rgba( 132 , 0 , 2 , 1 ) ; border-bottom-right-radius: 20px ;  text-transform: uppercase ; font-family: "voltaire" ; color: black ; overflow: hidden ; text-align: right ;  margin: -7px 0px -27px -8px; height: 20px; line-height: 22px; border-top: none ; background: gold;'>Waiting For Opposing Roll...</div>`,
         resultDice: {
             // ♦◊
             /*
@@ -1868,7 +1881,7 @@ const Roller = (() => {
                     } else if (Media.IsActive("DistrictLeft")) {
                         delete locations.center;
                         if (!Media.IsActive("DiscableLocLeft"))
-                            locations.left.push(Media.GetImgData("DistrictLeft").activeSrc);                            
+                            locations.left.push(Media.GetImgData("DistrictLeft").activeSrc);
                         if (!Media.IsActive("DiscableLocRight"))
                             locations.right.push(Media.GetImgData("DistrictRight").activeSrc);
                     }
@@ -2918,6 +2931,7 @@ const Roller = (() => {
         rollData.isOblivionRoll = rollFlags && rollFlags.isOblivionRoll;
         DB({rollData}, "getRollData");
         rollData.charName = D.GetName(charObj);
+        // D.Flag(`Roll Status: ${rollData.rollFlags.oppRollStatus}`);
         switch (rollType) {
             case "remorse":
                 rollData.diff = 0;
@@ -2954,6 +2968,7 @@ const Roller = (() => {
                 rollData.rollEffectsToReapply = rollData.rollEffectsToReapply || [];
                 rollData.rollEffectsToReapply = _.uniq([...rollData.rollEffectsToReapply, "all;nocrit;!Rush Roll: No Criticals"]);
                 if (!(rollID in STATE.REF.oppRolls)) {
+                    rollFlags.oppRollStatus = "opp";
                     const oppRollData = {
                         type: "trait",
                         charName: "Project Die",
@@ -2980,7 +2995,14 @@ const Roller = (() => {
                 [rollData.diff, rollData.mod] = params.slice(0, 2).map((x) => D.Int(x));
                 break;
             default: {
-                rollData.diff = rollData.diff === null ? D.Int(D.GetStatVal(rollData.playerCharID || rollData.charID, "rolldiff")) : rollData.diff;
+                if (rollFlags.oppRollStatus === "wait") {
+                    rollData.diff = rollData.diff === null ? 0 : rollData.diff;
+                    STATE.REF.oppRollDiff = rollData.diff;
+                } else if (rollFlags.oppRollStatus === "opp") {
+                    rollData.diff = rollData.diff === null ? (STATE.REF.oppRollDiff || 0) : rollData.diff;
+                } else {
+                    rollData.diff = rollData.diff === null ? D.Int(D.GetStatVal(rollData.playerCharID || rollData.charID, "rolldiff")) : rollData.diff;
+                }
                 rollData.mod = rollData.mod === null ? D.Int(D.GetStatVal(rollData.playerCharID || rollData.charID, "rollmod")) : rollData.mod;
                 break;
             }
@@ -2989,6 +3011,8 @@ const Roller = (() => {
         if (["remorse", "rush", "project", "humanity", "frenzy", "willpower", "check", "rouse", "rouse2"].includes(rollType))
             rollData.hunger = 0;
 
+        // D.Flag(`Roll Status: ${rollData.rollFlags.oppRollStatus}`);
+        // D.Flag("(spacer)");
         DB({"INITIAL ROLL DATA": rollData}, "getRollData");
 
         return TRACEOFF(traceID, rollData);
@@ -3595,6 +3619,7 @@ const Roller = (() => {
         const logLines = {
             fullBox: CHATSTYLES.fullBox,
             rollerName: "",
+            displayName: rollFlags.isHidingName ? "Someone" : rollData.charName,
             mainRoll: "",
             mainRollSub: "",
             difficulty: "",
@@ -3616,7 +3641,7 @@ const Roller = (() => {
         };
         const playerNPCLines = {
             fullBox: CHATSTYLES.fullBox,
-            rollerName: "",
+            rollerName: "",            
             mainRoll: "",
             mainRollSub: "",
             difficulty: "",
@@ -3625,6 +3650,7 @@ const Roller = (() => {
             outcome: "",
             subOutcome: ""
         };
+
         const p = (v) => rollData.prefix + v;
         DB({rollData, rollResults}, "displayRoll");
         switch (rollData.type) {
@@ -3848,6 +3874,7 @@ const Roller = (() => {
         for (const name of Object.keys(rollLines))
             switch (name) {
                 case "rollerName": {
+                    logLines.displayName = rollFlags.isHidingName ? "Someone" : rollData.charName;
                     const displayName = rollFlags.isHidingName ? "Someone" : rollData.charName;
                     switch (rollData.type) {
                         case "remorse": {
@@ -3963,9 +3990,13 @@ const Roller = (() => {
                                     + (rollFlags.isHidingDicePool
                                         ? "Some Dice"
                                         : `${Math.max(1, rollData.dicePool + -1 * (rollData.negFlagMod || 0))} Dice`);
+                                logLines.mainRollText = (rollFlags.isHidingDicePool
+                                    ? "Some Dice"
+                                    : `${Math.max(1, rollData.dicePool + -1 * (rollData.negFlagMod || 0))} Dice`);
                             } else {
                                 rollLines.mainRoll.text = mainRollParts.join(" + ");
                                 logLines.mainRoll = CHATSTYLES.mainRoll + mainRollLog.join(" + ");
+                                logLines.mainRollText = mainRollLog.join(" + ");
                             }
                             stLines.mainRoll = CHATSTYLES.mainRoll + stRollLog.join(" + ");
                             playerNPCLines.mainRoll = CHATSTYLES.mainRoll + stRollLog.join(" + ").replace(/\s\(\d*\)/gu, "");
@@ -3973,6 +4004,7 @@ const Roller = (() => {
                                 if (rollData.traits.length === 0 && rollData.mod > 0) {
                                     rollLines.mainRoll.text = `${rollFlags.isHidingDicePool ? "Some" : rollData.mod} Dice`;
                                     logLines.mainRoll = `${CHATSTYLES.mainRoll + (rollFlags.isHidingDicePool ? "Some" : rollData.mod)} Dice`;
+                                    logLines.mainRollText = `${(rollFlags.isHidingDicePool ? "Some" : rollData.mod)} Dice}`;
                                     stLines.mainRoll = `${CHATSTYLES.mainRoll + rollData.mod} Dice`;
                                     playerNPCLines.mainRoll = `${CHATSTYLES.mainRoll + (rollFlags.isHidingDicePool ? "Some" : rollData.mod)} Dice`;
                                 } else {
@@ -3980,6 +4012,9 @@ const Roller = (() => {
                                         += rollFlags.isHidingTraits || rollFlags.isHidingDicePool
                                             ? ""
                                             : (rollData.mod < 0 ? " - " : " + ") + Math.abs(rollData.mod);
+                                    logLines.mainRollText += rollFlags.isHidingTraits || rollFlags.isHidingDicePool
+                                        ? ""
+                                        : (rollData.mod < 0 ? " - " : " + ") + Math.abs(rollData.mod);
                                     rollLines.mainRoll.text
                                         += rollFlags.isHidingTraits || rollFlags.isHidingDicePool
                                             ? ""
@@ -4309,11 +4344,15 @@ const Roller = (() => {
             playerNPCLines.outcome = "";
         }
         if ((logLines.mainRoll + logLines.difficulty).replace(/<div.*?span.*?>/gu, "").length > 40)
-            for (const abbv of Object.keys(C.ATTRABBVS))
+            for (const abbv of Object.keys(C.ATTRABBVS)) {
                 logLines.mainRoll = logLines.mainRoll.replace(new RegExp(C.ATTRABBVS[abbv], "gui"), abbv);
+                logLines.mainRollText = logLines.mainRollText.replace(new RegExp(C.ATTRABBVS[abbv], "gui"), abbv);
+            }
         if ((logLines.mainRoll + logLines.difficulty).replace(/<div.*?span.*?>/gu, "").length > 40)
-            for (const abbv of Object.keys(C.SKILLABBVS))
+            for (const abbv of Object.keys(C.SKILLABBVS)) {
                 logLines.mainRoll = logLines.mainRoll.replace(new RegExp(C.SKILLABBVS[abbv], "gui"), abbv);
+                logLines.mainRollText = logLines.mainRollText.replace(new RegExp(C.SKILLABBVS[abbv], "gui"), abbv);
+            }
         if ((stLines.mainRoll + stLines.difficulty).replace(/<div.*?span.*?>/gu, "").length > 40)
             for (const abbv of Object.keys(C.ATTRABBVS)) {
                 stLines.mainRoll = stLines.mainRoll.replace(new RegExp(C.ATTRABBVS[abbv], "gui"), abbv);
@@ -4325,6 +4364,7 @@ const Roller = (() => {
                 playerNPCLines.mainRoll = playerNPCLines.mainRoll.replace(new RegExp(C.SKILLABBVS[abbv], "gui"), abbv);
             }
         logLines.mainRoll = `${logLines.mainRoll + logLines.difficulty}</span>${logLines.mainRollSub}</div>`;
+        logLines.mainRollText = `${logLines.mainRollText}${logLines.difficulty}`;
         stLines.mainRoll = `${stLines.mainRoll + stLines.difficulty}</span>${stLines.mainRollSub}</div>`;
         playerNPCLines.mainRoll = `${playerNPCLines.mainRoll + playerNPCLines.difficulty}</span>${playerNPCLines.mainRollSub}</div>`;
 
@@ -4348,12 +4388,42 @@ const Roller = (() => {
             isHidingOutcome: false
         });
 
-        const logString = `${logLines.fullBox}${logLines.rollerName}${logLines.mainRoll}${logLines.resultDice}${
-            rollFlags.isHidingOutcome ? "" : logLines.outcome + logLines.subOutcome
-        }</div>`;
-        const stString = `${stLines.fullBox}${stLines.rollerName}${stLines.mainRoll}${stLines.resultDice}${stLines.outcome}${stLines.subOutcome}</div>`;
-        const playerNPCString = `${playerNPCLines.fullBox}${playerNPCLines.rollerName}${playerNPCLines.mainRoll}${playerNPCLines.resultDice}${playerNPCLines.outcome}${playerNPCLines.subOutcome}</div>`;
+        let fullBox = CHATSTYLES.fullBox,
+            waitRollLine = "",
+            oppRollLine = "",
+            mainRollAddendum = "";
 
+        // D.Show(rollFlags);
+        // D.Show(rollLines.oppRoll);
+        // D.Show(D.KeyMapObj(logLines, (k) => k, (v) => _.escape(v)));
+        if (rollLines.oppRoll)
+            if ("oppMainRoll" in rollLines.oppRoll) {
+                oppRollLine = CHATSTYLES.oppRoll;
+                fullBox = CHATSTYLES.oppBox;
+                // D.Show({resultDice: _.escape(logLines.resultDice), margin: _.escape(logLines.margin)});
+                const oppResults = STATE.REF.oppRolls[rollData.rollID].oppResults;
+                const oppTotal = `<span style='color: ${oppResults.total < 0 ? "red" : "gold"}; font-weight: bold;  text-shadow: 0 0 1px black, 0 0 1px black, 0 0 1px black;'>${oppResults.total}</span>`;
+                const oppDisplayName = `<span style='color: gold; font-weight: bold;  text-shadow: 0 0 1px black, 0 0 1px black, 0 0 1px black;'>${oppResults.isHidingName ? "Someone" : oppResults.charName.split(" ").pop()}</span>`;
+                const finalMargin = `<span style='color: ${rollResults.finalMargin < 0 ? "red" : "white"}; font-weight: bold; text-shadow: 0 0 1px black, 0 0 1px black, 0 0 1px black;'>${logLines.margin}</span>`;
+                logLines.rollerName = logLines.rollerName.replace(/rolls:/u, `rolls vs. ${oppDisplayName}:`);
+                logLines.mainRoll = logLines.mainRoll.replace(/<\/span><\/div>$/gu, ` vs. ${oppTotal}</span></div>`);
+                logLines.resultDice = logLines.resultDice.replace(/ *<\/span> *<\/div> *<\/div> *$/gu, `${finalMargin.replace(/-0/gu, "+0")}</span></div></div>`);
+            } else {
+                waitRollLine = CHATSTYLES.waitRoll;
+                fullBox = CHATSTYLES.waitBox;
+                STATE.REF.oppMainLogLines = {
+                    name: logLines.displayName,
+                    total: rollResults.total
+                };
+            }
+
+        let logString = `${fullBox}${oppRollLine}${logLines.rollerName}${logLines.mainRoll}${logLines.resultDice}`;
+        if (!rollFlags.isHidingOutcome)
+            logString += `${logLines.outcome}${logLines.subOutcome}`;
+        logString += `${waitRollLine}</div>`;
+        const stString = `${fullBox}${oppRollLine}${stLines.rollerName}${stLines.mainRoll}${stLines.resultDice}${stLines.outcome}${stLines.subOutcome}${waitRollLine}</div>`;
+        const playerNPCString = `${fullBox}${oppRollLine}${playerNPCLines.rollerName}${playerNPCLines.mainRoll}${playerNPCLines.resultDice}${playerNPCLines.outcome}${playerNPCLines.subOutcome}${waitRollLine}</div>`;
+        
         for (const line of SETTINGS.textKeys)
             if (rollLines[line] && rollLines[line].text) {
                 Media.SetText(line, rollLines[line].text, true);
@@ -4426,6 +4496,9 @@ const Roller = (() => {
             Media.SetImgTemp("RollerFrame_Diff", {top: SETTINGS.shifts.diffFrame.top});
 
         const oa = D.Clone(OPPROLLDEFAULTS);
+
+        // D.Flag(`Roll Status: ${rollData.rollFlags.oppRollStatus}`);
+        // D.Flag("(spacer)");
 
         if (rollLines.oppRoll) {
             const getPos = (asset, pos, refData, isShowing = false) => {
@@ -4603,6 +4676,8 @@ const Roller = (() => {
             D.Queue(Char.RefreshDisplays, [], "RollerAttrs", 0.1);
             D.Run("RollerAttrs");
         }
+
+        DB({logString: _.escape(logString)}, "logString");
 
         if (isLogging)
             D.Chat("all", logString, undefined, false, true);
@@ -5141,12 +5216,16 @@ const Roller = (() => {
             // Toggle isWaiting && isOpposed before switching:
             rollData.rollFlags.isWaitingForOpposed = false;
             rollData.rollFlags.isOpposedRoll = oppData.rollID;
+            rollData.rollFlags.oppRollStatus = "opp";
             rollResults.rollFlags.isWaitingForOpposed = false;
             rollResults.rollFlags.isOpposedRoll = oppData.rollID;
+            rollResults.rollFlags.oppRollStatus = "opp";
             oppData.rollFlags.isWaitingForOpposed = true;
             oppData.rollFlags.isOpposedRoll = false;
+            oppData.rollFlags.oppRolLStatus = "wait";
             oppResults.rollFlags.isWaitingForOpposed = true;
             oppResults.rollFlags.isOpposedRoll = false;
+            oppResults.rollFlags.oppRolLStatus = "wait";
 
             // Delete entry from oppRolls
             delete STATE.REF.oppRolls[rollData.rollID];
@@ -5504,7 +5583,7 @@ const Roller = (() => {
             huntString += " ";
         if (Session.District && C.DISTRICTS[Session.District])
             huntString += `in ${C.DISTRICTS[Session.District].fullName}`;
-        huntString += "."
+        huntString += ".";
         if (marginBonus > 0)
             huntString += `<span style="display: block; text-align: right; text-align-last: right; margin-right: 5px; font-size: 10px; height: 11px; line-height: 11px; color: #AAAAAA; font-weight: normal; font-family: Voltaire;">(Resonance Bonus: +${marginBonus}0%)</span>`;
         D.Chat(

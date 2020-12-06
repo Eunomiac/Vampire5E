@@ -778,7 +778,6 @@
             "applybloodsurge",
             "applyspecialty",
             "applyresonance",
-            "applyopposed",
             "incap",
             "Stains",
             "resonance",
@@ -3471,18 +3470,6 @@
                             topDisplayStrings.push(`Blood Surge (+${bpDependants[parseInt(ATTRS.blood_potency)].bp_surge})`);
                             lastTopDisplayStrings.push("Rouse Check Is Automatic");
                         }
-                        if (parseInt(ATTRS.applyopposed) === 1) {
-                            topDisplayStrings.push("Will Wait for Opposing Roll");
-                            if (targetAttr === "applyopposed") {
-                                log("Apply Opposed ON and Target Attr = applyopposed SO Diff = 0");
-                                [ATTRS.rolldiff, attrList.rolldiff] = [0, 0];
-                            }
-                        } else if (targetAttr === "applyopposed" && parseInt(ATTRS.rolldiff) === 0) {
-                            log("Apply Opposed OFF and Target Attr = applyopposed and Diff = 0 SO Diff = 3");
-                            [ATTRS.rolldiff, attrList.rolldiff] = [3, 3];
-                        } else {
-                            log("Apply Opposed Check N/A --- no difficulty change.");
-                        }
                         if (parseInt(ATTRS.applyspecialty) === 1)
                             topDisplayStrings.push("Specialty (+1)");
                         if (parseInt(ATTRS.applyresonance) === 1)
@@ -3544,7 +3531,7 @@
                             rArray.push(stat);
                         // Next, reset the various roll parameters to default, which is zero EXCEPT for difficulty, which is 3 UNLESS opposed roll is flagged:
                         for (const val of ROLLFLAGS.num) {
-                            const defaultVal = (parseInt(ATTRS.applyopposed) === 0 && val === "rolldiff") ? 3 : 0;
+                            const defaultVal = val === "rolldiff" ? 3 : 0;
                             if (parseInt(ATTRS[val]) !== defaultVal)
                                 [ATTRS[val], attrList[val]] = [defaultVal, defaultVal];
                         }
