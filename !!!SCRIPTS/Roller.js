@@ -1194,7 +1194,7 @@ const Roller = (() => {
         subOutcomeOrange:
             "<div style=\"display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;\"><span style=\"color: midgold; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
         subOutcomeWhite: `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
-        waitRoll: `<div style='display: block ; width: 254px ; font-variant: small-caps ; font-size: 16px ; padding: 0 15px 0 0; border: 3px outset rgba( 132 , 0 , 2 , 1 ) ; border-bottom-right-radius: 20px ;  text-transform: uppercase ; font-family: "voltaire" ; color: black ; overflow: hidden ; text-align: right ;  margin: -7px 0px -27px -8px; height: 20px; line-height: 22px; border-top: none ; background: gold;'>Waiting For Opposing Roll...</div>`,
+        waitRoll: "<div style='display: block ; width: 254px ; font-variant: small-caps ; font-size: 16px ; padding: 0 15px 0 0; border: 3px outset rgba( 132 , 0 , 2 , 1 ) ; border-bottom-right-radius: 20px ;  text-transform: uppercase ; font-family: \"voltaire\" ; color: black ; overflow: hidden ; text-align: right ;  margin: -7px 0px -27px -8px; height: 20px; line-height: 22px; border-top: none ; background: gold;'>Waiting For Opposing Roll...</div>",
         resultDice: {
             // ♦◊
             /*
@@ -3641,7 +3641,7 @@ const Roller = (() => {
         };
         const playerNPCLines = {
             fullBox: CHATSTYLES.fullBox,
-            rollerName: "",            
+            rollerName: "",
             mainRoll: "",
             mainRollSub: "",
             difficulty: "",
@@ -4423,7 +4423,7 @@ const Roller = (() => {
         logString += `${waitRollLine}</div>`;
         const stString = `${fullBox}${oppRollLine}${stLines.rollerName}${stLines.mainRoll}${stLines.resultDice}${stLines.outcome}${stLines.subOutcome}${waitRollLine}</div>`;
         const playerNPCString = `${fullBox}${oppRollLine}${playerNPCLines.rollerName}${playerNPCLines.mainRoll}${playerNPCLines.resultDice}${playerNPCLines.outcome}${playerNPCLines.subOutcome}${waitRollLine}</div>`;
-        
+
         for (const line of SETTINGS.textKeys)
             if (rollLines[line] && rollLines[line].text) {
                 Media.SetText(line, rollLines[line].text, true);

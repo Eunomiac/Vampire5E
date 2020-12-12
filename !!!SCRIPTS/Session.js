@@ -3147,7 +3147,7 @@ const Session = (() => {
             Media.ToggleImg("DisableLocRight", locPos === "l" && curLocations.DistrictLeft !== curLocations.DistrictRight);
             Media.ToggleImg("DisableSiteRight", locPos === "l" && curLocations.DistrictLeft === curLocations.DistrictRight);
         }
-            // STEP FOUR: Do the next bit after a short timeout so everything above catches up:
+        // STEP FOUR: Do the next bit after a short timeout so everything above catches up:
 
         setTimeout(() => {
             if (!("HUB" in STATE.REF.curLocation))
