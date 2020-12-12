@@ -38,6 +38,7 @@ const Media = (() => {
         STATE.REF.animregistry["CN-LED-1"].bottomEdge = 546; */
 
         // _.range(1, 31).forEach((x) => setImg(`RollerDie_Opp_${x}`, "blank"));
+
         STATE.REF.imgregistry = STATE.REF.imgregistry || {};
         STATE.REF.textregistry = STATE.REF.textregistry || {};
         STATE.REF.animregistry = STATE.REF.animregistry || {};

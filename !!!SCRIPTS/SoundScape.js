@@ -80,7 +80,7 @@ const Soundscape = (() => {
             case "increase": {
                 if (args[0] === "casaloma") { // !sound inc casaloma <scoreVolMult> <delayTillFade> <targetVol>
                     args.shift();
-                    CASALOMASOUNDS.CLGreatHall.activeSounds.ScoreCasaLoma = D.Float(args.shift(), 2);
+                    HUBSOUNDS.CASALOMA.CLGreatHall.activeSounds.ScoreCasaLoma = D.Float(args.shift(), 2);
                     C.SITES.CLGreatHall.onEntryCall = null;
                     Media.ToggleText("HubAspectsNotice", true);
                     Media.ToggleText("HubAspectsTitle", true);
@@ -97,8 +97,8 @@ const Soundscape = (() => {
                             trackObj = getTrackObj(getPlaylistData("ScoreCasaLoma").currentTracks[0]);
                             fadeTrackObj(trackObj, targetVolArg, undefined, (delayTimeArg + 3) * 1000);
                         }
-                        CASALOMASOUNDS.CLGreatHall.activeSounds.ScoreCasaLoma = 1;
-                        CASALOMASOUNDS.CLVestibule.activeSounds.ScoreCasaLoma = 0.5;
+                        HUBSOUNDS.CASALOMA.CLGreatHall.activeSounds.ScoreCasaLoma = 1;
+                        HUBSOUNDS.CASALOMA.CLVestibule.activeSounds.ScoreCasaLoma = 0.5;
                     }
                 } else if (args[0]) {
                     const baseVolume = STATE.REF.VOLUME[args[0]] || STATE.REF.VOLUME.base;
@@ -112,7 +112,7 @@ const Soundscape = (() => {
             case "dec":
             case "decrease": {
                 if (args[0] === "casaloma") {
-                    CASALOMASOUNDS.CLGreatHall.activeSounds.ScoreCasaLoma = D.Float(args[1]) || 1.5;
+                    HUBSOUNDS.CASALOMA.CLGreatHall.activeSounds.ScoreCasaLoma = D.Float(args[1]) || 1.5;
                     syncSoundscape();
                 } else if (args[0]) {
                     const baseVolume = STATE.REF.VOLUME[args[0]] || STATE.REF.VOLUME.base;
@@ -239,63 +239,65 @@ const Soundscape = (() => {
             STATE.REF.playlistregistry = D.Clone(v);
         }
     };
-    const CASALOMASOUNDS = {
-        blank: {
-            activeSounds: {
-                ScoreCasaLoma: 0.5, // Volume multipliers ON TOP of normal ones.
-                SoftIndoor: 1
+    const HUBSOUNDS = {
+        CasaLoma: {
+            blank: {
+                activeSounds: {
+                    ScoreCasaLoma: 0.5, // Volume multipliers ON TOP of normal ones.
+                    SoftIndoor: 1
+                },
+                isOutside: false
             },
-            isOutside: false
-        },
-        CLVestibule: {
-            activeSounds: {
-                SoftIndoor: 1,
-                ScoreCasaLoma: 0.5
+            CLVestibule: {
+                activeSounds: {
+                    SoftIndoor: 1,
+                    ScoreCasaLoma: 0.5
+                },
+                isOutside: false
             },
-            isOutside: false
-        },
-        CLGreatHall: {
-            activeSounds: {
-                ScoreCasaLoma: 1.5 // Volume multipliers ON TOP of normal ones.
+            CLGreatHall: {
+                activeSounds: {
+                    ScoreCasaLoma: 1.5 // Volume multipliers ON TOP of normal ones.
+                },
+                isOutside: false
             },
-            isOutside: false
-        },
-        CLGallery: {
-            activeSounds: {
-                ScoreCasaLoma: 0.5, // Volume multipliers ON TOP of normal ones.
-                SoftIndoor: 1,
-                TinkleAmbient: 1
+            CLGallery: {
+                activeSounds: {
+                    ScoreCasaLoma: 0.5, // Volume multipliers ON TOP of normal ones.
+                    SoftIndoor: 1,
+                    TinkleAmbient: 1
+                },
+                isOutside: false
             },
-            isOutside: false
-        },
-        CLDrawingRoom: {
-            activeSounds: {
-                ScoreCasaLoma: 0.3, // Volume multipliers ON TOP of normal ones.
-                FastClock: 1
-                // Fireplace: 1
+            CLDrawingRoom: {
+                activeSounds: {
+                    ScoreCasaLoma: 0.3, // Volume multipliers ON TOP of normal ones.
+                    FastClock: 1
+                    // Fireplace: 1
+                },
+                isOutside: false
             },
-            isOutside: false
-        },
-        CLOverlook: {
-            activeSounds: {
-                ScoreCasaLoma: 0.8 // Volume multipliers ON TOP of normal ones.
+            CLOverlook: {
+                activeSounds: {
+                    ScoreCasaLoma: 0.8 // Volume multipliers ON TOP of normal ones.
+                },
+                isOutside: false
             },
-            isOutside: false
-        },
-        CLLibrary: {
-            activeSounds: {
-                ScoreCasaLoma: 0.3,
-                Fireplace: 1
+            CLLibrary: {
+                activeSounds: {
+                    ScoreCasaLoma: 0.3,
+                    Fireplace: 1
+                },
+                isOutside: false
             },
-            isOutside: false
-        },
-        CLTerrace: {
-            activeSounds: {
-                ScoreCasaLoma: 0.6, // Volume multipliers ON TOP of normal ones.
-                EerieForest: 1,
-                LowWindAmbient: 1
-            },
-            isOutside: true
+            CLTerrace: {
+                activeSounds: {
+                    ScoreCasaLoma: 0.6, // Volume multipliers ON TOP of normal ones.
+                    EerieForest: 1,
+                    LowWindAmbient: 1
+                },
+                isOutside: true
+            }
         }
     };
     // #endregion
@@ -392,7 +394,7 @@ const Soundscape = (() => {
             || (VAL({obj: trackRef}) && trackRef.get("title"))
             || (VAL({string: trackRef}) && trackRef)
             || false;
-        DB({origTrackRef, trackRef}, "parseKeyFromTitle");
+        // DB({origTrackRef, trackRef}, "parseKeyFromTitle");
         return VAL({string: trackRef}) && trackRef.replace(/\s*[([{].*[)\]}]\s*/gu, "").replace(/[^A-Za-z0-9]*/gu, "");
     };
     const getSoundKey = (soundRef) => {
@@ -587,22 +589,25 @@ const Soundscape = (() => {
         return OFFSTACK(funcID) && false;
     };
     const getPlayingSounds = () => {
-        // if (Session.IsCasaLomaActive) {
-        //     DB({casaLomaActive: Session.IsCasaLomaActive}, "getPlayingSounds");
-        //     const [activeSite] = Session.Site;
-        //     activeSounds = activeSite in CASALOMASOUNDS ? Object.keys(CASALOMASOUNDS[activeSite].activeSounds) : [];
-        //     if (activeSounds.length) {
-        //         STATE.REF.outsideOverride = CASALOMASOUNDS[activeSite].isOutside;
-        //         STATE.REF.volumeMults = CASALOMASOUNDS[activeSite].activeSounds;
-        //         if (STATE.REF.outsideOverride)
-        //             activeSounds.push(...getWeatherSounds(true));
-        //     }
-        //     activeSounds = _.compact(activeSounds);
-        // } else {
-        STATE.REF.outsideOverride = null;
-        STATE.REF.volumeMults = {};
-        // }
-        return _.compact([getScore(), getLocationSounds(), ...getWeatherSounds()]);
+        if (Session.IsHubActive in HUBSOUNDS) {
+            const [activeSite] = _.flatten([Session.Site]);
+            const hubSoundscape = HUBSOUNDS[Session.IsHubActive];
+            const activeSounds = activeSite in hubSoundscape ? Object.keys(hubSoundscape[activeSite].activeSounds) : [];
+            if (activeSounds.length) {
+                STATE.REF.outsideOverride = hubSoundscape[activeSite].isOutside;
+                STATE.REF.volumeMults = hubSoundscape[activeSite].activeSounds;
+                if (STATE.REF.outsideOverride)
+                    activeSounds.push(...getWeatherSounds(true));
+            }
+            DB({activeSite, activeSounds}, "getPlayingSounds");
+            return _.compact(activeSounds);
+        } else {
+            STATE.REF.outsideOverride = null;
+            STATE.REF.volumeMults = {};
+            const activeSounds = _.compact([getScore(), getLocationSounds(), ...getWeatherSounds()]);
+            DB({activeSounds}, "getPlayingSounds");
+            return _.compact(activeSounds);
+        }
     };
     const sendVolumeAlert = (isShowingAllVolumeSettings = false) => {
         const trackObjs = getPlayingTrackObjs();
@@ -1093,7 +1098,7 @@ const Soundscape = (() => {
         const soundsToStop = STATE.REF.activeSounds.filter((x) => !activeSounds.includes(x));
         const soundsToPlay = activeSounds.filter((x) => !STATE.REF.activeSounds.includes(x));
         const soundsToCheck = activeSounds.filter((x) => STATE.REF.activeSounds.includes(x));
-        // DB({CasaLoma: Session.IsCasaLomaActive, outsideOverride: STATE.REF.outsideOverride, activeSounds, volumeMults: STATE.REF.volumeMults, soundsToStop, soundsToPlay, soundsToCheck}, "syncSoundscape");
+        DB({Hub: Session.IsHubActive, outsideOverride: STATE.REF.outsideOverride, activeSounds, volumeMults: STATE.REF.volumeMults, soundsToStop, soundsToPlay, soundsToCheck}, "syncSoundscape");
         soundsToStop.map((x) => stopSound(x));
         soundsToPlay.map((x) => playSound(x));
         const volumeChanges = [];
@@ -1113,7 +1118,7 @@ const Soundscape = (() => {
         log([
             {
                 volumeChanges: D.JS(volumeChanges.map((x) => D.JS(x))),
-                // CasaLoma: Session.IsCasaLomaActive,
+                Hub: Session.IsHubActive,
                 outsideOverride: STATE.REF.outsideOverride,
                 volumeMults: STATE.REF.volumeMults
             },

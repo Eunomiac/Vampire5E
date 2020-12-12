@@ -224,12 +224,12 @@ const Roller = (() => {
                                         ? {}
                                         : _.clone(STATE.REF.nextRollFlags);
                                     const rollID = D.RandomString(20);
-                                    if (call.startsWith("opp") || Boolean(quickFlags.includes("waitforopposing"))) {
+                                    if (STATE.REF.curOppWaitID && ["trait", "willpower"].includes(rollType)) {
+                                        rollFlags.oppRollStatus = "opp";
+                                        rollFlags.isOpposedRoll = true;
+                                    } else if (call.startsWith("opp") || Boolean(quickFlags.includes("waitforopposing"))) {
                                         rollFlags.oppRollStatus = "wait";
                                         rollFlags.isWaitingForOpposed = true;
-                                    } else if (quickFlags.includes("opposed") || STATE.REF.curOppWaitID) {
-                                        rollFlags.oppRollStatus = "opp";
-                                        rollFlags.isOpposedRoll = quickFlags.includes("opposed") || STATE.REF.curOppWaitID;
                                     } else {
                                         rollFlags.oppRollStatus = false;
                                     }
