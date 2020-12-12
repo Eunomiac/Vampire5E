@@ -1473,6 +1473,13 @@ const Session = (() => {
             MidLeft: "TheResidence",
             MidRight: "Catacombs",
             BotCenter: "GiovanniEstate"
+        },
+        HarbordHaven: {
+            Center: "HarbordVillage",
+            TopLeft: "LuxuriousOffice",
+            TopRight: "HemovoreNecro",
+            MidLeft: "SanctumThaum",
+            MidRight: "ShadowedRefuge"
         }
     };
     const buildLocationMenus = () => {
