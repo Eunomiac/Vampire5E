@@ -947,7 +947,7 @@ const Char = (() => {
                     case "npc": {
                         const [charObj] = charObjs.filter((x) => VAL({pc: x}));
                         const [npcObj] = charObjs.filter((x) => VAL({npc: x}));
-                        setCharNPC(charObj, npcObj || "base");
+                        setCharNPC(charObj, npcObj || "base", args.join(" "));
                         break;
                     }
                     case "tempstat": {
@@ -2443,7 +2443,7 @@ const Char = (() => {
     // #endregion
 
     // #region Character-As-NPC Control
-    const setCharNPC = (charRef, npcRef) => {
+    const setCharNPC = (charRef, npcRef, nameString) => {
         const charObj = D.GetChar(charRef);
         const npcObj = (npcRef === "base" && "base") || D.GetChar(npcRef);
         const npcName = (npcRef === "base" && "base") || D.GetName(npcObj, true);
@@ -2457,7 +2457,7 @@ const Char = (() => {
                 Media.ToggleText(`TombstoneName${quad}`, false);
                 Media.SetArea(pcTokenObj, `${quad}Token`);
             } else if (VAL({npc: npcObj}, "!char set npc")) {
-                let nameString = D.GetName(npcObj);
+                nameString = nameString || D.GetName(npcObj);
                 if (Media.GetTextWidth(`TombstoneName${quad}`, nameString) > 200)
                     nameString = npcName;
                 REGISTRY[quad].isNPC = npcObj.id;

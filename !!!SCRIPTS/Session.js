@@ -78,7 +78,6 @@ const Session = (() => {
                 }
             ]
         }; */
-
         STATE.REF.SITokensAlwaysOn = STATE.REF.SITokensAlwaysOn || [];
         STATE.REF.MORTUARYTIER = STATE.REF.MORTUARYTIER || 0;
         STATE.REF.savedSceneLocs = {
@@ -312,6 +311,49 @@ const Session = (() => {
         // SEARCH: /case /      REPLACE: ""
         const charObjs = Listener.GetObjects(objects, "character");
         switch (call) {
+            case "giovanni": {
+                switch (D.LCase((call = args.shift()))) {
+                    case "lock": {
+                        Object.assign(state.VAMPIRE.Media.imgregistry.SiteFocusHub_1.srcs, {
+                            GiovanniCenter: "https://s3.amazonaws.com/files.d20.io/images/184961252/GX9iaWa4BKV4yZr5YSKH_g/thumb.png?1607847043",
+                            GiovanniTopLeft: "https://s3.amazonaws.com/files.d20.io/images/184961244/PLjj-Wkx1rVIqX22_Z1dRQ/thumb.png?1607847041",
+                            GiovanniTopCenter: "https://s3.amazonaws.com/files.d20.io/images/184961238/xZq9Xod_Cx0oXNs7K6KU9g/thumb.png?1607847037",
+                            GiovanniTopRight: "https://s3.amazonaws.com/files.d20.io/images/184961243/TYV8D6RpiysFlJKgtQ8eDw/thumb.png?1607847037",
+                            GiovanniMidLeft: "https://s3.amazonaws.com/files.d20.io/images/184961251/JECwA56W5QyC4IM7SjrKug/thumb.png?1607847042",
+                            GiovanniMidRight: "https://s3.amazonaws.com/files.d20.io/images/184961242/eZlYfp_ufr1SxmO3u4YtiQ/thumb.png?1607847034",
+                            GiovanniBotCenter: "https://s3.amazonaws.com/files.d20.io/images/184961267/MIiuociaeN4SoFPhKBJENQ/thumb.png?1607847045"
+                        });
+                        break;
+                    }
+                    case "unlock": {
+                        Object.assign(state.VAMPIRE.Media.imgregistry.SiteFocusHub_1.srcs, {
+                            GiovanniCenter: "https://s3.amazonaws.com/files.d20.io/images/184961261/QbHLVxKDSOwB0EqfEsSwNA/thumb.png?1607847045",
+                            GiovanniTopLeft: "https://s3.amazonaws.com/files.d20.io/images/184961257/A-zFLYuxceDACHuvEISTcQ/thumb.png?1607847043",
+                            GiovanniTopCenter: "https://s3.amazonaws.com/files.d20.io/images/184961241/X1MguhEqVkXCl4ZhwOtqYQ/thumb.png?1607847037",
+                            GiovanniTopRight: "https://s3.amazonaws.com/files.d20.io/images/184961245/GnUQHKduGRAHhESJVp_mqQ/thumb.png?1607847038",
+                            GiovanniMidLeft: "https://s3.amazonaws.com/files.d20.io/images/184961260/R4lTlm-mHl1uTH9YNtqnwA/thumb.png?1607847045",
+                            GiovanniMidRight: "https://s3.amazonaws.com/files.d20.io/images/184961254/jXPSfQtRi17aQudCt2nuEA/thumb.png?1607847043",
+                            GiovanniBotCenter: "https://s3.amazonaws.com/files.d20.io/images/184961267/MIiuociaeN4SoFPhKBJENQ/thumb.png?1607847045"
+                        });
+                        break;
+                    }
+                    case "npcs": {
+                        Char.SetNPC("L", "Niccolo Giovanni");
+                        Char.SetNPC("R", "Maeve");
+                        Char.SetNPC("A", "Tomyris");
+                        Char.SetNPC("N", "Hell-Wrought Mask of Blackened Iron", "The Hell-Wrought Mask");
+                        setLocation("HUBGiovanni", "BotCenter");
+                        zoomSite();
+                        break;
+                    }
+                    // no default
+                }
+                break;
+            }
+            case "zoom": {
+                zoomSite();
+                break;
+            }
             case "si": {
                 if (args.length)
                     if (args[0] === "clear") {
@@ -361,6 +403,13 @@ const Session = (() => {
                 });
                 break;
             }
+            case "reset": {
+                STATE.REF.curLocation = D.Clone(BLANKLOCRECORD);
+                STATE.REF.locationRecord.Active = D.Clone(BLANKLOCRECORD);
+                STATE.REF.sceneFocusRecord.Active = "c";
+                setLocation(BLANKLOCRECORD, undefined, true, undefined, true);
+                break;
+            }
             case "lock": {
                 switch (D.LCase((call = args.shift()))) {
                     case "date":
@@ -370,8 +419,10 @@ const Session = (() => {
                     case "location": {
                         switch (D.LCase((call = args.shift()))) {
                             case "blank": {
+                                STATE.REF.curLocation = D.Clone(BLANKLOCRECORD);
                                 STATE.REF.locationRecord.Active = D.Clone(BLANKLOCRECORD);
                                 STATE.REF.sceneFocusRecord.Active = "c";
+                                setLocation(BLANKLOCRECORD, undefined, true, undefined, true);
                                 break;
                             }
                             default: {
@@ -872,16 +923,6 @@ const Session = (() => {
                 }
                 break;
             }
-            case "reset": {
-                switch (D.LCase((call = args.shift()))) {
-                    case "loc":
-                    case "location":
-                        STATE.REF.curLocation = D.Clone(BLANKLOCRECORD);
-                        break;
-                    // no default
-                }
-                break;
-            }
             // no default
         }
     };
@@ -1087,16 +1128,6 @@ const Session = (() => {
             STATE.REF.curLocation = _.omit(STATE.REF.curLocation, (v, k) => !posNames.includes(k));
     };
     const MENUHTML = {};
-    const HUBFOCUS = {
-        tl: "TopLeft",
-        tc: "TopCenter",
-        tr: "TopRight",
-        c: "MidCenter",
-        mc: "MidCenter",
-        l: "Left",
-        bc: "Center",
-        r: "Right"
-    };
     const MORTUARYSOUNDS = [
         {
             WhisperingGhosts: 0,
@@ -1466,21 +1497,26 @@ const Session = (() => {
             BotCenter: "CLVestibule"
         },
         Giovanni: {
-            Center: "HauntedMansion",
-            TopCenter: "BacchusOffice",
-            TopLeft: "GiovanniMortuary",
-            TopRight: "ConclaveBones",
-            MidLeft: "TheResidence",
-            MidRight: "Catacombs",
-            BotCenter: "GiovanniEstate"
+            Center: "GEMansion",
+            TopLeft: "GEResidence",
+            TopCenter: "GETowerRoom",
+            TopRight: "GEMortuary",
+            MidLeft: "GEEstateGrounds",
+            MidRight: "GECatacombs",
+            BotCenter: "GECathedral"
         },
         HarbordHaven: {
-            Center: "HarbordVillage",
-            TopLeft: "LuxuriousOffice",
-            TopRight: "HemovoreNecro",
-            MidLeft: "SanctumThaum",
-            MidRight: "ShadowedRefuge"
+            Center: "HHHarbordHaven",
+            TopLeft: "HHLuxuriousOffice",
+            TopRight: "HHHemovoreNecro",
+            MidLeft: "HHSanctumThaum",
+            MidRight: "HHShadowedRefuge"
         }
+    };
+    const HUBPOS = {
+        CasaLoma: {left: 488, top: 1475},
+        Giovanni: {left: 99, top: 1466},
+        HarbordHaven: {left: 563, top: 2117}
     };
     const buildLocationMenus = () => {
         const districtMenuData = {
@@ -1819,7 +1855,7 @@ const Session = (() => {
             }
         } */
         if ("HUB" in STATE.REF.curLocation)
-            return _.omit(STATE.REF.curLocation.HUB, "name");
+            return _.omit(STATE.REF.curLocation.HUB, "name", "pointerPos");
         else
             return D.KeyMapObj(
                 _.omit(
@@ -2005,7 +2041,57 @@ const Session = (() => {
                 Media.SetImg(`SubLoc${locRef}`, subLocRef);
             }
     };
+    const zoomSite = (toggleMode) => {
+        if (toggleMode !== false && toggleMode !== true)
+            toggleMode = !Media.IsActive("SiteZoom");
+        Media.ToggleImg("SiteZoom", toggleMode);
+        if (toggleMode === true) {
+            STATE.REF.zoomRecord = STATE.REF.zoomRecord || [];
+            ["SiteBarCenter_1", "SiteBarLeft_1", "SiteBarRight_1", "SiteCenterTint_1", "SiteCenter_1", "SiteFocusHub_1",
+             "SiteLeftTint_1", "SiteLeft_1", "SiteMidCenterTint_1", "SiteMidCenter_1", "SiteRightTint_1", "SiteRight_1",
+             "SiteTopCenterTint_1", "SiteTopCenter_1", "SiteTopLeftTint_1", "SiteTopLeft_1", "SiteTopRightTint_1",
+             "SiteTopRight_1", "SubLocBotLeft_1", "SubLocBotRight_1", "SubLocLeft_1", "SubLocRight_1", "SubLocTopLeft_1",
+             "SubLocTopRight_1", "HarbordHaven_1", "DisableLocLeft_1", "DisableLocRight_1", "DisableSiteBottomAll_1",
+             "DisableSiteLeft_1", "DisableSiteRight_1", "DistrictCenter_1", "DistrictLeft_1", "DistrictRight_1"].forEach((x) => {
+                if (Media.IsActive(x)) {
+                    STATE.REF.zoomRecord.push(x);
+                    Media.ToggleImg(x, false);
+                }
+            });
+            ["SiteGenericCenterAspect", "SiteGenericCenterRes", "SiteGenericCenterSong", "SiteGenericLeftAspect",
+             "SiteGenericLeftRes", "SiteGenericLeftSong", "SiteGenericRightAspect", "SiteGenericRightRes",
+             "SiteGenericRightSong", "SiteNameCenter", "SiteNameLeft", "SiteNameRight"].forEach((x) => {
+                if (Media.IsActive(x)) {
+                    STATE.REF.zoomRecord.push(x);
+                    Media.ToggleText(x, false);
+                }
+            });
+            Media.SetImg("SiteZoom", Session.Site);
+        } else {
+            for (const mediaRef of STATE.REF.zoomRecord)
+                Media.Toggle(mediaRef, true);
+            STATE.REF.zoomRecord = [];       
+        }
+    };
     const setLocation = (locParams, sceneFocus, isForcing = false, pointerPos, isSimpleBlank = false) => {
+        if (isSimpleBlank) {
+            ["SiteBarCenter_1", "SiteBarLeft_1", "SiteBarRight_1", "SiteCenterTint_1", "SiteCenter_1", "SiteFocusHub_1",
+             "SiteLeftTint_1", "SiteLeft_1", "SiteMidCenterTint_1", "SiteMidCenter_1", "SiteRightTint_1", "SiteRight_1",
+             "SiteTopCenterTint_1", "SiteTopCenter_1", "SiteTopLeftTint_1", "SiteTopLeft_1", "SiteTopRightTint_1",
+             "SiteTopRight_1", "SubLocBotLeft_1", "SubLocBotRight_1", "SubLocLeft_1", "SubLocRight_1", "SubLocTopLeft_1",
+             "SubLocTopRight_1", "HarbordHaven_1", "DisableLocLeft_1", "DisableLocRight_1", "DisableSiteBottomAll_1",
+             "DisableSiteLeft_1", "DisableSiteRight_1", "DistrictCenter_1", "DistrictLeft_1", "DistrictRight_1"].forEach((x) => Media.ToggleImg(x, false));
+            ["SiteGenericCenterAspect", "SiteGenericCenterRes", "SiteGenericCenterSong", "SiteGenericLeftAspect",
+             "SiteGenericLeftRes", "SiteGenericLeftSong", "SiteGenericRightAspect", "SiteGenericRightRes",
+             "SiteGenericRightSong", "SiteNameCenter", "SiteNameLeft", "SiteNameRight"].forEach((x) => Media.ToggleText(x, false));
+            DB("Simple Blank", "setLocation");
+            return;
+        }
+        if (Media.IsActive("SiteZoom"))
+            zoomSite(false);
+        DB({locParams, sceneFocus, isForcing, pointerPos, isSimpleBlank}, "setLocation");
+        if (!VAL({string: locParams}) && "HUB" in locParams)
+            locParams = `HUB${locParams.HUB.name}`;
         if (VAL({string: locParams}) && locParams.startsWith("HUB")) {
             const hubName = locParams.replace(/^HUB/gu, "");
             if (!("HUB" in STATE.REF.curLocation)) {
@@ -2027,17 +2113,9 @@ const Session = (() => {
             sceneFocus = sceneFocus || "Center";
             STATE.REF.curLocation = {HUB: D.Clone(newHub)};
             STATE.REF.locationRecord[Session.Mode] = D.Clone(STATE.REF.curLocation);
+            if (hubName in HUBPOS)
+                pointerPos = D.Clone(HUBPOS[hubName]);
             setSceneFocus(sceneFocus, pointerPos);
-        } else if (isSimpleBlank) {
-            ["SiteBarCenter_1", "SiteBarLeft_1", "SiteBarRight_1", "SiteCenterTint_1", "SiteCenter_1", "SiteFocusHub_1",
-             "SiteLeftTint_1", "SiteLeft_1", "SiteMidCenterTint_1", "SiteMidCenter_1", "SiteRightTint_1", "SiteRight_1",
-             "SiteTopCenterTint_1", "SiteTopCenter_1", "SiteTopLeftTint_1", "SiteTopLeft_1", "SiteTopRightTint_1",
-             "SiteTopRight_1", "SubLocBotLeft_1", "SubLocBotRight_1", "SubLocLeft_1", "SubLocRight_1", "SubLocTopLeft_1",
-             "SubLocTopRight_1", "HarbordHaven_1", "DisableLocLeft_1", "DisableLocRight_1", "DisableSiteBottomAll_1",
-             "DisableSiteLeft_1", "DisableSiteRight_1", "DistrictCenter_1", "DistrictLeft_1", "DistrictRight_1"].forEach((x) => Media.ToggleImg(x, false));
-            ["SiteGenericCenterAspect", "SiteGenericCenterRes", "SiteGenericCenterSong", "SiteGenericLeftAspect",
-             "SiteGenericLeftRes", "SiteGenericLeftSong", "SiteGenericRightAspect", "SiteGenericRightRes",
-             "SiteGenericRightSong", "SiteNameCenter", "SiteNameLeft", "SiteNameRight"].forEach((x) => Media.ToggleText(x, false));
         } else {
             if ("HUB" in STATE.REF.curLocation) {
                 Media.SetImgData("SignalLightBotLeft", {top: 759});
@@ -2538,7 +2616,7 @@ const Session = (() => {
         const buttons = {};
         const buttonList = [];
         if ("HUB" in STATE.REF.curLocation) {
-            const focusLocs = Object.assign({}, HUBLOCS, _.omit(STATE.REF.curLocation.HUB, "name"));
+            const focusLocs = Object.assign({}, HUBLOCS, _.omit(STATE.REF.curLocation.HUB, "name", "pointerPos"));
             Object.keys(focusLocs).forEach((pos) => {
                 buttons[focusLocs[pos] || pos] = [`!reply focus@${pos}`, {
                     color: (focusLocs[pos] && C.COLORS.black) || C.COLORS.darkgrey,

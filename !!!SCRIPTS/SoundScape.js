@@ -298,6 +298,84 @@ const Soundscape = (() => {
                 },
                 isOutside: true
             }
+        },
+        Giovanni: {
+            GEMansion: {
+                activeSounds: {
+                    ScoreGiovanni: 0.75,
+                    WhisperingGhosts: 0.2
+                },
+                isOutside: false
+            },
+            GEResidence: {
+                activeSounds: {
+                    ScoreGiovanni: 0.75,
+                    WhisperingGhosts: 0.1,
+                    DiveBar: 0.5
+                },
+                isOutside: false
+            },
+            GETowerRoom: {
+                activeSounds: {
+                    ScoreGiovanni: 0.75,
+                    WhisperingGhosts: 0.1,
+                    Fireplace: 1
+                },
+                isOutside: false
+            },
+            GEMortuary: {
+                activeSounds: {
+                    ScoreGiovanni: 0.75,
+                    WhisperingGhosts: 0.6,
+                    LowWindAmbient: 2
+                },
+                isOutside: false
+            },
+            GEEstateGrounds: {
+                activeSounds: {
+                    ScoreGiovanni: 0.9,
+                    WhisperingGhosts: 0.1,
+                    EerieForest: 1.5,
+                    LowWindAmbient: 1
+                },
+                isOutside: true
+            },
+            GECatacombs: {
+                activeSounds: {
+                    ScoreGiovanniCatacombs: 3,
+                    WhisperingGhosts: 0.3,
+                    Sewers: 0.5,
+                    LowWindAmbient: 2
+                },
+                isOutside: false
+            },
+            GECathedral: {
+                activeSounds: {
+                    ScoreGiovanniCatacombs: 3,
+                    WhisperingGhosts: 0.4,
+                    Sewers: 0.8,
+                    LowWindAmbient: 2
+                },
+                isOutside: false
+            }
+        },
+        HarbordHaven: {
+            HHLuxuriousOffice: {
+                activeSounds: {
+                    ScoreMain: 1,
+                    Fireplace: 1,
+                    Office: 0.7
+                },
+                isOutside: false
+            },
+            HHSanctumThaum: {
+                activeSounds: {
+                    ScoreMain: 1,
+                    SoftHum: 1,
+                    TinkleAmbient: 0.5
+                },
+                isOutside: false
+            }
         }
     };
     // #endregion
@@ -529,7 +607,18 @@ const Soundscape = (() => {
     const getPlayingTrackObjs = (isLoopingOnly = false) => _.uniq(findObjs({_type: "jukeboxtrack"})).filter((x) => (isLoopingOnly ? isTrackObjLooping(x) : isTrackObjPlaying(x)));
     // getPlayingPlaylists = () => Object.keys(REGISTRY.Playlists).filter(x => REGISTRY.Playlists[x].isPlaying),
     // getPlayingTracks = (isExcludingPlaylists = false) => Object.values(REGISTRY.Tracks).filter(x => x.isPlaying && (!isExcludingPlaylists || !x.masterPlaylist)).map(x => x.name),
-    const getScore = () => STATE.REF.scoreOverride || C.SOUNDSCORES[Session.Mode][0];
+    const getScore = () => {
+        const dist = (Session.District && C.LOCATIONS[Session.District]) || {soundScape: ["(NONE)"]};
+        const site = (Session.Site && C.LOCATIONS[Session.Site]) || {soundScape: ["(NONE)"]};
+        const locSounds = {
+            District: dist.soundScape[0],
+            Site: site.soundScape[0]
+        };
+        DB({locSounds: Object.values(locSounds), scoreOverride: STATE.REF.scoreOverride, [`C.SOUNDSCORES.${Session.Mode}`]: C.SOUNDSCORES[Session.Mode][0]}, "getScore");
+        if (Object.values(locSounds).includes("(TOTALSILENCE)"))
+            return "TOTALSILENCE";
+        return STATE.REF.scoreOverride || C.SOUNDSCORES[Session.Mode][0];
+    };
     const getWeatherSounds = (isForcingOutside = false) => {
         const funcID = ONSTACK();
         const weatherCode = TimeTracker.WeatherCode;
@@ -589,8 +678,8 @@ const Soundscape = (() => {
         return OFFSTACK(funcID) && false;
     };
     const getPlayingSounds = () => {
-        if (Session.IsHubActive in HUBSOUNDS) {
-            const [activeSite] = _.flatten([Session.Site]);
+        const [activeSite] = _.flatten([Session.Site]);
+        if (Session.IsHubActive in HUBSOUNDS && activeSite && activeSite in HUBSOUNDS[Session.IsHubActive]) {
             const hubSoundscape = HUBSOUNDS[Session.IsHubActive];
             const activeSounds = activeSite in hubSoundscape ? Object.keys(hubSoundscape[activeSite].activeSounds) : [];
             if (activeSounds.length) {
