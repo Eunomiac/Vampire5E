@@ -814,9 +814,7 @@
     const bloodlineToggle = {
         Hecata: 1,
         Ventrue: 2,
-        Tremere: 3,
-        Tzimisce: 4,
-        Ravnos: 5
+        Tremere: 3
     };
     const bloodlineText = {
         Ventrue: {
@@ -930,7 +928,7 @@
         Lasombra:
             "Your Lasombra Blood is tainted by the same Abyss that gives you power over darkness.  Your reflection, recorded image and recorded voice are distorted, but not enough to hide your identity: avoiding vampire detection systems suffers a penalty equal to your Bane Severity.  Moreover, you must succeed on a Technology roll against a Difficulty of 2 plus your Bane Severity to use modern communications devices.",
         Tzimisce:
-            "Your storied Tzimisce Blood is inexhorably tied to the Old World.  You must sleep each day submerged in soil taken from Eastern Europe, or you suffer a penalty equal to your Bane Severity to all dice pools the following night.",
+            "Your Tzimisce Blood is inexhorably tied to a specific charge of your choosing: a place, a group of people, or even something more esoteric.  You must sleep each day surrounded by your chosen charge, or suffer aggravated Willpower damage equal to your Bane Severity upon awakening.",
         "Banu Haqim":
             "Your Assamite Blood drives you to feed from those deserving of punishment: especially the Kindred.  Upon slaking Hunger with Cainite Blood, you must roll to resist Hunger Frenzy against a Difficulty of 2 plus your Bane Severity.",
         Hecata: {
@@ -949,8 +947,8 @@
         },
         Ministry:
             "Yours is the Blood of Set, and it shares His longing for darkness.  You suffer your Bane Severity in additional aggravated damage from sunlight, and an equivalent penalty to all dice pools when bright light is directed straight at you.",
-        Ravnos:
-            "Your Ravnos Blood instills in you a weakness for a specific vice or crime: theft, deceit, con-artistry, etc.  When commiting your chosen vice would benefit you in some way, failure to act accordingly penalizes your Social and Mental dice pools by an amount equal to your Bane Severity for the remainder of the night.",
+        Ravnos: "",
+        Salubri: "",
         Mortal: "",
         Werewolf: "",
         Wraith: "",
@@ -968,7 +966,7 @@
         Caitiff: ["", "", ""],
         "Thin-Blooded": ["Alchemy", "", ""],
         Lasombra: ["Dominate", "Oblivion", "Potence"],
-        Tzimisce: ["Animalism", "Auspex", "Protean"],
+        Tzimisce: ["Animalism", "Dominate", "Protean"],
         "Banu Haqim": ["Celerity", "Obfuscate", "Blood Sorcery"],
         Hecata: {
             Giovanni: ["Dominate", "Fortitude", "Oblivion"],
@@ -979,7 +977,8 @@
             base: ["Auspex", "Fortitude", "Oblivion"]
         },
         Ministry: ["Obfuscate", "Presence", "Protean"],
-        Ravnos: ["Animalism", "Fortitude", "Chimerstry"],
+        Ravnos: ["Animalism", "Obfuscate", "Presence"],
+        Salubri: ["Auspex", "Dominate", "Fortitude"],
         Mortal: ["True Faith", "", ""],
         Ghoul: ["Celerity", "Fortitude", "Potence"],
         Werewolf: ["Celerity", "Fortitude", "Potence"],
@@ -1078,6 +1077,24 @@
                 text: "",
                 rollEffect: "",
                 endsWithScene: null
+            },
+            Tzimisce: {
+                title: "Covetousness",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+            Ravnos: {
+                title: "Tempting Fate",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+            Salubri: {
+                title: "Affective Empathy",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
             }
         }
     };
@@ -1121,17 +1138,17 @@
         {blood_potency_max: 0, blood_potency: 0}
     ];
     const bpDependants = [
-        {bp_surge: 0, bp_mend: 1, bp_discbonus: 0, bp_rousereroll: 0, bp_baneseverity: 0, bp_slakeanimal: 1, bp_slakehuman: 0, bp_slakekill: 1},
-        {bp_surge: 1, bp_mend: 1, bp_discbonus: 0, bp_rousereroll: 1, bp_baneseverity: 1, bp_slakeanimal: 1, bp_slakehuman: 0, bp_slakekill: 1},
-        {bp_surge: 1, bp_mend: 2, bp_discbonus: 1, bp_rousereroll: 1, bp_baneseverity: 1, bp_slakeanimal: 0.5, bp_slakehuman: 0, bp_slakekill: 1},
-        {bp_surge: 2, bp_mend: 2, bp_discbonus: 1, bp_rousereroll: 2, bp_baneseverity: 2, bp_slakeanimal: 0, bp_slakehuman: 0, bp_slakekill: 1},
-        {bp_surge: 2, bp_mend: 3, bp_discbonus: 2, bp_rousereroll: 2, bp_baneseverity: 2, bp_slakeanimal: 0, bp_slakehuman: -1, bp_slakekill: 1},
-        {bp_surge: 3, bp_mend: 3, bp_discbonus: 2, bp_rousereroll: 3, bp_baneseverity: 3, bp_slakeanimal: 0, bp_slakehuman: -1, bp_slakekill: 2},
-        {bp_surge: 3, bp_mend: 4, bp_discbonus: 3, bp_rousereroll: 3, bp_baneseverity: 3, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 2},
-        {bp_surge: 4, bp_mend: 4, bp_discbonus: 3, bp_rousereroll: 4, bp_baneseverity: 4, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 2},
-        {bp_surge: 4, bp_mend: 5, bp_discbonus: 4, bp_rousereroll: 4, bp_baneseverity: 4, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 3},
-        {bp_surge: 5, bp_mend: 5, bp_discbonus: 4, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 3},
-        {bp_surge: 5, bp_mend: 10, bp_discbonus: 5, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -3, bp_slakekill: 3}
+        {bp_surge: 1, bp_mend: 1, bp_discbonus: 0, bp_rousereroll: 0, bp_baneseverity: 0, bp_slakeanimal: 1, bp_slakehuman: 0, bp_slakekill: 1},
+        {bp_surge: 2, bp_mend: 1, bp_discbonus: 0, bp_rousereroll: 1, bp_baneseverity: 2, bp_slakeanimal: 1, bp_slakehuman: 0, bp_slakekill: 1},
+        {bp_surge: 2, bp_mend: 2, bp_discbonus: 1, bp_rousereroll: 1, bp_baneseverity: 2, bp_slakeanimal: 0.5, bp_slakehuman: 0, bp_slakekill: 1},
+        {bp_surge: 3, bp_mend: 2, bp_discbonus: 1, bp_rousereroll: 2, bp_baneseverity: 3, bp_slakeanimal: 0, bp_slakehuman: 0, bp_slakekill: 1},
+        {bp_surge: 3, bp_mend: 3, bp_discbonus: 2, bp_rousereroll: 2, bp_baneseverity: 3, bp_slakeanimal: 0, bp_slakehuman: -1, bp_slakekill: 1},
+        {bp_surge: 4, bp_mend: 3, bp_discbonus: 2, bp_rousereroll: 3, bp_baneseverity: 4, bp_slakeanimal: 0, bp_slakehuman: -1, bp_slakekill: 2},
+        {bp_surge: 4, bp_mend: 4, bp_discbonus: 3, bp_rousereroll: 3, bp_baneseverity: 4, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 2},
+        {bp_surge: 5, bp_mend: 4, bp_discbonus: 3, bp_rousereroll: 4, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 2},
+        {bp_surge: 5, bp_mend: 5, bp_discbonus: 4, bp_rousereroll: 4, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 3},
+        {bp_surge: 6, bp_mend: 5, bp_discbonus: 4, bp_rousereroll: 5, bp_baneseverity: 6, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 3},
+        {bp_surge: 6, bp_mend: 10, bp_discbonus: 5, bp_rousereroll: 5, bp_baneseverity: 6, bp_slakeanimal: 0, bp_slakehuman: -3, bp_slakekill: 3}
     ];
     const humanityText = {
         mainText: [
@@ -1804,10 +1821,10 @@
         return weekDay === startWeekDay && dayMins >= startDayMins && dayMins < stopDayMins;
     };
     const log = (msg, titles, isWarn, isLoud) => {
-        if (isInBlackout()) {
+        if (isInBlackout())
             // TAS.error("IN BLACKOUT!");
             return false;
-        }
+
         titles = _.compact(_.flatten([titles])).join(":");
         msg = [titles, ..._.flatten([msg])];
         if (LOGOPTIONS.isDebugging && !LOGOPTIONS.isMuted)
@@ -3593,7 +3610,6 @@
                         attrList.rollpooldisplay = " ";
 
                     log(`>>> ROLL DISPLAY: ${JSON.stringify(attrList.rollpooldisplay)}`);
-
 
 
                     // Set roll parameter string:

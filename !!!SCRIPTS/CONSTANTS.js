@@ -2841,22 +2841,23 @@ const C = (() => {
         "Banu Haqim",
         "Ministry",
         "Hecata",
-        "Ravnos"
+        "Ravnos",
+        "Salubri"
     ];
     const SECTS = ["Camarilla", "Anarch", "Sabbat", "Ashirra", "Second Inquisition", "Autarkis", "Independent", "Mortal"];
     const MISCATTRS = ["blood_potency_max", "bp_surge", "bp_discbonus", "bp_minhunger", "bp_slakekill", "hunger", "resonance"];
     const BLOODPOTENCY = [
-        {bp_surge: 0, bp_discbonus: 0, bp_minhunger: 1},
-        {bp_surge: 1, bp_discbonus: 1, bp_minhunger: 1},
-        {bp_surge: 1, bp_discbonus: 1, bp_minhunger: 1},
+        {bp_surge: 1, bp_discbonus: 0, bp_minhunger: 1},
+        {bp_surge: 2, bp_discbonus: 0, bp_minhunger: 1},
         {bp_surge: 2, bp_discbonus: 1, bp_minhunger: 1},
-        {bp_surge: 2, bp_discbonus: 2, bp_minhunger: 2},
+        {bp_surge: 3, bp_discbonus: 1, bp_minhunger: 1},
         {bp_surge: 3, bp_discbonus: 2, bp_minhunger: 2},
-        {bp_surge: 3, bp_discbonus: 3, bp_minhunger: 2},
-        {bp_surge: 4, bp_discbonus: 3, bp_minhunger: 3},
-        {bp_surge: 4, bp_discbonus: 4, bp_minhunger: 3},
+        {bp_surge: 4, bp_discbonus: 2, bp_minhunger: 2},
+        {bp_surge: 4, bp_discbonus: 3, bp_minhunger: 2},
+        {bp_surge: 5, bp_discbonus: 3, bp_minhunger: 3},
         {bp_surge: 5, bp_discbonus: 4, bp_minhunger: 3},
-        {bp_surge: 5, bp_discbonus: 5, bp_minhunger: 4}
+        {bp_surge: 6, bp_discbonus: 4, bp_minhunger: 3},
+        {bp_surge: 6, bp_discbonus: 5, bp_minhunger: 4}
     ];
     const RESONANCEODDS = {
         flavor: {
