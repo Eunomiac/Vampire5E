@@ -48,9 +48,10 @@ const Roller = (() => {
             redMods: [],
             goldMods: []
         };
-        STATE.REF.isNextRollTest = STATE.REF.isNextRollTest === true;
-        STATE.REF.oppRolls = STATE.REF.oppRolls || {};
+        STATE.REF.isNextRollWaitForOpposed = false;
+        STATE.REF.oppRolls = {};
         STATE.REF.curOppWaitID = false;
+        STATE.REF.isNextRollTest = false;
         STATE.REF.diceStatus
             = STATE.REF.diceStatus
             || _.each(SETTINGS.dice, (v, k) => {
@@ -226,7 +227,7 @@ const Roller = (() => {
                                     const rollID = D.RandomString(20);
                                     if (STATE.REF.curOppWaitID && ["trait", "willpower"].includes(rollType)) {
                                         rollFlags.oppRollStatus = "opp";
-                                        rollFlags.isOpposedRoll = true;
+                                        rollFlags.isOpposedRoll = STATE.REF.curOppWaitID;
                                     } else if (call.startsWith("opp") || Boolean(quickFlags.includes("waitforopposing"))) {
                                         rollFlags.oppRollStatus = "wait";
                                         rollFlags.isWaitingForOpposed = true;

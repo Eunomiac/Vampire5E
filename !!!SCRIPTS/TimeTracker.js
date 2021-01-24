@@ -1590,7 +1590,7 @@ const TimeTracker = (() => {
                 Media.SetImg("SplashWater", `red${D.Int(6 * D.Float((secsOutToStartWater - secsTillNextSession) / secsOutToStartWater, 2), true)}`);
             Media.SetText("Countdown", `${D.Pad(daysLeft, 2)}:${D.Pad(hoursLeft, 2)}:${D.Pad(minsLeft, 2)}:${D.Pad(secsLeft, 2)}`);
         }
-        
+
         if (secTimer)
             clearTimeout(secTimer);
 
@@ -1917,6 +1917,38 @@ const TimeTracker = (() => {
                 Media.SetImg("WeatherGround", getGroundCover(weatherData.weatherCode));
             }
 
+        // CN TOWER LED SCHEME
+        const LEDKeys = Object.keys(Media.ANIM).filter((key) => key.startsWith("CN-LED-")).sort();
+        let isOverlayBlack = true;
+        switch (getHorizonTimeString()) {
+            case "night1":
+            case "night2":
+                isOverlayBlack = false;
+                // falls through
+            case "night3":
+            case "night4": {
+                const activeLEDKeys = _.flatten([_.sample(LEDKeys, [
+                    1, 1, 1, 1,
+                    2, 2, 2,
+                    3, 3,
+                    4
+                ][Math.floor(10 * Math.random())])]);
+                LEDKeys.forEach((key) => Media.ToggleAnim(key, activeLEDKeys.includes(key)));
+                break;
+            }
+            default: {
+                LEDKeys.forEach((key) => Media.ToggleAnim(key, false));
+                break;
+            }
+        }
+        if (isOverlayBlack)
+            Media.SetImg("Horizon-CNTower-Overlay", "black", true);
+        else if (["b", "c", "p", "s", "t", "w"].includes(weatherData.event.charAt(0)) || weatherData.isFoggy)
+            Media.SetImg("Horizon-CNTower-Overlay", "cloudy", true);
+        else
+            Media.SetImg("Horizon-CNTower-Overlay", "clear", true);
+
+
         // WEATHER FOG
         if (!Media.HasForcedState("WeatherFog"))
             if (weatherData.isFoggy) {
@@ -1947,14 +1979,14 @@ const TimeTracker = (() => {
         return OFFSTACK(funcID) && weatherData;
     };
     const setManualWeather = (eventOrCode, tempC, wind, humidity) => {
-        // setManualWeather(...args);  // !time set weather 
+        // setManualWeather(...args);  // !time set weather
         const funcID = ONSTACK();
         if (!eventOrCode) {
             delete STATE.REF.weatherOverride;
             D.Flag("Manual Weather Override Cleared.");
         } else {
             const weatherData = {};
-            if (VAL({string: eventOrCode})) {
+            if (VAL({string: eventOrCode}))
                 if (eventOrCode.length === 6) {
                     Object.assign(weatherData, getWeatherData(null, null, null, 0, false, eventOrCode));
                 } else {
@@ -1962,7 +1994,7 @@ const TimeTracker = (() => {
                     const monthNum = STATE.REF.dateObj.getUTCMonth();
                     const dateNum = STATE.REF.dateObj.getUTCDate();
                     const hourNum = STATE.REF.dateObj.getUTCHours();
-                    weatherData.month = monthNum; 
+                    weatherData.month = monthNum;
                     weatherData.date = dateNum;
                     weatherData.hour = hourNum;
                     weatherData.event = eventOrCode.charAt(0);
@@ -1976,7 +2008,7 @@ const TimeTracker = (() => {
                     if (["w", "p", "t"].includes(weatherData.event))
                         weatherData.isRaining = true;
                 }
-            }
+
             STATE.REF.weatherOverride = weatherData;
             D.Alert([
                 "<h3>Manual Weather Set</h3>",

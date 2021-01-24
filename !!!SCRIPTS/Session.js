@@ -436,14 +436,13 @@ const Session = (() => {
                     case "tokens":
                         logTokens("Active");
                         break;
-                    case "all": {
+                    default: {
                         STATE.REF.dateRecord = null;
                         STATE.REF.locationRecord.Active = D.Clone(STATE.REF.curLocation);
                         STATE.REF.sceneFocusRecord.Active = STATE.REF.sceneFocus;
                         logTokens("Active");
                         break;
                     }
-                    // no default
                 }
                 break;
             }
@@ -2070,7 +2069,7 @@ const Session = (() => {
         } else {
             for (const mediaRef of STATE.REF.zoomRecord)
                 Media.Toggle(mediaRef, true);
-            STATE.REF.zoomRecord = [];       
+            STATE.REF.zoomRecord = [];
         }
     };
     const setLocation = (locParams, sceneFocus, isForcing = false, pointerPos, isSimpleBlank = false) => {
