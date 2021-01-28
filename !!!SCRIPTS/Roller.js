@@ -1422,8 +1422,8 @@ const Roller = (() => {
         Media.ToggleImg("RollerFrame_OppNameRight_1", false, true);
         Media.ToggleImg("RollerFrame_OppOutcome_1", false, true);
         resetDiceVals();
-        STATE.REF.rollRecord = [];
-        STATE.REF.rollIndex = 0;
+        // STATE.REF.rollRecord = [];
+        // STATE.REF.rollIndex = 0;
         STATE.REF.oppRolls = {};
         STATE.REF.curOppWaitID = false;
         TRACEOFF(traceID);

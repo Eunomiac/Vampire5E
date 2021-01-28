@@ -1090,6 +1090,52 @@ const Char = (() => {
                         addCharFlag(charObj, args.join(" "));
                         break;
                     }
+                    case "project": {
+                        const [charObj] = charObjs;
+                        let [rowFilter, attrOverrides, attrDeltas] = args;
+                        if (attrOverrides === "null") {
+                            attrOverrides = attrDeltas !== "null" && attrDeltas;
+                            attrDeltas = false;
+                        }
+                        if (!rowFilter || (!attrOverrides && !attrDeltas)) {
+                            D.Alert([
+                                "<h3>C.REPATTRS</h3>",
+                                D.JS(C.REPATTRS.project, false, true),
+                                " ",
+                                "<b>SYNTAX:</b>",
+                                "<b>!char set project @L &lt;rowFilter&gt; &lt;overrides&gt; &lt;deltas&gt;</b>",
+                                " ",
+                                "<ul><li>Can skip parameter with &quot;null&quot;",
+                                "<li>rowFilter: string --- Either a RowID or &quot;top&quot; to get topmost entry.",
+                                "<li>rowFilter: list --- {statName: statValue} to match row. ALL must match. Can set value to &quot;*&quot; to just check for existence of key.",
+                                "<li>rowFilter: array --- Array of the above, linked via OR</ul>",
+                                " ",
+                                "<ul><li>overrides: list --- Key:Value pairs to OVERWRITE.",
+                                "<li>deltas: list --- Key:Value pairs to CHANGE. Accepts 2 characters:",
+                                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <b>Operator</b> - Can be '+', '-' or '*'",
+                                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <b>Digit</b> - To apply to stat value",
+                                " ",
+                                "Array Syntax: ' &quot;[&lt;item1&gt;, &lt;item2&gt;, &lt;item3&gt;]&quot; '",
+                                "List Syntax: ' &quot;&lt;key&gt;:&lt;val&gt;, &lt;key&gt;:&lt;val&gt;&quot; '"
+                            ].join("<br>"), "!test repstats");
+                            break;
+                        }
+                        const rowIDs = _.compact(D.GetRepIDs(charObj, "project", D.ParseParams(rowFilter, ",")));
+                        DB({rowIDs, attrOverrides, attrDeltas}, "modifyProject");
+                        if (rowIDs.length !== 1) {
+                            D.Alert("Too many matches OR match not found!", "!char set project");
+                            break;
+                        }
+                        if (attrOverrides)
+                            attrOverrides = D.ParseParams(attrOverrides);
+
+                        if (attrDeltas)
+                            attrDeltas = D.ParseParams(attrDeltas);
+
+                        DB({rowIDs, attrOverrides, attrDeltas}, "modifyProject");
+                        modifyProject(charObj, rowIDs.pop(), attrOverrides, attrDeltas);
+                        break;
+                    }
                     // no default
                 }
                 break;
@@ -3439,12 +3485,104 @@ const Char = (() => {
         attrList[p("projectlaunchresults")] = resultString;
         attrList[p("projectstakes_toggle")] = 1;
         attrList[p("projecttotalstake")] = D.Int(scope) + 1 - margin;
-        attrList[p("projectmargin")] = D.Int(margin);
-        attrList[p("projectmargindisplay")] = `(${D.Sign(D.Int(margin))})`;
+        // attrList[p("projectmargin")] = D.Int(margin);
+        // attrList[p("projectmargindisplay")] = `(${D.Sign(D.Int(margin))})`;
         attrList[p("projectlaunchresultsmargin")] = `${D.Int(scope) + 1 - margin} Stake Required, (${D.Int(scope) + 1 - margin} to Go)`;
         D.Queue(setAttrs, [charObj.id, attrList], "LaunchProject");
         D.Queue(updateProjectsDoc, [], "LaunchProject", 0.1);
         D.Run("LaunchProject");
+    };
+    const modifyProject = (charRef, rowID, attrOverrides, attrDeltas) => {
+        /** attrOverrides (REPLACE ENTIRELY)
+         *      projectincnum: 1
+         *      projectincunit: "days", "weeks", "months", "years"
+         *      projectstartdate: "Sept 16, 2020",
+         *      projectlaunchresultsummary: "Subterfuge + Resources vs. Difficulty 3: 7 Successes!",
+         *      projectlaunchresults: "SUCCESS!", "CRITICAL WIN!", "TOTAL FAIL", "COMPLICATION"
+         *
+         *  attrDeltas (ADD/SUBTRACT/MULTIPLY)
+         *      projectincnum: "+2", "-2", "x2"
+         *      projectincunit: "+1", "-1"
+         *      projecttotalstake: "+1", "-1"
+         * */
+        const charObj = D.GetChar(charRef || Roller.LastProjectCharID);
+        const p = (v) => `${`repeating_project_${rowID}_` || Roller.LastProjectPrefix}${v}`;
+        const attrList = {
+            projectlaunchroll_toggle: 2,
+            projectstakes_toggle: 1
+        };
+        DB({rowID, attrOverrides, attrDeltas}, "modifyProject");
+        const currentAttrs = _.omit({
+            projectlaunchtrait1_name: (D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait1") || {name: false}).name,
+            projectlaunchtrait1: (D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait1") || {val: false}).val,
+            projectlaunchtrait2_name: (D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait2") || {name: false}).name,
+            projectlaunchtrait2: (D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait2") || {val: false}).val,
+            projectlaunchdiff: (D.GetRepStat(charObj, "project", rowID, "projectlaunchdiff") || {val: false}).val,
+            projectscope: (D.GetRepStat(charObj, "project", rowID, "projectscope") || {val: false}).val,
+            projecttotalstake: (D.GetRepStat(charObj, "project", rowID, "projecttotalstake") || {val: false}).val,
+            projectincnum: (D.GetRepStat(charObj, "project", rowID, "projectincnum") || {val: false}).val,
+            projectincunit: (D.GetRepStat(charObj, "project", rowID, "projectincunit") || {val: false}).val,
+            projectstartdate: (D.GetRepStat(charObj, "project", rowID, "projectstartdate") || {val: false}).val,
+            projectlaunchresults: (D.GetRepStat(charObj, "project", rowID, "projectlaunchresults") || {val: false}).val
+        }, (v) => v === false);
+        let margin = D.Int(currentAttrs.projectscope) + 1 - D.Int(currentAttrs.projecttotalstake);
+        const currentStake = D.Int((D.GetRepStat(charObj, "project", rowID, "projectstake1") || {val: 0}).val)
+            + D.Int((D.GetRepStat(charObj, "project", rowID, "projectstake2") || {val: 0}).val)
+            + D.Int((D.GetRepStat(charObj, "project", rowID, "projectstake3") || {val: 0}).val);
+        if (attrOverrides)
+            for (let [attr, val] of Object.entries(attrOverrides)) {
+                if (attr === "projectmargin")
+                    margin = D.Int(val);
+                if (attr === "projectlaunchresults")
+                    if (/SUCCESS/u.test(D.UCase(val)))
+                        val = "SUCCESS!";
+                    else if (/CRIT/u.test(D.UCase(val)))
+                        val = "CRITICAL WIN!";
+                    else if (/TOTAL/u.test(D.UCase(val)))
+                        val = "TOTAL FAIL";
+                    else if (/COMPLI/u.test(D.UCase(val)))
+                        val = "COMPLICATION";
+                    else
+                        continue;
+                attrList[attr] = val;
+            }
+        if (attrDeltas)
+            for (const [attr, delta] of Object.entries(attrDeltas)) {
+                if (!["projecttotalstake", "projectincnum", "projectincunit", "projectscope", "projectmargin"].includes(attr))
+                    continue;
+                const [oper, int] = ((i, o) => [
+                    o ? {"-": "+", x: "*"}[o] || o : "+",
+                    (o === "-" ? -1 : 1) * parseInt(i)
+                ])(...`${delta}`.split("").reverse());
+                const curAttrVal = attr === "projectmargin" ? margin : (attrList[attr] || currentAttrs[attr]);
+                switch (attr) {
+                    case "projectmargin": {
+                        margin = oper === "+" ? margin + int : margin * int;
+                        break;
+                    }
+                    case "projecttotalstake": case "projectincnum": {
+                        attrList[attr] = oper === "+" ? curAttrVal + int : curAttrVal * int;
+                        break;
+                    }
+                    case "projectincunit": {
+                        const curIndex = ["hours", "days", "weeks", "months", "years"].findIndex((v) => curAttrVal === v) + int;
+                        if (curIndex >= 0 && curIndex < 5)
+                            attrList[attr] = ["hours", "days", "weeks", "months", "years"][curIndex];
+                        break;
+                    }
+                    // no default
+                }
+            }
+        const pendingAttrs = {...currentAttrs, ...attrList};
+        attrList.projectlaunchresultsummary = `${pendingAttrs.projectlaunchtrait1_name} (${pendingAttrs.projectlaunchtrait1}) + ${pendingAttrs.projectlaunchtrait2_name} (${pendingAttrs.projectlaunchtrait2}) vs. ${pendingAttrs.projectlaunchdiff}: ${pendingAttrs.projectlaunchdiff + margin} SUCCESSES`;
+        if (!("projecttotalstake" in attrList))
+            attrList.projecttotalstake = D.Int(pendingAttrs.projectscope) + 1 - margin;
+
+        attrList.projectlaunchresultsmargin = `${D.Int(attrList.projecttotalstake || currentAttrs.projecttotalstake)} Stake Required, (${D.Int(attrList.projecttotalstake || currentAttrs.projecttotalstake) - currentStake} to Go)`;
+        attrList.projectmargindisplay = `(${margin >= 0 ? "+" : ""}${margin})`;
+        const parsedAttrList = D.KeyMapObj(attrList, (k) => p(k), (v) => v);
+        DB({attrList, currentAttrs, pendingAttrs, parsedAttrList}, "modifyProject");
+        setAttrs(charObj.id, parsedAttrList);
     };
     const addMarginToProjects = (charRefs, isWritingSheet = false) => {
         const charObjs = D.GetChars(charRefs);

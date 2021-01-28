@@ -145,9 +145,14 @@ const Tester = (() => {
                         D.JS(C.REPATTRS, false, true),
                         " ",
                         "<b>SYNTAX:</b>",
-                        "<br>!test repstats &lt;charRef&gt; &lt;section&gt; &lt;rowFilter&gt; &lt;statName&gt; &lt;groupBy&gt; &lt;pickProperty&gt;",
+                        "<b>!test repstats &lt;charRef&gt; &lt;section&gt; &lt;rowFilter&gt; &lt;statName&gt; &lt;groupBy&gt; &lt;pickProperty&gt;</b>",
+                        "<i>!test repstats &quot;Johannes Napier&quot; advantage &quot;type:background&quot; &quot;Haven (Harbord Village)&quot;</i>",
+                        "<i>!char set stat &lt;section&gt; &lt;lookupStat:lookupVal&gt; &lt;setStat:setVal&gt;</i>",
                         " ",
-                        "Can skip a parameter with 'null'.",
+                        "<ul><li>Can skip a parameter with 'null'.",
+                        "<li>rowFilter: string --- Either a RowID or &quot;top&quot; to get topmost entry.",
+                        "<li>rowFilter: list --- {statName: statValue} to match row. ALL must match. Can set value to &quot;*&quot; to just check for existence of key.",
+                        "<li>rowFilter: array --- Array of the above, linked via OR</ul>",
                         "Array Syntax: ' &quot;[&lt;item1&gt;, &lt;item2&gt;, &lt;item3&gt;]&quot; '",
                         "List Syntax: ' &quot;&lt;key&gt;:&lt;val&gt;, &lt;key&gt;:&lt;val&gt;&quot; '"
                     ].join("<br>"), "!test repstats");
