@@ -591,12 +591,45 @@ const TimeTracker = (() => {
         },
         remdyscrasia: (charRef) => {
             const charObj = D.GetChar(charRef);
-            if (VAL({charObj})) {
-                D.Chat(charObj.id, C.HTML.Block(C.HTML.Header("Your dyscrasia fades.")));
-                D.Call(`!char ${charObj.id} set stat dyscrasias_toggle:0`);
-            } else {
+            const _remDysc = (charID, isAtMax = false) => {
+                if (isAtMax)
+                    D.Chat(charID, C.HTML.Block(C.HTML.Header("You are ravenous: Your dyscrasia fades.")));
+                else
+                    D.Chat(charID, C.HTML.Block(C.HTML.Header("Your dyscrasia fades as you feed.")));
+                D.Call(`!char ${charID} set stat dyscrasias_toggle 0`);
+            };
+            if (VAL({charObj}))
+                if (D.GetStatVal(charRef, "hunger") === 5)
+                    _remDysc(charObj.id, true);
+                else
+                    D.CommandMenu({
+                        rows: [
+                            {type: "Header", contents: `${D.JSL(D.GetName(charObj, true))} has reduced their Hunger!`},
+                            {
+                                type: "ButtonLine",
+                                contents: [
+                                    20,
+                                    {name: "Not Slaking", command: "!reply noslake"},
+                                    {name: "Slaking", command: "!reply slake"},
+                                    20
+                                ],
+                                styles: {bgColor: C.COLORS.darkred}
+                            }
+                        ]
+                    },
+                                  (commandString) => {
+                                      if (commandString === "slake") {
+                                          _remDysc(charObj.id);
+                                      } else {
+                                          Char.AddCharAlarm(charObj.id, "hunger", ["onMax", "slake"], {
+                                              funcName: "remdyscrasia",
+                                              funcParams: [charObj.id]
+                                          });
+                                          D.Flag("Dyscrasia Retained");
+                                      }
+                                  });
+            else
                 THROW(`No Character Found for ${D.JS(charRef)}`, "remdyscrasia");
-            }
         }
     };
     let [timeTimer, secTimer, fadeTimer] = [null, null, null],

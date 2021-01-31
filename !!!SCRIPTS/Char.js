@@ -4255,6 +4255,7 @@ const Char = (() => {
         SendHome: sendCharsHome,
         SendBack: restoreCharsPos,
         PromptTraitSelect: traitSelectMenu,
+        AddCharAlarm: addCharAlarm,
         RefreshDisplays: () => {
             displayDesires();
             displayResources();

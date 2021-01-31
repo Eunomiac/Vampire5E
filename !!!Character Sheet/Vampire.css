@@ -422,9 +422,11 @@
 	}
 	.charsheet .sheet-cinzel {
 		font-family: "Cinzel" !important;
+		font-weight: normal !important;
 	}
 	.charsheet .sheet-numberBox {
 		font-family: 'Cinzel';
+		font-weight: normal !important;
 	}
 
 	.charsheet .sheet-darkText {
@@ -1515,8 +1517,7 @@
 		width: auto;
 		text-indent: 5px;
 		padding-bottom: 5px;
-		font-weight: bold;
-
+		font-weight: normal;
 		font-family: 'Cinzel' !important;
 	}
 
@@ -1612,13 +1613,8 @@
 		text-align-last: right;
 	}
 	.charsheet div.sheet-diceroller div.sheet-effectdisplay.sheet-bottomdisplay {
-		width: calc(100% - 210px);
-		margin: -20px 0px 0px 210px;
-	}
-
-	.charsheet div.sheet-diceroller div.sheet-effectdisplay.sheet-bottomdisplay textarea {
-		text-align: left;
-		text-align-last: left;
+		width: calc(100% - 490px);
+		margin: -20px 0px 0px 10px;
 	}
 
 	.charsheet div.sheet-hungercol {
@@ -1830,7 +1826,7 @@
 		
 		font-family: 'Cinzel';
 		font-variant: small-caps;
-		font-weight: 900;
+		font-weight: normal;
 		font-size: 28px;
 	}
 
@@ -1992,6 +1988,7 @@
 
 		font-size: 25px !important;
 		font-family: 'Cinzel' !important;
+		font-weight: normal !important;
 		font-variant: normal;
 
 		box-shadow: none;
@@ -2073,6 +2070,7 @@
 		text-align-last: center;
 
 		font-family: 'Cinzel';
+		font-weight: normal;
 		font-size: 20px;
 		margin: 5px 0px;
 	}
@@ -2602,6 +2600,7 @@
 		padding: 0px;
 		font-size: 14px;
 		font-family: 'Cinzel';
+		font-weight: normal;
 		height: 20px;
 		margin-bottom: 10px;
 		line-height: 20px;

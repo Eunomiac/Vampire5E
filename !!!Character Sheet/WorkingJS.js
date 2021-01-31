@@ -3597,11 +3597,21 @@
                         if (parseInt(ATTRS.rollmod) !== 0)
                             attrList.rollpooldisplay += ` ${parseInt(ATTRS.rollmod) < 0 ? "-" : "+"} ${Math.abs(parseInt(ATTRS.rollmod))}`;
                     }
-                    // Clear any result messages from the bottom display:
-                    attrList.bottomdisplay = "";
 
                     // Create the top display string based on existing roll flags:
                     attrList.topdisplay = checkEffects(rArray);
+
+                    // Determine "Take Half" value for bottom display:
+                    const takeHalfVal = Math.floor(0.5 * (
+                        rArray.map((trait) => parseInt(ATTRS[trait]) || 0).reduce((tot, val) => tot + val, 0)
+                        + parseInt(ATTRS.rollmod)
+                        + (attrList.topdisplay.match(/[+-]\d+/gu) || []).map((val) => parseInt(val) || 0).reduce((tot, val) => tot + val, 0)
+                        - parseInt((attrList.topdisplay.match(/Blood Surge \(([+-]\d+)\)/u) || [0, 0]).slice(1).shift())
+                    ));
+                    if (takeHalfVal > 0)
+                        attrList.bottomdisplay = `(You may "Take Half" for ${takeHalfVal} Success${takeHalfVal === 1 ? "" : "es"})`;
+                    else
+                        attrList.bottomdisplay = "";
 
                     if (parseInt(ATTRS.rolldiff) !== 0)
                         attrList.rollpooldisplay += ` vs. ${parseInt(ATTRS.rolldiff)}`;
