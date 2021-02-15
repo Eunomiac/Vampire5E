@@ -123,6 +123,11 @@ const Listener = (() => {
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
+        STATE.REF.callLogBlacklist = [
+            "!state",
+            "!get state",
+            "!get statekeys"
+        ];
         STATE.REF.isLocked = false;
         STATE.REF.objectLog = STATE.REF.objectLog || [];
         STATE.REF.callLog = STATE.REF.callLog || [];
@@ -198,16 +203,22 @@ const Listener = (() => {
     };
     // #endregion
 
+    const logAPICall = (msg) => {
+        if (msg.content.startsWith("!") && msg.type === "api") {
+            if (STATE.REF.callLogBlacklist.map((testString) => new RegExp(`^${testString}\\b`)).some((regExp) => regExp.test(msg.content)))
+                return false;
+            STATE.REF.callLog.push(msg.content);
+            if (STATE.REF.callLog.length > 100) {
+                Handouts.Make("Call Log", "callLogs", STATE.REF.callLog.sort().join("<br>"));
+                STATE.REF.callLog.length = 0;
+            }
+        }
+    };
+
     const handleMessage = (msg, isRaw = false) => {
         if (!msg.content.includes("DB LISTENER: ListenFull"))
             DB({msg}, "ListenFull");
-        // if (msg.content.startsWith("!") && msg.type === "api" && !STATE.REF.callLog.includes(msg.content)) {
-        //     if (!_.any(STATE.REF.callLogBlacklist, x => msg.content.startsWith(x))) {
-        //         STATE.REF.callLog.push(msg.content);
-        //         if (STATE.REF.callLog.length > 10)
-        //             Handouts.Make("Call Log", "callLogs", STATE.REF.callLog.sort().join("<br>"));
-        //     }
-        // }
+        logAPICall(msg);
         if (msg.content.match(/^!?!playerspoof/gu)) {
             const [, charRef] = msg.content.split(" ");
             let playerid, who;
@@ -231,6 +242,7 @@ const Listener = (() => {
             if (STATE.REF.isLocked || msg.type !== "api")
                 return false;
             msg.who = msg.who || "API";
+            const originalCaller = {who: msg.who, playerid: msg.playerid};
             if (!isRaw && !msg.content.startsWith("!!") && STATE.REF.GMPlayerSpoof && playerIsGM(msg.playerid)) {
                 msg.playerid = STATE.REF.GMPlayerSpoof.playerid;
                 msg.who = D.LCase(msg.who) === "api" ? msg.who : STATE.REF.GMPlayerSpoof.who;
@@ -264,6 +276,11 @@ const Listener = (() => {
                         );
                     scriptData.script.OnChatCall(call, returnArgs, objects, msg);
                     TRACEOFF(traceID);
+                } else if (STATE.REF.GMPlayerSpoof && playerIsGM(originalCaller.playerid)) {
+                    D.Alert([
+                        `Currently spoofing player: ${D.GetName(STATE.REF.GMPlayerSpoof.who)}`,
+                        " ",
+                        "Double exclamation point for GM command: <b>!!state Listener</b>"].join("<br>"), `Spoofing ${D.GetName(STATE.REF.GMPlayerSpoof.who, true)}`);
                 }
                 return true;
             }

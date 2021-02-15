@@ -591,12 +591,6 @@ const Session = (() => {
                         D.Flag(`Mortuary Sound Tier: ${STATE.REF.MORTUARYTIER}`);
                         break;
                     }
-                    case "prompt": {
-                        const [charObj] = charObjs;
-                        const [assignByID] = args;
-                        assignSpotlightPrompt(charObj, false, true, assignByID || false);
-                        break;
-                    }
                     case "menu":
                     case "menus":
                         buildLocationMenus();
@@ -670,6 +664,49 @@ const Session = (() => {
                 }
                 break;
             }
+            case "prompt": {
+                switch (D.LCase(call = args.shift())) {
+                    case "review": {
+                        reviewSpotlightPrompts(false, false, true);
+                        break;
+                    }
+                    case "submit": {
+                        const [charObj] = charObjs;
+                        const promptText = args.join(" ");
+                        submitSpotlightPrompt(charObj, false, promptText, true);
+                        break;
+                    }
+                    case "assign": {
+                        const [charObj] = charObjs;
+                        const [assignByID] = args;
+                        const {spotlightPrompt} = D.GetCharData(charObj);
+                        if (spotlightPrompt)
+                            unassignSpotlightPrompt(charObj, !args.includes("kill"));
+                        assignSpotlightPrompt(charObj, false, true, assignByID || false);
+                        break;
+                    }
+                    case "unassign": {
+                        const [charObj] = charObjs;
+                        unassignSpotlightPrompt(charObj, !args.includes("kill"));
+                        break;
+                    }
+                    case "report": {
+                        displaySpotlightAssignments();
+                        break;
+                    }
+                    default: {
+                        D.Alert(D.JS([
+                            "<h2>Prompt Syntax</h2>",
+                            "<b>!sess prompt report</b> - Display <u>assigned</u> prompts for communication to players.<br>",
+                            "<b>!sess prompt review</b> - Review <u>unassigned</u> prompts and assign them.<br>",
+                            "<b>!sess prompt submit @&lt;charInitial&gt; &lt;prompt text&gt;</b> - Submit a prompt for a specified character (can leave prompt text unquoted).<br>",
+                            "<b>!sess prompt unassign @&lt;charInitial&gt; [kill]</b> - Unassign a prompt and return it to the pool unless args contain 'kill'."
+                        ].join("")), "!sess prompt");
+                        break;
+                    }
+                }
+                break;
+            }
             case "delete":
             case "del": {
                 switch (D.LCase((call = args.shift()))) {
@@ -700,178 +737,11 @@ const Session = (() => {
 
                 break;
             }
-            /* case "quad": {
-                switch (D.LCase((call = args.shift()))) {
-                    case "toggle": {
-
-                        const toggleHub = (hubRef) => {
-                            if ("HUB" in STATE.REF.curLocation) {
-                                // HUB is active; is it the current hub?
-                                if (D.LCase(STATE.REF.curLocation.HUB.name) === hubRef) {
-                                    // Toggle OFF
-                                    fireOnExit(getActiveSite());
-                                    Media.ToggleImg("SiteFocusHub", false);
-                                } else {
-                                    // Switch to New Hub
-                                    fireOnExit(getActiveSite());
-                                    setLocation(`HUB${hubRef}`, "Center");
-                                }
-                            }
-
-
-                        if (STATE.REF.quadScene.isActive) {
-                            fireOnExit(getActiveSite());
-                            Media.ToggleImg("DistrictCenter", true);
-                            Media.ToggleImg("SiteCenter", true);
-                            Media.ToggleImg("SiteLeft", false);
-                            Media.ToggleImg("SiteRight", false);
-                            Media.ToggleImg("SiteMidCenter", false);
-                            Media.ToggleImg("SiteTopCenter", false);
-                            Media.ToggleImg("SiteTopLeft", false);
-                            Media.ToggleImg("SiteTopRight", false);
-                            Media.ToggleImg("SiteCenterTint", false);
-                            Media.ToggleImg("SiteLeftTint", false);
-                            Media.ToggleImg("SiteRightTint", false);
-                            Media.ToggleImg("SiteMidCenterTint", false);
-                            Media.ToggleImg("SiteTopCenterTint", false);
-                            Media.ToggleImg("SiteTopLeftTint", false);
-                            Media.ToggleImg("SiteTopRightTint", false);
-                            Media.ToggleImg("SiteFocusHub", false);
-                            Media.ToggleImg("DisableLocLeft", false);
-                            Media.ToggleImg("DisableLocRight", false);
-                            Media.ToggleImg("DisableSiteBottomAll", false);
-                            Media.ToggleImg("DisableSiteLeft", false);
-                            Media.ToggleImg("DisableSiteRight", false);
-                            // Media.SetImgData("SiteCenter", {width: 440, height: 325});
-                            // Media.SetImgData("SiteLeft", {top: 876, left: 595, width: 400, height: 295});
-                            // Media.SetImgData("SiteRight", {top: 876, left: 995, width: 400, height: 295});
-                            // Media.SetImgData("SiteCenterTint", {width: 441, height: 326});
-                            // Media.SetImgData("SiteLeftTint", {top: 876, left: 595, width: 401, height: 296});
-                            // Media.SetImgData("SiteRightTint", {top: 876, left: 995, width: 401, height: 296});
-                            STATE.REF.quadScene.isActive = false;
-                            Media.SetImg("DistrictCenter", "DupontByTheCastle");
-                            Media.SetImg("SiteCenter", "CLGrounds");
-                            setLocation({DistrictCenter: ["DupontByTheCastle"], SiteCenter: ["CLGrounds"]});
-                            // setTimeout(() => {
-                            //     Media.ToggleText("HubAspectsNotice", false);
-                            //     Media.ToggleText("HubAspectsTitle", false);
-                            // }, 1000);
-                        } else {
-                            Media.ToggleImg("DistrictCenter", false);
-                            Media.ToggleImg("SiteCenter", false);
-                            Media.ToggleImg("SiteLeft", false);
-                            Media.ToggleImg("SiteRight", false);
-                            Media.ToggleImg("SiteMidCenter", false);
-                            Media.ToggleImg("SiteTopCenter", false);
-                            Media.ToggleImg("SiteTopLeft", false);
-                            Media.ToggleImg("SiteTopRight", false);
-                            Media.ToggleImg("SiteCenterTint", false);
-                            Media.ToggleImg("SiteLeftTint", false);
-                            Media.ToggleImg("SiteRightTint", false);
-                            Media.ToggleImg("SiteMidCenterTint", false);
-                            Media.ToggleImg("SiteTopCenterTint", false);
-                            Media.ToggleImg("SiteTopLeftTint", false);
-                            Media.ToggleImg("SiteTopRightTint", false);
-                            Media.ToggleImg("DisableLocLeft", false);
-                            Media.ToggleImg("DisableLocRight", false);
-                            Media.ToggleImg("DisableSiteBottomAll", false);
-                            Media.ToggleImg("DisableSiteLeft", false);
-                            Media.ToggleImg("DisableSiteRight", false);
-                            Media.SetImg("SiteCenter", "CLVestibule");
-                            Media.SetImg("SiteLeft", "CLGallery");
-                            Media.SetImg("SiteRight", "CLDrawingRoom");
-                            // Media.SetImg("SiteMidCenter", "CLGreatHall");
-                            // Media.SetImg("SiteTopCenter", "CLOverlook");
-                            // Media.SetImg("SiteTopLeft", "CLLibrary");
-                            // Media.SetImg("SiteTopRight", "CLTerrace");
-                            // Media.SetImgData("SiteCenter", {width: 352, height: 258});
-                            // Media.SetImgData("SiteLeft", {top: 740, left: 520, width: 317, height: 233});
-                            // Media.SetImgData("SiteRight", {top: 740, left: 1070, width: 317, height: 233});
-                            // Media.SetImgData("SiteCenterTint", {width: 353, height: 259});
-                            // Media.SetImgData("SiteLeftTint", {top: 740, left: 520, width: 318, height: 234});
-                            // Media.SetImgData("SiteRightTint", {top: 740, left: 1070, width: 318, height: 234});
-                            Media.SetImgData("SignalLightBotLeft", {top: 900});
-                            Media.SetImgData("SignalLightBotRight", {top: 900});
-                            Media.SetTextData("testSessionNotice", {top: 200});
-                            Media.SetTextData("playerPageAlertMessage", {top: 225});
-                            Media.SetTextData("clockStatusNotice", {top: 225});
-                            Media.SetTextData("TimeTracker", {top: 265});
-                            STATE.REF.quadScene.isActive = true;
-                            if (D.LCase(args[0]) in HUBFOCUS) {
-                                Media.SetImg("SiteFocusHub", HUBFOCUS[D.LCase(args[0])], true);
-                            } else {
-                                Media.SetImg("SiteFocusHub", "blank");
-                                Media.ToggleImg("SiteFocusHub", false);
-                            }
-                            // D.Call("!sound inc casaloma 5");
-                            Soundscape.Sync();
-                            // D.Call("!sound inc casaloma 5");
-                            // C.SITES.CLGreatHall.onEntryCall = "!sound inc casaloma 10 0 20";
-                            // C.SITES.CLGreatHall.onExitCall = "!sound inc casaloma 1.5";
-                        }
-                        break;
-                    }
-                        }
-
-
-                        toggleHub(args.shift());
-                        break;
-                    }
-                    case "focus": {
-                        const [curFocus] = getActiveSite();
-                        if (D.LCase(args[0]) in HUBFOCUS) {
-                            Media.SetImg("SiteFocusHub", HUBFOCUS[D.LCase(args[0])], true);
-                        } else {
-                            Media.SetImg("SiteFocusHub", "blank");
-                            Media.ToggleImg("SiteFocusHub", false);
-                        }
-                        const [newFocus] = getActiveSite();
-                        // D.Alert(`CurFocus: ${D.JSL(curFocus)}, New Focus: ${D.JSL(newFocus)}`, "Session Set Focus");
-                        if (curFocus && curFocus !== newFocus)
-                            fireOnExit(curFocus);
-                        if (newFocus && newFocus !== curFocus)
-                            fireOnEntry(newFocus);
-                        Soundscape.Sync();
-                        break;
-                    }
-                    // no default
-                }
-                break;
-            } */
-            case "downtime":
-                toggleDowntime();
-                break;
             case "spotlight": {
                 if (args.shift() === "end" || !charObjs || !charObjs.length)
                     toggleSpotlight();
                 else
                     toggleSpotlight(charObjs.shift());
-                break;
-            }
-            case "daylighters": {
-                STATE.REF.Mode = STATE.REF.Mode === "Daylighter" ? "Active" : "Daylighter";
-                D.Alert(`Session Mode Set To: ${STATE.REF.Mode}`, "Session Set Mode");
-                DragPads.Toggle("signalLight", STATE.REF.Mode !== "Daylighter");
-                TimeTracker.Fix();
-                for (const charData of _.values(Char.REGISTRY).slice(0, 4)) {
-                    const [token] = findObjs({
-                        _pageid: D.MAINPAGEID,
-                        _type: "graphic",
-                        _subtype: "token",
-                        represents: charData.id
-                    });
-                    if (STATE.REF.Mode === "Daylighter") {
-                        Media.SetImgData(token, {isDaylighter: true, unObfSrc: "base"});
-                        Media.SetImg(token, "baseDL");
-                        if (charData.famulusTokenID) {
-                            const famToken = Media.GetImg(charData.famulusTokenID);
-                            Media.ToggleImg(famToken, false);
-                        }
-                    } else {
-                        Media.SetImgData(token, {isDaylighter: false, unObfSrc: "base"});
-                        Media.SetImg(token, "base");
-                    }
-                }
                 break;
             }
             case "test": {
@@ -2746,34 +2616,38 @@ const Session = (() => {
     // #endregion
 
     // #region Session Monologue Suggestion Logging & Assigning
-    const submitSpotlightPrompt = (toCharRef, fromCharRef, promptText) => {
+    const submitSpotlightPrompt = (toCharRef, fromCharRef, promptText, isGMCall = false) => {
         const toCharInit = D.GetCharData(toCharRef).initial;
         const fromCharInit = (D.GetCharData(fromCharRef) || {initial: false}).initial || false;
-        STATE.REF.SpotlightPrompts[toCharInit] = _.shuffle([
-            ...(STATE.REF.SpotlightPrompts[toCharInit] || []),
-            {
-                prompt: D.JS(promptText),
-                author: fromCharInit,
-                id: D.RandomString(10)
-            }
-        ]);
-        D.Chat(
-            D.GetPlayerID(fromCharRef),
-            C.HTML.Block(
-                [
-                    C.HTML.Header(`Prompt Submitted for ${D.GetName(toCharInit)}:`, C.STYLES.whiteMarble.header),
-                    C.HTML.Body(`&quot;${D.JS(promptText)}&quot;`, C.STYLES.whiteMarble.paragraph),
-                    C.HTML.Header("Thank You for Your Contribution!", C.STYLES.whiteMarble.header)
-                ],
-                C.STYLES.whiteMarble.block
-            ),
-            undefined,
-            false,
-            true
-        );
+        if (!toCharInit) {
+            D.Alert("You must supply a character reference to submit a prompt!", "!sess prompt submit");
+        } else {
+            STATE.REF.SpotlightPrompts[toCharInit] = _.shuffle([
+                ...(STATE.REF.SpotlightPrompts[toCharInit] || []),
+                {
+                    prompt: D.JS(promptText),
+                    author: fromCharInit,
+                    id: D.RandomString(10)
+                }
+            ]);
+            D.Chat(
+                D.GetPlayerID(fromCharRef),
+                C.HTML.Block(
+                    [
+                        C.HTML.Header(`Prompt Submitted for ${D.GetName(toCharInit)}:`, C.STYLES.whiteMarble.header),
+                        C.HTML.Body(`&quot;${D.JS(promptText)}&quot;`, C.STYLES.whiteMarble.paragraph),
+                        C.HTML.Header("Thank You for Your Contribution!", C.STYLES.whiteMarble.header)
+                    ],
+                    C.STYLES.whiteMarble.block
+                ),
+                undefined,
+                false,
+                true
+            );
+        }
         DB({toCharRef, toCharInit, fromCharRef, promptText, STATEREF: D.JS(STATE.REF.SpotlightPrompts[toCharInit])}, "submitSpotlightPrompt");
     };
-    const reviewSpotlightPrompts = (charRef, subheaderTextOverride) => {
+    const reviewSpotlightPrompts = (charRef, subheaderTextOverride, isGMCall = false) => {
         const authorInit = (D.GetCharData(charRef) || {initial: false}).initial || false;
         const promptData = STATE.REF.SpotlightPrompts;
         const chatCode = [];
@@ -2794,7 +2668,7 @@ const Session = (() => {
                                         padding: "3px",
                                         margin: "0px"
                                     }),
-                                    {width: (authorInit && "80%") || "100%"}
+                                    {width: ((isGMCall || authorInit) && "80%") || "100%"}
                                 ),
                                 (authorInit
                                     && C.HTML.Column(
@@ -2810,7 +2684,19 @@ const Session = (() => {
                                         }),
                                         {width: "20%", vertAlign: "initial"}
                                     ))
-                                    || false
+                                    || (isGMCall && C.HTML.Column(
+                                        C.HTML.Button(`${thisPrompt.author || "(GM)"}: Assign`, `!sess prompt assign @${init} ${thisPrompt.id}`, {
+                                            width: "100%",
+                                            height: "20px",
+                                            margin: "0px",
+                                            border: "1px outset rgba(100, 0, 0, 1)",
+                                            fontSize: "14px",
+                                            lineHeight: "20px",
+                                            textShadow: "0px 0px 2px #000 , 0px 0px 2px #000, 0px 0px 2px #000 , 0px 0px 2px #000",
+                                            boxShadow: "inset -1px -1px 2px #000 , -1px -1px 2px #000 , 1px 1px 2px #000 , 1px 1px 2px #000"
+                                        }),
+                                        {width: "20%", vertAlign: "initial"}
+                                    ))
                             ]),
                             {border: "none; border-bottom: 1px solid red;"}
                         )
@@ -2865,37 +2751,45 @@ const Session = (() => {
                 true
             );
     };
+    const showSpotlightPrompt = (playerID, spotlightPrompt) => {
+        D.Chat(
+            playerID,
+            C.HTML.Block([
+                C.HTML.Header(`Your Prompt for Session ${D.NumToText(STATE.REF.SessionNum, true)} Is:`),
+                C.HTML.Body(spotlightPrompt.prompt, {
+                    fontSize: "12px",
+                    fontFamily: "Voltaire",
+                    lineHeight: "14px",
+                    textAlign: "left",
+                    padding: "3px",
+                    margin: "0px"
+                })
+            ]),
+            undefined,
+            false,
+            true
+        );
+    };
+    const displaySpotlightAssignments = () => {
+        const allPrompts = D.KeyMapObj(_.omit(Char.REGISTRY, (data) => !data.spotlightPrompt), (quad, data) => data.initial, (data) => data.spotlightPrompt);
+        for (const [initial, prompt] of Object.entries(allPrompts))
+            showSpotlightPrompt(D.GMID(), prompt);
+    };
     const assignSpotlightPrompt = (charRef, isSilent = false, isGMCall = false, assignByID = false) => {
         const {initial, quadrant, spotlightPrompt} = D.GetCharData(charRef);
         DB({initial, quadrant, spotlightPrompt}, "assignSpotlightPrompt");
         if (initial) {
-            // FIRST: Look for prompts already assigned, and tell the player IF not silent.
-            if (spotlightPrompt) {
+            // FIRST: Look for prompts already assigned, and tell the player IF not silent (unless GM is reassigning by ID).
+            if (spotlightPrompt && !isGMCall && !assignByID) {
                 if (!isSilent)
-                    D.Chat(
-                        isGMCall ? D.GMID() : D.GetPlayerID(charRef),
-                        C.HTML.Block([
-                            C.HTML.Header(`Your Prompt for Session ${D.NumToText(STATE.REF.SessionNum, true)} Is:`),
-                            C.HTML.Body(spotlightPrompt.prompt, {
-                                fontSize: "12px",
-                                fontFamily: "Voltaire",
-                                lineHeight: "14px",
-                                textAlign: "left",
-                                padding: "3px",
-                                margin: "0px"
-                            })
-                        ]),
-                        undefined,
-                        false,
-                        true
-                    );
+                    showSpotlightPrompt(isGMCall ? D.GMID() : D.GetPlayerID(charRef), spotlightPrompt);
                 return spotlightPrompt;
             }
             // OTHERWISE, only assign prompts if this is a GM call.
             if (isGMCall)
             // if (Session.IsSessionActive || TimeTracker.ArePromptsOpen()) {
-                // FIRST: Look for prompts already assigned.
-                if (spotlightPrompt) {
+                // FIRST: Look for prompts already assigned, unless assigning by ID.
+                if (spotlightPrompt && !assignByID) {
                     DB({step: "Prompt Exists, Returning it", spotlightPrompt}, "assignSpotlightPrompt");
                     return spotlightPrompt;
                 } else {
@@ -3035,6 +2929,31 @@ const Session = (() => {
             );
         }
         return false;
+    };
+    const unassignSpotlightPrompt = (charRef, isKeeping = true) => {
+        const {initial, quadrant, spotlightPrompt} = D.GetCharData(charRef);
+        if (spotlightPrompt && spotlightPrompt.isAwardingXP) {
+            const author = spotlightPrompt.author;
+            const numAssigned = Object.values(Char.REGISTRY)
+                .filter((charData) => charData.spotlightPrompt && charData.spotlightPrompt.author === spotlightPrompt.author).length;
+            if (numAssigned === 1)
+                STATE.REF.PromptAuthors = D.PullOut(STATE.REF.PromptAuthors, (promptAuthor) => promptAuthor === author);
+            delete spotlightPrompt.isAwardingXP;
+        }
+        if (isKeeping)
+            STATE.REF.SpotlightPrompts[initial].push(spotlightPrompt);
+        Char.REGISTRY[quadrant].spotlightPrompt = false;
+        D.Alert([
+            `<h2>${isKeeping ? "Unassigning" : "Deleting"} Spotlight Prompt</h2>`,
+            "<h3>Prompt Registry</h3>",
+            D.JS(STATE.REF.SpotlightPrompts),
+            `<h3>${D.GetName(charRef, true)}'s Registry</h3>`,
+            D.JS(Char.REGISTRY[quadrant]),
+            "<h3>Authors List</h3>",
+            D.JS(STATE.REF.PromptAuthors),
+            "<h3>Prompt</h3>",
+            D.JS(spotlightPrompt)
+        ].join(""), "unassignSpotlightPrompt");
     };
     const deleteSpotlightPrompt = (toCharRef, fromCharRef, promptID) => {
         const toCharInit = D.GetCharData(toCharRef).initial;

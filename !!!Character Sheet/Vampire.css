@@ -1914,7 +1914,7 @@
 	}
 
 	.charsheet div.sheet-topdisplay {
-		height: 40px;
+		height: 45px;
 		width: calc(100% - 20px - 6px);
 		margin: 5px 0px;
 	}

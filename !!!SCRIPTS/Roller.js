@@ -672,6 +672,14 @@ const Roller = (() => {
 
     // #region CONFIGURATION: Image Links, Color Schemes */
     const SETTINGS = {
+        resBins: {
+            initial: {common: 25, rare: 0},
+            multipliers: {
+                pos: [2, 4],
+                neg: [0.5, 0.25],
+                margin: [1, 1.5, 2.5, 4, 8, 20, 50, 100, 1000, 1000, 1000, 1000]
+            }
+        },
         dice: {
             Main: {qty: 30, spread: 33, isSelectable: true},
             Big: {qty: 2, spread: 50, isSelectable: false},
@@ -5349,6 +5357,219 @@ const Roller = (() => {
     // #endregion
 
     // #region RESONANCE: Getting Random Resonance Based On District/Site Parameters
+    const randomResonance = (charRef, margin = 0, flavorMods = {}, temperMods = []) => {
+        // const charObj = D.GetChar(charRef);
+        const finalResults = {
+            flavorMods: {...flavorMods},
+            temperMods: [...temperMods],
+            margin            
+        };
+        flavorMods = {...{c: [], m: [], p: [], s: [], r: [], i: [], q: []}, ...flavorMods};
+
+        const SETTINGS = {
+            resBins: {
+                initial: {common: 25, rare: 0, margin: 1},
+                temperament: {
+                    n: 400,
+                    f: 300,
+                    i: 200,
+                    a: 50,
+                    D: 50
+                },
+                mults: {
+                    flavor: {
+                        pos: [2, 4],
+                        neg: [0.5, 0.25],
+                        margin: [1, 1.5, 2.5, 4, 8, 20, 50, 100, 1000, 1000, 1000, 1000]
+                    },
+                    temperament: {
+                        pos: [
+                            [0.8, 0.8, 1.25, 2, 2],
+                            [0.4, 0.4, 2, 4, 4]
+                        ],
+                        neg: [
+                            [1.2, 1.2, 0.8, 0.8, 0.8],
+                            [2.4, 2.4, 0.4, 0.4, 0.4]
+                        ],
+                        margin: {
+                            multiplier: [1, 1.5, 2.5, 4, 8, 20, 50, 100, 1000, 1000, 1000, 1000],
+                            weights: [0.25, 0.25, 1.25, 2, 2]
+                        }
+                    }
+                }
+            }
+        };
+        const flavorBins = {
+            c: SETTINGS.resBins.initial.common,
+            m: SETTINGS.resBins.initial.common,
+            p: SETTINGS.resBins.initial.common,
+            s: SETTINGS.resBins.initial.common,
+            r: SETTINGS.resBins.initial.rare,
+            i: SETTINGS.resBins.initial.rare,
+            q: SETTINGS.resBins.initial.rare
+        };
+        const temperBins = {...SETTINGS.resBins.temperament};
+        const resonances = {
+            c: "Choleric",
+            m: "Melancholic",
+            p: "Phlegmatic",
+            s: "Sanguine",
+            r: "Primal",
+            i: "Ischemic",
+            q: "Mercurial"
+        };
+        const temperaments = {
+            n: "Negligible",
+            f: "Fleeting",
+            i: "Intense",
+            a: "Acute",
+            D: "Dyscrasia"
+        };
+        const discLines = {
+            Choleric: "the resonant disciplines of Celerity and Potence",
+            Melancholic: "the resonant disciplines of Fortitude and Obfuscate",
+            Phlegmatic: "the resonant disciplines of Auspex and Dominate",
+            Sanguine: "the resonant disciplines of Blood Sorcery and Presence",
+            Primal: "the resonant disciplines of Animalism and Protean",
+            Ischemic: "the resonant discipline of Oblivion",
+            Mercurial: "the resonant disciplines of Alchemy and Vicissitude"
+        };
+        const applyFlavorMult = (flavor, mult, isMargin = false) => {
+            if (flavorBins[flavor] === 0 && mult > 1)
+                flavorBins[flavor] += isMargin ? SETTINGS.resBins.initial.margin : SETTINGS.resBins.initial.common;
+            flavorBins[flavor] *= mult;
+        };
+        const applyTemperMult = (multKey) => {
+            let mults = [1, 1, 1, 1, 1];
+            switch (multKey) {
+                case 2: {
+                    mults = SETTINGS.resBins.mults.temperament.pos[1];
+                    break;
+                }
+                case 1: {
+                    mults = SETTINGS.resBins.mults.temperament.pos[0];
+                    break;
+                }
+                case -2: {
+                    mults = SETTINGS.resBins.mults.temperament.neg[1];
+                    break;
+                }
+                case -1: {
+                    mults = SETTINGS.resBins.mults.temperament.neg[0];
+                    break;
+                }
+                case "margin": {
+                    const marginMult = SETTINGS.resBins.mults.temperament.margin.multiplier[margin];
+                    mults = SETTINGS.resBins.mults.temperament.margin.weights.map((val) => marginMult * val);
+                    break;
+                }
+                // no default
+            }
+            temperBins.n *= mults[0];
+            temperBins.f *= mults[1];
+            temperBins.i *= mults[2];
+            temperBins.a *= mults[3];
+            temperBins.D *= mults[4];
+        };
+        for (const [flavor, mods] of Object.entries(flavorMods)) {
+            switch (mods.length) {
+                case 2: {
+                    if (mods[0] === mods[1])
+                        applyFlavorMult(flavor, SETTINGS.resBins.mults.flavor[mods[0]][1]);
+                    break;
+                }
+                case 1: {
+                    applyFlavorMult(flavor, SETTINGS.resBins.mults.flavor[mods[0]][0]);
+                    break;
+                }
+                // no default
+            }
+            applyFlavorMult(flavor, SETTINGS.resBins.mults.flavor.margin[margin], true);
+        }
+        const randInt = (minVal, maxVal = 0) => Math.round(Math.random() * (Math.max(maxVal, minVal) - Math.min(maxVal, minVal)) + Math.min(maxVal, minVal));
+        const flavorBinsTotal = Object.values(flavorBins).reduce((tot, val) => val + tot, 0);
+        let randomizer = randInt(1, flavorBinsTotal),
+            randFlavor;
+        const flavorKeys = Object.keys(flavorBins);
+        do {
+            randFlavor = flavorKeys.shift();
+            randomizer -= flavorBins[randFlavor];
+        } while (randomizer > 0);
+        temperMods.unshift(flavorMods[randFlavor].map((mod) => ({pos: 1, neg: -1}[mod])).reduce((tot, val) => val + tot, 0));
+
+        for (const mod of temperMods) {
+            applyTemperMult(mod);
+        }
+        applyTemperMult("margin");
+        if (temperMods.includes("doubleAcute")) {
+            temperBins.D += temperBins.a;
+            temperBins.a = 0;
+            temperBins.D *= 2;
+        }
+        const temperBinsTotal = Object.values(temperBins).reduce((tot, val) => val + tot, 0);
+        randomizer = randInt(1, temperBinsTotal)
+        let randTemper;
+        const temperKeys = Object.keys(temperBins);
+        do {
+            randTemper = temperKeys.shift();
+            randomizer -= temperBins[randTemper];
+        } while (randomizer > 0);
+
+        finalResults.flavor = resonances[randFlavor];
+        finalResults.temperament = temperaments[randTemper];
+        finalResults.flavorBins = flavorBins;
+        finalResults.temperBins = temperBins;
+        const binResults = Object.entries(flavorBins).map(([flavor, count]) => `${resonances[flavor]}|${margin}|${JSON.stringify(flavorMods)}|${count}|${Math.round((10000 * count) / flavorBinsTotal) / 100}%`);
+        
+        const finalResultString = `${JSON.stringify(flavorMods)}|${margin}|${resonances[randFlavor]}|${temperaments[randTemper]}`;
+        
+        return finalResults;
+
+        // return D.KeyMapObj(bins, (k) => resonances[k], (v) => `${Math.round((10000 * v) / binsTotal) / 100}%`);
+    };
+
+    const testMods = [
+        // {c: ["pos"]},
+        // {c: ["pos", "pos"]},
+        {}
+    ].forEach((flMods) => {
+        for (let margin = 0; margin < 5; margin++) {
+            const flavors = {            
+                "Choleric": 0,
+                "Melancholic": 0,
+                "Phlegmatic": 0,
+                "Sanguine": 0,
+                "Primal": 0,
+                "Ischemic": 0,
+                "Mercurial": 0
+            };
+            const temperaments = {
+                "Negligible": 0,
+                "Fleeting": 0,
+                "Intense": 0,
+                "Acute": 0,
+                "Dyscrasia": 0
+            };
+            for (let i = 0; i < 10000; i++) {
+                const thisData = randomResonance(false, 3, flMods);
+                flavors[thisData.flavor]++;
+                temperaments[thisData.temperament]++;
+            }
+            console.log([
+                margin,
+                flMods,
+                flavors,
+                temperaments
+            ]);
+        }
+
+
+        // console.log(randomResonance(false, 0, flMods));
+        // console.log(randomResonance(false, 3, flMods));
+        // console.log(randomResonance(false, 5, flMods));
+    });
+
+
     const getResonance = (charRef, posRes = "", negRes = "", /* marginBonus = 0, */ isDoubleAcute, testCycles = 0) => {
         const traceID = TRACEON("getResonance", [charRef, posRes, negRes, /* marginBonus, */ isDoubleAcute, testCycles]);
         DB(`Resonance Args: ${D.JSL(charRef)}, ${D.JSL(posRes)}, ${D.JSL(negRes)}`, "getResonance");

@@ -4226,6 +4226,229 @@ const Char = (() => {
     };
     // #endregion
 
+    // #region Hunting & Resonance
+    const C = {
+        RESONANCE: {
+            flavor: {
+                code: {
+                    c: "choleric",
+                    m: "melancholic",
+                    p: "phlegmatic",
+                    s: "sanguine",
+                    r: "primal",
+                    i: "ischemic",
+                    q: "mercurial"
+                },
+                common: ["choleric", "melancholic", "phlegmatic", "sanguine"],
+                rare: ["primal", "ischemic", "mercurial"],
+                initial: {common: 50, rare: 25},
+                posMult: {common: 2, rare: 2},
+                negMult: {common: 0.5, rare: 0.5},
+                perMargin: {common: 50, rare: 20}
+            },
+            temperament: {
+                code: {
+                    n: "negligible",
+                    f: "fleeting",
+                    i: "intense",
+                    a: "acute"
+                },
+                initial: {negligible: 500, fleeting: 300, intense: 160, acute: 40},
+                perMargin: {negligible: -60, fleeting: -30, intense: 10, acute: 15}
+            }
+        }
+    };
+    const getResFlavorData = (charRef, desiredFlavor, margin = 0, posFlags = [], negFlags = [], modifiers = {}) => {
+        desiredFlavor = desiredFlavor.length === 1 ? C.RESONANCE.flavor.code[desiredFlavor] : desiredFlavor;
+        posFlags = posFlags.map((flag) => (flag.length === 1 ? C.RESONANCE.flavor.code[flag] : flag));
+        negFlags = negFlags.map((flag) => (flag.length === 1 ? C.RESONANCE.flavor.code[flag] : flag));
+        const commonFlavors = C.RESONANCE.flavor.common;
+        const rareFlavors = C.RESONANCE.flavor.rare;
+        const resBins = {
+            choleric: C.RESONANCE.flavor.initial.common,
+            melancholic: C.RESONANCE.flavor.initial.common,
+            phlegmatic: C.RESONANCE.flavor.initial.common,
+            sanguine: C.RESONANCE.flavor.initial.common,
+            primal: 0,
+            ischemic: 0,
+            mercurial: 0
+        };
+        const resMults = {
+            choleric: 1,
+            melancholic: 1,
+            phlegmatic: 1,
+            sanguine: 1,
+            primal: 1,
+            ischemic: 1,
+            mercurial: 1
+        };
+        commonFlavors.forEach((flavor) => {
+            if (desiredFlavor === flavor && margin > 0)
+                resBins[flavor] += margin * C.RESONANCE.flavor.perMargin.common;
+            switch (posFlags.filter((flag) => flag === flavor).length) {
+                case 2: resMults[flavor] *= C.RESONANCE.flavor.posMult.common;
+                // falls through
+                case 1: resMults[flavor] *= C.RESONANCE.flavor.posMult.common; break;
+                // no default
+            }
+            switch (negFlags.filter((flag) => flag === flavor).length) {
+                case 2: resMults[flavor] *= C.RESONANCE.flavor.negMult.common;
+                // falls through
+                case 1: resMults[flavor] *= C.RESONANCE.flavor.negMult.common; break;
+                // no default
+            }
+            resBins[flavor] *= resMults[flavor];
+        });
+        rareFlavors.forEach((flavor) => {
+            if (desiredFlavor === flavor && margin > 0)
+                resBins[flavor] += margin * C.RESONANCE.flavor.perMargin.rare;
+            switch (posFlags.filter((flag) => flag === flavor).length) {
+                case 2: resMults[flavor] *= C.RESONANCE.flavor.posMult.rare;
+                // falls through
+                case 1: resMults[flavor] *= C.RESONANCE.flavor.posMult.rare; break;
+                // no default
+            }
+            switch (negFlags.filter((flag) => flag === flavor).length) {
+                case 2: resMults[flavor] *= C.RESONANCE.flavor.negMult.rare;
+                // falls through
+                case 1: resMults[flavor] *= C.RESONANCE.flavor.negMult.rare; break;
+                // no default
+            }
+            resBins[flavor] *= resMults[flavor];
+        });
+
+        const binTotal = Object.values(resBins).reduce((tot, val) => tot + val, 0);
+        const flavorRoll = Math.floor(Math.random() * binTotal) + 1;
+        return {
+            roll: flavorRoll,
+            total: binTotal,
+            bins: resBins
+        };
+    };
+    const getResTemperamentData = (charRef, margin = 0, modifiers = {doubleAcute: false}) => {
+        const tempBins = {
+            negligible: C.RESONANCE.temperament.initial.negligible + margin * C.RESONANCE.temperament.perMargin.negligible,
+            fleeting: C.RESONANCE.temperament.initial.fleeting + margin * C.RESONANCE.temperament.perMargin.fleeting,
+            intense: C.RESONANCE.temperament.initial.intense + margin * C.RESONANCE.temperament.perMargin.intense,
+            acute: C.RESONANCE.temperament.initial.acute + margin * C.RESONANCE.temperament.perMargin.acute
+        };
+        const tempMults = {
+            negligible: 1,
+            fleeting: 1,
+            intense: 1,
+            acute: 1
+        };
+        const binTotal = Object.values(tempBins).reduce((tot, val) => tot + val, 0);
+        if (modifiers.doubleAcute) {
+            const curBinSubtotal = binTotal - tempBins.acute;
+            tempBins.acute = Math.min(binTotal, tempBins.acute * 2);
+            const newBinSubtotal = binTotal - tempBins.acute;
+            const newBinMult = newBinSubtotal / curBinSubtotal;
+            tempBins.negligible *= newBinMult;
+            tempBins.fleeting *= newBinMult;
+            tempBins.intense *= newBinMult;
+        }
+        const tempRoll = Math.floor(Math.random() * binTotal) + 1;
+        return {
+            roll: tempRoll,
+            total: binTotal,
+            bins: tempBins
+        };
+    };
+    const getResFlavor = (charRef, desiredFlavor, margin = 0, posFlags = [], negFlags = [], modifiers = {}) => {
+        const {roll, total, bins} = getResFlavorData(charRef, desiredFlavor, margin, posFlags, negFlags, modifiers);
+        const allFlavors = [...C.RESONANCE.flavor.common, ...C.RESONANCE.flavor.rare];
+        let binCount = roll,
+            resultFlavor;
+        while (binCount > 0) {
+            resultFlavor = allFlavors.shift();
+            binCount -= bins[resultFlavor];
+        }
+        return {roll, total, bins, result: resultFlavor};
+        return resultFlavor;
+    };
+    const getResTemperament = (charRef, margin = 0, modifiers = {doubleAcute: false}) => {
+        const {roll, total, bins} = getResTemperamentData(charRef, margin, modifiers);
+        const allTemps = ["negligible", "fleeting", "intense", "acute"];
+        let binCount = roll,
+            resultTemp;
+        while (binCount > 0) {
+            resultTemp = allTemps.shift();
+            binCount -= bins[resultTemp];
+        }
+        return {roll, total, bins, result: resultTemp};
+        return resultTemp;
+    };
+    const numRuns = 100000;
+    const tempTests = [
+        [null, 0],
+        [null, 2],
+        [null, 4]
+    ];
+    const flavorTests = [
+        [null, "c", 2, ["c", "c"], ["s"]],
+        [null, "c", 6, ["c", "c"], ["s"]],
+        [null, "r", 2, ["c", "c"], ["s"]],
+        [null, "r", 6, ["c", "c"], ["s"]]
+    ];
+    console.log([
+        "",
+        ...Object.values(C.RESONANCE.temperament.initial)
+    ].join(","));
+    console.log([
+        "",
+        ...Object.values(C.RESONANCE.temperament.perMargin)
+    ].join(","));
+    tempTests.forEach((testCase) => { console.log(getResTemperament(...testCase)) });
+    flavorTests.forEach((testCase) => { console.log(getResFlavor(...testCase)) });
+
+
+    tempTests.forEach((testCase) => {
+        const tempCount = {
+            negligible: 0,
+            fleeting: 0,
+            intense: 0,
+            acute: 0
+        };
+        const tempCountDoubleAcute = {
+            negligible: 0,
+            fleeting: 0,
+            intense: 0,
+            acute: 0
+        };
+        for (let i = 0; i < numRuns; i++) {
+            tempCount[getResTemperament(...testCase)]++;
+            tempCountDoubleAcute[getResTemperament(...testCase, {doubleAcute: true})]++;
+        }
+        console.log([
+            testCase[1],
+            ...Object.values(C.RESONANCE.temperament.code).map((temp) => tempCount[temp] / numRuns)
+        ].join(","));
+        console.log([
+            "",
+            ...Object.values(C.RESONANCE.temperament.code).map((temp) => tempCountDoubleAcute[temp] / numRuns)
+        ].join(","));
+    });
+    flavorTests.forEach((testCase) => {
+        const resCount = {
+            choleric: 0,
+            melancholic: 0,
+            phlegmatic: 0,
+            sanguine: 0,
+            primal: 0,
+            ischemic: 0,
+            mercurial: 0
+        };
+        for (let i = 0; i < numRuns; i++)
+            resCount[getResFlavor(...testCase)]++;
+        C.RESONANCE.flavor.common.forEach((flavor) => { resCount[flavor] = `${Math.round(resCount[flavor] * 10000 / numRuns) / 100}%` });
+        C.RESONANCE.flavor.rare.forEach((flavor) => { resCount[flavor] = `${Math.round(resCount[flavor] * 10000 / numRuns) / 100}%` });
+        console.log(resCount);
+    });
+
+    // can get roll from C.PREDTYPES
+
+    // #endregion
     return {
         CheckInstall: checkInstall,
         OnChatCall: onChatCall,

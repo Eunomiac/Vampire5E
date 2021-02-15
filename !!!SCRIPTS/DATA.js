@@ -896,6 +896,7 @@ const D = (() => {
             num += maxVal - minVal;
         return num;
     };
+    const randInt = (minVal, maxVal = 0) => Math.round(Math.random() * (Math.max(maxVal, minVal) - Math.min(maxVal, minVal)) + Math.min(maxVal, minVal));
     const padNum = (num, numDigitsLeft, numDigitsRight) => {
         let [leftDigits, rightDigits] = `${num}`.split(".");
         leftDigits = `${"0".repeat(Math.max(0, numDigitsLeft - leftDigits.length))}${leftDigits}`;
@@ -1586,12 +1587,7 @@ const D = (() => {
         return newObj;
     };
     const removeFirst = (array, element) => array.splice(array.findIndex((v) => v === element));
-    const pullElement = (
-        array,
-        checkFunc = (_v = true, _i = 0, _a = []) => {
-            checkFunc(_v, _i, _a);
-        }
-    ) => {
+    const pullElement = (array, checkFunc = (_v = true, _i = 0, _a = []) => { checkFunc(_v, _i, _a) }) => {
         const index = array.findIndex((v, i, a) => checkFunc(v, i, a));
         return index !== -1 && array.splice(index, 1).pop();
     };
@@ -3215,6 +3211,7 @@ const D = (() => {
         Round: roundSig,
         Bound: boundNum,
         Cycle: cycleNum,
+        RandInt: randInt,
         Pad: padNum,
         Sign: signNum,
         NumToText: numToText,

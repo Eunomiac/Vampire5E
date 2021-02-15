@@ -371,10 +371,15 @@ const Chat = (() => {
                         for (obj of objsToKill)
                             obj.remove();
                         break;
-                    case "state":
-                        if (!clearStateData(args))
-                            sendHelpMsg();
+                    case "state": {
+                        if (args.join("") === "confirm") {
+                            clearStateData();
+                        } else {
+                            STATE.REF.clearState = args;
+                            D.Alert(`Clearing ${STATE.REF.clearState.join(".")}: <b>!clear state confirm</b> to confirm.`, "!clear state");
+                        }
                         break;
+                    }
                     // no default
                 }
                 break;
@@ -615,8 +620,9 @@ const Chat = (() => {
         }
         return true;
     };
-    const clearStateData = (namespace) => {
-        let stateInfo = state;
+    const clearStateData = () => {
+        let namespace = STATE.REF.clearState,
+            stateInfo = state;
         if (namespace[0] !== C.GAMENAME)
             namespace.unshift(C.GAMENAME);
         const title = `Clearing state.${namespace.join(".")}`;
@@ -625,8 +631,7 @@ const Chat = (() => {
 
         D.Alert(`DELETED ${namespace[0]} of ${D.JS(stateInfo)}`, title);
         delete stateInfo[namespace.shift()];
-        // stateInfo = ""
-
+        STATE.REF.clearState.length = 0;
         return true;
     };
     // #endregion

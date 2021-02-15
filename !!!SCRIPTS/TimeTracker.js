@@ -1264,6 +1264,7 @@ const TimeTracker = (() => {
     };
     // #endregion
 
+    // #region Alarms
     const getAlarmsBetween = (dateRef, deltaTimeInMin = 0) => {
         const dateObj = getDateObj(dateRef);
         const timeInMin = getTimeInMin(dateObj);
@@ -1337,6 +1338,7 @@ const TimeTracker = (() => {
         }
     };
     const recurAlarm = (alarm) => {};
+    // #endregion
 
     // #region CLOCK: Toggling, Ticking, Setting Clock Text
     const toggleClock = (activeState, secsPerMin) => {

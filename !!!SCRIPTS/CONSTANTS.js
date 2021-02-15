@@ -2905,6 +2905,39 @@ const C = (() => {
             doubleAcute: [0.45, 0.3, 0.15, 0.1]
         }
     };
+    const RESONANCE = {
+
+        flavor: {
+            box: {
+                
+            }
+            code: {
+                c: "choleric",
+                m: "melancholic",
+                p: "phlegmatic",
+                s: "sanguine",
+                r: "primal",
+                i: "ischemic",
+                q: "mercurial"
+            },
+            common: ["choleric", "melancholic", "phlegmatic", "sanguine"],
+            rare: ["primal", "ischemic", "mercurial"],
+            initial: {common: 50, rare: 25},
+            posMult: {common: 2, rare: 2},
+            negMult: {common: 0.5, rare: 0.5},
+            perMargin: {common: 50, rare: 20}
+        },
+        temperament: {
+            code: {
+                n: "negligible",
+                f: "fleeting",
+                i: "intense",
+                a: "acute"
+            },
+            initial: {negligible: 500, fleeting: 300, intense: 160, acute: 40},
+            perMargin: {negligible: -60, fleeting: -30, intense: 10, acute: 15}
+        }
+    };
     const TENETS = [
         "Take Care of Our Own",
         "Don't Kill Without Good Reason",
@@ -3659,6 +3692,7 @@ const C = (() => {
         MISCATTRS,
         BLOODPOTENCY,
         RESONANCEODDS,
+        RESONANCE,
         TENETS,
 
         DISTRICTS,
