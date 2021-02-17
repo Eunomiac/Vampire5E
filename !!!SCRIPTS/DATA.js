@@ -833,18 +833,24 @@ const D = (() => {
                 .replace(/ /gu, "&nbsp;")
         );
     };
+    const makeHTMLElement = (element, baseStyles = {}, content, customStyles = {}) => {
+        const styles = {...baseStyles, ...customStyles};
+        const styleString = `style="${Object.entries(styles).map(([prop, val]) => `${prop}: ${val};`).join(" ")}"`;
+        return `<${element} ${styleString}>${content}</${element}>`;
+    };
     const pTimeInMS = (timeRef, minForSecs = 60) => { // Converts timeRef to number, multiplies by 1000 if less than minForSecs
         timeRef = D.Float(timeRef, 3);
         return timeRef * (timeRef <= minForSecs ? 1000 : 1);
     };
-    const parseParams = (args, delim = " ") => {
+    const parseArray = (arrayString) => (arrayString ? arrayString.replace(/[\[\]]/gu, "").split(",").map((elem) => (elem.trim ? elem.trim() : elem)) : []);
+    const parseParams = (args = "", delim = " ") => {
         const returnVal = _.object(
             (VAL({array: args}) ? args.join(" ") : args)
                 .split(new RegExp(`,?${delim}+`, "gu"))
                 .filter((x) => x.includes(":"))
                 .map((x) => x.trim().split(":"))
         );
-        D.Alert(`Args: ${D.JS(args)}<br>Delim: '${D.JS(delim)}'<br>Return: ${D.JS(returnVal)}`);
+        // DB(`Args: ${D.JS(args)}<br>Delim: '${D.JS(delim)}'<br>Return: ${D.JS(returnVal)}`, "parseParams");
         return returnVal;
     };
     const parseCharSelect = (call, args) => {
@@ -876,7 +882,7 @@ const D = (() => {
                                                   || 0;
     const roundSig = (num, digits, isReturningPaddedString = false) => {
         if (VAL({number: digits}) && D.Int(digits) > 0) {
-            const returnNum = Math.round(num * 10 ** D.Int(digits) + Number.EPSILON) / 10 ** D.Int(digits);
+            const returnNum = Math.round(num * 10 ** D.Int(digits)/*  + Number.EPSILON */) / 10 ** D.Int(digits);
             if (isReturningPaddedString)
                 if (!`${returnNum}`.includes(".")) {
                     return `${returnNum}.${"0".repeat(digits)}`;
@@ -3198,6 +3204,8 @@ const D = (() => {
         JSH: jStrH,
         JSC: jStrC,
         JSX: jStrX,
+        HTML: makeHTMLElement,
+        ParseArray: parseArray,
         ParseParams: parseParams,
         ParseCharSelection: parseCharSelect,
         RandomString: randomString,

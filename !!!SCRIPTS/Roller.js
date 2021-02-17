@@ -5357,6 +5357,7 @@ const Roller = (() => {
     // #endregion
 
     // #region RESONANCE: Getting Random Resonance Based On District/Site Parameters
+    /* eslint-disable */
     const randomResonance = (charRef, margin = 0, flavorMods = {}, temperMods = []) => {
         // const charObj = D.GetChar(charRef);
         const finalResults = {
@@ -5527,49 +5528,6 @@ const Roller = (() => {
 
         // return D.KeyMapObj(bins, (k) => resonances[k], (v) => `${Math.round((10000 * v) / binsTotal) / 100}%`);
     };
-
-    const testMods = [
-        // {c: ["pos"]},
-        // {c: ["pos", "pos"]},
-        {}
-    ].forEach((flMods) => {
-        for (let margin = 0; margin < 5; margin++) {
-            const flavors = {            
-                "Choleric": 0,
-                "Melancholic": 0,
-                "Phlegmatic": 0,
-                "Sanguine": 0,
-                "Primal": 0,
-                "Ischemic": 0,
-                "Mercurial": 0
-            };
-            const temperaments = {
-                "Negligible": 0,
-                "Fleeting": 0,
-                "Intense": 0,
-                "Acute": 0,
-                "Dyscrasia": 0
-            };
-            for (let i = 0; i < 10000; i++) {
-                const thisData = randomResonance(false, 3, flMods);
-                flavors[thisData.flavor]++;
-                temperaments[thisData.temperament]++;
-            }
-            console.log([
-                margin,
-                flMods,
-                flavors,
-                temperaments
-            ]);
-        }
-
-
-        // console.log(randomResonance(false, 0, flMods));
-        // console.log(randomResonance(false, 3, flMods));
-        // console.log(randomResonance(false, 5, flMods));
-    });
-
-
     const getResonance = (charRef, posRes = "", negRes = "", /* marginBonus = 0, */ isDoubleAcute, testCycles = 0) => {
         const traceID = TRACEON("getResonance", [charRef, posRes, negRes, /* marginBonus, */ isDoubleAcute, testCycles]);
         DB(`Resonance Args: ${D.JSL(charRef)}, ${D.JSL(posRes)}, ${D.JSL(negRes)}`, "getResonance");
@@ -5823,6 +5781,402 @@ const Roller = (() => {
         );
         TRACEOFF(traceID);
     };
+    /* eslint-enable */
+    // #endregion
+
+    // #region Hunting & Resonance
+    const getLocationMods = (locRef) => {
+        const resCodes = C.RESONANCE.flavor.code;
+        const [posMods, negMods] = [[], []];
+        const locData = [];
+        if (locRef in C.DISTRICTS)
+            locData.push(...C.DISTRICTS[locRef].resonance);
+        else if (locRef in C.SITES)
+            locData.push(...C.SITES[locRef].resonance);
+        if (locData[0])
+            posMods.push(resCodes[locData[0]]);
+        if (locData[1])
+            negMods.push(resCodes[locData[1]]);
+        return [posMods, negMods];
+    };
+    const parseResFlags = (posFlags = [], negFlags = [], modifiers = {}) => {
+        let distRef, siteRef;
+        if (VAL({string: posFlags})) {
+            [distRef, siteRef] = posFlags.split(":");
+            if (!VAL({list: modifiers}) && VAL({list: negFlags}))
+                modifiers = {...negFlags};
+            [posFlags, negFlags] = [[], []];
+        } else if (!Array.isArray(posFlags) || !Array.isArray(negFlags) || posFlags.length + negFlags.length === 0) {
+            [distRef, siteRef] = [Session.District, Session.Site];
+            if (!VAL({list: modifiers}) && VAL({list: posFlags}))
+                modifiers = {...posFlags};
+            else if (!VAL({list: modifiers}) && VAL({list: negFlags}))
+                modifiers = {...negFlags};
+            [posFlags, negFlags] = [[], []];
+        }
+        if (siteRef && C.SITES[siteRef]) {
+            const [pos, neg] = getLocationMods(siteRef);
+            posFlags.push(...pos);
+            negFlags.push(...neg);
+        }
+        if (distRef && C.DISTRICTS[distRef]) {
+            const [pos, neg] = getLocationMods(distRef);
+            posFlags.push(...pos);
+            negFlags.push(...neg);
+        }
+        posFlags = posFlags.map((flag) => (flag.length === 1 ? C.RESONANCE.flavor.code[flag] : flag));
+        negFlags = negFlags.map((flag) => (flag.length === 1 ? C.RESONANCE.flavor.code[flag] : flag));
+        return [posFlags, negFlags, modifiers, distRef, siteRef];
+    };
+    const parseResDetails = (charRef, desiredFlavor, margin, posFlags = [], negFlags = []) => {
+        const charObj = D.GetChar(charRef);
+        const HTMLparts = [];
+        const huntStringParts = [`${D.GetName(charObj, true)} hunts`];
+        let distRef, siteRef;
+        [posFlags, negFlags, , distRef, siteRef] = parseResFlags(posFlags, negFlags);
+        if (siteRef && C.SITES[siteRef])
+            huntStringParts.push(`at ${C.SITES[siteRef].fullName}`);
+        if (distRef && C.DISTRICTS[distRef])
+            huntStringParts.push(`in ${C.DISTRICTS[distRef].fullName}`);
+        const huntString = `${huntStringParts.join(" ")}, seeking`;
+        // HTMLparts.push(C.HTML.Body(huntString, {lineHeight: "20px", margin: "2px 0px 3px 5px", fontFamily: "Oswald", fontSize: "14px", fontWeight: "normal", textAlign: "left"}));
+        /* if (posFlags.length + negFlags.length > 0) {
+            const flagHTML = [
+                ...posFlags.map((flag) => D.HTML(...C.STYLE.resonance.posResFlag, flag)),
+                ...negFlags.map((flag) => D.HTML(...C.STYLE.resonance.negResFlag, flag))
+            ].join("");
+            HTMLparts.push(
+                D.HTML(...C.STYLE.resonance.detailBlock, [
+                    D.HTML(...C.STYLE.resonance.detailHeader, "LOCATION:"),
+                    flagHTML
+                ].join(""))
+            );
+        } */
+        HTMLparts.push(
+            D.HTML(...C.STYLE.resonance.detailBlock,
+                   D.HTML(...C.STYLE.resonance.detailLine, [
+                       huntString,
+                       D.HTML(...C.STYLE.resonance.whiteFlag, desiredFlavor),
+                       `${siteRef || distRef ? "" : "<br>"}resonance with a`,
+                       D.HTML(...C.STYLE.resonance.whiteFlag, `+${margin}`),
+                       "margin:"
+                   ].join("")))
+        );
+        return HTMLparts.join("");
+    };
+    const parseFlavorBar = (segments, baselines, rollIndicator, resultFlavor, desiredFlavor) => {
+        const resSymbols = {
+            choleric: "C",
+            melancholic: "M",
+            phlegmatic: "P",
+            sanguine: "S",
+            primal: "🐺",
+            ischemic: "🦇",
+            mercurial: "🦋"
+        };
+        const resColors = {
+            common: [C.COLORS.darkcrimson, C.COLORS.darkcrimson],
+            rare: [C.COLORS.darkcrimson, C.COLORS.darkcrimson],
+            desired: C.COLORS.brightred,
+            rolled: C.COLORS.gold
+        };
+
+        const HTMLparts = [];
+        Object.entries(segments).forEach(([flavor, width], i) => {
+            const symbol = resSymbols[flavor];
+            const color = (flavor === resultFlavor && resColors.rolled)
+                        || (flavor === desiredFlavor && resColors.desired)
+                        || (C.RESONANCE.flavor.common.includes(flavor) && resColors.common[i % 2])
+                        || (C.RESONANCE.flavor.rare.includes(flavor) && resColors.rare[i % 2]);
+            const style = {width: `${width}%`, "background-color": color};
+            HTMLparts.push(D.HTML(...C.STYLE.resonance.resSegment, symbol, style));
+        });
+        Object.entries(baselines).forEach(([flavor, width]) => {
+            const symbol = resSymbols[flavor];
+            const style = {width: `${width}px`, "border-color": C.COLORS.purered};
+            HTMLparts.push(D.HTML(...C.STYLE.resonance.resBaseline, symbol, style));
+        });
+        HTMLparts.push(D.HTML(...C.STYLE.resonance.rollIndicator, "†", {left: `${rollIndicator}%`}));
+        return D.HTML(...C.STYLE.resonance.rollBlock, HTMLparts.join(""));
+    };
+    const parseTemperamentBar = (segments, baselines, rollIndicator, resultTemp) => {
+        const tempSymbols = {
+            negligible: "N",
+            fleeting: "F",
+            intense: "I",
+            acute: "A"
+        };
+        const tempColors = [
+            "rgba(255,0,0,0.5)",
+            "rgba(255,0,0,0.6)",
+            "rgba(255,0,0,0.8)",
+            "rgba(255,0,0,1)",
+            C.COLORS.gold
+        ];
+        const HTMLparts = [];
+        Object.entries(segments).forEach(([temp, width], i) => {
+            const color = (temp === resultTemp && tempColors[4]) || tempColors[i];
+            const style = {width: `${width}%`, "background-color": color};
+            HTMLparts.push(D.HTML(...C.STYLE.resonance.resSegment, tempSymbols[temp], style));
+        });
+        Object.entries(baselines).forEach(([temp, width], i) => {
+            const style = {width: `${width}px`, "border-color": tempColors[i]};
+            HTMLparts.push(D.HTML(...C.STYLE.resonance.resBaseline, tempSymbols[temp], style));
+        });
+        HTMLparts.push(D.HTML(...C.STYLE.resonance.rollIndicator, "†", {left: `${rollIndicator}%`}));
+        return D.HTML(...C.STYLE.resonance.rollBlock, HTMLparts.join(""), {"margin-bottom": "0"});
+    };
+    const parseResultBlock = (charRef, flavor, temperament) => {
+        const flavorLines = {
+            choleric: {
+                disc: "the resonant disciplines of Celerity and Potence",
+                traits: "Angry ♦ Passionate ♦ Violent ♦ Envious"
+            },
+            melancholic: {
+                disc: "the resonant disciplines of Fortitude and Obfuscate",
+                traits: "Sad ♦ Scared ♦ Intellectual ♦ Grounded"
+            },
+            phlegmatic: {
+                disc: "the resonant disciplines of Auspex and Dominate",
+                traits: "Calm ♦ Apathetic ♦ Lazy ♦ Controlling"
+            },
+            sanguine: {
+                disc: "the resonant disciplines of Blood Sorcery and Presence",
+                traits: "Happy ♦ Horny ♦ Addicted ♦ Enthusiastic"
+            },
+            primal: {
+                disc: "the resonant disciplines of Animalism and Protean",
+                traits: "Base ♦ Impulsive ♦ Irascible ♦ Insatiable"
+            },
+            ischemic: {
+                disc: "the resonant discipline of Oblivion",
+                traits: "Cold ♦ Amoral ♦ Patient ♦ Nihilistic"
+            },
+            mercurial: {
+                disc: "the resonant discipline of Alchemy",
+                traits: "Fluid ♦ Fatalistic ♦ Inscrutable ♦ Alien"
+            }
+        };
+        const tempLines = {
+            negligible: {
+                title: `Negligibly ${D.Capitalize(flavor)}`,
+                desc: `The blood carries only the smallest hint of ${flavor} resonance.  It is not strong enough to confer any benefits at all.`
+            },
+            fleeting: {
+                title: `Fleetingly ${D.Capitalize(flavor)}`,
+                desc: `The blood's faint ${flavor} resonance can guide you in developing ${flavorLines[flavor].disc}, but lacks any real power.`
+            },
+            intense: {
+                title: `Intensely ${D.Capitalize(flavor)}`,
+                desc: `The blood's strong ${flavor} resonance spreads through you, infusing your own vitae and enhancing both your control and understanding of ${flavorLines[flavor].disc}.`
+            },
+            acute: {
+                title: `Acutely ${D.Capitalize(flavor)}`,
+                desc: `This blood is special.  In addition to enhancing ${flavorLines[flavor].disc}, its ${flavor} resonance is so powerful that the emotions within have crystallized into a dyscracia!`
+            }
+        };
+        return [
+            C.HTML.Title(tempLines[temperament].title),
+            C.HTML.Header(flavorLines[flavor].traits),
+            C.HTML.Body(tempLines[temperament].desc, {fontSize: "14px", fontFamily: "Oswald", fontWeight: "normal", lineHeight: "18px", padding: "0 5px"})
+        ].join("");
+    };
+    const getResFlavorData = (charRef, desiredFlavor, margin = 0, posFlags = [], negFlags = [], modifiers = {}) => {
+        desiredFlavor = desiredFlavor.length === 1 ? C.RESONANCE.flavor.code[desiredFlavor] : desiredFlavor;
+        let distRef, siteRef;
+        [posFlags, negFlags, modifiers, distRef, siteRef] = parseResFlags(posFlags, negFlags);
+        const commonFlavors = C.RESONANCE.flavor.common;
+        const rareFlavors = C.RESONANCE.flavor.rare;
+        const allFlavors = [...commonFlavors, ...rareFlavors];
+        const resBins = {
+            choleric: C.RESONANCE.flavor.initial.common,
+            melancholic: C.RESONANCE.flavor.initial.common,
+            phlegmatic: C.RESONANCE.flavor.initial.common,
+            sanguine: C.RESONANCE.flavor.initial.common,
+            primal: 0,
+            ischemic: 0,
+            mercurial: 0
+        };
+        const baseBins = {...resBins};
+        const resMults = {
+            choleric: 1,
+            melancholic: 1,
+            phlegmatic: 1,
+            sanguine: 1,
+            primal: 1,
+            ischemic: 1,
+            mercurial: 1
+        };
+        commonFlavors.forEach((flavor) => {
+            if (desiredFlavor === flavor && margin > 0)
+                resBins[flavor] += margin * C.RESONANCE.flavor.perMargin.common;
+            switch (posFlags.filter((flag) => flag === flavor).length) {
+                case 2: resMults[flavor] *= C.RESONANCE.flavor.posMult.common;
+                // falls through
+                case 1: resMults[flavor] *= C.RESONANCE.flavor.posMult.common; break;
+                // no default
+            }
+            switch (negFlags.filter((flag) => flag === flavor).length) {
+                case 2: resMults[flavor] *= C.RESONANCE.flavor.negMult.common;
+                // falls through
+                case 1: resMults[flavor] *= C.RESONANCE.flavor.negMult.common; break;
+                // no default
+            }
+            resBins[flavor] *= resMults[flavor];
+            baseBins[flavor] *= resMults[flavor];
+        });
+        rareFlavors.forEach((flavor) => {
+            if (desiredFlavor === flavor && margin > 0)
+                resBins[flavor] += margin * C.RESONANCE.flavor.perMargin.rare;
+            if (posFlags.filter((flag) => flag === flavor).length - negFlags.filter((flag) => flag === flavor).length > 0) {
+                resBins[flavor] += C.RESONANCE.flavor.initial.rare;
+                baseBins[flavor] += C.RESONANCE.flavor.initial.rare;
+            }
+            switch (posFlags.filter((flag) => flag === flavor).length) {
+                case 2: resMults[flavor] *= C.RESONANCE.flavor.posMult.rare;
+                // falls through
+                case 1: resMults[flavor] *= C.RESONANCE.flavor.posMult.rare; break;
+                // no default
+            }
+            switch (negFlags.filter((flag) => flag === flavor).length) {
+                case 2: resMults[flavor] *= C.RESONANCE.flavor.negMult.rare;
+                // falls through
+                case 1: resMults[flavor] *= C.RESONANCE.flavor.negMult.rare; break;
+                // no default
+            }
+            resBins[flavor] *= resMults[flavor];
+            baseBins[flavor] *= resMults[flavor];
+        });
+
+        const binTotal = Object.values(resBins).reduce((tot, val) => tot + val, 0);
+        const baseBinTotal = Object.values(baseBins).reduce((tot, val) => tot + val, 0);
+        const flavorRoll = Math.floor(Math.random() * binTotal) + 1;
+
+        let binCount = flavorRoll,
+            resultFlavor;
+        while (binCount > 0) {
+            resultFlavor = allFlavors.shift();
+            binCount -= resBins[resultFlavor];
+        }
+        const [segmentWidths, baselineWidths] = [{}, {}];
+        Object.entries(resBins).forEach(([flavor, binSize]) => {
+            if (binSize > 0)
+                segmentWidths[flavor] = D.Float((binSize / binTotal) * 100, 2);
+        });
+        let segmentTotal = Object.values(segmentWidths).reduce((tot, val) => tot + val, 0);
+        const validSegments = Object.keys(segmentWidths);
+        while (segmentTotal >= 100) {
+            segmentWidths[validSegments[0]] -= 0.01;
+            validSegments.push(validSegments.shift());
+            segmentTotal = Object.values(segmentWidths).reduce((tot, val) => tot + val, 0);
+        }
+        Object.entries(baseBins).forEach(([flavor, binSize]) => {
+            if (binSize > 0)
+                baselineWidths[flavor] = D.Float((binSize / baseBinTotal) * C.CHATWIDTH, 1) - 3;
+        });
+        let baselineTotal = Object.values(baselineWidths).reduce((tot, val) => tot + val, 0);
+        const validBaselines = Object.keys(baselineWidths);
+        const baselineBorderWidth = 3 * validBaselines.length;
+        while (baselineTotal > C.CHATWIDTH - baselineBorderWidth - 1) {
+            baselineWidths[validBaselines[0]] -= 0.1;
+            validBaselines.push(validBaselines.shift());
+            baselineTotal = Object.values(baselineWidths).reduce((tot, val) => tot + val, 0);
+        }
+        const rollPos = Math.round(10000 * (flavorRoll / binTotal)) / 100;
+        return [segmentWidths, baselineWidths, rollPos, resultFlavor];
+    };
+    const getResTemperamentData = (charRef, margin = 0, modifiers = {doubleAcute: false}) => {
+        const reportLines = [];
+        const allTemps = ["negligible", "fleeting", "intense", "acute"];
+        const tempBins = {
+            negligible: Math.max(0, C.RESONANCE.temperament.initial.negligible + margin * C.RESONANCE.temperament.perMargin.negligible),
+            fleeting: Math.max(0, C.RESONANCE.temperament.initial.fleeting + margin * C.RESONANCE.temperament.perMargin.fleeting),
+            intense: Math.max(0, C.RESONANCE.temperament.initial.intense + margin * C.RESONANCE.temperament.perMargin.intense),
+            acute: Math.max(0, C.RESONANCE.temperament.initial.acute + margin * C.RESONANCE.temperament.perMargin.acute)
+        };
+        const baseBins = {
+            negligible: C.RESONANCE.temperament.initial.negligible,
+            fleeting: C.RESONANCE.temperament.initial.fleeting,
+            intense: C.RESONANCE.temperament.initial.intense,
+            acute: C.RESONANCE.temperament.initial.acute
+        };
+        const tempMults = {
+            negligible: 1,
+            fleeting: 1,
+            intense: 1,
+            acute: 1
+        };
+        const binTotal = Object.values(tempBins).reduce((tot, val) => tot + val, 0);
+        const baseBinTotal = Object.values(baseBins).reduce((tot, val) => tot + val, 0);
+        if (modifiers.doubleAcute) {
+            const curBinSubtotal = binTotal - tempBins.acute;
+            tempBins.acute = Math.min(binTotal, tempBins.acute * 2);
+            const newBinSubtotal = binTotal - tempBins.acute;
+            const newBinMult = newBinSubtotal / curBinSubtotal;
+            tempBins.negligible *= newBinMult;
+            tempBins.fleeting *= newBinMult;
+            tempBins.intense *= newBinMult;
+            const curBaseBinSubtotal = baseBinTotal - baseBins.acute;
+            baseBins.acute = Math.min(baseBinTotal, baseBins.acute * 2);
+            const newBaseBinSubtotal = baseBinTotal - baseBins.acute;
+            const newBaseBinMult = newBaseBinSubtotal / curBaseBinSubtotal;
+            baseBins.negligible *= newBaseBinMult;
+            baseBins.fleeting *= newBaseBinMult;
+            baseBins.intense *= newBaseBinMult;
+        }
+        const tempRoll = Math.floor(Math.random() * binTotal) + 1;
+        reportLines.push(tempBins);
+        reportLines.push(`binTotal: ${binTotal}, roll: ${tempRoll}`);
+
+        let binCount = tempRoll,
+            resultTemp;
+        while (binCount > 0) {
+            resultTemp = allTemps.shift();
+            binCount -= tempBins[resultTemp];
+            reportLines.push(`... checking ${resultTemp}: binCount = ${binCount}`);
+        }
+        D.Show(reportLines);
+        const [segmentWidths, baselineWidths] = [{}, {}];
+        Object.entries(tempBins).forEach(([temp, binSize]) => {
+            if (binSize > 0)
+                segmentWidths[temp] = D.Float((binSize / binTotal) * 100, 2);
+        });
+        let segmentTotal = Object.values(segmentWidths).reduce((tot, val) => tot + val, 0);
+        const validSegments = Object.keys(segmentWidths);
+        while (segmentTotal >= 100) {
+            segmentWidths[validSegments[0]] -= 0.01;
+            validSegments.push(validSegments.shift());
+            segmentTotal = Object.values(segmentWidths).reduce((tot, val) => tot + val, 0);
+        }
+        Object.entries(baseBins).forEach(([flavor, binSize]) => {
+            if (binSize > 0)
+                baselineWidths[flavor] = D.Float((binSize / baseBinTotal) * C.CHATWIDTH, 1) - 3;
+        });
+        let baselineTotal = Object.values(baselineWidths).reduce((tot, val) => tot + val, 0);
+        const validBaselines = Object.keys(baselineWidths);
+        const baselineBorderWidth = 3 * validBaselines.length;
+        while (baselineTotal > C.CHATWIDTH - baselineBorderWidth - 1) {
+            baselineWidths[validBaselines[0]] -= 0.1;
+            validBaselines.push(validBaselines.shift());
+            baselineTotal = Object.values(baselineWidths).reduce((tot, val) => tot + val, 0);
+        }
+        const rollPos = D.Float((tempRoll / binTotal) * 100, 2);
+        return [segmentWidths, baselineWidths, rollPos, resultTemp];
+    };
+
+    const rollResonance = (charRef, desiredFlavor, margin = 0, posFlags = [], negFlags = [], modifiers = {}, options = {}) => {
+        const charObj = D.GetChar(charRef);
+        const [flavorSegments, flavorBaselines, flavorIndicator, flavorResult] = getResFlavorData(charObj, desiredFlavor, margin, posFlags, negFlags, modifiers);
+        const [tempSegments, tempBaselines, tempIndicator, tempResult] = getResTemperamentData(charObj, margin, modifiers);
+        D.Show({desiredFlavor, margin, posFlags, negFlags, modifiers, flavor: {flavorSegments, flavorBaselines, flavorIndicator, flavorResult}, temperament: {tempSegments, tempBaselines, tempIndicator, tempResult}});
+        const detailsHTML = parseResDetails(charObj, desiredFlavor, margin, posFlags, negFlags);
+        const flavorBarHTML = parseFlavorBar(flavorSegments, flavorBaselines, flavorIndicator, flavorResult, desiredFlavor);
+        const tempBarHTML = parseTemperamentBar(tempSegments, tempBaselines, tempIndicator, tempResult);
+        const resultHTML = parseResultBlock(charObj, flavorResult, tempResult);
+        D.Chat(D.GMID(), C.HTML.Block([detailsHTML, flavorBarHTML, tempBarHTML, resultHTML].join("")));
+    };
+    // can get roll from C.PREDTYPES
+
     // #endregion
 
     return {
@@ -5860,7 +6214,9 @@ const Roller = (() => {
         AddGlobalEffect: addGlobalRollEffect,
         DelGlobalEffect: delGlobalRollEffect,
         AddGlobalExclude: addGlobalExclusion,
-        DelGlobalExclude: delGlobalExclusion
+        DelGlobalExclude: delGlobalExclusion,
+
+        Resonance: rollResonance
     };
 })();
 

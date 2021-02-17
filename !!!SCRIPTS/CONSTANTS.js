@@ -1679,6 +1679,161 @@ const C = (() => {
             }
         }
     };
+    const STYLE = {
+        resonance: {
+            block: ["div", {
+                display: "block",
+                height: "auto",
+                "min-height": "30px",
+                width: `${CHATWIDTH}px`,
+                "min-width": `${CHATWIDTH}px`,
+                margin: "-35px 0px -7px -42px",
+                padding: "0px",
+                background: "url('https://i.imgur.com/kBl8aTO.jpg')",
+                "font-size": "0px",
+                "text-align": "center",
+                border: "4px outset rgba(160, 6, 46, 1)",
+                position: "relative"
+            }],
+            header: ["span", {
+                display: "block",
+                height: "auto",
+                width: "auto",
+                "line-height": "22px",
+                padding: "0px",
+                color: "black",
+                "background-color": "rgba(255, 31, 34, 1)",
+                "font-size": "18px",
+                "text-align": "center",
+                "font-family": "Voltaire",
+                "font-weight": "bold",
+                "box-shadow": "none",
+                border: "none"
+            }],
+            detailBlock: ["div", {
+                display: "block",
+                width: "100%",
+                padding: "0",
+                margin: "0px 0px 0px 2px",
+                color: "rgba(255, 31, 34, 1)",
+                "font-family": "Oswald",
+                "font-size": "14px",
+                "line-height": "20px"
+            }],
+            detailHeader: ["span", {
+                display: "inline-block",
+                height: "10px",
+                width: "60px",
+                "margin-right": "5px",
+                "text-align": "right",
+                "vertical-align": "baseline"
+            }],
+            detailLine: ["span", {
+                display: "inline-block",
+                width: "auto",
+                "vertical-align": "baseline"
+            }],
+            posResFlag: ["span", {
+                display: "inline-block",
+                height: "10px",
+                width: "auto",
+                padding: "3px",
+                margin: "0 1px",
+                "line-height": "10px",
+                color: COLORS.black,
+                "background-color": COLORS.purered,
+                "box-shadow": `inset 0 0 1px ${COLORS.purered}, inset 0 0 1px ${COLORS.purered}, inset 0 0 1px ${COLORS.purered}`,
+                "text-shadow": `0 0 1px ${COLORS.purered}, 0 0 1px ${COLORS.purered}, 0 0 1px ${COLORS.purered}`,
+                "text-transform": "uppercase",
+                "vertical-align": "baseline",
+                "border-radius": "5px"
+            }],
+            negResFlag: ["span", {
+                display: "inline-block",
+                height: "10px",
+                width: "auto",
+                padding: "3px",
+                margin: "0 1px",
+                "line-height": "10px",
+                color: COLORS.purered,
+                "background-color": COLORS.black,
+                "box-shadow": `inset 0 0 1px ${COLORS.purered}, inset 0 0 1px ${COLORS.purered}, inset 0 0 1px ${COLORS.purered}`,
+                "text-shadow": `0 0 1px ${COLORS.black}, 0 0 1px ${COLORS.black}, 0 0 1px ${COLORS.black}`,
+                "text-transform": "uppercase",
+                "vertical-align": "baseline",
+                "border-radius": "5px"
+            }],
+            whiteFlag: ["span", {
+                display: "inline-block",
+                height: "12px",
+                width: "auto",
+                padding: "3px",
+                margin: "0 3px",
+                "line-height": "10px",
+                color: COLORS.white,
+                "background-color": COLORS.black,
+                "box-shadow": `inset 0 0 1px ${COLORS.white}, inset 0 0 1px ${COLORS.white}, inset 0 0 1px ${COLORS.white}`,
+                "text-transform": "uppercase",
+                "vertical-align": "baseline",
+                "border-radius": "5px",
+                "text-indent": "0px"
+            }],
+            strong: ["span", {
+                color: "white"
+            }],
+            rollBlock: ["div", {
+                display: "block",
+                height: "20px",
+                width: "100%",
+                margin: "5px 0px",
+                padding: "0 0 10px 0",
+                "box-shadow": "inset 0 0 2px black",
+                "text-align": "left"
+            }],
+            resSegment: ["span", {
+                display: "inline-block",
+                height: "20px",
+                margin: "0 0 -9px 0",
+                padding: "0px",
+                color: "white",
+                "font-family": "Oswald",
+                "font-size": "10px",
+                "line-height": "24px",
+                "text-indent": "2px",
+                "text-shadow": "0 0 1px black, 0 0 1px black, 0 0 1px black",
+                "box-shadow": `inset 0 0 2px ${COLORS.purered}, inset 0 0 2px ${COLORS.purered}, inset 0 0 2px ${COLORS.purered}, inset 0 0 2px ${COLORS.purered}`,
+                overflow: "hidden"
+            }],
+            resBaseline: ["span", {
+                display: "inline-block",
+                height: "4px",
+                "margin-bottom": "5px",
+                "background-color": "transparent",
+                border: "2px solid rgb(255, 0, 0)",
+                "border-top": "none",
+                "box-sizing": "border-box",
+                color: COLORS.red,
+                "font-family": "Oswald",
+                "font-size": "8px",
+                "line-height": "8px",
+                "padding-bottom": "5px",
+                "text-indent": "1px",
+                "font-weight": "bold"
+            }],
+            rollIndicator: ["span", {
+                display: "block",
+                position: "relative",
+                height: "20px",
+                width: "12px",
+                "margin-top": "-50px",
+                "margin-left": "-6px",
+                color: "white",
+                "font-family": "Voltaire",
+                "font-size": "24px",
+                "text-shadow": "0 0 3px black, 0 0 3px black, 0 0 3px black, 0 0 3px black, 0 0 3px black, 0 0 3px black"
+            }]
+        }
+    };
     // #endregion
 
     // #region SOUND EFFECT CONSTANTS
@@ -2906,11 +3061,7 @@ const C = (() => {
         }
     };
     const RESONANCE = {
-
         flavor: {
-            box: {
-                
-            }
             code: {
                 c: "choleric",
                 m: "melancholic",
@@ -3644,6 +3795,7 @@ const C = (() => {
         HTML,
         HTMLSTYLES,
         STYLES,
+        STYLE,
 
         PIXELSPERSQUARE,
         SANDBOX,
