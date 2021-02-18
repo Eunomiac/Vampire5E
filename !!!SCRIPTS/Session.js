@@ -671,9 +671,9 @@ const Session = (() => {
                         break;
                     }
                     case "submit": {
-                        const [charObj] = charObjs;
+                        const [toCharObj, fromCharObj] = charObjs;
                         const promptText = args.join(" ");
-                        submitSpotlightPrompt(charObj, false, promptText, true);
+                        submitSpotlightPrompt(toCharObj, fromCharObj, promptText, true);
                         break;
                     }
                     case "assign": {
@@ -2705,7 +2705,7 @@ const Session = (() => {
         }
         if (chatCode.length)
             D.Chat(
-                D.GetPlayerID(charRef),
+                (isGMCall && D.GMID()) || D.GetPlayerID(charRef),
                 C.HTML.Block([
                     C.HTML.Title("Session Monologues"),
                     C.HTML.SubHeader(

@@ -1572,7 +1572,7 @@ const C = (() => {
             `<div style="display: inline-block; width: ${width}px; vertical-align: top; margin-top:${topMargin}px; text-align: left; height: 100%; "><span style="display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left; margin-left: 10px; font-size: 12px;">${content}</span></div>`
         ),
         outcome: (content, color) => D.JSH(
-            `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[
+            `<div style="display: block; width: 100%; height: auto; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[
                 color
             ] || COLORS.white}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
         ),

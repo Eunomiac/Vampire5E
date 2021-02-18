@@ -2743,7 +2743,10 @@ const D = (() => {
                     for (const statName of statNames) {
                         const foundStat = _.find(attrNameData, (v) => looseMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FIRST match it against an EXACT ATTRIBUTE NAME already found above.
                                        || _.find(attrNameData, (v) => looseMatch(parseRepStat(v.name)[2], statName)) // SECOND try to match with the EXACT "FOUND" NAME of a NAME/VALUE link.
-                                       || _.find(rowAttrObjs, (v) => looseMatch(parseRepStat(v.get("name"))[2], statName)); // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
+                                       || _.find(rowAttrObjs, (v) => looseMatch(parseRepStat(v.get("name"))[2], statName)) // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
+                                       || _.find(attrNameData, (v) => parseRepStat(v.fullName)[2].startsWith(statName.replace(/_name$/gu, "")))
+                                       || _.find(attrNameData, (v) => parseRepStat(v.name)[2].startsWith(statName))
+                                       || _.find(rowAttrObjs, (v) => parseRepStat(v.get("name"))[2].startsWith(statName));
                             /* || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) // FINALLY repeat the above but with fuzzy matching. match it against an EXACT ATTRIBUTE NAME already found above.
                             || _.find(attrNameData, (v) => fuzzyMatch(parseRepStat(v.name)[2], statName))
                             || _.find(rowAttrObjs, (v) => fuzzyMatch(parseRepStat(v.get("name"))[2], statName)) */

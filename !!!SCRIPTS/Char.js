@@ -785,16 +785,35 @@ const Char = (() => {
                     case "res": {
                         const [charObj] = charObjs;
                         let [desiredFlavor, margin, posFlags, negFlags, modifiers] = args;
-                        if (posFlags && posFlags.startsWith("loc:")) {
-                            posFlags = posFlags.replace(/^loc:/u, "");
-                            modifiers = negFlags;
-                            negFlags = null;
+                        if (charObj && desiredFlavor) {
+                            if (posFlags && posFlags.startsWith("loc:")) {
+                                posFlags = posFlags.replace(/^loc:/u, "");
+                                modifiers = negFlags;
+                                negFlags = null;
+                            } else if (posFlags && !negFlags && !modifiers) {
+                                modifiers = posFlags;
+                                posFlags = null;
+                                negFlags = null;
+                            } else {
+                                posFlags = D.ParseArray(posFlags);
+                                negFlags = D.ParseArray(negFlags);
+                            }
+                            modifiers = D.ParseParams(modifiers || " ");
+                            Roller.Resonance(charObj, desiredFlavor, margin, posFlags, negFlags, modifiers);
                         } else {
-                            posFlags = D.ParseArray(posFlags);
-                            negFlags = D.ParseArray(negFlags);
+                            D.Alert([
+                                "<h3>Syntax: !char get res</h3>",
+                                "<b>!char get res</b> &gt;desiredFlavor&lt; &gt;margin&lt; &gt;posFlags&lt; &gt;negFlags&lt; &gt;modifiers&lt;",
+                                "<b>!char get res</b> &gt;desiredFlavor&lt; &gt;margin&lt; loc:&gt;district&lt;:&gt;site&lt; &gt;modifiers&lt;",
+                                "<b>!char get res</b> &gt;desiredFlavor&lt; &gt;margin&lt; &gt;modifiers&lt;",
+                                "<h4>Flags Syntax</h4>",
+                                "&quot;[&gt;flavor&lt;, &gt;flavor&lt;]&quot;",
+                                "or &quot;[]&quot; for none",
+                                "<h4>Modifiers Syntax</h4>",
+                                "&quot;&gt;modifier&lt;:&gt;value&lt;&quot;",
+                                "&quot;&gt;modifier&lt;:true&quot;"
+                            ].join("<br>"));
                         }
-                        modifiers = D.ParseParams(modifiers || " ");
-                        Roller.Resonance(charObj, desiredFlavor, margin, posFlags, negFlags, modifiers);
                         break;
                     }
                     case "repstats": case "repsecs": case "repdata": {
@@ -931,6 +950,12 @@ const Char = (() => {
             case "set":
             case "add": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "flavor": {
+                        const [charObj] = charObjs;
+                        REGISTRY[D.GetCharData(charObj).quadrant].desiredFlavor = args.shift();
+                        D.Flag(`${D.GetName(charObj, true)}'s Desired Flavor Set: ${D.Capitalize(REGISTRY[D.GetCharData(charObj).quadrant].desiredFlavor)}`);
+                        break;
+                    }
                     case "disabled":
                     case "disable": {
                         for (const charObj of charObjs.filter((x) => VAL({pc: x})))
@@ -4263,6 +4288,7 @@ const Char = (() => {
         Damage: adjustDamage,
         AdjustTrait: adjustTrait,
         AdjustHunger: adjustHunger,
+        UpdateHunger: updateHunger,
         AdjustStatMod: adjustTempStat,
         RefreshWillpower: refreshWillpower,
         DaySleep: daysleep,
