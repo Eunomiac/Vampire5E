@@ -3455,7 +3455,7 @@ const C = (() => {
         Osiris: ["Manipulation", "Subterfuge/Intimidation", "Fame"],
         Sandman: ["Dexterity", "Stealth"],
         Scene_Queen: ["Manipulation", "Persuasion"],
-        Siren: ["Charisma", "Subterfuge"]
+        Siren: ["Charisma", "Persuasion"]
     };
     // #endregion
 

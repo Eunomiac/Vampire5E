@@ -123,7 +123,17 @@ const Roller = (() => {
             }
             case "jumphunt": {
                 const [charObj] = Listener.GetObjects(objects, "character");
-                timeJumpHuntRoll(charObj);
+                if (charObj) {
+                    const rollMods = {};
+                    if (args.length)
+                        Object.assign(rollMods, D.ParseParams(args, ","));
+                    timeJumpHuntRoll(charObj, rollMods);
+                } else {
+                    D.Alert([
+                        "<h3>Jump Hunt Syntax</h3>",
+                        "<b>!roll jumphunt @&lt;charRef&gt; [modifier:value, modifier:value]</b>"
+                    ].join(""), "!roll jumphunt");
+                }
                 break;
             }
             case "wp": wpReroll("Main", false, D.LCase(args.join(" ").replace(/\s*/gu, "")).split("")); break;
@@ -1180,11 +1190,11 @@ const Roller = (() => {
         space40: "<span style=\"display: inline-block; width: 40px;\"></span>",
         oppRoll: "<div style='display: block ; width: 265px; font-variant: small-caps ; font-size: 16px ; padding: 0 0 0 4px; border: 3px outset rgba( 132 , 0 , 2 , 1 ) ; text-transform: uppercase ; font-family: \"voltaire\" ; color: black ; overflow: hidden ; text-align: left ; margin: -28px 0px 0px -8px; height: 20px; background: gold; line-height: 20px;'>Final Outcome of Opposed Roll:</div>",
         rollerName: `<div style="display: block; width: 100%; font-variant: small-caps; font-size: 16px; height: 15px; padding-bottom: 5px; border-bottom: 1px solid ${C.COLORS.white}; overflow: hidden;">`,
-        mainRoll: `<div style="display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid ${C.COLORS.white};"><span style="display: block; height: 16px; line-height: 16px; width: 100%; font-size: 14px; ">`,
+        mainRoll: `<div style="display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid ${C.COLORS.white};"><span style="display: block; height: auto; line-height: 16px; width: 100%; font-size: 14px; ">`,
         mainRollSub: "<span style=\"display: block; height: auto; line-height: 12px; width: 100%; margin-left: 24px; font-size: 10px;\">",
         check: `<div style="display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid ${C.COLORS.white};"><span style="display: block; height: 20px;  line-height: 20px; width: 100%; margin-left: 10%;">`,
         dicePool:
-            "<div style=\"display: block; width: 100%; padding: 3px 0px; height: auto; \"><span style=\"display: block; height: 16px; width: 100%; margin-left: 5%; line-height: 16px; font-size: 14px;\">",
+            "<div style=\"display: block; width: 100%; padding: 3px 0px; height: auto; \"><span style=\"display: block; height: auto; width: 100%; margin-left: 5%; line-height: 16px; font-size: 14px;\">",
         resultBlock: "<div style=\"display: block; width: 100%; height: auto; \">",
         resultCount:
             "<div style=\"display: inline-block; width: YYYpx; margin-top:ZZZpx; vertical-align: top; text-align: right; height: 100%; \"><span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: right; margin-right: 10px; font-size: 12px;\">",
@@ -1548,68 +1558,65 @@ const Roller = (() => {
     const setDie = (dieCat, dieNum, dieVal, rollType, wasRerolled = false, isUsingDiceRoller = true) => {
         const traceID = TRACEON("setDie", [dieCat, dieNum, dieVal, rollType]);
         dieNum = D.Int(dieNum);
-        // If the new die value is different from its current value OR selection is being toggled, proceed...
         DB({dieCat, dieNum, dieVal}, "setDie");
-        if (dieVal === "selected" || STATE.REF.selected[dieCat].includes(dieNum) || STATE.REF.diceVals[dieCat][dieNum] !== dieVal) {
-            const dieKey = `RollerDie_${dieCat}_${dieNum}`;
-            // If a dieVal is specified:
-            if (dieVal) {
-                // If deselecting a die that is flagged as selected, restore its original value
-                if (dieVal.includes("selected") && STATE.REF.selected[dieCat].includes(dieNum)) {
-                    dieVal = STATE.REF.diceVals[dieCat][dieNum];
-                    rollType = rollType || "trait";
-                }
-                if (isUsingDiceRoller && !(dieVal.includes("selected") && wasRerolled))
-                    Media.SetImg(dieKey, dieVal, true);
-                // Record die value, unless it's "selected" (in which case retain the die's actual value)
-                if (!dieVal.includes("selected"))
-                    STATE.REF.diceVals[dieCat][dieNum] = dieVal;
-                // If no value specified, blank the die:
-            } else {
-                if (isUsingDiceRoller)
-                    Media.ToggleImg(dieKey, false);
-                STATE.REF.diceVals[dieCat][dieNum] = false;
+        const dieKey = `RollerDie_${dieCat}_${dieNum}`;
+        // If a dieVal is specified:
+        if (dieVal) {
+            // If deselecting a die that is flagged as selected, restore its original value
+            if (dieVal.includes("selected") && STATE.REF.selected[dieCat].includes(dieNum)) {
+                dieVal = STATE.REF.diceVals[dieCat][dieNum];
+                rollType = rollType || "trait";
             }
-            // If dieVal is "selected", add die to selected dice UNLESS this has already been rerolled.
-            if (dieVal && dieVal.includes("selected")) {
-                if (!wasRerolled)
-                    STATE.REF.selected[dieCat] = _.uniq([...STATE.REF.selected[dieCat], dieNum]);
-                // Otherwise, remove it from selected dice
+            if (isUsingDiceRoller && !(dieVal.includes("selected") && wasRerolled))
+                Media.SetImg(dieKey, dieVal, true);
+            // Record die value, unless it's "selected" (in which case retain the die's actual value)
+            if (!dieVal.includes("selected"))
+                STATE.REF.diceVals[dieCat][dieNum] = dieVal;
+            // If no value specified, blank the die:
+        } else {
+            if (isUsingDiceRoller)
+                Media.ToggleImg(dieKey, false);
+            STATE.REF.diceVals[dieCat][dieNum] = false;
+        }
+        // If dieVal is "selected", add die to selected dice UNLESS this has already been rerolled.
+        if (dieVal && dieVal.includes("selected")) {
+            if (!wasRerolled)
+                STATE.REF.selected[dieCat] = _.uniq([...STATE.REF.selected[dieCat], dieNum]);
+            // Otherwise, remove it from selected dice
+        } else {
+            STATE.REF.selected[dieCat] = _.without(STATE.REF.selected[dieCat], dieNum);
+        }
+        DB(
+            {
+                dieVal,
+                rollType,
+                isHungerDie: dieVal && dieVal.includes("H"),
+                isSelectedDie: dieVal && dieVal.includes("selected"),
+                dragPadStatus: dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait")
+            },
+            "setDie"
+        );
+        if (isUsingDiceRoller) {
+            // Turn on selection drag pad for non-Hunger dice if it's a trait roll OR the die is currently selected
+            if (dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait"))
+                DragPads.Toggle(dieKey, true);
+            // Otherwise, turn off drag pad
+            else
+                DragPads.Toggle(dieKey, false);
+            // If there are any selected dice, activate the reroll animation and dragpad:
+            if (_.flatten(_.values(STATE.REF.selected)).length) {
+                DragPads.Toggle("wpReroll", true);
+                Media.ToggleAnim("Roller_WPReroller_1", true);
+                Media.ToggleImg("Roller_WPReroller_Base_1", true);
+                Media.ToggleAnim("Roller_WPReroller_2", true);
+                Media.ToggleImg("Roller_WPReroller_Base_2", true);
+                // Otherwise, deactivate the reroll animation and dragpad:
             } else {
-                STATE.REF.selected[dieCat] = _.without(STATE.REF.selected[dieCat], dieNum);
-            }
-            DB(
-                {
-                    dieVal,
-                    rollType,
-                    isHungerDie: dieVal && dieVal.includes("H"),
-                    isSelectedDie: dieVal && dieVal.includes("selected"),
-                    dragPadStatus: dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait")
-                },
-                "setDie"
-            );
-            if (isUsingDiceRoller) {
-                // Turn on selection drag pad for non-Hunger dice if it's a trait roll OR the die is currently selected
-                if (dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait"))
-                    DragPads.Toggle(dieKey, true);
-                // Otherwise, turn off drag pad
-                else
-                    DragPads.Toggle(dieKey, false);
-                // If there are any selected dice, activate the reroll animation and dragpad:
-                if (_.flatten(_.values(STATE.REF.selected)).length) {
-                    DragPads.Toggle("wpReroll", true);
-                    Media.ToggleAnim("Roller_WPReroller_1", true);
-                    Media.ToggleImg("Roller_WPReroller_Base_1", true);
-                    Media.ToggleAnim("Roller_WPReroller_2", true);
-                    Media.ToggleImg("Roller_WPReroller_Base_2", true);
-                    // Otherwise, deactivate the reroll animation and dragpad:
-                } else {
-                    DragPads.Toggle("wpReroll", false);
-                    Media.ToggleAnim("Roller_WPReroller_1", false);
-                    Media.ToggleImg("Roller_WPReroller_Base_1", false);
-                    Media.ToggleAnim("Roller_WPReroller_2", false);
-                    Media.ToggleImg("Roller_WPReroller_Base_2", false);
-                }
+                DragPads.Toggle("wpReroll", false);
+                Media.ToggleAnim("Roller_WPReroller_1", false);
+                Media.ToggleImg("Roller_WPReroller_Base_1", false);
+                Media.ToggleAnim("Roller_WPReroller_2", false);
+                Media.ToggleImg("Roller_WPReroller_Base_2", false);
             }
         }
         TRACEOFF(traceID);
@@ -2913,7 +2920,8 @@ const Roller = (() => {
         const playerObj = D.GetPlayer(charObj);
         const playerCharObj = playerObj && playerObj.id !== D.GMID() && D.GetChar(playerObj.id);
         const flagData = parseFlags(charObj, playerCharObj && playerCharObj.id, rollType, params, rollFlags);
-        rollType = rollType === "hunt" ? "trait" : rollType;
+        const isHuntRoll = rollType === "hunt";
+        rollType = isHuntRoll ? "trait" : rollType;
         const traitData = parseTraits(charObj, playerCharObj && playerCharObj.id, rollType, params);
         const rollData = {
             charID: charObj.id,
@@ -3023,6 +3031,10 @@ const Roller = (() => {
 
         if (["remorse", "rush", "project", "humanity", "frenzy", "willpower", "check", "rouse", "rouse2"].includes(rollType))
             rollData.hunger = 0;
+        if (isHuntRoll) {
+            rollData.mod = 0;
+            rollData.diff = 3;
+        }
 
         // D.Flag(`Roll Status: ${rollData.rollFlags.oppRollStatus}`);
         // D.Flag("(spacer)");
@@ -4706,24 +4718,27 @@ const Roller = (() => {
         if (isHuntRoll) {
             logString = logString.replace(/ +height:[^;]*20 ?px/u, "; height: auto");
             logString = logString.replace(/(border-bottom: 1px solid rgba\(255, 255, 255, 1\); overflow: hidden;)">([^<:]*) rolls:/u, `$1 color: ${C.COLORS.brightcrimson};, font-weight: bold;">$2 hunts:`);
-            logString = logString.replace(/(<span style="color: )[^;]*;([^>]*>)(TOTAL|SUCC|CRIT|MESSY|BESTIAL|COST|FAIL)[^<]+(<\/span>)/u, "$1@@COLOR@@; font-weight:bold;$2@@OUTCOME@@$4@@SUBOUTCOME@@");
+            logString = logString.replace(/(<span style="color: )[^;]*;([^>]*>)(TOTAL|SUCC|CRIT|MESSY|BESTIAL|COST|FAIL)[^<]+(<\/span>)/u, "$1@@COLOR@@; font-weight:bold;$2@@OUTCOME@@$4@@SUBOUTCOME@@@@RESBUTTONS@@");
 
             // <span style="color: rgba( 255 , 255 , 255 , 1 ) ; display: block ; width: 100% ; font-size: 22px ; font-family: &quot;bodoni svtytwo itc tt&quot;">SUCCESS!</span>
 
             const outcome = getRollOutcome(rollData, rollResults);
             const margin = rollResults.margin;
-            let outcomeColor, outcomeText, subOutcomeColor, subOutcomeText;
+            let outcomeColor, outcomeText, subOutcomeColor, subOutcomeText,
+                resButtons = `<span style="height: 14px; width: 107px; display: inline-block; margin: 0px 2px 0px 0px; padding: 0px 0px 0px 0px; border: 1px solid white; font-size: 0px; overflow: hidden"><a style="height: 14px; width: 100%; display: inline-block; border: none; color: rgba(255, 255, 255, 1); background-color: rgba(255, 31, 34, 1); font-size: 10px; line-height: 16px; font-family: voltaire; text-transform: uppercase; text-align: center; padding: 0px; font-weight: normal; text-shadow: none; box-shadow: none" href="!huntkill ${rollData.charID} ${rollResults.margin} @@HUNGERVAL@@ true">Yes</a></span><span style="height: 14px; width: 107px; display: inline-block; margin: 0px 2px 0px 0px; padding: 0px 0px 0px 0px; border: 1px solid white; font-size: 0px; overflow: hidden"><a style="height: 14px; width: 100%; display: inline-block; border: none; color: rgba(255, 255, 255, 1); background-color: rgba(255, 31, 34, 1); font-size: 10px; line-height: 16px; font-family: voltaire; text-transform: uppercase; text-align: center; padding: 0px; font-weight: normal; text-shadow: none; box-shadow: none" href="!huntkill ${rollData.charID} ${rollResults.margin} @@HUNGERVAL@@ false">No</a></span>`;
             switch (outcome) {
                 case "totalfail": case "bestialfail": {
                     outcomeColor = C.COLORS.purered;
                     outcomeText = "<u>TOTAL</u> FAILURE!<br><span style=\"font-size: 18px;font-family: Voltaire;color: red;\">Hunger ●●●●●</span>";
-                    setAttrs(rollData.charID, {hunger: 5});
+                    subOutcomeText = "Will you kill for Hunger ●●●●?";
+                    resButtons = resButtons.replace(/@@HUNGERVAL@@/gu, 5);
                     break;
                 }
                 case "fail": case "costlyfail": {
                     outcomeColor = C.COLORS.purered;
                     outcomeText = "FAILURE!<br><span style=\"font-size: 18px;font-family: Voltaire;color: red;\">Hunger ●●●●</span>";
-                    setAttrs(rollData.charID, {hunger: 4});
+                    subOutcomeText = "Will you kill for Hunger ●●●?";
+                    resButtons = resButtons.replace(/@@HUNGERVAL@@/gu, 4);
                     break;
                 }
                 case "crit": case "succ": {
@@ -4731,16 +4746,16 @@ const Roller = (() => {
                     subOutcomeColor = C.COLORS.gold;
                     if (margin >= 5) {
                         outcomeText = `EXTREME SUCCESS! (+${margin})<br><span style=\"font-size: 18px;font-family: Voltaire;color: red;\">Hunger ●</span>`;
-                        subOutcomeText = "Do you kill your prey for Hunger 0?";
-                        setAttrs(rollData.charID, {hunger: 1});
+                        subOutcomeText = "Will you kill for zero Hunger?";
+                        resButtons = resButtons.replace(/@@HUNGERVAL@@/gu, 1);
                     } else if (margin >= 2) {
                         outcomeText = `SUCCESS! (+${margin})<br><span style=\"font-size: 18px;font-family: Voltaire;color: red;\">Hunger ●●</span>`;
-                        subOutcomeText = "Do you kill your prey for Hunger ●?";
-                        setAttrs(rollData.charID, {hunger: 2});
+                        subOutcomeText = "Will you kill for Hunger ●?";
+                        resButtons = resButtons.replace(/@@HUNGERVAL@@/gu, 2);
                     } else {
                         outcomeText = `BARE SUCCESS (+${margin})<br><span style=\"font-size: 18px;font-family: Voltaire;color: red;\">Hunger ●●●</span>`;
-                        subOutcomeText = "Do you kill your prey for Hunger ●●?";
-                        setAttrs(rollData.charID, {hunger: 3});
+                        subOutcomeText = "Will you kill for Hunger ●●?";
+                        resButtons = resButtons.replace(/@@HUNGERVAL@@/gu, 3);
                     }
                     break;
                 }
@@ -4750,25 +4765,29 @@ const Roller = (() => {
                     if (margin >= 5) {
                         outcomeText = `MESSY SUCCESS! (+${margin})<br><span style=\"font-size: 18px;font-family: Voltaire;color: red;\">Hunger 0</span>`;
                         subOutcomeText = "You killed a mortal to slake your thirst!";
+                        resButtons = "";
                         setAttrs(rollData.charID, {hunger: 0});
+                        setTimeout(() => chooseResonance(rollData.charID, margin), 1000);
                     } else if (margin >= 2) {
                         outcomeText = `MESSY SUCCESS! (+${margin})<br><span style=\"font-size: 18px;font-family: Voltaire;color: red;\">Hunger ●</span>`;
-                        subOutcomeText = "You killed a mortal to slake your thirst!";
-                        setAttrs(rollData.charID, {hunger: 1});
+                        subOutcomeText = "You killed a mortal to slake your thirst!<br>Will you kill again for zero Hunger?";
+                        resButtons = resButtons.replace(/@@HUNGERVAL@@/gu, 1);
                     } else {
                         outcomeText = `MESSY KILL! (+${margin})<br><span style=\"font-size: 18px;font-family: Voltaire;color: red;\">Hunger ●●</span>`;
-                        subOutcomeText = "You killed a mortal to slake your thirst!";
-                        setAttrs(rollData.charID, {hunger: 2});
+                        subOutcomeText = "You killed a mortal to slake your thirst!<br>Will you kill again for Hunger ●?";
+                        resButtons = resButtons.replace(/@@HUNGERVAL@@/gu, 2);
                     }
                     break;
                 }
                 // no default
             }
-            Char.UpdateHunger();
             logString = logString.replace(/@@COLOR@@/u, outcomeColor);
             logString = logString.replace(/@@OUTCOME@@/u, outcomeText);
+            logString = logString.replace(/@@RESBUTTONS@@/u, resButtons);
             if (subOutcomeText)
                 logString = logString.replace(/@@SUBOUTCOME@@/u, `<span style="color: ${subOutcomeColor}; display: block; width: 100%; font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT'; font-weight: bold;">${subOutcomeText}<\/span>`);
+            else
+                logString = logString.replace(/@@SUBOUTCOME@@/u, "");
         }
         if (isLogging)
             D.Chat("all", logString, undefined, false, true);
@@ -5439,11 +5458,10 @@ const Roller = (() => {
     // #endregion
 
     // #region Hunting & Resonance
-    const timeJumpHuntRoll = (charRef) => {
+    const timeJumpHuntRoll = (charRef, rollMods = {}) => {
         const charObj = D.GetChar(charRef);
         const predatorType = D.GetStatVal(charObj, "predator");
         const huntTraits = [];
-        const customMods = {};
         const advRepStats = D.GetRepStats(charObj, "advantage", null, "advantage_name", "name", "val");
         const charAdvantages = D.KeyMapObj(
             D.GetRepStats(charObj, "advantage", null, "advantage_name", "name", "val"),
@@ -5472,7 +5490,7 @@ const Roller = (() => {
                 if (![...Object.values(C.ATTRABBVS), ...Object.values(C.SKILLABBVS)].includes(trait)) {
                     const advTraits = Object.keys(charAdvantages).filter((adv) => D.LCase(adv).replace(/ /gu, "_").startsWith(trait));
                     if (advTraits.length)
-                        customMods[advTraits[0]] = charAdvantages[advTraits[0]];
+                        rollMods[advTraits[0]] = charAdvantages[advTraits[0]];
                 } else {
                     huntTraits.push(trait);
                 }
@@ -5481,8 +5499,8 @@ const Roller = (() => {
             let huntRollData = getRollData(charObj, "hunt", [huntTraits.join(",")], {});
             huntRollData.diff = 3;
             // Add custom traits to rollData
-            if (Object.keys(customMods).length)
-                Object.entries(customMods).forEach(([name, val]) => {
+            if (Object.keys(rollMods).length)
+                Object.entries(rollMods).forEach(([name, val]) => {
                     huntRollData.traits.push(name);
                     huntRollData.traitData[name] = {display: D.Capitalize(name.replace(/_/gu, " "), true), value: val};
                 });
@@ -5512,14 +5530,6 @@ const Roller = (() => {
             recordRoll(rollData, rollResults);
             DB({rollData, rollResults}, "timeJumpHuntRoll");
             displayRoll(true, false, false, true);
-            const desiredFlavor = D.GetCharData(charRef).desiredFlavor;
-            if (rollResults.total >= rollResults.diff) {
-                const [flavor, temperament] = rollResonance(charRef, desiredFlavor, rollResults.margin, "jumpHunt", {bloodhound: false});
-                if (["intense", "acute"].includes(temperament))
-                    setAttrs(D.GetChar(charRef).id, {resonance: D.Capitalize(flavor)});
-                else
-                    setAttrs(D.GetChar(charRef).id, {resonance: ""});
-            }
         } else {
             D.Flag(`Bad Predator Type: ${predatorType}`);
         }
@@ -5571,7 +5581,7 @@ const Roller = (() => {
         negFlags = negFlags.map((flag) => (flag.length === 1 ? C.RESONANCE.flavor.code[flag] : flag));
         return [posFlags, negFlags, modifiers, distRef, siteRef];
     };
-    const parseResDetails = (charRef, desiredFlavor, margin, posFlags = [], negFlags = []) => {
+    const parseResDetails = (charRef, desiredFlavor, margin, posFlags = [], negFlags = [], modifiers = {}) => {
         const charObj = D.GetChar(charRef);
         const HTMLparts = [];
         const huntStringParts = [`${D.GetName(charObj, true)} hunts`];
@@ -5602,8 +5612,9 @@ const Roller = (() => {
                        huntString,
                        D.HTML(...C.STYLE.resonance.whiteFlag, desiredFlavor),
                        `${(siteRef || distRef) ? "" : "<br>"}resonance with a`,
-                       D.HTML(...C.STYLE.resonance.whiteFlag, `+${margin}`),
-                       "margin:"
+                       D.HTML(...C.STYLE.resonance.whiteFlag, `+${modifiers.bloodhound ? margin - 2 : margin}`),
+                       "margin",
+                       modifiers.bloodhound ? `, raised to${D.HTML(...C.STYLE.resonance.whiteFlag, `+${margin}`)} (Bloodhound):` : ":"
                    ].join("")))
         );
         return HTMLparts.join("");
@@ -5914,15 +5925,77 @@ const Roller = (() => {
 
     const rollResonance = (charRef, desiredFlavor, margin = 0, posFlags = [], negFlags = [], modifiers = {}, options = {}) => {
         const charObj = D.GetChar(charRef);
+        if (modifiers.bloodhound)
+            margin += 2;
         const [flavorSegments, flavorBaselines, flavorIndicator, flavorResult] = getResFlavorData(charObj, desiredFlavor, margin, posFlags, negFlags, modifiers);
         const [tempSegments, tempBaselines, tempIndicator, tempResult] = getResTemperamentData(charObj, margin, modifiers);
         DB({desiredFlavor, margin, posFlags, negFlags, modifiers, flavor: {flavorSegments, flavorBaselines, flavorIndicator, flavorResult}, temperament: {tempSegments, tempBaselines, tempIndicator, tempResult}}, "rollResonance");
-        const detailsHTML = parseResDetails(charObj, desiredFlavor, margin, posFlags, negFlags);
+        const detailsHTML = parseResDetails(charObj, desiredFlavor, margin, posFlags, negFlags, modifiers);
         const flavorBarHTML = parseFlavorBar(flavorSegments, flavorBaselines, flavorIndicator, flavorResult, desiredFlavor);
         const tempBarHTML = parseTemperamentBar(tempSegments, tempBaselines, tempIndicator, tempResult);
         const resultHTML = parseResultBlock(charObj, flavorResult, tempResult);
         D.Chat(D.GMID(), C.HTML.Block([detailsHTML, flavorBarHTML, tempBarHTML, resultHTML].join("")));
         return [flavorResult, tempResult];
+    };
+
+    const chooseResonance = (charRef, margin) => {
+        const playerID = D.GetPlayerID(charRef);
+        const charObj = D.GetChar(charRef);
+        // D.Alert(`Choosing resonance for player ID ${playerID}, character name ${D.GetName(D.GetChar(charRef), true)}`, "Choose Resonance");
+        D.Chat(
+            playerID,
+            C.HTML.Block(
+                [
+                    C.HTML.Header("Resonance Flavor", {margin: "0px"}),
+                    C.HTML.Body("Which flavor of resonance do you seek?", {fontSize: "14px", lineHeight: "14px", margin: "5px 0px"}),
+                    C.HTML.ButtonLine(
+                        [
+                            C.HTML.Button("Choleric", `!reschoice ${charObj.id} ${margin} choleric`, {
+                                width: "23%",
+                                color: "white",
+                                bgColor: C.COLORS.purered
+                            }),
+                            C.HTML.Button("Melancholic", `!reschoice ${charObj.id} ${margin} melancholic`, {
+                                width: "23%",
+                                color: "white",
+                                bgColor: C.COLORS.purered
+                            }),
+                            C.HTML.Button("Phlegmatic", `!reschoice ${charObj.id} ${margin} phlegmatic`, {
+                                width: "23%",
+                                color: "white",
+                                bgColor: C.COLORS.purered
+                            }),
+                            C.HTML.Button("Sanguine", `!reschoice ${charObj.id} ${margin} sanguine`, {
+                                width: "23%",
+                                color: "white",
+                                bgColor: C.COLORS.purered
+                            })
+                        ].join("")
+                    ),
+                    C.HTML.ButtonLine(
+                        [
+                            C.HTML.Button("Primal", `!reschoice ${charObj.id} ${margin} primal`, {
+                                width: "23%",
+                                color: "white",
+                                bgColor: C.COLORS.darkred
+                            }),
+                            C.HTML.Button("Ischemic", `!reschoice ${charObj.id} ${margin} ischemic`, {
+                                width: "23%",
+                                color: "white",
+                                bgColor: C.COLORS.darkred
+                            }),
+                            C.HTML.Button("Mercurial", `!reschoice ${charObj.id} ${margin} mercurial`, {
+                                width: "23%",
+                                color: "white",
+                                bgColor: C.COLORS.darkred
+                            })
+                        ].join("")
+                    )
+                ].join(""),
+                undefined,
+                D.RandomString(3)
+            )
+        );
     };
     // can get roll from C.PREDTYPES
 
@@ -5965,7 +6038,8 @@ const Roller = (() => {
         AddGlobalExclude: addGlobalExclusion,
         DelGlobalExclude: delGlobalExclusion,
 
-        Resonance: rollResonance
+        Resonance: rollResonance,
+        ResChoice: chooseResonance
     };
 })();
 

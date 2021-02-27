@@ -38,6 +38,12 @@ const Tester = (() => {
     const onChatCall = (call, args, objects, msg) => {
         let isKilling, isWriting;
         switch (call) {
+            case "params": {
+                const params = D.ParseParams(args, ",");
+                const paramTypes = D.KeyMapObj(params, null, (v) => `${v} -> ${typeof v}`);
+                D.Show({params, paramTypes});
+                break;
+            }
             case "gmonline": {
                 D.Flag(`${D.GMOnline}`);
                 break;

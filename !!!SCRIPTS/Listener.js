@@ -157,6 +157,8 @@ const Listener = (() => {
                 "!sound": {script: Soundscape, gmOnly: true, singleCall: true, needsObjects: false},
                 "!pcom": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!mvc": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
+                "!huntkill": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
+                "!reschoice": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!endmonologue": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!gmcommand": {script: Player, gmOnly: false, singleCall: false, needsObject: false},
                 "!token": {script: Player, gmOnly: false, singleCall: false},

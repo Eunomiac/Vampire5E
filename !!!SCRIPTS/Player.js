@@ -27,6 +27,33 @@ const Player = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const onChatCall = (call, args, objects, msg) => {
         switch (call) {
+            case "!huntkill": { // !huntkill <charInitial> <margin> <initialHunger> <isKilling: true/false>
+                const charObj = D.GetChar(args.shift());
+                const margin = D.Int(args.shift());
+                const hunger = Math.max(0, D.Int(args.shift()) - (args[0] === "true" ? 1 : 0));
+                if (args[0] === "true")
+                    D.Flag(`${D.GetName(charObj, true)} KILLS for Hunger ${hunger}!`);
+                setAttrs(charObj.id, {hunger});
+                Char.UpdateHunger();
+                if (margin >= 0)
+                    Roller.ResChoice(charObj, margin);
+                break;
+            }
+            case "!reschoice": { // !reschoice <charID> <margin> <choice>
+                const charObj = D.GetChar(args.shift());
+                const margin = D.Int(args.shift());
+                const desiredFlavor = args.shift();
+                const mods = {};
+
+                if (D.GetRepStats(charObj, "advantage", {type: "merit"}, "Bloodhound").length)
+                    mods.bloodhound = true;
+                const [flavor, temperament] = Roller.Resonance(charObj, desiredFlavor, margin, "jumpHunt", [], mods);
+                if (["intense", "acute"].includes(temperament))
+                    setAttrs(charObj.id, {resonance: D.Capitalize(flavor)});
+                else
+                    setAttrs(charObj.id, {resonance: ""});
+                break;
+            }
             case "!endmonologue": {
                 Session.EndMonologue();
                 break;

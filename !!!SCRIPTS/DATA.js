@@ -848,9 +848,10 @@ const D = (() => {
             (VAL({array: args}) ? args.join(" ") : args)
                 .split(new RegExp(`,?${delim}+`, "gu"))
                 .filter((x) => x.includes(":"))
-                .map((x) => x.trim().split(":"))
+                .map((x) => x.trim().split(":").map((xx) => (isNaN(xx) && `${xx}`.trim())
+                                                         || (/\./gu.test(xx) ? D.Float(xx) : D.Int(xx))))
         );
-        // DB(`Args: ${D.JS(args)}<br>Delim: '${D.JS(delim)}'<br>Return: ${D.JS(returnVal)}`, "parseParams");
+        DB(`Args: ${D.JS(args)}<br>Delim: '${D.JS(delim)}'<br>Return: ${D.JS(returnVal)}`, "parseParams");
         return returnVal;
     };
     const parseCharSelect = (call, args) => {
