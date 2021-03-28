@@ -354,55 +354,6 @@ const Session = (() => {
                 zoomSite();
                 break;
             }
-            case "si": {
-                if (args.length)
-                    if (args[0] === "clear") {
-                        STATE.REF.SITokensAlwaysOn = [];
-                    } else {
-                        args = _.flatten(args.map((x) => {
-                            const prefix = x.charAt(0) === "!" ? "!" : "";
-                            x = x.replace(/^!/u, "");
-                            if (["uriel", "michael", "gabriel", "raphael"].includes(D.LCase(x)))
-                                return `${prefix}temp${D.Capitalize(x)}`;
-                            if (["teams", "squads", "deltas"].includes(D.LCase(x)))
-                                return [`${prefix}tempUriel`, `${prefix}tempGabriel`, `${prefix}tempRaphael`, `${prefix}tempMichael`];
-                            if (["men", "people", "leaders", "bosses"].includes(D.LCase(x)))
-                                return [`${prefix}Cardinal Collins`, `${prefix}Jonathan Harker`, `${prefix}Flamenco`];
-                            if (D.LCase(x) === "all")
-                                return [`${prefix}tempUriel`, `${prefix}tempGabriel`, `${prefix}tempRaphael`, `${prefix}tempMichael`, `${prefix}Cardinal Collins`, `${prefix}Jonathan Harker`, `${prefix}Flamenco`];
-                            return `${prefix}${x}`;
-                        }));
-                        DB(args, "si");
-                        for (const arg of args)
-                            if (arg.charAt(0) === "!")
-                                STATE.REF.SITokensAlwaysOn = _.without(STATE.REF.SITokensAlwaysOn, arg.slice(1));
-                            else
-                                STATE.REF.SITokensAlwaysOn = _.uniq([...STATE.REF.SITokensAlwaysOn, arg]);
-                    }
-                D.Alert([
-                    "<h4>SI Tokens Permanently On:</h4>",
-                    STATE.REF.SITokensAlwaysOn.join("<br>")
-                ].join(""), "SI Token Status");
-                ["tempRaphael", "tempUriel", "tempGabriel", "tempMichael"].forEach((x) => {
-                    if (STATE.REF.SITokensAlwaysOn.includes(x) || Session.District === "DistilleryDist") {
-                        Media.SetImgData(x, {layer: "objects", activeLayer: "objects"}, true);
-                        Media.ToggleImg(x, true);
-                    } else {
-                        Media.SetImgData(x, {layer: "gmlayer", activeLayer: "gmlayer"}, true);
-                        Media.ToggleImg(x, false);
-                    }
-                });
-                ["Flamenco", "Jonathan Harker", "Cardinal Collins"].forEach((x) => {
-                    if (STATE.REF.SITokensAlwaysOn.includes(x) || Session.District === "DistilleryDist") {
-                        Media.GetTokens(x).pop().set({layer: "objects"});
-                        Media.ToggleToken(x, true);
-                    } else {
-                        Media.ToggleToken(x, false);
-                        Media.GetTokens(x).pop().set({layer: "gmlayer"});
-                    }
-                });
-                break;
-            }
             case "reset": {
                 STATE.REF.curLocation = D.Clone(BLANKLOCRECORD);
                 STATE.REF.locationRecord.Active = D.Clone(BLANKLOCRECORD);
@@ -847,6 +798,7 @@ const Session = (() => {
                 }
                 Media.ToggleImg("Spotlight", false);
                 Media.ToggleText("TimeTracker", true);
+                Media.ToggleText("NextSessionMain", true);
             },
             Complications: () => {},
             Testing: () => {
@@ -877,6 +829,7 @@ const Session = (() => {
                 setLocation(BLANKLOCRECORD);
                 TimeTracker.ToggleClock(false);
                 Media.ToggleText("TimeTracker", false);
+                Media.ToggleText("NextSessionMain", false);
                 Char.RefreshDisplays();
             },
             Complications: () => {
@@ -898,12 +851,12 @@ const Session = (() => {
             Active: () => {
                 // Media.ToggleTokens("registered", true);
                 Media.ToggleTokens("disabled", false);
-                Media.ToggleImg("Horizon-CNTower-Underlay", false);
+                /* Media.ToggleImg("Horizon-CNTower-Underlay", false);
                 Media.ToggleAnim("CN-LED-1", true);
                 Media.ToggleAnim("CN-LED-2", false);
                 Media.ToggleAnim("CN-LED-3", false);
                 Media.ToggleAnim("CN-LED-4", false);
-                Media.SetImg("Horizon-CNTower-Overlay", "black");
+                Media.SetImg("Horizon-CNTower-Overlay", "black"); */
             },
             Inactive: () => {},
             Downtime: () => {
@@ -1037,6 +990,12 @@ const Session = (() => {
                 .split("")
                 .join("   ")
         );
+        Media.SetText(
+            "NextSessionMain",
+            `- ${D.Romanize(STATE.REF.SessionNum, false)
+                .split("")
+                .join(" ")} -`
+        );
         D.Flag(`Session Set to ${D.UCase(D.NumToText(STATE.REF.SessionNum))}`);
     };
     // #endregion
@@ -1074,6 +1033,7 @@ const Session = (() => {
                 ]
             ]
         ]);
+        D.Alert(`<center><h4>Remind Session Scribe</h4><h2>${STATE.REF.SessionScribe}</h2></center>`, "Session Scribe");
     };
     const endSession = (isCheckingForMonologues = true, isSkippingMonologues = false) => {
         DB({mode: Session.Mode, spotlightChar: STATE.REF.spotlightChar, monologues: D.JS(STATE.REF.SessionMonologues)}, "endSession");
@@ -1123,11 +1083,18 @@ const Session = (() => {
                 STATE.REF.PromptAuthors = [];
                 D.Flag("Clearing Prompt Authors List.");
             }
+            TimeTracker.SetSessionDayShift(0);
             Media.SetText(
                 "NextSession",
                 D.Romanize(STATE.REF.SessionNum, false)
                     .split("")
                     .join("   ")
+            );
+            Media.SetText(
+                "NextSessionMain",
+                `- ${D.Romanize(STATE.REF.SessionNum, false)
+                    .split("")
+                    .join(" ")} -`
             );
         }
     };
@@ -1150,7 +1117,7 @@ const Session = (() => {
         }
     };
     const restoreTokens = (mode) => {
-        if (STATE.REF.tokenRecord[mode] !== false)
+        /* if (STATE.REF.tokenRecord[mode] !== false)
             for (const [tokenID, tokenData] of Object.entries(STATE.REF.tokenRecord[mode])) {
                 const tokenObj = getObj("graphic", tokenID);
                 if (tokenObj && tokenObj.get("layer") !== "gmlayer") {
@@ -1158,7 +1125,7 @@ const Session = (() => {
                     Media.SetImgTemp(tokenID, _.omit(tokenData, "src"));
                     Media.ToggleToken(tokenData.charID, tokenData.layer === "objects");
                 }
-            }
+            } */
     };
     // #endregion
 
@@ -1967,10 +1934,11 @@ const Session = (() => {
                 setLocation(D.Clone(BLANKLOCRECORD), "c", false, undefined, true);
                 Media.SetImgData("SignalLightBotLeft", {top: 900});
                 Media.SetImgData("SignalLightBotRight", {top: 900});
-                Media.SetTextData("testSessionNotice", {top: 200});
-                Media.SetTextData("playerPageAlertMessage", {top: 225});
-                Media.SetTextData("clockStatusNotice", {top: 225});
-                Media.SetTextData("TimeTracker", {top: 265});
+                Media.SetTextData("testSessionNotice", {top: 190});
+                Media.SetTextData("playerPageAlertMessage", {top: 215});
+                Media.SetTextData("clockStatusNotice", {top: 215});
+                Media.SetTextData("TimeTracker", {top: 245});
+                Media.SetTextData("NextSessionMain", {top: 275});
                 fireOnExit(Session.District);
             } else if (STATE.REF.curLocation.HUB.name !== hubName) {
                 fireOnExit(Session.District);
@@ -1989,10 +1957,11 @@ const Session = (() => {
             if ("HUB" in STATE.REF.curLocation) {
                 Media.SetImgData("SignalLightBotLeft", {top: 759});
                 Media.SetImgData("SignalLightBotRight", {top: 759});
-                Media.SetTextData("testSessionNotice", {top: 300});
-                Media.SetTextData("playerPageAlertMessage", {top: 275});
-                Media.SetTextData("clockStatusNotice", {top: 320});
-                Media.SetTextData("TimeTracker", {top: 350});
+                Media.SetTextData("testSessionNotice", {top: 275});
+                Media.SetTextData("playerPageAlertMessage", {top: 250});
+                Media.SetTextData("clockStatusNotice", {top: 303});
+                Media.SetTextData("TimeTracker", {top: 330});
+                Media.SetTextData("NextSessionMain", {top: 360});
                 Media.ToggleImg("SiteFocusHub", false);
                 fireOnExit(Session.District);
                 fireOnExit(Session.Site);
@@ -3128,7 +3097,7 @@ const Session = (() => {
                 D.Call(C.SITES[oldSite].onExitCall);
 
             // STEP TWO: Divide all tokens into LEFT or RIGHT scenes.
-            const allTokenObjs = Media.GetTokens().filter((x) => x.get("layer") !== "gmlayer");
+            /*             const allTokenObjs = Media.GetTokens().filter((x) => x.get("layer") !== "gmlayer");
             divTokenObjs = Object.assign({all: [...allTokenObjs], left: [], right: []}, _.groupBy(allTokenObjs, (token) => {
                 if (Media.IsInside("DistrictLeft", token, 40) || Media.IsInside("SiteLeft", token, 40))
                     return "left";
@@ -3144,7 +3113,7 @@ const Session = (() => {
                 divTokenObjs[{l: "right", r: "left"}[locPos]].forEach((token) => Media.ToggleToken(token, false));
             } catch (errObj) {
                 // Nothing to see here...
-            }
+            } */
             Media.ToggleImg("DisableLocLeft", locPos === "r" && curLocations.DistrictLeft !== curLocations.DistrictRight);
             Media.ToggleImg("DisableSiteLeft", locPos === "r" && curLocations.DistrictLeft === curLocations.DistrictRight);
             Media.ToggleImg("DisableLocRight", locPos === "l" && curLocations.DistrictLeft !== curLocations.DistrictRight);
@@ -3152,7 +3121,7 @@ const Session = (() => {
         }
         // STEP FOUR: Do the next bit after a short timeout so everything above catches up:
 
-        setTimeout(() => {
+        /* setTimeout(() => {
             if (!("HUB" in STATE.REF.curLocation))
                 // Now turn the tokens on that are active in the scene:
                 try {
@@ -3167,51 +3136,51 @@ const Session = (() => {
                     });
                 } catch (errObj) {
                     // Nothing to see here...
-                }
+                } */
+        setTimeout(() => {
+            if (!("HUB" in STATE.REF.curLocation)) {
+                if (newDistrict && oldDistrict !== newDistrict && C.DISTRICTS[newDistrict].onEntryCall)
+                    D.Call(C.DISTRICTS[newDistrict].onEntryCall);
+                if (newSite && oldSite !== newSite && C.SITES[newSite].onEntryCall)
+                    D.Call(C.SITES[newSite].onEntryCall);
+            }
             setTimeout(() => {
-                if (!("HUB" in STATE.REF.curLocation)) {
-                    if (newDistrict && oldDistrict !== newDistrict && C.DISTRICTS[newDistrict].onEntryCall)
-                        D.Call(C.DISTRICTS[newDistrict].onEntryCall);
-                    if (newSite && oldSite !== newSite && C.SITES[newSite].onEntryCall)
-                        D.Call(C.SITES[newSite].onEntryCall);
-                }
+                STATE.REF.prevLocFocus = getActiveLocations();
+                Soundscape.Sync();
+                syncMortuarySounds();
                 setTimeout(() => {
-                    STATE.REF.prevLocFocus = getActiveLocations();
-                    Soundscape.Sync();
-                    syncMortuarySounds();
-                    setTimeout(() => {
-                        if ("HUB" in STATE.REF.curLocation) {
-                            pointerPos = pointerPos
+                    if ("HUB" in STATE.REF.curLocation) {
+                        pointerPos = pointerPos
                             || (Session.District in STATE.REF.customLocs && STATE.REF.customLocs[Session.District].pointerPos)
                             || (Session.Site in STATE.REF.customLocs && STATE.REF.customLocs[Session.Site].pointerPos)
                             || (Session.District in STATE.REF.locationPointer && STATE.REF.locationPointer[Session.District].pointerPos)
                             || (Session.Site in STATE.REF.locationPointer && STATE.REF.locationPointer[Session.Site].pointerPos)
                             || false;
-                        } else {
-                            // Set map animation pointer:
-                            const [siteRef, siteName] = STATE.REF.curLocation[{l: "SiteLeft", r: "SiteRight", c: "SiteCenter"}[locPos] || "none"] || [];
+                    } else {
+                        // Set map animation pointer:
+                        const [siteRef, siteName] = STATE.REF.curLocation[{l: "SiteLeft", r: "SiteRight", c: "SiteCenter"}[locPos] || "none"] || [];
 
-                            // Set map pointer as a timeout
-                            pointerPos
+                        // Set map pointer as a timeout
+                        pointerPos
                                 = pointerPos
                                 || (siteName && siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName].pointerPos)
                                 || (Session.Site in STATE.REF.customLocs && STATE.REF.customLocs[Session.Site].pointerPos)
                                 || (Session.Site in STATE.REF.locationPointer && STATE.REF.locationPointer[Session.Site].pointerPos)
                                 || false;
-                        }
-                        if (pointerPos) {
-                            Media.ToggleImg("MapIndicator_Base_1", true);
-                            Media.ToggleAnim("MapIndicator", true);
-                            Media.SetImgData("MapIndicator_Base_1", {left: pointerPos.left, top: pointerPos.top}, true);
-                            Media.GetImg("MapIndicator").set({left: pointerPos.left, top: pointerPos.top});
-                        } else {
-                            Media.ToggleImg("MapIndicator_Base_1", false);
-                            Media.ToggleAnim("MapIndicator", false);
-                        }
-                    }, 500);
+                    }
+                    if (pointerPos) {
+                        Media.ToggleImg("MapIndicator_Base_1", true);
+                        Media.ToggleAnim("MapIndicator", true);
+                        Media.SetImgData("MapIndicator_Base_1", {left: pointerPos.left, top: pointerPos.top}, true);
+                        Media.GetImg("MapIndicator").set({left: pointerPos.left, top: pointerPos.top});
+                    } else {
+                        Media.ToggleImg("MapIndicator_Base_1", false);
+                        Media.ToggleAnim("MapIndicator", false);
+                    }
                 }, 500);
             }, 500);
         }, 500);
+        /* }, 500); */
     };
     const addSceneAlarm = (alarm) => {
         STATE.REF.SceneAlarms.push(alarm);

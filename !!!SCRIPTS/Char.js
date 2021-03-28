@@ -950,6 +950,27 @@ const Char = (() => {
             case "set":
             case "add": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "hunttraits": {
+                        const [charObj] = charObjs;
+                        if (args.length) {
+                            D.SetCharData(charObj, "huntTraits", args);
+                            D.Alert(`${D.GetName(charObj)} Hunt Traits set to: ${args.join(" + ")}`, "!char set hunttraits");
+                        } else {
+                            D.Alert("Syntax: <b>!char set hunttraits <trait1> <trait2>");
+                        }
+                        break;
+                    }
+                    case "huntmods": {
+                        const [charObj] = charObjs;
+                        if (args.length) {
+                            const params = D.ParseParams(args);
+                            D.SetCharData(charObj, "huntMods", params);
+                            D.Alert(`${D.GetName(charObj)} Hunt Mods set to:<br>${D.JS(params)}`, "!char set huntmods");
+                        } else {
+                            D.Alert("Syntax: <b>!char set huntmods key:val, key:val");
+                        }
+                        break;
+                    }
                     case "flavor": {
                         const [charObj] = charObjs;
                         REGISTRY[D.GetCharData(charObj).quadrant].desiredFlavor = args.shift();
@@ -2100,13 +2121,19 @@ const Char = (() => {
             Media.ToggleImg(token, true);
             token.set("layer", "objects");
             Media.SetArea(token, `${quad}Token`);
+            Media.Scale(token);
         }
         for (const token of charTokens.npc || [])
-            token.set("layer", "walls");
+            token.set("layer", "gmlayer");
     };
     const restoreCharsPos = () => {
-        for (const tokenData of STATE.REF.tokenRecord)
-            (getObj("graphic", tokenData.id) || {set: () => false}).set({left: tokenData.left, top: tokenData.top, layer: "objects"});
+        for (const tokenData of STATE.REF.tokenRecord) {
+            const token = getObj("graphic", tokenData.id);
+            if (token) {
+                token.set({left: tokenData.left, top: tokenData.top, layer: "objects"});
+                Media.Scale(token);
+            }
+        }
         STATE.REF.tokenRecord = [];
     };
     const togglePlayerChar = (charRef, isActive) => {
@@ -3491,15 +3518,15 @@ const Char = (() => {
                 - Then another func can handle going through the STATE records, totalling the temp deltas, and setting the final charsheet value.
         *************************** */
         const charObj = D.GetChar(charRef);
-        statName = `${statName}temp`.replace(/temptemp$/gu, "temp");
-        const curStatDelta = D.Int(D.GetStatVal(charObj, statName, repRowStatName));
-        const [curStatVal, masterStatAttr] = D.GetStat(charObj, statName.replace(/temp$/gu, ""), repRowStatName);
-        DB({charObj, statName, delta, repRowStatName, curStatDelta, curStatVal, masterStatAttr}, "adjustTempStat");
+        statName = `${statName}mod`.replace(/modmod$/gu, "mod");
+        const [curStatDelta, deltaStatAttr] = D.GetStat(charObj, statName, repRowStatName);
+        const [curStatVal, masterStatAttr] = D.GetStat(charObj, statName.replace(/mod$/gu, ""), repRowStatName);
+        DB({charObj, statName, delta, repRowStatName, curStatDelta, deltaStatAttr, curStatVal, masterStatAttr}, "adjustTempStat");
         if (masterStatAttr) {
             const masterStatName = masterStatAttr.get("name");
-            const tempStatName = `${masterStatName}temp`;
+            const tempStatName = `${masterStatName}mod`;
             const newTempStat = curStatDelta + delta;
-            setAttrs(charObj.id, {[tempStatName]: newTempStat});
+            // setAttrs(charObj.id, {[tempStatName]: newTempStat});
         }
     };
     const sortTimeline = (charRef) => {

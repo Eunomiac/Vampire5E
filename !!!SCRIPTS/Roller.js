@@ -1326,25 +1326,27 @@ const Roller = (() => {
         const traceID = TRACEON("makeDie", [diceCat, dieNum]);
         const rootData = Media.GetImgData(`RollerDie_${diceCat}_1`);
         const dieKey = `RollerDie_${diceCat}_${dieNum}`;
-        Media.MakeImg(
-            dieKey,
-            {
-                left: rootData.left + SETTINGS.dice[diceCat].spread * (dieNum - 1),
-                top: rootData.top,
-                width: rootData.width,
-                height: rootData.height,
-                layer: "map",
-                isDrawing: true,
-                controlledby: "",
-                showname: false,
-                activeLayer: "map",
-                modes: rootData.modes,
-                isActive: false
-            },
-            false,
-            true
-        );
-        Media.AddImgSrc(null, dieKey, `ref:${rootData.name}`, true);
+        if (dieNum > 1) {
+            Media.MakeImg(
+                dieKey,
+                {
+                    left: rootData.left + SETTINGS.dice[diceCat].spread * (dieNum - 1),
+                    top: rootData.top,
+                    width: rootData.width,
+                    height: rootData.height,
+                    layer: "map",
+                    isDrawing: true,
+                    controlledby: "",
+                    showname: false,
+                    activeLayer: "map",
+                    modes: rootData.modes,
+                    isActive: false
+                },
+                false,
+                true
+            );
+            Media.AddImgSrc(null, dieKey, `ref:${rootData.name}`, true);
+        }
         Media.SetImg(dieKey, "Bf", true);
         if (SETTINGS.dice[diceCat].isSelectable) {
             const padShift = -0.5 * rootData.width;
@@ -1370,12 +1372,12 @@ const Roller = (() => {
         resetDiceVals();
         return TRACEOFF(traceID, returnLines);
     };
-    const makeAllDice = (diceCat) => {
+    const makeAllDice = (diceCat, isReporting = false) => {
         const traceID = TRACEON("makeAllDice", [diceCat]);
         const returnLines = [];
         if (Media.IsRegistered(`RollerDie_${diceCat}_2`))
             clearDice(diceCat);
-        for (let i = 2; i <= SETTINGS.dice[diceCat].qty; i++)
+        for (let i = 1; i <= SETTINGS.dice[diceCat].qty; i++)
             returnLines.push(
                 `[${i}] ${makeDie(diceCat, i) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`
             );
@@ -1530,7 +1532,16 @@ const Roller = (() => {
             returnLines[1].entries.push("... Creating <b>Willpower Reroll</b> Drag Pad");
             for (const diceCat of Object.keys(SETTINGS.dice))
                 returnLines[2].entries.push(makeAllDice(diceCat).join(", "));
+            DragPads.MakePad("RollerDie_Main_1", "selectDie");
             DragPads.MakePad("Roller_WPReroller_Base_1", "wpReroll");
+            D.Alert([
+                "<h2>Roller Creation</h2>",
+                ...[
+                    `${returnLines[0].header}${returnLines[0].entries.join("<br>")}`,
+                    `${returnLines[1].header}${returnLines[1].entries.join("<br>")}`,
+                    `${returnLines[2].header}${returnLines[2].entries.join("<br>")}`
+                ]
+            ].join(""), "Roller Creation");
             return TRACEOFF(innerTraceID, [
                 `${returnLines[0].header}${returnLines[0].entries.join("<br>")}`,
                 `${returnLines[1].header}${returnLines[1].entries.join("<br>")}`,
@@ -1562,20 +1573,22 @@ const Roller = (() => {
         const dieKey = `RollerDie_${dieCat}_${dieNum}`;
         // If a dieVal is specified:
         if (dieVal) {
+            if (isUsingDiceRoller)
+                Media.ToggleImg(dieKey, true, true);
             // If deselecting a die that is flagged as selected, restore its original value
             if (dieVal.includes("selected") && STATE.REF.selected[dieCat].includes(dieNum)) {
                 dieVal = STATE.REF.diceVals[dieCat][dieNum];
                 rollType = rollType || "trait";
             }
             if (isUsingDiceRoller && !(dieVal.includes("selected") && wasRerolled))
-                Media.SetImg(dieKey, dieVal, true);
+                Media.SetImg(dieKey, dieVal, true, true);
             // Record die value, unless it's "selected" (in which case retain the die's actual value)
             if (!dieVal.includes("selected"))
                 STATE.REF.diceVals[dieCat][dieNum] = dieVal;
             // If no value specified, blank the die:
         } else {
             if (isUsingDiceRoller)
-                Media.ToggleImg(dieKey, false);
+                Media.ToggleImg(dieKey, false, true);
             STATE.REF.diceVals[dieCat][dieNum] = false;
         }
         // If dieVal is "selected", add die to selected dice UNLESS this has already been rerolled.
@@ -5460,8 +5473,9 @@ const Roller = (() => {
     // #region Hunting & Resonance
     const timeJumpHuntRoll = (charRef, rollMods = {}) => {
         const charObj = D.GetChar(charRef);
+        const charData = D.GetCharData(charRef);
         const predatorType = D.GetStatVal(charObj, "predator");
-        const huntTraits = [];
+        let huntTraits = "huntTraits" in charData ? charData.huntTraits : [];
         const advRepStats = D.GetRepStats(charObj, "advantage", null, "advantage_name", "name", "val");
         const charAdvantages = D.KeyMapObj(
             D.GetRepStats(charObj, "advantage", null, "advantage_name", "name", "val"),
@@ -5475,8 +5489,14 @@ const Roller = (() => {
                 return D.Int(val);
             }
         );
-        if (predatorType in C.PREDTYPES) {
-            C.PREDTYPES[predatorType].forEach((trait) => {
+        if (Object.values(rollMods).length === 0)
+            rollMods = charData.huntMods;
+
+        DB({huntTraits, rollMods}, "timeJumpHuntRoll");
+        if (huntTraits.length === 0 && predatorType in C.PREDTYPES)
+            huntTraits.push(...C.PREDTYPES[predatorType]);
+        if (huntTraits.length) {
+            huntTraits = _.compact(huntTraits.map((trait) => {
                 trait = D.LCase(trait.replace(/ /gu, "_"));
                 if (trait.includes("/")) {
                     const altTraits = trait.split("/");
@@ -5487,14 +5507,15 @@ const Roller = (() => {
                             [trait, topVal] = [trt, trtVal];
                     });
                 }
-                if (![...Object.values(C.ATTRABBVS), ...Object.values(C.SKILLABBVS)].includes(trait)) {
+                if (![...Object.values(C.ATTRABBVS), ...Object.values(C.SKILLABBVS)].includes(D.LCase(trait))) {
                     const advTraits = Object.keys(charAdvantages).filter((adv) => D.LCase(adv).replace(/ /gu, "_").startsWith(trait));
                     if (advTraits.length)
                         rollMods[advTraits[0]] = charAdvantages[advTraits[0]];
+                    return null;
                 } else {
-                    huntTraits.push(trait);
+                    return trait;
                 }
-            });
+            }));
             // Assemble initial roll data:
             let huntRollData = getRollData(charObj, "hunt", [huntTraits.join(",")], {});
             huntRollData.diff = 3;
@@ -5523,7 +5544,7 @@ const Roller = (() => {
                     huntRollData.traitData.herd = {display: "Herd", value: topHerdVal};
                 }
             }
-            DB({predatorType, advRepStats, charAdvantages, herdTraits, rollData: huntRollData}, "timeJumpHuntRoll");
+            DB({predatorType, advRepStats, charAdvantages, huntTraits, herdTraits, rollData: huntRollData}, "timeJumpHuntRoll");
             // Build dice pool:
             huntRollData = buildDicePool(huntRollData);
             const [rollData, rollResults] = [huntRollData, rollDice(huntRollData, null)];

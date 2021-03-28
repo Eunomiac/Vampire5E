@@ -273,14 +273,7 @@ const TimeTracker = (() => {
                         break;
                     }
                     case "session": {
-                        if (VAL({number: args[0]})) {
-                            STATE.REF.nextSessionDayShift = D.Int(args[0]);
-                            D.Alert(`Next Session Shifted by ${STATE.REF.nextSessionDayShift} Days to:<br>${D.JS(formatDateString(getNextSessionDate(), true))}`, "!sess set session");
-                        } else {
-                            STATE.REF.nextSessionDayShift = 0;
-                            D.Alert(`Next Session Day Shift reset to zero:<br>${D.JS(formatDateString(getNextSessionDate(), true))}<br><br><b>!sess set session &lt;dayshift&gt;</b> to change.`, "!sess set session");
-                        }
-                        updateCountdown();
+                        setSessionDayShift(D.Int(args[0]), false);
                         break;
                     }
                     case "force": {
@@ -1576,6 +1569,15 @@ const TimeTracker = (() => {
         };
     };
     const arePromptsAssignable = () => timeTillPromptsOpen().delta.isOpen;
+    const setSessionDayShift = (dayShift, isSilent = true) => {
+        STATE.REF.nextSessionDayShift = dayShift;
+        if (!isSilent)
+            if (dayShift > 0)
+                D.Alert(`Next Session Shifted by ${STATE.REF.nextSessionDayShift} Days to:<br>${D.JS(formatDateString(getNextSessionDate(), true))}`, "!time set session");
+            else
+                D.Alert(`Next Session Day Shift reset to zero:<br>${D.JS(formatDateString(getNextSessionDate(), true))}<br><br><b>!sess set session &lt;dayshift&gt;</b> to change.`, "!time set session");
+        updateCountdown();
+    };
     const updateCountdown = () => {
         const funcID = ONSTACK();
         const realDateObj = getRealDateObj();
@@ -1590,7 +1592,7 @@ const TimeTracker = (() => {
         const minsLeft = Math.floor(secsLeft / 60);
         secsLeft -= minsLeft * 60;
 
-        if (secsTillNextSession <= STATE.REF.SessionDate.secsOutToInitFade) {
+        if (secsTillNextSession > 0 && secsTillNextSession <= STATE.REF.SessionDate.secsOutToInitFade) {
             initSessionFade();
             Media.SetText("Countdown", `${D.Pad(daysLeft, 2)}:${D.Pad(hoursLeft, 2)}:${D.Pad(minsLeft, 2)}:${D.Pad(secsLeft, 2)}`);
         } else if (isInBlackout()) {
@@ -1954,11 +1956,13 @@ const TimeTracker = (() => {
 
         // CN TOWER LED SCHEME
         const LEDKeys = Object.keys(Media.ANIM).filter((key) => key.startsWith("CN-LED-")).sort();
-        let isOverlayBlack = true;
+        let overlaySrc = "black",
+            underlaySrc = "cloudy";
         switch (getHorizonTimeString()) {
             case "night1":
             case "night2":
-                isOverlayBlack = false;
+                overlaySrc = (!weatherData.isFoggy && weatherData.event.charAt(0)) === "x" ? "clear" : "cloudy";
+                underlaySrc = (!weatherData.isFoggy && weatherData.event.charAt(0)) === "x" ? "clear" : "cloudy";
                 // falls through
             case "night3":
             case "night4": {
@@ -1976,13 +1980,8 @@ const TimeTracker = (() => {
                 break;
             }
         }
-        if (isOverlayBlack)
-            Media.SetImg("Horizon-CNTower-Overlay", "black", true);
-        else if (["b", "c", "p", "s", "t", "w"].includes(weatherData.event.charAt(0)) || weatherData.isFoggy)
-            Media.SetImg("Horizon-CNTower-Overlay", "cloudy", true);
-        else
-            Media.SetImg("Horizon-CNTower-Overlay", "clear", true);
-
+        Media.SetImg("Horizon-CNTower-Overlay", overlaySrc, true);
+        Media.SetImg("Horizon-CNTower-Underlay", underlaySrc, true);
 
         // WEATHER FOG
         if (!Media.HasForcedState("WeatherFog"))
@@ -2877,6 +2876,7 @@ const TimeTracker = (() => {
 
         GetPromptsOpenDate: timeTillPromptsOpen,
         ArePromptsOpen: arePromptsAssignable,
+        SetSessionDayShift: setSessionDayShift,
 
         SetAlarm: setAlarm
     };
