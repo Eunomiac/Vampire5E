@@ -213,7 +213,11 @@ const Session = (() => {
                 {left: 1372, top: 2187}
             ]
         };
-
+        STATE.REF.tempSettings = STATE.REF.tempSettings || {
+            text: [],
+            img: [],
+            anim: []
+        };
         STATE.REF.savedSceneLocs = STATE.REF.savedSceneLocs || {};
         STATE.REF.isTestingActive = STATE.REF.isTestingActive || false;
         STATE.REF.isFullTest = STATE.REF.isFullTest || false;
@@ -295,11 +299,37 @@ const Session = (() => {
         //     id: "jdfsWveSUe"
         //   });
 
+        /* STATE.REF.tempSettings = {
+            text: [],
+            img: [],
+            anim: []
+        }; */
+
+        /* Media.SetTextData("LockeDesire", {
+            justification: "left",
+            top: 658.4,
+            left: 133.98999999999998
+        });
+        Media.SetTextData("RoyDesire", {
+            justification: "center", top: 995.4, left: 279
+        });
+        Media.SetTextData("AvaDesire", {
+            justification: "center",
+            top: 995.9999999999999,
+            left: 1310
+        });
+        Media.SetTextData("NapierDesire", {
+            justification: "left",
+            top: 932,
+            left: 1405.6550000000002
+        });
+        Media.SetTextData("BacchusDesire", {
+            justification: "right", top: 658, left: 1455.195
+        }); */
+
         setPlayerPage();
         verifyStateIntegrity();
         buildLocationMenus();
-
-        D.Flag("Delta Units Set to Auto-Appear at Distillery."); // See ~1816, at end of setLocation() function.
     };
     // #endregion
 
@@ -311,42 +341,127 @@ const Session = (() => {
         // SEARCH: /case /      REPLACE: ""
         const charObjs = Listener.GetObjects(objects, "character");
         switch (call) {
-            case "giovanni": {
-                switch (D.LCase((call = args.shift()))) {
-                    case "lock": {
-                        Object.assign(state.VAMPIRE.Media.imgregistry.SiteFocusHub_1.srcs, {
-                            GiovanniCenter: "https://s3.amazonaws.com/files.d20.io/images/184961252/GX9iaWa4BKV4yZr5YSKH_g/thumb.png?1607847043",
-                            GiovanniTopLeft: "https://s3.amazonaws.com/files.d20.io/images/184961244/PLjj-Wkx1rVIqX22_Z1dRQ/thumb.png?1607847041",
-                            GiovanniTopCenter: "https://s3.amazonaws.com/files.d20.io/images/184961238/xZq9Xod_Cx0oXNs7K6KU9g/thumb.png?1607847037",
-                            GiovanniTopRight: "https://s3.amazonaws.com/files.d20.io/images/184961243/TYV8D6RpiysFlJKgtQ8eDw/thumb.png?1607847037",
-                            GiovanniMidLeft: "https://s3.amazonaws.com/files.d20.io/images/184961251/JECwA56W5QyC4IM7SjrKug/thumb.png?1607847042",
-                            GiovanniMidRight: "https://s3.amazonaws.com/files.d20.io/images/184961242/eZlYfp_ufr1SxmO3u4YtiQ/thumb.png?1607847034",
-                            GiovanniBotCenter: "https://s3.amazonaws.com/files.d20.io/images/184961267/MIiuociaeN4SoFPhKBJENQ/thumb.png?1607847045"
-                        });
-                        break;
-                    }
-                    case "unlock": {
-                        Object.assign(state.VAMPIRE.Media.imgregistry.SiteFocusHub_1.srcs, {
-                            GiovanniCenter: "https://s3.amazonaws.com/files.d20.io/images/184961261/QbHLVxKDSOwB0EqfEsSwNA/thumb.png?1607847045",
-                            GiovanniTopLeft: "https://s3.amazonaws.com/files.d20.io/images/184961257/A-zFLYuxceDACHuvEISTcQ/thumb.png?1607847043",
-                            GiovanniTopCenter: "https://s3.amazonaws.com/files.d20.io/images/184961241/X1MguhEqVkXCl4ZhwOtqYQ/thumb.png?1607847037",
-                            GiovanniTopRight: "https://s3.amazonaws.com/files.d20.io/images/184961245/GnUQHKduGRAHhESJVp_mqQ/thumb.png?1607847038",
-                            GiovanniMidLeft: "https://s3.amazonaws.com/files.d20.io/images/184961260/R4lTlm-mHl1uTH9YNtqnwA/thumb.png?1607847045",
-                            GiovanniMidRight: "https://s3.amazonaws.com/files.d20.io/images/184961254/jXPSfQtRi17aQudCt2nuEA/thumb.png?1607847043",
-                            GiovanniBotCenter: "https://s3.amazonaws.com/files.d20.io/images/184961267/MIiuociaeN4SoFPhKBJENQ/thumb.png?1607847045"
-                        });
-                        break;
-                    }
-                    case "npcs": {
-                        Char.SetNPC("L", "Niccolo Giovanni");
-                        Char.SetNPC("R", "Maeve");
-                        Char.SetNPC("A", "Tomyris");
-                        Char.SetNPC("N", "Hell-Wrought Mask of Blackened Iron", "The Hell-Wrought Mask");
-                        setLocation("HUBGiovanni", "BotCenter");
-                        zoomSite();
-                        break;
-                    }
-                    // no default
+            case "cninterior": {
+                const horizSpacing = C.SANDBOX.width / 10;
+                const tempTextSettings = [
+                    {key: "weather", toggled: false},
+                    {key: "tempC", toggled: false},
+                    {key: "tempF", toggled: false},
+                    {key: "TimeTracker", toggled: false},
+                    {key: "NextSessionMain", toggled: false},
+                    {key: "clockStatusNotice", toggled: false},
+                    {key: "LockeDesire", params: {justification: "center", top: 1000, left: horizSpacing}},
+                    {key: "RoyDesire", params: {justification: "center", top: 1000, left: 3 * horizSpacing}},
+                    {key: "AvaDesire", params: {justification: "center", top: 1000, left: 5 * horizSpacing}},
+                    {key: "NapierDesire", params: {justification: "center", top: 1000, left: 7 * horizSpacing}},
+                    {key: "BacchusDesire", params: {justification: "center", top: 1000, left: 9 * horizSpacing}}
+                ];
+                const tempImgSettings = [
+                    {key: "ForegroundOverlay", toggled: true, src: "interiorCNTower"},
+                    {key: "SignalLightBotLeft_1", toggled: false},
+                    {key: "SignalLightBotRight_1", toggled: false},
+                    {key: "SignalLightMidRight_1", toggled: false},
+                    {key: "SignalLightTopLeft_1", toggled: false},
+                    {key: "SignalLightTopRight_1", toggled: false},
+                    {key: "HungerBotLeft_1", toggled: false},
+                    {key: "HungerBotRight_1", toggled: false},
+                    {key: "HungerMidRight_1", toggled: false},
+                    {key: "HungerTopLeft_1", toggled: false},
+                    {key: "HungerTopRight_1", toggled: false},
+                    {key: "Horizon-CNTower-Overlay_1", toggled: false},
+                    {key: "Horizon-CNTower-Underlay_1", toggled: false},
+                    {key: "Foreground_1", toggled: false},
+                    {key: "L", params: {top: 940, left: Number(horizSpacing)}},
+                    {key: "R", params: {top: 940, left: 3 * horizSpacing}},
+                    {key: "A", params: {top: 940, left: 5 * horizSpacing}},
+                    {key: "N", params: {top: 940, left: 7 * horizSpacing}},
+                    {key: "B", params: {top: 940, left: 9 * horizSpacing}}
+                ];
+                const tempAnimSettings = [
+                    {key: "AirLights-A", toggled: false},
+                    {key: "AirLights-B", toggled: false},
+                    {key: "AirLights-C", toggled: false},
+                    {key: "AirLights-C-Cloudy", toggled: false},
+                    {key: "CN-LED-1", toggled: false},
+                    {key: "CN-LED-2", toggled: false},
+                    {key: "CN-LED-3", toggled: false},
+                    {key: "CN-LED-4", toggled: false},
+                    {key: "WeatherLightning_1", toggled: false},
+                    {key: "WeatherLightning_2", toggled: false}
+                ];
+                if (Media.IsActive("ForegroundOverlay") && Media.GetImgSrc("ForegroundOverlay") === "interiorCNTower") {
+                    STATE.REF.tempSettings.text.forEach((textSettings) => {
+                        if (VAL({boolean: textSettings.toggled}))
+                            Media.ToggleText(textSettings.key, textSettings.toggled, true);
+                        if (VAL({list: textSettings.params}))
+                            Media.SetTextData(textSettings.key, textSettings.params);
+                    });
+                    STATE.REF.tempSettings.img.forEach((imgSettings) => {
+                        if (VAL({boolean: imgSettings.toggled}))
+                            Media.ToggleImg(imgSettings.key, imgSettings.toggled, true);
+                        if (VAL({list: imgSettings.params}))
+                            Media.SetImgData(imgSettings.key, imgSettings.params);
+                    });
+                    STATE.REF.tempSettings.anim.forEach((animSettings) => {
+                        if (VAL({boolean: animSettings.toggled}))
+                            Media.ToggleAnim(animSettings.key, animSettings.toggled, true);
+                        if (VAL({list: animSettings.params}))
+                            Media.SetAnimData(animSettings.key, animSettings.params);
+                    });
+                    STATE.REF.tempSettings = {text: [], img: [], anim: []};
+                    TimeTracker.ToggleClock(true);
+                    Char.SendHome();
+                } else {
+                    tempTextSettings.forEach((textSettings) => {
+                        const tempSettings = {};
+                        if (VAL({boolean: textSettings.toggled}) && Media.IsActive(textSettings.key) !== textSettings.toggled) {
+                            tempSettings.toggled = Media.IsActive(textSettings.key);
+                            Media.ToggleText(textSettings.key, textSettings.toggled, true);
+                        }
+                        if (VAL({list: textSettings.params})) {
+                            tempSettings.params = _.pick(Media.GetTextData(textSettings.key), ...Object.keys(textSettings.params));
+                            Media.SetTextData(textSettings.key, textSettings.params);
+                        }
+                        if (!_.isEmpty(tempSettings)) {
+                            tempSettings.key = textSettings.key;
+                            STATE.REF.tempSettings.text.push(tempSettings);
+                        }
+                    });
+                    tempImgSettings.forEach((imgSettings) => {
+                        const tempSettings = {};
+                        if (VAL({boolean: imgSettings.toggled}) && Media.IsActive(imgSettings.key) !== imgSettings.toggled) {
+                            tempSettings.toggled = Media.IsActive(imgSettings.key);
+                            Media.ToggleImg(imgSettings.key, imgSettings.toggled, true);
+                        }
+                        if (VAL({string: imgSettings.src})) {
+                            tempSettings.src = Media.GetImgSrc(imgSettings.key);
+                            Media.SetImg(imgSettings.key, imgSettings.src);
+                        }
+                        if (VAL({list: imgSettings.params})) {
+                            tempSettings.params = _.pick(Media.GetImgData(imgSettings.key), ...Object.keys(imgSettings.params));
+                            Media.SetImgData(imgSettings.key, imgSettings.params, true);
+                        }
+                        if (!_.isEmpty(tempSettings)) {
+                            tempSettings.key = imgSettings.key;
+                            STATE.REF.tempSettings.img.push(tempSettings);
+                        }
+                    });
+                    tempAnimSettings.forEach((animSettings) => {
+                        const tempSettings = {};
+                        if (VAL({boolean: animSettings.toggled}) && Media.IsActive(animSettings.key) !== animSettings.toggled) {
+                            tempSettings.toggled = Media.IsActive(animSettings.key);
+                            Media.ToggleAnim(animSettings.key, animSettings.toggled, true);
+                        }
+                        if (VAL({list: animSettings.params})) {
+                            tempSettings.params = _.pick(Media.GetAnimData(animSettings.key), ...Object.keys(animSettings.params));
+                            Media.SetAnimData(animSettings.key, animSettings.params);
+                        }
+                        if (!_.isEmpty(tempSettings)) {
+                            tempSettings.key = animSettings.key;
+                            STATE.REF.tempSettings.anim.push(tempSettings);
+                        }
+                    });
+                    TimeTracker.ToggleClock(false);
                 }
                 break;
             }
@@ -849,7 +964,7 @@ const Session = (() => {
         },
         introMode: {
             Active: () => {
-                // Media.ToggleTokens("registered", true);
+                Media.ToggleTokens("registered", true);
                 Media.ToggleTokens("disabled", false);
                 /* Media.ToggleImg("Horizon-CNTower-Underlay", false);
                 Media.ToggleAnim("CN-LED-1", true);
@@ -1936,9 +2051,9 @@ const Session = (() => {
                 Media.SetImgData("SignalLightBotRight", {top: 900});
                 Media.SetTextData("testSessionNotice", {top: 190});
                 Media.SetTextData("playerPageAlertMessage", {top: 215});
-                Media.SetTextData("clockStatusNotice", {top: 215});
-                Media.SetTextData("TimeTracker", {top: 245});
-                Media.SetTextData("NextSessionMain", {top: 275});
+                Media.SetTextData("clockStatusNotice", {top: 245});
+                Media.SetTextData("TimeTracker", {top: 275});
+                Media.SetTextData("NextSessionMain", {top: 240});
                 fireOnExit(Session.District);
             } else if (STATE.REF.curLocation.HUB.name !== hubName) {
                 fireOnExit(Session.District);
@@ -1957,11 +2072,11 @@ const Session = (() => {
             if ("HUB" in STATE.REF.curLocation) {
                 Media.SetImgData("SignalLightBotLeft", {top: 759});
                 Media.SetImgData("SignalLightBotRight", {top: 759});
-                Media.SetTextData("testSessionNotice", {top: 275});
-                Media.SetTextData("playerPageAlertMessage", {top: 250});
-                Media.SetTextData("clockStatusNotice", {top: 303});
-                Media.SetTextData("TimeTracker", {top: 330});
-                Media.SetTextData("NextSessionMain", {top: 360});
+                Media.SetTextData("testSessionNotice", {top: 295});
+                Media.SetTextData("playerPageAlertMessage", {top: 275});
+                Media.SetTextData("clockStatusNotice", {top: 320});
+                Media.SetTextData("TimeTracker", {top: 350});
+                Media.SetTextData("NextSessionMain", {top: 315});
                 Media.ToggleImg("SiteFocusHub", false);
                 fireOnExit(Session.District);
                 fireOnExit(Session.Site);

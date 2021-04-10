@@ -1334,7 +1334,7 @@ const TimeTracker = (() => {
     // #endregion
 
     // #region CLOCK: Toggling, Ticking, Setting Clock Text
-    const toggleClock = (activeState, secsPerMin) => {
+    const toggleClock = (activeState, secsPerMin = 30) => {
         const funcID = ONSTACK();
         isTickingClock = Boolean(activeState);
         STATE.REF.secsPerMin = secsPerMin || STATE.REF.secsPerMin;
@@ -2827,7 +2827,7 @@ const TimeTracker = (() => {
         get SessionDate() {
             return STATE.REF.SessionDate;
         },
-        ToggleClock: (v, secsPerMin = 60) => {
+        ToggleClock: (v, secsPerMin = 30) => {
             toggleClock(v, secsPerMin);
         },
         Pause: pauseClockTween,

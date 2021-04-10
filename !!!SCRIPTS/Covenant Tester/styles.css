@@ -1,0 +1,51 @@
+body {
+    margin: 0px;
+    padding: 0px;
+    vertical-align: top;
+    .button-container {
+        height: 50px;
+        width: 100%;
+        background-color: lightgray;
+        button {
+            background-color: gray;
+            height: 40px;
+            margin: 5px 0 0 5px;
+            padding: 0px 30px;
+            border: 3px outset darkgray;
+            box-shadow: 2px 2px 2px black;
+            font: {
+                size: 30px;
+                family: Impact;
+            }
+            line-height: 30px;
+        }
+    }
+}
+
+pre {
+    font: {
+        family: "Fira Code";
+        size: 12px;
+    }
+    word-wrap: break-word;
+}
+
+.code-results {
+    width: calc(100% - 8px);
+    height: 100%;
+    display: block;
+    min-height: 200px;
+    margin: 0px;
+    font: {
+        family: "Fira Code";
+        size: 12px;
+        weight: normal;
+    }
+    background-color: rgba(0, 255, 0, 0.15);
+    border: 4px outset green;
+    vertical-align: top;
+}
+span.tab {
+    display: inline-block;
+    width: 40px;
+}
