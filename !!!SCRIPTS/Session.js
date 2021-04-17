@@ -26,6 +26,7 @@ const Session = (() => {
         STATE.REF.isPromptingGeneric = false;
         PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND);
 
+        // STATE.REF.isCNInteriorActive = true;
 
         /* STATE.REF.PromptAuthors = ["N", "A", "L", "R"];
         STATE.REF.SpotlightPrompts = {
@@ -78,6 +79,7 @@ const Session = (() => {
                 }
             ]
         }; */
+        // STATE.REF.isCNInteriorActive = [true, false].includes(STATE.REF.isCNInteriorActive) || false;
         STATE.REF.SITokensAlwaysOn = STATE.REF.SITokensAlwaysOn || [];
         STATE.REF.MORTUARYTIER = STATE.REF.MORTUARYTIER || 0;
         STATE.REF.savedSceneLocs = {
@@ -342,127 +344,7 @@ const Session = (() => {
         const charObjs = Listener.GetObjects(objects, "character");
         switch (call) {
             case "cninterior": {
-                const horizSpacing = C.SANDBOX.width / 10;
-                const tempTextSettings = [
-                    {key: "weather", toggled: false},
-                    {key: "tempC", toggled: false},
-                    {key: "tempF", toggled: false},
-                    {key: "TimeTracker", toggled: false},
-                    {key: "NextSessionMain", toggled: false},
-                    {key: "clockStatusNotice", toggled: false},
-                    {key: "LockeDesire", params: {justification: "center", top: 1000, left: horizSpacing}},
-                    {key: "RoyDesire", params: {justification: "center", top: 1000, left: 3 * horizSpacing}},
-                    {key: "AvaDesire", params: {justification: "center", top: 1000, left: 5 * horizSpacing}},
-                    {key: "NapierDesire", params: {justification: "center", top: 1000, left: 7 * horizSpacing}},
-                    {key: "BacchusDesire", params: {justification: "center", top: 1000, left: 9 * horizSpacing}}
-                ];
-                const tempImgSettings = [
-                    {key: "ForegroundOverlay", toggled: true, src: "interiorCNTower"},
-                    {key: "SignalLightBotLeft_1", toggled: false},
-                    {key: "SignalLightBotRight_1", toggled: false},
-                    {key: "SignalLightMidRight_1", toggled: false},
-                    {key: "SignalLightTopLeft_1", toggled: false},
-                    {key: "SignalLightTopRight_1", toggled: false},
-                    {key: "HungerBotLeft_1", toggled: false},
-                    {key: "HungerBotRight_1", toggled: false},
-                    {key: "HungerMidRight_1", toggled: false},
-                    {key: "HungerTopLeft_1", toggled: false},
-                    {key: "HungerTopRight_1", toggled: false},
-                    {key: "Horizon-CNTower-Overlay_1", toggled: false},
-                    {key: "Horizon-CNTower-Underlay_1", toggled: false},
-                    {key: "Foreground_1", toggled: false},
-                    {key: "L", params: {top: 940, left: Number(horizSpacing)}},
-                    {key: "R", params: {top: 940, left: 3 * horizSpacing}},
-                    {key: "A", params: {top: 940, left: 5 * horizSpacing}},
-                    {key: "N", params: {top: 940, left: 7 * horizSpacing}},
-                    {key: "B", params: {top: 940, left: 9 * horizSpacing}}
-                ];
-                const tempAnimSettings = [
-                    {key: "AirLights-A", toggled: false},
-                    {key: "AirLights-B", toggled: false},
-                    {key: "AirLights-C", toggled: false},
-                    {key: "AirLights-C-Cloudy", toggled: false},
-                    {key: "CN-LED-1", toggled: false},
-                    {key: "CN-LED-2", toggled: false},
-                    {key: "CN-LED-3", toggled: false},
-                    {key: "CN-LED-4", toggled: false},
-                    {key: "WeatherLightning_1", toggled: false},
-                    {key: "WeatherLightning_2", toggled: false}
-                ];
-                if (Media.IsActive("ForegroundOverlay") && Media.GetImgSrc("ForegroundOverlay") === "interiorCNTower") {
-                    STATE.REF.tempSettings.text.forEach((textSettings) => {
-                        if (VAL({boolean: textSettings.toggled}))
-                            Media.ToggleText(textSettings.key, textSettings.toggled, true);
-                        if (VAL({list: textSettings.params}))
-                            Media.SetTextData(textSettings.key, textSettings.params);
-                    });
-                    STATE.REF.tempSettings.img.forEach((imgSettings) => {
-                        if (VAL({boolean: imgSettings.toggled}))
-                            Media.ToggleImg(imgSettings.key, imgSettings.toggled, true);
-                        if (VAL({list: imgSettings.params}))
-                            Media.SetImgData(imgSettings.key, imgSettings.params);
-                    });
-                    STATE.REF.tempSettings.anim.forEach((animSettings) => {
-                        if (VAL({boolean: animSettings.toggled}))
-                            Media.ToggleAnim(animSettings.key, animSettings.toggled, true);
-                        if (VAL({list: animSettings.params}))
-                            Media.SetAnimData(animSettings.key, animSettings.params);
-                    });
-                    STATE.REF.tempSettings = {text: [], img: [], anim: []};
-                    TimeTracker.ToggleClock(true);
-                    Char.SendHome();
-                } else {
-                    tempTextSettings.forEach((textSettings) => {
-                        const tempSettings = {};
-                        if (VAL({boolean: textSettings.toggled}) && Media.IsActive(textSettings.key) !== textSettings.toggled) {
-                            tempSettings.toggled = Media.IsActive(textSettings.key);
-                            Media.ToggleText(textSettings.key, textSettings.toggled, true);
-                        }
-                        if (VAL({list: textSettings.params})) {
-                            tempSettings.params = _.pick(Media.GetTextData(textSettings.key), ...Object.keys(textSettings.params));
-                            Media.SetTextData(textSettings.key, textSettings.params);
-                        }
-                        if (!_.isEmpty(tempSettings)) {
-                            tempSettings.key = textSettings.key;
-                            STATE.REF.tempSettings.text.push(tempSettings);
-                        }
-                    });
-                    tempImgSettings.forEach((imgSettings) => {
-                        const tempSettings = {};
-                        if (VAL({boolean: imgSettings.toggled}) && Media.IsActive(imgSettings.key) !== imgSettings.toggled) {
-                            tempSettings.toggled = Media.IsActive(imgSettings.key);
-                            Media.ToggleImg(imgSettings.key, imgSettings.toggled, true);
-                        }
-                        if (VAL({string: imgSettings.src})) {
-                            tempSettings.src = Media.GetImgSrc(imgSettings.key);
-                            Media.SetImg(imgSettings.key, imgSettings.src);
-                        }
-                        if (VAL({list: imgSettings.params})) {
-                            tempSettings.params = _.pick(Media.GetImgData(imgSettings.key), ...Object.keys(imgSettings.params));
-                            Media.SetImgData(imgSettings.key, imgSettings.params, true);
-                        }
-                        if (!_.isEmpty(tempSettings)) {
-                            tempSettings.key = imgSettings.key;
-                            STATE.REF.tempSettings.img.push(tempSettings);
-                        }
-                    });
-                    tempAnimSettings.forEach((animSettings) => {
-                        const tempSettings = {};
-                        if (VAL({boolean: animSettings.toggled}) && Media.IsActive(animSettings.key) !== animSettings.toggled) {
-                            tempSettings.toggled = Media.IsActive(animSettings.key);
-                            Media.ToggleAnim(animSettings.key, animSettings.toggled, true);
-                        }
-                        if (VAL({list: animSettings.params})) {
-                            tempSettings.params = _.pick(Media.GetAnimData(animSettings.key), ...Object.keys(animSettings.params));
-                            Media.SetAnimData(animSettings.key, animSettings.params);
-                        }
-                        if (!_.isEmpty(tempSettings)) {
-                            tempSettings.key = animSettings.key;
-                            STATE.REF.tempSettings.anim.push(tempSettings);
-                        }
-                    });
-                    TimeTracker.ToggleClock(false);
-                }
+                toggleCNInterior();
                 break;
             }
             case "zoom": {
@@ -870,11 +752,150 @@ const Session = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
+    const toggleCNInterior = (forcedState, isUpdatingChars = true, isUpdatingTime = true) => {
+        const horizSpacing = C.SANDBOX.width / 10;
+        const tempTextSettings = [
+            {key: "weather", toggled: false},
+            {key: "tempC", toggled: false},
+            {key: "tempF", toggled: false},
+            {key: "TimeTracker", toggled: false},
+            {key: "NextSessionMain", toggled: false},
+            {key: "clockStatusNotice", toggled: false},
+            {key: "LockeDesire", params: {justification: "left", top: 1005, left: 90}},
+            {key: "RoyDesire", params: {justification: "left", top: 1005, left: 90 + 2 * horizSpacing}},
+            {key: "AvaDesire", params: {justification: "left", top: 1005, left: 90 + 4 * horizSpacing}},
+            {key: "NapierDesire", params: {justification: "left", top: 1005, left: 90 + 6 * horizSpacing}},
+            {key: "BacchusDesire", params: {justification: "left", top: 1005, left: 90 + 8 * horizSpacing}}
+        ];
+        const tempImgSettings = [
+            {key: "ForegroundOverlay", toggled: true, src: "interiorCNTower"},
+            {key: "SignalLightBotLeft_1", toggled: false},
+            {key: "SignalLightBotRight_1", toggled: false},
+            {key: "SignalLightMidRight_1", toggled: false},
+            {key: "SignalLightTopLeft_1", toggled: false},
+            {key: "SignalLightTopRight_1", toggled: false},
+            {key: "HungerBotLeft_1", toggled: false},
+            {key: "HungerBotRight_1", toggled: false},
+            {key: "HungerMidRight_1", toggled: false},
+            {key: "HungerTopLeft_1", toggled: false},
+            {key: "HungerTopRight_1", toggled: false},
+            {key: "Horizon-CNTower-Overlay_1", toggled: false},
+            {key: "Horizon-CNTower-Underlay_1", toggled: false},
+            {key: "Foreground_1", toggled: false}
+        ];
+        const tempTokenSettings = [
+            {key: "L", params: {top: 1015, left: 45}},
+            {key: "R", params: {top: 1015, left: 45 + 2 * horizSpacing}},
+            {key: "A", params: {top: 1015, left: 45 + 4 * horizSpacing}},
+            {key: "N", params: {top: 1015, left: 45 + 6 * horizSpacing}},
+            {key: "B", params: {top: 1015, left: 45 + 8 * horizSpacing}}
+        ];
+        const tempAnimSettings = [
+            {key: "AirLights-A", toggled: false},
+            {key: "AirLights-B", toggled: false},
+            {key: "AirLights-C", toggled: false},
+            {key: "AirLights-C-Cloudy", toggled: false},
+            {key: "CN-LED-1", toggled: false},
+            {key: "CN-LED-2", toggled: false},
+            {key: "CN-LED-3", toggled: false},
+            {key: "CN-LED-4", toggled: false},
+            {key: "WeatherLightning_1", toggled: false},
+            {key: "WeatherLightning_2", toggled: false}
+        ];
+        if (isUpdatingChars)
+            tempImgSettings.push(...tempTokenSettings);
+
+        if (forcedState === false || (forcedState !== true && STATE.REF.isCNInteriorActive === true)) {
+            STATE.REF.isCNInteriorActive = false;
+            STATE.REF.tempSettings.text.forEach((textSettings) => {
+                if (VAL({boolean: textSettings.toggled}))
+                    Media.ToggleText(textSettings.key, textSettings.toggled, true);
+                if (VAL({list: textSettings.params}))
+                    Media.SetTextData(textSettings.key, textSettings.params);
+            });
+            STATE.REF.tempSettings.img.forEach((imgSettings) => {
+                if (VAL({boolean: imgSettings.toggled}))
+                    Media.ToggleImg(imgSettings.key, imgSettings.toggled, true);
+                if (VAL({list: imgSettings.params}))
+                    Media.SetImgData(imgSettings.key, imgSettings.params);
+            });
+            STATE.REF.tempSettings.anim.forEach((animSettings) => {
+                if (VAL({boolean: animSettings.toggled}))
+                    Media.ToggleAnim(animSettings.key, animSettings.toggled, true);
+                if (VAL({list: animSettings.params}))
+                    Media.SetAnimData(animSettings.key, animSettings.params);
+            });
+            STATE.REF.tempSettings = {text: [], img: [], anim: []};
+            if (isUpdatingTime)
+                TimeTracker.ToggleClock(true);
+            if (isUpdatingChars)
+                Char.SendHome();
+            delete state.VAMPIRE.Soundscape.scoreOverride;
+            Soundscape.Sync();
+        } else {
+            STATE.REF.isCNInteriorActive = true;
+            tempTextSettings.forEach((textSettings) => {
+                const tempSettings = {};
+                if (VAL({boolean: textSettings.toggled}) && Media.IsActive(textSettings.key) !== textSettings.toggled) {
+                    tempSettings.toggled = Media.IsActive(textSettings.key);
+                    Media.ToggleText(textSettings.key, textSettings.toggled, true);
+                }
+                if (VAL({list: textSettings.params})) {
+                    tempSettings.params = _.pick(Media.GetTextData(textSettings.key), ...Object.keys(textSettings.params));
+                    Media.SetTextData(textSettings.key, textSettings.params);
+                }
+                if (!_.isEmpty(tempSettings)) {
+                    tempSettings.key = textSettings.key;
+                    STATE.REF.tempSettings.text.push(tempSettings);
+                }
+            });
+            tempImgSettings.forEach((imgSettings) => {
+                const tempSettings = {};
+                if (VAL({boolean: imgSettings.toggled}) && Media.IsActive(imgSettings.key) !== imgSettings.toggled) {
+                    tempSettings.toggled = Media.IsActive(imgSettings.key);
+                    Media.ToggleImg(imgSettings.key, imgSettings.toggled, true);
+                }
+                if (VAL({string: imgSettings.src})) {
+                    tempSettings.src = Media.GetImgSrc(imgSettings.key);
+                    Media.SetImg(imgSettings.key, imgSettings.src);
+                }
+                if (VAL({list: imgSettings.params})) {
+                    tempSettings.params = _.pick(Media.GetImgData(imgSettings.key), ...Object.keys(imgSettings.params));
+                    Media.SetImgData(imgSettings.key, imgSettings.params, true);
+                }
+                if (!_.isEmpty(tempSettings)) {
+                    tempSettings.key = imgSettings.key;
+                    STATE.REF.tempSettings.img.push(tempSettings);
+                }
+            });
+            tempAnimSettings.forEach((animSettings) => {
+                const tempSettings = {};
+                if (VAL({boolean: animSettings.toggled}) && Media.IsActive(animSettings.key) !== animSettings.toggled) {
+                    tempSettings.toggled = Media.IsActive(animSettings.key);
+                    Media.ToggleAnim(animSettings.key, animSettings.toggled, true);
+                }
+                if (VAL({list: animSettings.params})) {
+                    tempSettings.params = _.pick(Media.GetAnimData(animSettings.key), ...Object.keys(animSettings.params));
+                    Media.SetAnimData(animSettings.key, animSettings.params);
+                }
+                if (!_.isEmpty(tempSettings)) {
+                    tempSettings.key = animSettings.key;
+                    STATE.REF.tempSettings.anim.push(tempSettings);
+                }
+            });
+            if (isUpdatingTime)
+                TimeTracker.ToggleClock(false);
+            state.VAMPIRE.Soundscape.scoreOverride = "ScoreCasaLoma";
+            Soundscape.Sync();
+        }
+    };
+
     // #region Configuration
     let ISSETTINGPOINTER = false;
     const MODEFUNCTIONS = {
         outroMode: {
-            Active: () => {},
+            Active: () => {
+            },
             Inactive: () => {
                 if (!STATE.REF.isTestingActive || STATE.REF.isFullTest)
                     setPlayerPage("GAME");
@@ -966,6 +987,8 @@ const Session = (() => {
             Active: () => {
                 Media.ToggleTokens("registered", true);
                 Media.ToggleTokens("disabled", false);
+                delete state.VAMPIRE.Soundscape.scoreOverride;
+                toggleCNInterior(STATE.REF.isCNInteriorActive);
                 /* Media.ToggleImg("Horizon-CNTower-Underlay", false);
                 Media.ToggleAnim("CN-LED-1", true);
                 Media.ToggleAnim("CN-LED-2", false);
@@ -973,7 +996,10 @@ const Session = (() => {
                 Media.ToggleAnim("CN-LED-4", false);
                 Media.SetImg("Horizon-CNTower-Overlay", "black"); */
             },
-            Inactive: () => {},
+            Inactive: () => {
+                state.VAMPIRE.Soundscape.scoreOverride = "ScoreSplash";
+                Soundscape.Sync();
+            },
             Downtime: () => {
                 if (STATE.REF.LastMode !== "Complications")
                     D.Chat(

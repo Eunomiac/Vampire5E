@@ -1,3 +1,93 @@
+/* export const whatIs = (value) => (
+    {
+        undefined: () => ["undefined", {undefined: true, empty: true, false: true}],
+        boolean: (val) => ["boolean", {boolean: true, false: !val}],
+        number: (val) => ["number", {
+            number: true,
+            false: val === 0,
+            int: /^[0-9]+$/.test(`${val}`),
+            float: /\./u.test(`${val}`)
+        }],
+        string: (val) => ["string", {
+            string: true,
+            empty: val === "",
+            false: val === "",
+            number: /^[0-9\.]+$/u.test(val),
+            int: /^[0-9]+$/.test(val),
+            float: /^[0-9]*\.[0-9]+$/u.test(val),
+            boolean: /^true$|^false$/i.test(val),
+            null: /^null$/i.test(val),
+            undefined: /^undefined$/i.test(val)
+        }],
+        bigint: (val) => ["number", {
+            number: true,
+            false: val === 0,
+            int: true,
+            bigInt: true
+        }],
+        symbol: () => ["symbol", {symbol: true}],
+        function: () => ["function", {function: true}],
+        object: (val) => {
+            if (val === null) {
+                return ["null", {null: true, false: true, empty: true}];
+            }
+            const typeData = [Object.prototype.toString.call(val).slice(8, -1).toLowerCase(), {}];
+            if (typeData[0] === "object") {
+                typeData[0] = "list";
+                typeData[1] = {list: true};
+            } else {
+                typeData[1] = {[typeData[0]]: true};
+            }
+            if (["set", "map"].includes(typeData[0])) {
+                typeData[1].empty = val.size === 0;
+            }
+            if (["array", "list"].includes(typeData[0])) {
+                typeData[1].empty = Object.values(val).length === 0;
+            }
+            return typeData;
+        }
+    }[typeof value](value));
+const mutateArray = (array, checkFunc, replaceVal) => {
+    const index = array.findIndex(checkFunc);
+    if (index === -1) {
+        return false;
+    }
+    if (replaceVal) {
+        array[index] = replaceVal;
+    } else {
+        for (let i = 0; i < array.length; i++) {
+            if (i === index) {                
+                array.shift();
+            }
+            array.push(array.shift());
+        }
+    }
+    return true;
+};
+export const extract = (array, searchVal) => {
+    //   removes the first element found that matches the string or passes the check function
+    //   mutates the array
+    //   returns 'true' if array changed
+    if (typeof searchVal !== "function") {
+        searchVal = (elem) => elem === `${searchVal}`;
+    }
+    if (mutateArray(array, searchVal));
+        return true;
+    return false;
+};
+export const replace = (array, searchVal, replaceVal) => {    
+    if (typeof searchVal !== "function") {
+        searchVal = (elem) => elem === `${searchVal}`;
+    }    
+    if (mutateArray(array, searchVal, replaceVal));
+        return true;
+    return false;
+} */
+
+
+
+
+
 export const extract = (array, item, searchVal = "") => {
     //   removes the first element found that matches the string or passes the check function
     //   mutates the array

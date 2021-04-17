@@ -3285,12 +3285,12 @@
                                 name="attr_projectdetails"></textarea>
                         </div>
                         <!-- Goal / Scope -->
-                        <input type="text" class="sheet-insetBox sheet-darkText sheet-goal"
-                            placeholder="Describe what is it you wish to achieve, in a way that will read well in your Timeline."
-                            name="attr_projectscope_name" />
+                        <textarea class="sheet-insetBox sheet-darkText sheet-goal"
+                            placeholder="Enter any plans, ambitions, intentions, or anything you like!  You can add more notes in the pop-up to the left, and set a priority if you like (so I know what to pay attention to). To complete an Objective, convert it into an Event via the toggle button."
+                            name="attr_projectscope_name"></textarea>
                     </div>
                     <!-- Second Line -->
-                    <div class="sheet-coltight1 sheet-linerow">
+                    <div class="sheet-coltight1 sheet-togglebox">
                         <!-- Type Checkbox: Objective, Project, Memoriam -->
                         <div class="sheet-dotline sheet-variabledotline sheet-schemeselector sheet-centered" style="margin-top: -3px; margin-left: 3px;">
                             <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -3307,23 +3307,27 @@
                                     name="attr_schemetypeobj_toggle" value="3" /><span class="sheet-finaldot"></span>
                             </div>
                         </div>
-                        <span class="sheet-header5 sheet-left sheet-hookprompt">Hook:</span><input class="sheet-darkText sheet-hook sheet-insetBox" type="text"
-                            placeholder="Set the scene for achieving your goal!" name="attr_projectgoal" />
                     </div>
                 </div>
                 <!-- Right Box -->
                 <div class="sheet-coltight1 sheet-doublerow sheet-rightbox sheet-squareBox sheet-centered">
+                    <div class="sheet-coltight1 sheet-completiondate">                        
+                        <div class="sheet-darkText sheet-engravedText sheet-objectivepriority">Priority:</div>
+                        <select class="sheet-insetBox sheet-darkText" name="attr_objectivepriority" value="0">
+                        <option value="5">Do ASAP!</option>
+                        <option value="4">Ready to Go!</option>
+                        <option value="3">Please Review</option>
+                        <option value="2">Still Scheming</option>
+                        <option value="1">Hypothetical</option>
+                        <option value="0" selected>Ignore Me for Now</option>
+                    </select>
+                    </div>
                     <input class="sheet-containerselector" type="radio" name="attr_archiveobjective_toggle" value="0"
                         checked />
-                    <div class="sheet-coltight1 sheet-linerow" style="height: 25px;"></div>
                     <input class="sheet-containerselector" type="radio" name="attr_archiveobjective_toggle" value="1" />
                     <div class="sheet-coltight1 sheet-archive" style="height: 25px;">
                         <input class="sheet-attr" type="checkbox" name="attr_archiveobjective" value="1" />
                         <span>Archive</span>
-                    </div>
-                    <div class="sheet-coltight1 sheet-completiondate">
-                        <input type="text" class="sheet-insetBox sheet-darkText" name="attr_objectivedate"
-                            placeholder="Date Achieved" />
                     </div>
                 </div>
             </div>
@@ -3771,17 +3775,16 @@
                 </div>
                 <!-- Right Box -->
                 <div class="sheet-coltight1 sheet-doublerow sheet-rightbox sheet-squareBox sheet-centered">
+                    <div class="sheet-coltight1 sheet-completiondate">
+                        <input type="text" class="sheet-insetBox sheet-darkText" name="attr_memoriamdate"
+                            placeholder="Date Achieved" />
+                    </div>
                     <input class="sheet-containerselector" type="radio" name="attr_archivememoriam_toggle" value="0"
                         checked />
-                    <div class="sheet-coltight1 sheet-linerow" style="height: 25px;"></div>
                     <input class="sheet-containerselector" type="radio" name="attr_archivememoriam_toggle" value="1" />
                     <div class="sheet-coltight1 sheet-archive" style="height: 25px;">
                         <input class="sheet-attr" type="checkbox" name="attr_archivememoriam" value="1" />
                         <span>Archive</span>
-                    </div>
-                    <div class="sheet-coltight1 sheet-completiondate">
-                        <input type="text" class="sheet-insetBox sheet-darkText" name="attr_memoriamdate"
-                            placeholder="Date Achieved" />
                     </div>
                 </div>
                 <div class="sheet-coltight1 sheet-linerow sheet-rewards">
@@ -3838,17 +3841,16 @@
                 </div>
                 <!-- Right Box -->
                 <div class="sheet-coltight1 sheet-doublerow sheet-rightbox sheet-squareBox sheet-centered">
+                    <div class="sheet-coltight1 sheet-completiondate">
+                        <input type="text" class="sheet-insetBox sheet-darkText" name="attr_eventdate"
+                            placeholder="Date" />
+                    </div>
                     <input class="sheet-containerselector" type="radio" name="attr_archiveevent_toggle" value="0"
                         checked />
-                    <div class="sheet-coltight1 sheet-linerow" style="height: 25px;"></div>
                     <input class="sheet-containerselector" type="radio" name="attr_archiveevent_toggle" value="1" />
                     <div class="sheet-coltight1 sheet-archive" style="height: 25px;">
                         <input class="sheet-attr" type="checkbox" name="attr_archiveevent" value="1" />
                         <span>Archive</span>
-                    </div>
-                    <div class="sheet-coltight1 sheet-completiondate">
-                        <input type="text" class="sheet-insetBox sheet-darkText" name="attr_eventdate"
-                            placeholder="Date" />
                     </div>
                 </div>
             </div>
@@ -7285,11 +7287,11 @@
                         repeating_project_memoriamrewards:
                             (parseInt(ATTRS.repeating_project_memoriamdiff) === 0 && "(Set the difficulty to see which rewards you can choose from.)")
                             || (parseInt(ATTRS.repeating_project_memoriamdiff) === 1
-                                && "Ask a Minor Question   ♦   Gain One Temporary Advantage Dot   ♦   Gain +2 to One Roll   ♦   Advance a Project Die by Three Steps")
+                                && "Ask a Minor Question   ♦   Gain One Temporary Advantage Dot   ♦   Gain +2 to One Roll   ♦   Advance a Project Die by Two Steps")
                             || (parseInt(ATTRS.repeating_project_memoriamdiff) === 2
-                                && "Ask a Major Question   ♦   Gain Two Temporary Advantage Dots   ♦   Gain +4 to One Roll   ♦   Advance a Project Die by Six Steps")
+                                && "Ask a Major Question   ♦   Gain Two Temporary Advantage Dots   ♦   Gain +4 to One Roll   ♦   Advance a Project Die by Four Steps")
                             || (parseInt(ATTRS.repeating_project_memoriamdiff) === 3
-                                && "Ask an Epic Question   ♦   Gain Three Temporary Advantage Dots   ♦   Gain a Major Boon   ♦   Advance a Project Die by Nine Steps")
+                                && "Ask an Epic Question   ♦   Gain Three Temporary Advantage Dots   ♦   Gain a Major Boon   ♦   Advance a Project Die by Six Steps")
                     };
                     log(`Setting Attrs: ${JSON.stringify(attrList)}`);
                     setAttrs(attrList);
@@ -8115,5 +8117,6 @@
         });
         // #endregion
     })();
+    
     
 </script>

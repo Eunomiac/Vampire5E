@@ -38,9 +38,11 @@ const Soundscape = (() => {
         STATE.REF.fadeLeadTime = STATE.REF.fadeLeadTime || 5000;
         STATE.REF.maxFadeStep = STATE.REF.maxFadeStep || 1;
 
-        delete STATE.REF.scoreOverride;
+        // delete STATE.REF.scoreOverride;
         // STATE.REF.scoreOverride = "ScoreMain";
-        // D.Flag("Score Override: ScoreMain");
+        if (STATE.REF.scoreOverride)
+            D.Flag(`Score Override: ${STATE.REF.scoreOverride}`);
+
 
         for (const [trackKey, fadeData] of Object.entries(STATE.REF.soundsFading))
             fadeTrackObj(trackKey, fadeData.targetVol, fadeData.startVol);
@@ -168,6 +170,21 @@ const Soundscape = (() => {
                     case "volume":
                         setVolumeData(...args);
                         break;
+                    case "score": {
+                        const scoreOverride = args.shift();
+                        if (scoreOverride && scoreOverride === "ScoreCasaLoma") {
+                            STATE.REF.scoreOverride = scoreOverride;
+                            syncSoundscape(true);
+                            D.Flag(`Score Override Set: ${scoreOverride}`);
+                        } else if (!scoreOverride || ["off", "cancel", "stop"].includes(D.LCase(scoreOverride))) {
+                            delete STATE.REF.scoreOverride;
+                            syncSoundscape(true);
+                            D.Flag("Cancelled Score Override.");
+                        } else {
+                            D.Flag(`Error: Score '${scoreOverride}' not found (temp: must be "ScoreCasaLoma")`);
+                        }
+                        break;
+                    }
                     case "mult": {
                         switch (D.LCase((call = args.shift()))) {
                             case "master":

@@ -82,8 +82,8 @@ const TimeTracker = (() => {
 
         STATE.REF.nextSessionDayShift = STATE.REF.nextSessionDayShift || 0;
 
-        delete STATE.REF.nextSessionDate;
-        delete STATE.REF.lastSessionDate;
+        /* delete STATE.REF.nextSessionDate;
+        delete STATE.REF.lastSessionDate; */
 
         STATE.REF.TweenStart = 0;
         STATE.REF.TweenTarget = 0;
@@ -135,6 +135,16 @@ const TimeTracker = (() => {
         const funcID = ONSTACK();
         let isForcing = false;
         switch (call) {
+            case "status": {
+                D.Show({
+                    isCountdownFrozen,
+                    isCountdownRunning,
+                    isTweeningClock,
+                    isFastTweeningClock,
+                    isTickingClock
+                });
+                break;
+            }
             case "fade": {
                 D.Flag("Initializing Session Fade...");
                 initSessionFade();
@@ -785,8 +795,8 @@ const TimeTracker = (() => {
             end: {volume: 150}
         },
         daysOutToStart: {
-            moon: 2,
-            water: 2.75
+            moon: 5,
+            water: 5.75
         }
     };
     // #endregion

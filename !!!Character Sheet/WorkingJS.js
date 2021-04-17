@@ -3187,11 +3187,11 @@
                     repeating_project_memoriamrewards:
                         (parseInt(ATTRS.repeating_project_memoriamdiff) === 0 && "(Set the difficulty to see which rewards you can choose from.)")
                         || (parseInt(ATTRS.repeating_project_memoriamdiff) === 1
-                            && "Ask a Minor Question   ♦   Gain One Temporary Advantage Dot   ♦   Gain +2 to One Roll   ♦   Advance a Project Die by Three Steps")
+                            && "Ask a Minor Question   ♦   Gain One Temporary Advantage Dot   ♦   Gain +2 to One Roll   ♦   Advance a Project Die by Two Steps")
                         || (parseInt(ATTRS.repeating_project_memoriamdiff) === 2
-                            && "Ask a Major Question   ♦   Gain Two Temporary Advantage Dots   ♦   Gain +4 to One Roll   ♦   Advance a Project Die by Six Steps")
+                            && "Ask a Major Question   ♦   Gain Two Temporary Advantage Dots   ♦   Gain +4 to One Roll   ♦   Advance a Project Die by Four Steps")
                         || (parseInt(ATTRS.repeating_project_memoriamdiff) === 3
-                            && "Ask an Epic Question   ♦   Gain Three Temporary Advantage Dots   ♦   Gain a Major Boon   ♦   Advance a Project Die by Nine Steps")
+                            && "Ask an Epic Question   ♦   Gain Three Temporary Advantage Dots   ♦   Gain a Major Boon   ♦   Advance a Project Die by Six Steps")
                 };
                 log(`Setting Attrs: ${JSON.stringify(attrList)}`);
                 setAttrs(attrList);
