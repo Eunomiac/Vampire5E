@@ -43,6 +43,8 @@ const InitCommands = (() => {
                         setTimeout(() => {
                             D.Flag("Initialization Complete!");
                             Listener.Unlock();
+                            Handouts.UpdateObjectiveHandout();
+                            Handouts.UpdateReferenceHandouts();
                         }, delayTime);
                     }, delayTime);
                 }, delayTime);

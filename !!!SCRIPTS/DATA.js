@@ -2504,7 +2504,7 @@ const D = (() => {
                 const repStatData = getRepStats(charObj, null, {name: repRowStatName}, null, "rowID");
                 if (repStatData)
                     attrValueObj = ((Object.values(repStatData)[0] || []).find((x) => x.name && D.LCase(x.name) === stat) || {obj: false}).obj;
-                DB({repStatData: Object.values(repStatData), find: (Object.values(repStatData) || [])[0].find((x) => x.name && D.LCase(x.name) === stat), stat, attrValueObj}, "getStat");
+                // DB({repStatData: Object.values(repStatData), find: (Object.values(repStatData) || [])[0].find((x) => x.name && D.LCase(x.name) === stat), stat, attrValueObj}, "getStat");
             }
             // STEP ONE: LOOK THROUGH NON-REPEATING ATTRIBUTES, IF NO REPROWSTATNAME GIVEN:
             attrValueObj = _.find(attrObjs, (v) => D.LCase(v.get("name")) === stat);

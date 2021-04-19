@@ -101,6 +101,10 @@ const Handouts = (() => {
                         delTableRow("Roll Effects", args.join(" "));
                         break;
                     }
+                    case "objective": case "objectives": {
+                        updateObjectiveHandout();
+                        break;
+                    }
                     // no default
                 }
                 break;
@@ -128,7 +132,7 @@ const Handouts = (() => {
                         const handoutObj = getHandoutObj(args.join(" "));
                         if (handoutObj)
                             handoutObj.get("notes", (notes) => {
-                                D.Alert(_.escape(notes), "Alert(notes, title, false, true)", false, true);                                
+                                D.Alert(_.escape(notes), "Alert(notes, title, false, true)", false, true);
                             });
                         else
                             D.Flag(`No Handout Found with Name '${D.JSL(args.join(" "))}'`);
@@ -366,9 +370,6 @@ const Handouts = (() => {
                 tableData.rowCells = tableData.rowCells.filter((v) => !_.any(Object.values(v), (vv) => vv.includes(cellRef)));
                 DB({tableData}, "delTableRow");
                 updateHandoutTable(title, tableData);
-
-
-
             });
     };
     const delHandoutObjs = (titleRef, category) => {
@@ -450,7 +451,6 @@ const Handouts = (() => {
             D.Flag("Must provide state reference!");
         }
     };
-
     const updateCharSummary = () => {
         const html = C.HANDOUTHTML.TraitSummaryDoc;
         const colorScheme = {
@@ -1027,11 +1027,85 @@ const Handouts = (() => {
         updateHandout("Character Stat Summary", null, fullCode);
         */
     };
+    const updateObjectiveHandout = () => {
+        // #region Config: HTML Styles
+        const handoutWidth = 540;
+        const HTML = {
+            main: (content) => `<div style="display: block; width: ${handoutWidth}px; height: auto; margin-left: -30px;">${content}</div>`,
+            h3: (content, bgColor, fontColor = "white") => `<h3 style="width: 100%; background-color: ${bgColor}; font-family: 'Cinzel Decorative'; text-indent: 10px; color: ${fontColor};">${content}</h3>`,
+            block: (content) => `<div style="display: block; width: 100%; margin: 5px 0; padding: 0;">${content}</div>`,
+            row: (content) => `<div style="display: block; width: 100%; margin: 5px 0px; padding-bottom: 5px; border-bottom: 1px solid black;">${content}</div>`,
+            init: (init, bgColor, fontColor = "white") => `<div style="display: inline-block; width: 28px; vertical-align: top;">
+                    <span style="display: inline-block; vertical-align: top; font-weight: bold; font-family: Oswald; background-color: ${bgColor}; color: ${fontColor}; border: 1px solid black; line-height: 17px; height: 18px; width: 18px; text-align: center; margin-top: -2px;">${init}</span>
+                </div>`,
+            summary: (content) => `<div style="display: inline-block; width: ${handoutWidth - 28}px; font-family: 'Cormorant Garamond'; font-weight: bold; font-size: 16px; line-height: 18px;">${content}</div>`,
+            details: (content) => `<div style="display: inline-block; width: ${handoutWidth - 40}px; font-family: 'Voltaire'; font-size: 12px; line-height: 14px; margin: 5px 0px 5px 40px;">${content}</div>`
+        };
+        const initColors = {
+            A: [C.COLORS.black, C.COLORS.brightbrightgrey],
+            B: [C.COLORS.brightbrightgrey, C.COLORS.black],
+            L: [C.COLORS.darkpurple, C.COLORS.brightgold],
+            N: [C.COLORS.red, C.COLORS.white],
+            R: [C.COLORS.darkred, C.COLORS.lightred]
+        };
+        // #endregion
+        // #region Step One: Compile FieldSet Data
+        const objectiveData = [];
+        D.GetChars("registered").forEach((charObj) => {
+            const init = D.GetCharData(charObj).initial;
+            objectiveData.push(...Object.values(D.GetRepStats(init, "project", null, null, "rowID"))
+                .filter((rowData) => !_.any(rowData, (data) => data.name === "schemetype")
+                                     || (_.any(rowData, (data) => data.name === "schemetype" && D.Int(data.val) === 0)))
+                .map((rowData) => ({
+                    init,
+                    prefix: `repeating_project_${rowData[0].rowID}_`,
+                    summary: (rowData.find((data) => data.name === "projectscope_name") || {val: ""}).val,
+                    details: (rowData.find((data) => data.name === "projectdetails") || {val: ""}).val,
+                    priority: D.Int((rowData.find((data) => data.name === "objectivepriority") || {val: "0"}).val)
+                })));
+        });
+        DB({objectives: D.JS(objectiveData)}, "updateObjectiveHandout");
+        delHandoutObjs("Objectives Summary");
+        const noteObj = makeHandoutObj("Objectives Summary");
+        const priorityLines = [];
+        const priorityStrings = {
+            Hypothetical: 1,
+            "Still Scheming": 2,
+            "Awaiting Comment": 3,
+            Ready: 4,
+            ASAP: 5
+        };
+        Object.entries(priorityStrings).reverse().forEach(([priority, i]) => {
+            const priorityData = objectiveData.filter((data) => data.priority === i);
+            if (priorityData.length) {
+                priorityLines.push(HTML.h3(priority, i >= 3 ? C.COLORS.darkred : C.COLORS.white, i >= 3 ? C.COLORS.white : C.COLORS.darkred,));
+                const objRows = [];
+                priorityData.forEach((objective) => {
+                    const objRow = [];
+                    objRow.push(HTML.init(objective.init, ...initColors[objective.init]));
+                    objRow.push(HTML.summary(objective.summary));
+                    if (objective.details)
+                        objRow.push(HTML.details(objective.details));
+                    objRows.push(HTML.row(objRow.join("")));
+                });
+                objRows[objRows.length - 1] = objRows[objRows.length - 1].replace(/border[^;]*;/u, "border: none;");
+                priorityLines.push(HTML.block(objRows.join("")));
+            }
+        });
+        noteObj.set("notes", HTML.main(priorityLines.join("")));
+        return noteObj;
+        // #endregion
+    };
     // #endregion
 
     // #region CHARACTER SHEET SUMMARIES
-
     /*
+
+
+    priorityLines = [];
+
+
+    */
     const summarizeProjects = (title, charObjs) => {
         delHandoutObjs("Project Summary", "projects");
         const noteObj = makeHandoutObj(title, "projects");
@@ -1043,11 +1117,14 @@ const Handouts = (() => {
                 // for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
                 //        projectData[item] = projectData[item] || ""
                 //    }
-                if (projectData.projectenddate && TimeTracker.GetDate(projectData.projectenddate) < TimeTracker.CurrentDate) continue;
+                if (projectData.projectenddate && TimeTracker.GetDate(projectData.projectenddate) < TimeTracker.CurrentDate)
+                    continue;
                 const projLines = [];
                 let projGoal = "";
-                if (D.Int(projectData.projectscope) > 0) projGoal += `${"●".repeat(D.Int(projectData.projectscope))} `;
-                if (projectData.projectscope_name && projectData.projectscope_name.length > 2) projGoal += projectData.projectscope_name;
+                if (D.Int(projectData.projectscope) > 0)
+                    projGoal += `${"●".repeat(D.Int(projectData.projectscope))} `;
+                if (projectData.projectscope_name && projectData.projectscope_name.length > 2)
+                    projGoal += projectData.projectscope_name;
                 projLines.push(C.HANDOUTHTML.projects.goal(projGoal));
                 if (projectData.projectgoal && projectData.projectgoal.length > 2)
                     projLines.push(`${C.HANDOUTHTML.projects.tag("HOOK:")}${C.HANDOUTHTML.projects.hook(projectData.projectgoal)}`);
@@ -1063,8 +1140,8 @@ const Handouts = (() => {
                     "projectstake3"
                 ])
                     if (
-                        projectData[stakeVar] &&
-                        ((!_.isNaN(D.Int(projectData[stakeVar])) && D.Int(projectData[stakeVar]) > 0) || projectData[stakeVar].length > 2)
+                        projectData[stakeVar]
+                        && ((!_.isNaN(D.Int(projectData[stakeVar])) && D.Int(projectData[stakeVar]) > 0) || projectData[stakeVar].length > 2)
                     )
                         stakeCheck = true;
                 teamworkCheck = D.Int(projectData.projectteamwork1) + D.Int(projectData.projectteamwork2) + D.Int(projectData.projectteamwork3) > 0;
@@ -1080,17 +1157,22 @@ const Handouts = (() => {
                     const stakeStrings = [];
                     for (let i = 1; i <= 3; i++) {
                         const [attr, val] = [projectData[`projectstake${i}_name`], D.Int(projectData[`projectstake${i}`])];
-                        if (attr && attr.length > 2 && !_.isNaN(val)) stakeStrings.push(`${attr} ${"●".repeat(val)}`);
+                        if (attr && attr.length > 2 && !_.isNaN(val))
+                            stakeStrings.push(`${attr} ${"●".repeat(val)}`);
                     }
                     projLines.push(`${C.HANDOUTHTML.projects.tag("STAKED:")}${C.HANDOUTHTML.projects.stake(stakeStrings.join(", "))}`);
-                    if (!teamworkCheck) projLines.push(`${C.HANDOUTHTML.projects.tag("")}${C.HANDOUTHTML.projects.teamwork("")}`);
+                    if (!teamworkCheck)
+                        projLines.push(`${C.HANDOUTHTML.projects.tag("")}${C.HANDOUTHTML.projects.teamwork("")}`);
                 } else if (teamworkCheck) {
                     projLines.push(`${C.HANDOUTHTML.projects.tag("")}${C.HANDOUTHTML.projects.stake("")}`);
                 }
                 if (projectData.projectlaunchresults && projectData.projectlaunchresults.length > 2)
-                    if (projectData.projectlaunchresults.includes("CRITICAL")) projLines.push(C.HANDOUTHTML.projects.critSucc("CRITICAL"));
-                    else projLines.push(C.HANDOUTHTML.projects.succ(`Success (+${projectData.projectlaunchresultsmargin})`));
-                else projLines.push(C.HANDOUTHTML.projects.succ(""));
+                    if (projectData.projectlaunchresults.includes("CRITICAL"))
+                        projLines.push(C.HANDOUTHTML.projects.critSucc("CRITICAL"));
+                    else
+                        projLines.push(C.HANDOUTHTML.projects.succ(`Success (+${projectData.projectlaunchresultsmargin})`));
+                else
+                    projLines.push(C.HANDOUTHTML.projects.succ(""));
                 if (projectData.projectenddate) {
                     projLines.push(C.HANDOUTHTML.projects.endDate(`Ends ${projectData.projectenddate.toUpperCase()}`));
                     if (D.Int(projectData.projectinccounter) > 0)
@@ -1103,10 +1185,12 @@ const Handouts = (() => {
                             )}`
                         );
                 }
-                if (projLines.length === 1 && projLines[0] === C.HANDOUTHTML.projects.goal("")) continue;
+                if (projLines.length === 1 && projLines[0] === C.HANDOUTHTML.projects.goal(""))
+                    continue;
                 charLines.push(C.HANDOUTHTML.main(projLines.join("")));
             }
-            if (charLines.length === 0) continue;
+            if (charLines.length === 0)
+                continue;
             charLines.unshift(C.HANDOUTHTML.projects.charName(D.GetName(char).toUpperCase()));
             noteSections.push(charLines.join(""));
         }
@@ -1114,6 +1198,7 @@ const Handouts = (() => {
         noteObj.set("notes", C.HANDOUTHTML.main(noteSections.join("<br>")));
         return noteObj;
     };
+    /*
     const summarizePrestation = (title, charObjs) => {
         delHandoutObjs("Prestation Summary", "prestation");
         const // noteObj = makeHandoutObj(title, "prestation"),
@@ -1206,7 +1291,8 @@ const Handouts = (() => {
         UpdateRollEffects: () => {
             parseRollEffects("Location Effects", state.VAMPIRE.Roller, "newRollEffects", "location");
             parseRollEffects("Roll Effects", state.VAMPIRE.Roller, "newRollEffects", "general");
-        }
+        },
+        UpdateObjectiveHandout: updateObjectiveHandout
     };
 })();
 

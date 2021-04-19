@@ -1188,6 +1188,8 @@ const Session = (() => {
             || (!isCheckingForMonologues && isSkippingMonologues && remorseCheck())
             || (!isCheckingForMonologues && !isSkippingMonologues)
         ) {
+            Handouts.UpdateObjectiveHandout();
+            D.Flag("Objectives Handout Updated!");
             changeMode("Inactive", true, [
                 [
                     D.Chat,

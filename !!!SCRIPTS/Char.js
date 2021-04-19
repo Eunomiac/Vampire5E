@@ -1013,8 +1013,14 @@ const Char = (() => {
                     }
                     case "tempstat": {
                         const [charObj] = charObjs;
-                        const [statName, delta, repRowStatName] = args;
-                        adjustTempStat(charObj, statName, D.Int(delta), repRowStatName);
+                        if (args.length) {
+                            const [statName, delta, repSection] = args;
+                            setTempStat(charObj, statName, D.Int(delta), repSection);
+                        } else {
+                            D.Alert(
+                                "Syntax:<br><br><b>!char set tempstat (name) (total)<br>!char unreg/set/lock/unlock (initial) (rowNum) [amount]<br>!char set weekly reset</b>"
+                            );
+                        }
                         break;
                     }
                     case "stat": {
@@ -3510,7 +3516,7 @@ const Char = (() => {
             );
         return false;
     };
-    const adjustTempStat = (charRef, statName, delta, repRowStatName) => {
+    const setTempStat = (charRef, statName, delta, repSection) => {
         /*  ********************
             - Will have to log active temp stats in STATE, and include what they're from
                 - So you don't keep increasing the delta by repeat calls every time Fielded Assets is updated
@@ -3518,16 +3524,32 @@ const Char = (() => {
                 - Then another func can handle going through the STATE records, totalling the temp deltas, and setting the final charsheet value.
         *************************** */
         const charObj = D.GetChar(charRef);
-        statName = `${statName}mod`.replace(/modmod$/gu, "mod");
-        const [curStatDelta, deltaStatAttr] = D.GetStat(charObj, statName, repRowStatName);
-        const [curStatVal, masterStatAttr] = D.GetStat(charObj, statName.replace(/mod$/gu, ""), repRowStatName);
-        DB({charObj, statName, delta, repRowStatName, curStatDelta, deltaStatAttr, curStatVal, masterStatAttr}, "adjustTempStat");
-        if (masterStatAttr) {
-            const masterStatName = masterStatAttr.get("name");
-            const tempStatName = `${masterStatName}mod`;
-            const newTempStat = curStatDelta + delta;
-            // setAttrs(charObj.id, {[tempStatName]: newTempStat});
+        if (repSection) {
+            const [repStatData] = D.GetRepStats(charObj, repSection, {name: statName}, repSection);
+            if (!repStatData) {
+                D.Flag(`No Rep Stat Found for '${repSection}:"${statName}"'`);
+                return;
+            }
+            statName = `${repStatData.fullName}mod`;
+            DB({repStatData, statName}, "setTempStat");
+        } else {
+            statName = D.LCase(`${statName}mod`.replace(/modmod$/gu, "mod"));
         }
+        DB({statName, delta, repSection}, "adjustTempStat");
+        setAttrs(charObj.id, {[statName]: D.Int(delta)});
+        /*
+
+            DB({statName, delta}, "adjustTempStat");
+            const [curStatDelta, deltaStatAttr] = D.GetStat(charObj, statName, repRowStatName);
+            const [curStatVal, masterStatAttr] = D.GetStat(charObj, statName.replace(/mod$/gu, ""), repRowStatName);
+            DB({charObj, statName, delta, repRowStatName, curStatDelta, deltaStatAttr, curStatVal, masterStatAttr}, "adjustTempStat");
+            if (masterStatAttr) {
+                const masterStatName = masterStatAttr.get("name");
+                const tempStatName = `${masterStatName}mod`;
+                const newTempStat = curStatDelta + delta;
+                // setAttrs(charObj.id, {[tempStatName]: newTempStat});
+            }
+        } */
     };
     const sortTimeline = (charRef) => {
         D.SortRepSec(charRef, "timeline", "tlsortby", true, (val) => val || -200);
@@ -4316,7 +4338,7 @@ const Char = (() => {
         AdjustTrait: adjustTrait,
         AdjustHunger: adjustHunger,
         UpdateHunger: updateHunger,
-        AdjustStatMod: adjustTempStat,
+        AdjustStatMod: setTempStat,
         RefreshWillpower: refreshWillpower,
         DaySleep: daysleep,
         AwardXP: awardXP,

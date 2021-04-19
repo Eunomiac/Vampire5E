@@ -1,4 +1,6 @@
-﻿void MarkStart("Roller");
+﻿// STANDARD: CTRL-K + J, 3, 2
+// CHAT COMMANDS: CTRL-K + J, 5, 2
+void MarkStart("Roller");
 const Roller = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Roller";
@@ -104,6 +106,7 @@ const Roller = (() => {
                 }
     };
     const onChatCall = (call, args, objects, msg) => {
+        // CTRL-K + 5, 2
         switch (call) {
             case "opp": {
                 switch (D.LCase(call = args.shift())) {
@@ -272,21 +275,25 @@ const Roller = (() => {
                 const charObjs = Listener.GetObjects(objects, "character");
                 if (args.includes("selected")) {
                     const params = Char.SelectedTraits;
-                    makeSecretRoll(getRollChars(charObjs), params.join(","));
+                    makeSecretRoll(getRollChars(charObjs), params.join("+"));
                 } else if (args.length) {
-                    makeSecretRoll(getRollChars(D.GetChars("registered")), args.map((x, i) => {
-                        if (D.LCase(x) === "int")
-                            return i ? "intelligence" : "intimidation";
-                        if (`${x}`.length === 3 && (D.LCase(x) in C.TRAITLOOKUP))
-                            return C.TRAITLOOKUP[D.LCase(x)];
-                        return D.LCase(x).replace(/ /gu, "_");
-                    }).join(","));
+                    // args = _.without(args.map((x) => x.trim()), "+").join("+").split("+");
+                    makeSecretRoll(getRollChars(_.isEmpty(charObjs) ? D.GetChars("registered") : charObjs), args.join(" "));
                 } else {
                     Char.PromptTraitSelect(
                         charObjs.map((x) => x.id),
                         "!roll",
                         "secret selected"
                     );
+                }
+                break;
+            }
+            case "secretsurge": {
+                const charObj = D.GetChar(args.shift());
+                if (VAL({charObj}, "!roll secretsurge")) {
+                    const bloodSurge = C.BLOODPOTENCY[D.Int(D.GetStatVal(charObj.id, "blood_potency"))].bp_surge;
+                    quickRouseCheck(charObj);
+                    makeSecretRoll([charObj], `${bloodSurge}`, false, false, true);
                 }
                 break;
             }
@@ -543,6 +550,10 @@ const Roller = (() => {
             case "effects":
             case "effect": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "update": {
+                        Handouts.UpdateRollEffects();
+                        break;
+                    }
                     case "menu": {
                         const charObjs = Listener.GetObjects(objects, "character");
                         const charNameString = (charObjs.length && charObjs.map((x) => D.GetName(x, true)).join(", ")) || "";
@@ -1259,13 +1270,20 @@ const Roller = (() => {
             startPlayerBlock: `<div style="display: block; width: 280px; padding: 45px 5px; margin: -35px 0px -7px -42px; color: ${C.COLORS.white}; font-family: Percolator; text-align: left; font-size: 16px; background: url('https://t4.ftcdn.net/jpg/00/78/66/11/240_F_78661103_aowhE8PWKrHRtoCUogPvkfWs22U54SuU.jpg') center no-repeat; background-size: 100% 100%; z-index: 100; position: relative;">`,
             playerTopLineStart:
                 "<div style=\"display: block; margin-left: 28px;  width: 100%; font-size: 24px; font-family: Percolator; height: 12px; padding: 3px 0px; text-align: left;  margin-top: -16px;\">",
+            playerTopLineStartRed:
+                `<div style="display: block; color: ${C.COLORS.brightred}; width: 100%; font-size: 32px; font-family: Percolator; height: 12px; padding: 3px 0px; text-align: center;  margin-top: -26px; margin-bottom: 10px; text-shadow: 0 0 2px red, 0 0 2px red, 0 0 2px red;">`,
             playerBotLineStart: `<div style="width: 100%; height: auto; line-height: 15px; display: block;  text-align: left; color: ${C.COLORS.white}; margin: 3px 0px 9px 48px;">`,
+            playerBotLineStartRed: `<div style="width: 100%; height: auto; line-height: 15px; display: block;  text-align: left; color: ${C.COLORS.white}; margin: 3px 0px -10px 48px;">`,
             grey: `<span style="display:inline-block; color: ${C.COLORS.brightgrey}; font-size: 24px; font-weight: bold;">`,
             greyS: `<span style="display:inline-block; color: ${C.COLORS.brightgrey}; display: inline-block; line-height: 14px; font-family: Percolator; vertical-align: top; margin-right: 5px; margin-left: -5px;">`,
+            redS: `<span style="display:inline-block; color: ${C.COLORS.brightred}; display: inline-block; line-height: 14px; font-family: Percolator; vertical-align: top; margin-right: 5px; margin-left: -5px; text-shadow: 0 0 2px red, 0 0 2px red, 0 0 2px red;">`,
             white: `<span style="display:inline-block; color: ${C.COLORS.white}; font-size: 24px; font-weight: bold;">`,
             whiteB: `<span style="display:inline-block; color: ${C.COLORS.white}; font-size: 30px; font-weight: bold;">`,
-            greyPlus: `<span style="color: ${C.COLORS.brightgrey}; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 20px; vertical-align: top; line-height: 14px;"> + </span>`,
-            greyMinus: `<span style="color: ${C.COLORS.brightgrey}; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 20px; vertical-align: top; line-height: 14px;"> - </span>`
+            greyPlus: `<span style="color: ${C.COLORS.brightgrey}; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 20px; font-family: Voltaire; font-size: 18px; vertical-align: top; line-height: 14px;"> + </span>`,
+            greyMinus: `<span style="color: ${C.COLORS.brightgrey}; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 20px; font-family: Voltaire; font-size: 18px; vertical-align: top; line-height: 14px;"> - </span>`,
+            greyPlusShort: `<span style="color: ${C.COLORS.brightgrey}; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 5px; font-family: Voltaire; font-size: 18px; vertical-align: top; line-height: 14px;"> + </span>`,
+            greyMinusShort: `<span style="color: ${C.COLORS.brightgrey}; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 5px; font-family: Voltaire; font-size: 18px; vertical-align: top; line-height: 14px;"> - </span>`,
+            bloodSurgeButton: "<div style=\" width: 100%; height: auto; margin: 0 0 -30px 0; line-height: 15px; display: block; text-align: center; color: rgba( 255 , 255 , 255 , 1 ); \"> <span><a href=\"!roll secretsurge @@CHARID@@\" style=\" padding: 2px 5px; border-radius: 10px; background-color: darkred; color: rgba(255,100,100,1); text-shadow: 0 0 2px black, 0 0 2px black, 0 0 2px black, 0 0 2px black, 0 0 2px black; color: white; \">Blood Surge?</a></span> </div>"
         }
     };
     const ROLLRESULTEFFECTS = {
@@ -2901,7 +2919,6 @@ const Roller = (() => {
     };
     const getRollData = (charObj, rollType, params, rollFlags, rollID) => {
         const traceID = TRACEON("getRollData", [charObj, rollType, params, rollFlags]);
-        rollID = rollID || D.RandomString(20);
         /* EXAMPLE RESULTS:
               {
                 charID: "-LN4P73XRfqCcI8U6c-t",
@@ -2929,13 +2946,11 @@ const Roller = (() => {
                 mod: 0,
                 diff: 3
               } */
-        DB({rollFlags}, "getRollData");
-        const playerObj = D.GetPlayer(charObj);
-        const playerCharObj = playerObj && playerObj.id !== D.GMID() && D.GetChar(playerObj.id);
-        const flagData = parseFlags(charObj, playerCharObj && playerCharObj.id, rollType, params, rollFlags);
+        rollID = rollID || D.RandomString(20);
         const isHuntRoll = rollType === "hunt";
         rollType = isHuntRoll ? "trait" : rollType;
-        const traitData = parseTraits(charObj, playerCharObj && playerCharObj.id, rollType, params);
+        const playerObj = D.GetPlayer(charObj);
+        const playerCharObj = playerObj && playerObj.id !== D.GMID() && D.GetChar(playerObj.id);
         const rollData = {
             charID: charObj.id,
             playerID: (playerObj && playerObj.id) || D.GMID(),
@@ -2943,15 +2958,6 @@ const Roller = (() => {
             playerCharID: playerCharObj && playerCharObj.id,
             type: rollType,
             hunger: D.Int(D.GetStatVal(charObj.id, "hunger")),
-            posFlagLines: flagData.posFlagLines,
-            negFlagLines: flagData.negFlagLines,
-            redFlagLines: flagData.redFlagLines,
-            goldFlagLines: flagData.goldFlagLines,
-            dicePool: flagData.flagDiceMod,
-            traits: traitData.traitList,
-            traitData: traitData.traitData,
-            posFlagMod: flagData.posFlagMod || 0,
-            negFlagMod: flagData.negFlagMod || 0,
             diffMod: 0,
             prefix: "",
             diff: null,
@@ -2962,6 +2968,29 @@ const Roller = (() => {
             isDiscRoll: rollFlags && rollFlags.isDiscRoll,
             rollFlags
         };
+        if (VAL({list: params})) {
+            Object.assign(rollData, params);
+            params = [...params.traits];
+        }
+        DB({rollType, params, rollData, rollFlags}, "getRollData");
+
+        const flagData = parseFlags(charObj, playerCharObj && playerCharObj.id, rollType, params, rollFlags);
+        Object.assign(rollData, {
+            posFlagLines: flagData.posFlagLines,
+            negFlagLines: flagData.negFlagLines,
+            redFlagLines: flagData.redFlagLines,
+            goldFlagLines: flagData.goldFlagLines,
+            dicePool: flagData.flagDiceMod,
+            posFlagMod: flagData.posFlagMod || 0,
+            negFlagMod: flagData.negFlagMod || 0
+        });
+
+        const traitData = parseTraits(charObj, playerCharObj && playerCharObj.id, rollType, params);
+        Object.assign(rollData, {
+            traits: traitData.traitList,
+            traitData: traitData.traitData
+        });
+
         rollData.isOblivionRoll = rollFlags && rollFlags.isOblivionRoll;
         DB({rollData}, "getRollData");
         rollData.charName = D.GetName(charObj);
@@ -3022,8 +3051,6 @@ const Roller = (() => {
                 break;
             }
             case "secret":
-                rollData.diff = 0;
-                rollData.mod = _.isNumber(traitData.mod) ? traitData.mod : 0;
                 break;
             case "frenzy":
                 [rollData.diff, rollData.mod] = params.slice(0, 2).map((x) => D.Int(x));
@@ -5368,16 +5395,62 @@ const Roller = (() => {
     // #endregion
 
     // #region SECRET ROLLS
-    const makeSecretRoll = (chars, params, isSilent, isHidingTraits) => {
+    const makeSecretRoll = (chars, params, isSilent, isHidingTraits, isBloodSurge) => {
         const traceID = TRACEON("makeSecretRoll", [chars, params, isSilent, isHidingTraits]);
-        // D.Alert(`Received Parameters: ${params}`)
+        // DB({params}, "makeSecretRoll");
         chars = _.flatten([chars]);
+        if (VAL({string: params})) { // int+sub+5v4:spec,flag
+            /* [
+                "int+sub+5v4:spec,flag",
+                "int+subv4:spec,flag",
+                "int+sub:spec+flag",
+                "int+sub-4v16:spec+flag",
+                "int+sub",
+                "int+subv4",
+                "int+sub+aus",
+                "int+sub+aus+4",
+                "int+sub+ausv5",
+                "intelligence + animal ken vs. 5"
+            ].forEach((params) => { */
+            const rollParams = {};
+            [rollParams.traits, rollParams.diff, rollParams.flags] = params.match(/^(.+?)(?:vs?\.? ?(\d+))?(?::(.+))?$/).slice(1, 4).map((x) => (x ? x.trim() : x));
+            rollParams.diff = rollParams.diff ? parseInt(rollParams.diff) : 0;
+            rollParams.traits = rollParams.traits.replace(/ ?(\+|,) ?/g, "+").replace(/-/gu, "+-").split("+");
+            const modCheck = rollParams.traits.pop();
+            if (/^-?\d+$/.test(modCheck)) {
+                rollParams.mod = parseInt(modCheck);
+            } else {
+                rollParams.mod = 0;
+                rollParams.traits.push(modCheck);
+            }
+            rollParams.flags = rollParams.flags ? rollParams.flags.split(/[^a-z0-9]/) : [];
+            /* console.log(params);
+                console.table(rollParams);
+            }) */
+
+            rollParams.traits = [rollParams.traits.map((x, i) => {
+                x = x.trim();
+                if (x === "int")
+                    return i === 0 ? "intelligence" : "intimidation";
+                if (`${x}`.length === 3 && x in C.TRAITLOOKUP)
+                    return C.TRAITLOOKUP[x];
+                return D.LCase(x).replace(/ /gu, "_");
+            }).join(",")];
+
+            DB({params, rollParams}, "makeSecretRoll");
+
+            params = rollParams;
+        }
         let rollData = buildDicePool(getRollData(chars[0], "secret", params)),
             [traitLine, playerLine] = ["", ""];
         const {dicePool} = rollData;
         const blocks = [];
 
-        if (isHidingTraits || rollData.traits.length === 0) {
+        if (isBloodSurge) {
+            playerLine = `${CHATSTYLES.space30 + CHATSTYLES.secret.redS}... rolling </span>${CHATSTYLES.secret.whiteB}${dicePool}</span>${
+                CHATSTYLES.space10
+            }${CHATSTYLES.secret.redS}${dicePool === 1 ? " die " : " dice "}...</span>${CHATSTYLES.space40}`;
+        } else if (isHidingTraits || rollData.traits.length === 0) {
             playerLine = `${CHATSTYLES.space30 + CHATSTYLES.secret.greyS}... rolling </span>${CHATSTYLES.secret.whiteB}${dicePool}</span>${
                 CHATSTYLES.space10
             }${CHATSTYLES.secret.greyS}${dicePool === 1 ? " die " : " dice "}...</span>${CHATSTYLES.space40}`;
@@ -5386,8 +5459,8 @@ const Roller = (() => {
                 .map((x) => x.display.toLowerCase())
                 .join(`</span><br>${CHATSTYLES.space30}${CHATSTYLES.secret.greyPlus}${CHATSTYLES.secret.white}`)}</span>`;
             if (rollData.mod !== 0)
-                playerLine += `${(rollData.mod > 0 ? CHATSTYLES.secret.greyPlus : "")
-                    + (rollData.mod < 0 ? CHATSTYLES.secret.greyMinus : "")
+                playerLine += `${(rollData.mod > 0 ? CHATSTYLES.secret.greyPlusShort : "")
+                    + (rollData.mod < 0 ? CHATSTYLES.secret.greyMinusShort : "")
                     + CHATSTYLES.secret.white
                     + Math.abs(rollData.mod)}</span>`;
         }
@@ -5397,10 +5470,11 @@ const Roller = (() => {
                 .map((x) => x.display)
                 .join(" + ");
             if (rollData.mod !== 0)
-                traitLine += (dicePool > 0 ? " + " : "") + (dicePool < 0 ? " - " : "") + Math.abs(rollData.mod);
+                traitLine += (rollData.mod > 0 ? " + " : "") + (rollData.mod < 0 ? " - " : "") + Math.abs(rollData.mod);
         } else {
             traitLine = rollData.mod + (rollData.mod === 1 ? " Die" : " Dice");
         }
+        let total, margin;
         _.each(chars, (char) => {
             rollData = getRollData(char, "secret", params);
             rollData.isSilent = isSilent || false;
@@ -5408,7 +5482,9 @@ const Roller = (() => {
             rollData = buildDicePool(rollData);
             let outcomeLine = "";
             const rollResults = rollDice(rollData);
-            const {total, margin} = rollResults;
+            DB({rollResults}, "makeSecretRoll");
+            total = rollResults.total;
+            margin = rollResults.margin;
             if ((total === 0 || margin < 0) && rollResults.H.botches > 0)
                 outcomeLine = `${CHATSTYLES.outcomeRedSmall}BESTIAL FAIL!`;
             else if (margin >= 0 && rollResults.critPairs.hb + rollResults.critPairs.hh > 0)
@@ -5421,36 +5497,57 @@ const Roller = (() => {
                 outcomeLine = `${CHATSTYLES.outcomeWhiteSmall}CRITICAL! (${rollData.diff > 0 ? `+${margin}` : total})`;
             else
                 outcomeLine = `${CHATSTYLES.outcomeWhiteSmall}SUCCESS! (${rollData.diff > 0 ? `+${margin}` : total})`;
-            blocks.push(
-                `${CHATSTYLES.secret.startBlock + CHATSTYLES.secret.blockNameStart + rollData.charName}</div>${
-                    CHATSTYLES.secret.diceStart
-                }${formatDiceLine(rollData, rollResults, 9, undefined, true)
-                    .replace(/text-align: center; height: 20px/gu, "text-align: center; height: 20px; line-height: 25px")
-                    .replace(/margin-bottom: 5px;/gu, "margin-bottom: 0px;")
-                    .replace(/(color: [^\s]*?; height:) 24px/gu, "$1 18px")
-                    .replace(/height: 24px/gu, "height: 20px")
-                    .replace(/height: 22px/gu, "height: 18px")}</div>${CHATSTYLES.secret.lineStart}${outcomeLine}</div></div></div>`
-            );
+            if (isBloodSurge)
+                blocks.push(`${`${CHATSTYLES.secret.startBlock + CHATSTYLES.secret.lineStart}+${total}`}</div></div>`.replace(/48%/u, "100%"));
+            else
+                blocks.push(
+                    `${CHATSTYLES.secret.startBlock + CHATSTYLES.secret.blockNameStart + rollData.charName}</div>${
+                        CHATSTYLES.secret.diceStart
+                    }${formatDiceLine(rollData, rollResults, 9, undefined, true)
+                        .replace(/text-align: center; height: 20px/gu, "text-align: center; height: 20px; line-height: 25px")
+                        .replace(/margin-bottom: 5px;/gu, "margin-bottom: 0px;")
+                        .replace(/(color: [^\s]*?; height:) 24px/gu, "$1 18px")
+                        .replace(/height: 24px/gu, "height: 20px")
+                        .replace(/height: 22px/gu, "height: 18px")}</div>${CHATSTYLES.secret.lineStart}${outcomeLine}</div></div></div>`
+                );
+
             if (rollData.isSilent)
                 D.Chat(
                     "Storyteller",
                     `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}<span style="width: 100%; text-align: center; text-align-last: center;">(SECRET ROLL)</span></div></div>`
                 );
             else if (rollData.playerID)
-                D.Chat(
-                    rollData.playerID,
-                    `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`
-                );
+                if (isBloodSurge) {
+                    D.Chat(
+                        rollData.playerID,
+                        `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStartRed}blood surging</div>${CHATSTYLES.secret.playerBotLineStartRed}${playerLine}</div></div>`
+                    );
+                } else {
+                    D.Chat(
+                        rollData.playerID,
+                        `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div>${CHATSTYLES.secret.bloodSurgeButton.replace(/@@CHARID@@/u, D.GetCharData(rollData.playerCharID).initial)}</div>`
+                    );
+                }
         });
-        D.Chat(
-            "Storyteller",
-            `${CHATSTYLES.fullBox
-                + CHATSTYLES.secret.topLineStart
-                + (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling")
-                + (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${
-                rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""
-            }</div>${blocks.join("")}</div></div>`
-        );
+        if (isBloodSurge)
+            D.Chat(
+                "Storyteller",
+                `${`${CHATSTYLES.fullBox
+                    + CHATSTYLES.secret.topLineStart
+                }${D.GetName(rollData.playerCharID, true)} Blood Surge: +${total}`
+                }</div></div>`.replace(/border-bottom:[^;]*;/gu, "border-bottom: none;")
+            );
+        else
+            D.Chat(
+                "Storyteller",
+                `${CHATSTYLES.fullBox
+                    + CHATSTYLES.secret.topLineStart
+                    + (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling")
+                    + (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${
+                    rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""
+                }</div>${blocks.join("")}</div></div>`
+            );
+
         TRACEOFF(traceID);
     };
     // #endregion
