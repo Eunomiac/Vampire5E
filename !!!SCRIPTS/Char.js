@@ -172,6 +172,7 @@ const Char = (() => {
 
         // delete STATE.REF.badAttrNames;
         STATE.REF.registry = STATE.REF.registry || {};
+        STATE.REF.objectiveRegistry = STATE.REF.objectiveRegistry || {};
         STATE.REF.weeklyResources = STATE.REF.weeklyResources || {};
         STATE.REF.customStakes = STATE.REF.customStakes || {};
         STATE.REF.customStakes.coterie = STATE.REF.customStakes.coterie || [];
@@ -950,6 +951,19 @@ const Char = (() => {
             case "set":
             case "add": {
                 switch (D.LCase((call = args.shift()))) {
+                    case "scheme": {
+                        const rowID = args.shift();
+                        if (VAL({id: rowID}, "!char set scheme"))
+                            switch (D.LCase((call = args.shift()))) {
+                                case "reviewed": {
+                                    reviewObjective(rowID, args.join(" "));
+                                    break;
+                                }
+                                // no default
+                            }
+
+                        break;
+                    }
                     case "hunttraits": {
                         const [charObj] = charObjs;
                         if (args.length) {
@@ -2192,6 +2206,25 @@ const Char = (() => {
         const charFlags = (D.GetStatVal(charRef, "charflags") || "").split("|");
         D.SetStat(charRef, _.without(charFlags, flagName).join("|"));
     };
+
+
+    const reviewObjective = (rowID, comment) => {
+        comment = comment.replace(/%N/gu, "\n\n");
+        if (rowID in STATE.REF.objectiveRegistry) {
+            const charObj = D.GetChar(STATE.REF.objectiveRegistry[rowID].init);
+            STATE.REF.objectiveRegistry[rowID].wasReviewed = true;
+            STATE.REF.objectiveRegistry[rowID].comments = comment;
+            setAttrs(charObj.id, {
+                [`${STATE.REF.objectiveRegistry[rowID].prefix}storytellernotes`]: comment,
+                [`${STATE.REF.objectiveRegistry[rowID].prefix}storytellernotes_alert`]: 1,
+                [`${STATE.REF.objectiveRegistry[rowID].prefix}storytellernotes_toggle`]: 1
+            });
+            Handouts.UpdateObjectiveHandout();
+            D.Alert(STATE.REF.objectiveRegistry[rowID].summary, "Objective Marked as Reviewed.");
+        } else {
+            D.Flag(`ERROR: No objective with rowID '${rowID}' found.`);
+        }
+    };
     // #endregion
 
     // #region GETTERS: Checking Character Status, Character Chat Prompt
@@ -2558,6 +2591,58 @@ const Char = (() => {
             "<h3>OWING Boons Without Partners</h3>",
             ...checkData.boonsOwing.map((x) => `${x.from} --> ${x.to} (${x.type})<br>`)
         ], "Prestation Review");
+    };
+    const getObjectives = (charRef = "registered", isExcludingReviewed = true) => {
+        const objectiveData = [];
+        const registeredRowIDs = Object.keys(STATE.REF.objectiveRegistry);
+        // let currentRowIDs = [];
+        // const reviewedRowIDs = Object.keys(STATE.REF.ObjectivesRegistry).filter((rowID) => !STATE.REF.ObjectivesRegistry[init][rowID].wasReviewed);
+        D.GetChars(charRef).forEach((charObj) => {
+            const init = D.GetCharData(charObj).initial;
+            objectiveData.push(...Object.values(D.GetRepStats(init, "project", null, null, "rowID"))
+                .filter((rowData) => !_.any(rowData, (data) => data.name === "schemetype")
+                                  || (_.any(rowData, (data) => data.name === "schemetype" && D.Int(data.val) === 0)))
+                .map((rowData) => ({
+                    init,
+                    rowID: rowData[0].rowID,
+                    prefix: `repeating_project_${rowData[0].rowID}_`,
+                    comments: (rowData.find((data) => data.name === "storytellernotes") || {val: ""}).val,
+                    summary: (rowData.find((data) => data.name === "projectscope_name") || {val: ""}).val,
+                    details: (rowData.find((data) => data.name === "projectdetails") || {val: ""}).val,
+                    priority: D.Int((rowData.find((data) => data.name === "objectivepriority") || {val: "0"}).val)
+                })));
+        });
+        // Step One: Remove registry entries that are no longer in character sheets.
+        const currentRowIDs = _.uniq(objectiveData.map((data) => data.rowID));
+        // DB({registeredRowIDs, currentRowIDs, different: _.difference(registeredRowIDs, currentRowIDs)}, "getObjectives");
+
+        _.difference(registeredRowIDs, currentRowIDs).forEach((rowID) => delete STATE.REF.objectiveRegistry[rowID]);
+
+        // Step Two: Go through objectiveData, registering new objectives and re-registering objectives if their data has changed.
+        // const reportLines = [];
+        objectiveData.forEach((newObjData) => {
+            let isRegistering = true;
+            // reportLines.push("===============");
+            // reportLines.push(newObjData);
+            // DB({rowID: newObjData.rowID, test: newObjData.rowID in STATE.REF.objectiveRegistry, registrySize: Object.keys(STATE.REF.objectiveRegistry).length}, "getObjectives");
+            if (newObjData.rowID in STATE.REF.objectiveRegistry) {
+                const regData = STATE.REF.objectiveRegistry[newObjData.rowID];
+                // reportLines.push("vvvvvvvvvvvvvvv");
+                // reportLines.push(regData);
+                isRegistering = _.any(["summary", "details", "priority"], (key) => newObjData[key] !== regData[key]);
+            }
+            if (isRegistering) {
+                newObjData.wasReviewed = false;
+                STATE.REF.objectiveRegistry[newObjData.rowID] = newObjData;
+            }
+        });
+        // DB({reportLines}, "getObjectives");
+
+        // Step Three: If excluding reviewed, filter out objectives with "wasReviewed" flag set.
+        if (isExcludingReviewed)
+            return objectiveData.filter((data) => !STATE.REF.objectiveRegistry[data.rowID].wasReviewed);
+
+        return objectiveData;
     };
     // #endregion
 
@@ -4329,6 +4414,7 @@ const Char = (() => {
         get REGISTRY() {
             return STATE.REF.registry;
         },
+        GetObjectives: getObjectives,
         TogglePC: togglePlayerChar,
         SetNPC: setCharNPC,
         ProcessTokenPowers: processTokenPowers,

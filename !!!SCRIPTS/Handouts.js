@@ -101,10 +101,6 @@ const Handouts = (() => {
                         delTableRow("Roll Effects", args.join(" "));
                         break;
                     }
-                    case "objective": case "objectives": {
-                        updateObjectiveHandout();
-                        break;
-                    }
                     // no default
                 }
                 break;
@@ -144,6 +140,10 @@ const Handouts = (() => {
                     }
                     case "prestation": {
                         // summarizePrestation("Prestation Summary", D.GetChars("registered"));
+                        break;
+                    }
+                    case "objectives": {
+                        updateObjectiveHandout();
                         break;
                     }
                     case "charsummary": {
@@ -310,14 +310,17 @@ const Handouts = (() => {
     const updateHandout = (title, category, contents, isWritingGM = false, isVerbose = false, isRawCode = false) => {
         const handoutObj = getHandoutObj(title);
         const isShiftingUp = handoutObj && handoutObj.get("avatar");
-        const noteData = {
-            notes: isRawCode ? `<div style="display: block; width: 545px; margin-left: -30px; font-family: 'Fira Code'; font-size: 8px;">${contents}</div>` : C.HANDOUTHTML.main(D.JS(contents, isVerbose), isShiftingUp),
-            gmnotes: typeof contents === "string" ? contents : JSON.stringify(contents)
-        };
+        const noteData = {};
+        if (isRawCode === true)
+            noteData.notes = `<div style="display: block; width: 545px; margin-left: -30px; font-family: 'Fira Code'; font-size: 8px;">${contents}</div>`;
+        else if (isRawCode === "full")
+            noteData.notes = contents;
+        else
+            noteData.notes = C.HANDOUTHTML.main(D.JS(contents, isVerbose), isShiftingUp);
         if (handoutObj) {
             handoutObj.set("notes", noteData.notes);
             if (isWritingGM)
-                handoutObj.set("gmnotes", noteData.gmnotes);
+                handoutObj.set("gmnotes", typeof contents === "string" ? contents : JSON.stringify(contents));
         } else {
             makeHandoutObj(title, category, contents, isWritingGM, isVerbose, isRawCode);
         }
@@ -1031,15 +1034,84 @@ const Handouts = (() => {
         // #region Config: HTML Styles
         const handoutWidth = 540;
         const HTML = {
-            main: (content) => `<div style="display: block; width: ${handoutWidth}px; height: auto; margin-left: -30px;">${content}</div>`,
-            h3: (content, bgColor, fontColor = "white") => `<h3 style="width: 100%; background-color: ${bgColor}; font-family: 'Cinzel Decorative'; text-indent: 10px; color: ${fontColor};">${content}</h3>`,
-            block: (content) => `<div style="display: block; width: 100%; margin: 5px 0; padding: 0;">${content}</div>`,
-            row: (content) => `<div style="display: block; width: 100%; margin: 5px 0px; padding-bottom: 5px; border-bottom: 1px solid black;">${content}</div>`,
-            init: (init, bgColor, fontColor = "white") => `<div style="display: inline-block; width: 28px; vertical-align: top;">
-                    <span style="display: inline-block; vertical-align: top; font-weight: bold; font-family: Oswald; background-color: ${bgColor}; color: ${fontColor}; border: 1px solid black; line-height: 17px; height: 18px; width: 18px; text-align: center; margin-top: -2px;">${init}</span>
-                </div>`,
-            summary: (content) => `<div style="display: inline-block; width: ${handoutWidth - 28}px; font-family: 'Cormorant Garamond'; font-weight: bold; font-size: 16px; line-height: 18px;">${content}</div>`,
-            details: (content) => `<div style="display: inline-block; width: ${handoutWidth - 40}px; font-family: 'Voltaire'; font-size: 12px; line-height: 14px; margin: 5px 0px 5px 40px;">${content}</div>`
+            main: (content) => `<div style="
+                display: block;
+                height: auto; width: ${handoutWidth}px;
+                margin-left: -30px;
+                ">${content}</div>`,
+            h3: (content, bgColor, fontColor = "white") => `<h3 style="
+                width: 100%;
+                background-color: ${bgColor};
+                font-family: 'Cinzel Decorative'; color: ${fontColor};
+                text-indent: 10px;
+                ">${content}</h3>`,
+            block: (content) => `<div style="
+                display: block;
+                width: 100%;
+                margin: 5px 0;
+                padding: 0;
+                ">${content}</div>`,
+            row: (content) => `<div style="
+                display: block;
+                width: 100%;
+                margin: 5px 0px;
+                padding-bottom: 5px;
+                border-bottom: 1px solid black;
+                ">${content}</div>`,
+            box: (content) => `<div style="
+                display: inline-block;
+                width: 28px;
+                vertical-align: top;
+                ">${content}</div>`,
+            init: (content, bgColor, fontColor = "white") => `<span style="
+                display: inline-block;
+                height: 18px; width: 18px;
+                margin-top: -2px;
+                vertical-align: top;
+                font-family: Oswald; color: ${fontColor}; font-weight: bold; line-height: 17px; text-align: center;
+                background-color: ${bgColor};
+                border: 1px solid black;
+                ">${content}</span>`,
+            summary: (content) => `<div style="
+                display: inline-block;
+                width: ${handoutWidth - 28}px;
+                font-family: 'Cormorant Garamond'; font-weight: bold; font-size: 16px; line-height: 18px;
+                ">${content}</div>`,
+            details: (content) => `<div style="
+                display: inline-block;
+                width: ${handoutWidth - 40}px;
+                margin: 5px 0px 5px 40px;
+                font-family: 'Voltaire'; font-size: 12px; line-height: 14px;
+                ">${content}</div>`,
+            buttons: {
+                refresh: () => `<span style="
+                display: block;
+                height: 11px; width: 70px;
+                margin: 0 4px 0 auto;
+                "><a style="
+                    display: inline-block;
+                    height: 20px; width: 100%;
+                    font-family: Oswald; color: ${C.COLORS.darkred}; font-size: 16px; font-weight: bold; line-height: 18px; text-align: center;
+                    text-decoration: none; text-transform: uppercase;
+                    background-color: ${C.COLORS.palepalered};
+                    border-radius: 10px; border: 2px solid ${C.COLORS.darkred};
+                " href="!handouts get objectives">Refresh</a>
+                </span>`,
+                flagReviewed: (label, command, bgColor, fontColor) => `<span style="
+                    display: inline-block;
+                    height: 18px; width: 18px;
+                    margin-top: 1px; margin-bottom: -1px;
+                    vertical-align: top;                
+                    "><a style="
+                        display: inline-block;
+                        height: 100%; width: 100%;
+                        font-family: Oswald; color: ${fontColor}; font-size: 16px; font-weight: bold; line-height: 17px; text-align: center;
+                        text-decoration: none;
+                        background-color: ${bgColor};
+                        border-radius: 50%; border: 1px solid black;
+                    " href="${command}">${label}</a>
+                    </span>`
+            }
         };
         const initColors = {
             A: [C.COLORS.black, C.COLORS.brightbrightgrey],
@@ -1050,24 +1122,9 @@ const Handouts = (() => {
         };
         // #endregion
         // #region Step One: Compile FieldSet Data
-        const objectiveData = [];
-        D.GetChars("registered").forEach((charObj) => {
-            const init = D.GetCharData(charObj).initial;
-            objectiveData.push(...Object.values(D.GetRepStats(init, "project", null, null, "rowID"))
-                .filter((rowData) => !_.any(rowData, (data) => data.name === "schemetype")
-                                     || (_.any(rowData, (data) => data.name === "schemetype" && D.Int(data.val) === 0)))
-                .map((rowData) => ({
-                    init,
-                    prefix: `repeating_project_${rowData[0].rowID}_`,
-                    summary: (rowData.find((data) => data.name === "projectscope_name") || {val: ""}).val,
-                    details: (rowData.find((data) => data.name === "projectdetails") || {val: ""}).val,
-                    priority: D.Int((rowData.find((data) => data.name === "objectivepriority") || {val: "0"}).val)
-                })));
-        });
+        const objectiveData = Char.GetObjectives();
         DB({objectives: D.JS(objectiveData)}, "updateObjectiveHandout");
-        delHandoutObjs("Objectives Summary");
-        const noteObj = makeHandoutObj("Objectives Summary");
-        const priorityLines = [];
+        const priorityLines = [HTML.buttons.refresh()];
         const priorityStrings = {
             Hypothetical: 1,
             "Still Scheming": 2,
@@ -1082,18 +1139,22 @@ const Handouts = (() => {
                 const objRows = [];
                 priorityData.forEach((objective) => {
                     const objRow = [];
-                    objRow.push(HTML.init(objective.init, ...initColors[objective.init]));
+                    objRow.push(HTML.box([
+                        HTML.init(objective.init, ...initColors[objective.init]),
+                        HTML.buttons.flagReviewed("✔", `!char set scheme ${objective.rowID} reviewed ?{Comment:}`, C.COLORS.palepalegreen, C.COLORS.darkgreen)
+                    ].join(""))); // !prompt submit ?{Who is this prompt for?|Bacchus,B|Napier,N|Dr. Roy,R|Locke,L|Myself!,A} ?{What do you want to see during this player's spotlight? (Write the prompt as if you're speaking to the player directly.)}
                     objRow.push(HTML.summary(objective.summary));
                     if (objective.details)
                         objRow.push(HTML.details(objective.details));
+                    if (objective.comments)
+                        objRow.push(HTML.details(objective.comments));
                     objRows.push(HTML.row(objRow.join("")));
                 });
                 objRows[objRows.length - 1] = objRows[objRows.length - 1].replace(/border[^;]*;/u, "border: none;");
                 priorityLines.push(HTML.block(objRows.join("")));
             }
         });
-        noteObj.set("notes", HTML.main(priorityLines.join("")));
-        return noteObj;
+        updateHandout("Objectives Summary", null, HTML.main(priorityLines.join("")), false, false, "full");
         // #endregion
     };
     // #endregion

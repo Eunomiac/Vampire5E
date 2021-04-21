@@ -1,4 +1,5 @@
 ﻿<!DOCTYPE html>
+<!-- CTRL-K: J, 4, 2 -->
 <div class="sheet-fullwrapper">
 
     <!-- #region Hidden Attributes -->
@@ -3268,7 +3269,7 @@
         <!-- SCHEMES -->
         <div class="sheet-header1">
             <img src="https://i.imgur.com/wq9ilpV.png" /> <!-- Schemes -->
-        </div>
+        </div> <!-- CTRL-K: 6, 7 -->
         <fieldset class="repeating_project">
             <!-- OBJECTIVES -->
             <input class="sheet-containerselector" type="radio" name="attr_schemetype" value="0" checked />
@@ -3310,9 +3311,22 @@
                     </div>
                 </div>
                 <!-- Right Box -->
-                <div class="sheet-coltight1 sheet-doublerow sheet-rightbox sheet-squareBox sheet-centered">
+                <div class="sheet-coltight1 sheet-doublerow sheet-rightbox sheet-squareBox sheet-centered">                    
+                    <!-- Hover Popup Storyteller Notes -->
+                    <input class="sheet-containerselector" type="radio" name="attr_storytellernotes_toggle" value="0" checked/>
+                    <input class="sheet-containerselector" type="radio" name="attr_storytellernotes_toggle" value="1" />
+                    <div class="sheet-coltight1 sheet-storytellernotes">                        
+                        <input class="sheet-attr sheet-storytellernotesalert sheet-awaitingcomment" type="radio" name="attr_storytellernotes_alert" value="0" checked />
+                        <input class="sheet-attr sheet-storytellernotesalert sheet-commentsready" type="radio" name="attr_storytellernotes_alert" value="1" />
+                        <input class="sheet-hoverpopup" type="checkbox" value="1" /><span></span>
+                        <div class="sheet-coltight1">                            
+                            <textarea class="sheet-collapsibletitle sheet-editable" readonly>Storyteller Comments</textarea>
+                            <textarea class="sheet-collapsiblebody sheet-editable" readonly name="attr_storytellernotes"></textarea>
+                        </div>
+                    </div>
+                    <!-- Priority Dropdown -->
                     <div class="sheet-coltight1 sheet-completiondate">                        
-                        <div class="sheet-darkText sheet-engravedText sheet-objectivepriority">Priority:</div>
+                        <div class="sheet-darkText sheet-engravedText sheet-objectivepriority">Priority</div>
                         <select class="sheet-insetBox sheet-darkText" name="attr_objectivepriority" value="0">
                         <option value="5">Do ASAP!</option>
                         <option value="4">Ready to Go!</option>
@@ -3321,13 +3335,6 @@
                         <option value="1">Hypothetical</option>
                         <option value="0" selected>Ignore Me for Now</option>
                     </select>
-                    </div>
-                    <input class="sheet-containerselector" type="radio" name="attr_archiveobjective_toggle" value="0"
-                        checked />
-                    <input class="sheet-containerselector" type="radio" name="attr_archiveobjective_toggle" value="1" />
-                    <div class="sheet-coltight1 sheet-archive" style="height: 25px;">
-                        <input class="sheet-attr" type="checkbox" name="attr_archiveobjective" value="1" />
-                        <span>Archive</span>
                     </div>
                 </div>
             </div>
@@ -7299,6 +7306,10 @@
             }
         });
     
+        on("change:repeating_project:objectivepriority, change:repeating_project:projectdetails, change:repeating_project:projectscope_name", (eInfo) => {
+            if (eInfo.sourceType !== "sheetworker")
+                setAttrs({repeating_project_storytellernotes_alert: 0});
+        });
         on("change:repeating_project:eventdate", (eInfo) => {
             if (eInfo.sourceType !== "sheetworker") {
                 log("", "████ CHANGE DETECTED: EVENTDATE ████");
@@ -7308,6 +7319,24 @@
                 } else {
                     log("", `Invalid DString: ${JSON.stringify(eInfo)}`);
                     setAttrs({repeating_project_archiveevent_toggle: 0});
+                }
+            }
+        });
+    
+        on("change:repeating_project:objectivepriority", (eInfo) => {
+            switch (eInfo.newValue) {
+                case "0": case "1": case "2": {
+                    setAttrs({
+                        repeating_project_storytellernotes_toggle: 0,
+                        repeating_project_storytellernotes_alert: 0
+                    });
+                    break;
+                }
+                default: {
+                    setAttrs({
+                        repeating_project_storytellernotes_toggle: 1,
+                        repeating_project_storytellernotes_alert: 0
+                    });
                 }
             }
         });
@@ -8117,6 +8146,5 @@
         });
         // #endregion
     })();
-    
     
 </script>

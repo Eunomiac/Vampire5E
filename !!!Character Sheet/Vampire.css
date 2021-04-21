@@ -1,4 +1,7 @@
-﻿@import url('https://fonts.googleapis.com/css?family=Carrois+Gothic+SC|Alice|Bebas+Neue|Big+Shoulders+Text|DM+Serif+Text|Della+Respira|Jacques+Francois|Poly|Vidaloka|Berkshire+Swash|IM+Fell+English+SC|Cinzel:wght@400;700;900|Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700|Marcellus+SC|Oswald:wght@200;300;400;500;600;700|Smythe|Voltaire&display=swap');
+﻿/* CTRL-K: J, 4, 3, 2, 1 */
+@import url('https://fonts.googleapis.com/css?family=Carrois+Gothic+SC|Alice|Bebas+Neue|Big+Shoulders+Text|DM+Serif+Text|Della+Respira|Jacques+Francois|Poly|Vidaloka|Berkshire+Swash|IM+Fell+English+SC|Cinzel:wght@400;700;900|Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700|Marcellus+SC|Oswald:wght@200;300;400;500;600;700|Smythe|Voltaire&display=swap');
+
+
 
 /* #region FONT STORAGE */
 	/* #region BODY FONTS */
@@ -2855,24 +2858,6 @@
 	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox div.sheet-completiondate {
 		margin: 7px 5px 5px 1.5px;
 	}
-	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-objectivepriority {
-		height: 15px;
-		font-size: 14px;
-		text-align: center;
-		text-align-last: center;
-		font-variant: small-caps;
-		margin-top: 12px;
-		margin-bottom: 2px;
-	}
-
-	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-completiondate select {			
-		font-family: 'Voltaire';
-		transform-origin: left;
-		transform: scaleX(0.75);
-		width: calc(84px / 0.75);
-		margin-left: -7px;
-		text-indent: 3px;	
-	}
 	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-completiondate input,
 	.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox div.sheet-completiondate input,
 	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox div.sheet-completiondate input {
@@ -2910,7 +2895,8 @@
 	.charsheet div.sheet-scheme.sheet-event div.sheet-mainleft div.sheet-topline input.sheet-goal {
 		width: calc(100% - 20px - 2*(5px));
 	}
-
+/*			#endregion */
+/*			#region Objectives */
 	.charsheet div.sheet-scheme.sheet-objective div.sheet-mainleft div.sheet-topline textarea.sheet-goal {
 		height: 50px;
 		width: calc(100% - 20px - 2*(5px) - 2*(5px));
@@ -2919,9 +2905,90 @@
 		line-height: 16px;
 		margin-left: 6px;
 	}
-	
+
 	.charsheet div.sheet-scheme.sheet-objective div.sheet-mainleft div.sheet-togglebox {
 		width: 25px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-storytellernotes {
+		height: 25px;
+		margin: 0px;
+		margin-bottom: -25px;
+		text-align: right;
+		text-align-last: right;
+		z-index: 5;
+	}
+
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-storytellernotes input.sheet-attr {
+		margin-right: -80px;
+		display: none;
+	}
+
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-storytellernotes input.sheet-hoverpopup {
+		height: 30px;
+		width: 30px;
+		margin-left: 10px;
+		margin-right: -30px;
+	}
+
+	.charsheet div.sheet-scheme div.sheet-storytellernotes input.sheet-hoverpopup + span + div {
+		left: -360px;
+		bottom: -50px;
+		height: 200px !important;
+	}
+
+	.charsheet div.sheet-scheme div.sheet-storytellernotes input.sheet-hoverpopup + span + div textarea.sheet-collapsiblebody {
+		pointer-events: all;
+		cursor: text;
+		font-size: 12px;
+		line-height: 13px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-storytellernotes input.sheet-storytellernotesalert ~ input.sheet-hoverpopup + span::before {
+		height: 100px;
+		width: 100px;
+		margin-top: -35px;
+		margin-left: -40px;
+
+		background: none;
+
+		pointer-events: none;
+	}
+
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-storytellernotes input.sheet-storytellernotesalert.sheet-awaitingcomment:checked ~ input.sheet-hoverpopup + span::before {
+		background: url("https://i.imgur.com/noqFkgX.png");
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-storytellernotes input.sheet-storytellernotesalert.sheet-commentsready:checked ~ input.sheet-hoverpopup + span::before {
+		background: url("https://i.imgur.com/rkxOmQe.png");
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-objectivepriority {
+		height: 15px;
+		font-size: 14px;
+		text-align: left;
+		text-align-last: left;
+		font-variant: small-caps;
+		margin: -1px 0 1px -6px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-completiondate {
+		display: block;
+		height: 35px;
+		width: 10px;
+		top: 20px;
+		margin: 0 5px 5px 0;
+	}
+
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-completiondate select {			
+		font-family: 'Voltaire';
+		transform-origin: left;
+		transform: scaleX(0.75);
+		width: calc(84px / 0.75);
+		margin-left: -6px;
+		text-indent: 3px;	
 	}
 /*			#endregion */
 /*			#region Projects */

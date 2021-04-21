@@ -1852,6 +1852,10 @@ const D = (() => {
                 _.each(valArray, (v) => {
                     let errorCheck = null;
                     switch (cat.toLowerCase()) {
+                        case "id":
+                            if (!_.isString(v) || v.length !== 20 || v.charAt(0) !== "-")
+                                errorLines.push(`Invalid ID: ${jStrL(v)}`);
+                            break;
                         case "jsobject": case "jsobj":
                             if (v === null
                                 || !((typeof v === "function") || (typeof v === "object")))

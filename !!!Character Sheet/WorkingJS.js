@@ -3199,6 +3199,10 @@
         }
     });
 
+    on("change:repeating_project:objectivepriority, change:repeating_project:projectdetails, change:repeating_project:projectscope_name", (eInfo) => {
+        if (eInfo.sourceType !== "sheetworker")
+            setAttrs({repeating_project_storytellernotes_alert: 0});
+    });
     on("change:repeating_project:eventdate", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
             log("", "████ CHANGE DETECTED: EVENTDATE ████");
@@ -3208,6 +3212,24 @@
             } else {
                 log("", `Invalid DString: ${JSON.stringify(eInfo)}`);
                 setAttrs({repeating_project_archiveevent_toggle: 0});
+            }
+        }
+    });
+
+    on("change:repeating_project:objectivepriority", (eInfo) => {
+        switch (eInfo.newValue) {
+            case "0": case "1": case "2": {
+                setAttrs({
+                    repeating_project_storytellernotes_toggle: 0,
+                    repeating_project_storytellernotes_alert: 0
+                });
+                break;
+            }
+            default: {
+                setAttrs({
+                    repeating_project_storytellernotes_toggle: 1,
+                    repeating_project_storytellernotes_alert: 0
+                });
             }
         }
     });
