@@ -399,6 +399,7 @@ const Handouts = (() => {
                 stateRef[thisKey] = stateRef[thisKey] || {};
                 stateRef = stateRef[thisKey];
             }
+            let effectsData;
             parseHandoutTable(handoutRef, (tableData) => {
                 const rollEffectsData = tableData.rowCells.filter((x) => x["On?"] === "X").map((x) => _.omit(x, "On?"));
                 if (!_.isEmpty(rollEffectsData))

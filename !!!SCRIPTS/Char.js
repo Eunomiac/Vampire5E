@@ -2206,18 +2206,16 @@ const Char = (() => {
         const charFlags = (D.GetStatVal(charRef, "charflags") || "").split("|");
         D.SetStat(charRef, _.without(charFlags, flagName).join("|"));
     };
-
-
     const reviewObjective = (rowID, comment) => {
         comment = comment.replace(/%N/gu, "\n\n");
         if (rowID in STATE.REF.objectiveRegistry) {
-            const charObj = D.GetChar(STATE.REF.objectiveRegistry[rowID].init);
-            STATE.REF.objectiveRegistry[rowID].wasReviewed = true;
-            STATE.REF.objectiveRegistry[rowID].comments = comment;
+            const objData = STATE.REF.objectiveRegistry[rowID];
+            const charObj = D.GetChar(objData.init);
+            objData.wasReviewed = true;
+            objData.comments = comment;
             setAttrs(charObj.id, {
-                [`${STATE.REF.objectiveRegistry[rowID].prefix}storytellernotes`]: comment,
-                [`${STATE.REF.objectiveRegistry[rowID].prefix}storytellernotes_alert`]: 1,
-                [`${STATE.REF.objectiveRegistry[rowID].prefix}storytellernotes_toggle`]: 1
+                [`${objData.prefix}storytellernotes`]: comment,
+                [`${objData.prefix}storytellernotes_alert`]: objData.priority <= 2 ? 1 : 3
             });
             Handouts.UpdateObjectiveHandout();
             D.Alert(STATE.REF.objectiveRegistry[rowID].summary, "Objective Marked as Reviewed.");

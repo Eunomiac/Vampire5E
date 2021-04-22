@@ -2969,6 +2969,20 @@
             });
         });
     };
+    const doObjectiveChange = (eInfo) => {
+        const attrArray = ["objectivepriority", "storytellernotes"].map((stat) => `repeating_${parseRepAttr(eInfo.sourceAttribute).slice(0, -1).join("_")}_${stat}`);
+        const attrList = {};
+        getAttrs(attrArray, (ATTRS) => {
+            log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`);
+            const [, p, pV, pI] = pFuncs(ATTRS, eInfo.sourceAttribute);
+            if (pI("objectivepriority") <= 2)
+                attrList[p("storytellernotes_alert")] = 0;
+            else
+                attrList[p("storytellernotes_alert")] = 2;
+
+            setAttrs(attrList);
+        });
+    };
     const doProjectRecord = (rowID) => (callback) => {
         const attrList = {};
         const attrArray = [
@@ -3198,10 +3212,10 @@
             });
         }
     });
-
-    on("change:repeating_project:objectivepriority, change:repeating_project:projectdetails, change:repeating_project:projectscope_name", (eInfo) => {
+    on("change:repeating_project:objectivepriority change:repeating_project:projectdetails change:repeating_project:projectscope_name", (eInfo) => {
+        log(eInfo, "Objective Change Detected");
         if (eInfo.sourceType !== "sheetworker")
-            setAttrs({repeating_project_storytellernotes_alert: 0});
+            doObjectiveChange(eInfo);
     });
     on("change:repeating_project:eventdate", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
@@ -3216,23 +3230,6 @@
         }
     });
 
-    on("change:repeating_project:objectivepriority", (eInfo) => {
-        switch (eInfo.newValue) {
-            case "0": case "1": case "2": {
-                setAttrs({
-                    repeating_project_storytellernotes_toggle: 0,
-                    repeating_project_storytellernotes_alert: 0
-                });
-                break;
-            }
-            default: {
-                setAttrs({
-                    repeating_project_storytellernotes_toggle: 1,
-                    repeating_project_storytellernotes_alert: 0
-                });
-            }
-        }
-    });
     // #endregion
 
     // #region UPDATE: Timeline

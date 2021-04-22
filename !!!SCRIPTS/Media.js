@@ -2708,10 +2708,19 @@ const Media = (() => {
         }
         TRACEOFF(traceID);
     };
+    const getActiveTokenModes = (charRef) => {
+        const [tokenObj] = getTokenObjs(charRef);
+        const tokenName = tokenObj && tokenObj.get("name");
+        const tokenSrc = (tokenName && tokenName in REGISTRY.TOKEN) ? REGISTRY.TOKEN[tokenName].curSrc : "base";
+        if (tokenSrc)
+            return D.Capitalize(tokenSrc).match(/[A-Z][a-z]*/gu);
+        return [];
+    };
     const getActiveTokenAuras = (charRef) => {
         const [tokenObj] = getTokenObjs(charRef);
         const tokenName = tokenObj && tokenObj.get("name");
         const tokenSrc = (tokenName && tokenName in REGISTRY.TOKEN) ? REGISTRY.TOKEN[tokenName].curSrc : "base";
+        DB({tokenObj, tokenName, tokenSrc}, "getActiveTokenAuras");
         if (tokenSrc) {
             const splitTokenSrcs = D.Capitalize(tokenSrc).match(/[A-Z][a-z]*/gu);
             const tokenAuras = [];
@@ -4843,6 +4852,7 @@ const Media = (() => {
         GetImgSrc: getImgSrc,
         GetTokens: getTokenObjs,
         GetTokenData: getTokenData,
+        GetTokenModes: getActiveTokenModes,
         GetAuras: getActiveTokenAuras,
         GetLineHeight: getLineHeight,
         GetSimpleTextWidth: getSimpleTextWidth,

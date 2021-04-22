@@ -151,6 +151,15 @@
         <img src="https://i.imgur.com/vEVEDO6.jpg" />
         <img src="https://i.imgur.com/yN6Ru7a.png" />
         <img src="https://i.imgur.com/zW9MeTb.png" />
+
+        <!-- OBJECTIVE REPLY ALERTS -->
+        <img src="https://i.imgur.com/KbM3hPu.png" />
+        <img src="https://i.imgur.com/lnazWOA.png" />
+        <img src="https://i.imgur.com/fXquyMX.png" />
+        <img src="https://i.imgur.com/pTeuxJL.png" />
+        <img src="https://i.imgur.com/t9vzt9J.png" />
+        <img src="https://i.imgur.com/IWfJ5bG.png" />
+        <img src="https://i.imgur.com/VstL17n.png" />
     </div>
 
     <!-- HEADER-->
@@ -3313,11 +3322,11 @@
                 <!-- Right Box -->
                 <div class="sheet-coltight1 sheet-doublerow sheet-rightbox sheet-squareBox sheet-centered">                    
                     <!-- Hover Popup Storyteller Notes -->
-                    <input class="sheet-containerselector" type="radio" name="attr_storytellernotes_toggle" value="0" checked/>
-                    <input class="sheet-containerselector" type="radio" name="attr_storytellernotes_toggle" value="1" />
-                    <div class="sheet-coltight1 sheet-storytellernotes">                        
-                        <input class="sheet-attr sheet-storytellernotesalert sheet-awaitingcomment" type="radio" name="attr_storytellernotes_alert" value="0" checked />
-                        <input class="sheet-attr sheet-storytellernotesalert sheet-commentsready" type="radio" name="attr_storytellernotes_alert" value="1" />
+                    <div class="sheet-coltight1 sheet-storytellernotes">
+                        <input class="sheet-attr sheet-storytellernotesalert sheet-noqueue" type="radio" name="attr_storytellernotes_alert" value="0" checked />
+                        <input class="sheet-attr sheet-storytellernotesalert sheet-noqueuecomment" type="radio" name="attr_storytellernotes_alert" value="1" />
+                        <input class="sheet-attr sheet-storytellernotesalert sheet-awaitingcomment" type="radio" name="attr_storytellernotes_alert" value="2" />
+                        <input class="sheet-attr sheet-storytellernotesalert sheet-commentsready" type="radio" name="attr_storytellernotes_alert" value="3" />
                         <input class="sheet-hoverpopup" type="checkbox" value="1" /><span></span>
                         <div class="sheet-coltight1">                            
                             <textarea class="sheet-collapsibletitle sheet-editable" readonly>Storyteller Comments</textarea>
@@ -7076,6 +7085,20 @@
                 });
             });
         };
+        const doObjectiveChange = (eInfo) => {
+            const attrArray = ["objectivepriority", "storytellernotes"].map((stat) => `repeating_${parseRepAttr(eInfo.sourceAttribute).slice(0, -1).join("_")}_${stat}`);
+            const attrList = {};
+            getAttrs(attrArray, (ATTRS) => {
+                log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`);
+                const [, p, pV, pI] = pFuncs(ATTRS, eInfo.sourceAttribute);
+                if (pI("objectivepriority") <= 2) {
+                    attrList[p("storytellernotes_alert")] = 0;
+                } else {
+                    attrList[p("storytellernotes_alert")] = 2;
+                }
+                setAttrs(attrList);
+            });
+        }
         const doProjectRecord = (rowID) => (callback) => {
             const attrList = {};
             const attrArray = [
@@ -7305,10 +7328,10 @@
                 });
             }
         });
-    
-        on("change:repeating_project:objectivepriority, change:repeating_project:projectdetails, change:repeating_project:projectscope_name", (eInfo) => {
+        on("change:repeating_project:objectivepriority change:repeating_project:projectdetails change:repeating_project:projectscope_name", (eInfo) => {
+            log(eInfo, "Objective Change Detected");
             if (eInfo.sourceType !== "sheetworker")
-                setAttrs({repeating_project_storytellernotes_alert: 0});
+                doObjectiveChange(eInfo);
         });
         on("change:repeating_project:eventdate", (eInfo) => {
             if (eInfo.sourceType !== "sheetworker") {
@@ -7323,23 +7346,6 @@
             }
         });
     
-        on("change:repeating_project:objectivepriority", (eInfo) => {
-            switch (eInfo.newValue) {
-                case "0": case "1": case "2": {
-                    setAttrs({
-                        repeating_project_storytellernotes_toggle: 0,
-                        repeating_project_storytellernotes_alert: 0
-                    });
-                    break;
-                }
-                default: {
-                    setAttrs({
-                        repeating_project_storytellernotes_toggle: 1,
-                        repeating_project_storytellernotes_alert: 0
-                    });
-                }
-            }
-        });
         // #endregion
     
         // #region UPDATE: Timeline
