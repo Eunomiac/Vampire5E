@@ -154,6 +154,7 @@ module.exports = {
         DragPads: "readonly",
         Handouts: "readonly",
         Roller: "readonly",
+        RollerNew: "readonly",
         Complications: "readonly",
         Locations: "readonly",
         Session: "readonly",
