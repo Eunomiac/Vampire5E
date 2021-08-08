@@ -15,11 +15,10 @@ const RollerNew = (() => {
         initialize();
     };
     const initialize = () => {
-        /* [ // List Keys
-        ].forEach((listKey) => { STATE.REF.RollerNew[key] = STATE.REF.RollerNew[key] || {} }); */
-        [ // Array Keys
-            "registry"
-        ].forEach((key) => { STATE.REF[key] = STATE.REF[key] || [] });
+        [
+            ["registry", []],
+            ["isRerollingOnImport", false]
+        ].forEach(([key, defaultVal]) => { STATE.REF[key] = key in STATE.REF ? STATE.REF[key] : defaultVal });
         Roll.importLegacyRegistry();
         Roll.initRegistry();
     };
@@ -28,9 +27,24 @@ const RollerNew = (() => {
     const onChatCall = (call, args, objects, msg) => {
         switch (call) {
             case "test": {
-                /* switch (D.LCase(call = args.shift())) {
+                switch (D.LCase(call = args.shift())) {
+                    case "import": {
+                        switch (D.LCase(call = args.shift())) {
+                            case "reroll": {
+                                if (args.includes("all")) {
+                                    STATE.REF.isRerollingOnImport = true;
+                                } else {
+                                    STATE.REF.isRerollingOnImport = false;
+                                }
+                                D.Flag(`Rerolling On Import: ${STATE.REF.isRerollingOnImport}`);
+                                break;
+                            }
+                            // no default
+                        }
+                        break;
+                    }
                     // no default
-                } */
+                }
                 break;
             }
             case "get": {
@@ -43,7 +57,7 @@ const RollerNew = (() => {
                         args.unshift(call);
                         if (Roll.Current) {
                             const prop = args.shift();
-                            if (Roll.Current[prop] !== undefined)
+                            if (Roll.Current[prop] !== undefined) {
                                 if (VAL({func: Roll.Current[prop]})) {
                                     D.Show({
                                         PROPERTY: `${prop} (function)`,
@@ -57,8 +71,7 @@ const RollerNew = (() => {
                                         RETURN: Roll.Current[prop]
                                     });
                                 }
-                            else
-                                D.Flag(`${prop} Undefined.`);
+                            } else { D.Flag(`${prop} Undefined.`) }
                         } else {
                             D.Flag("Roll Not Found.");
                         }
@@ -75,7 +88,7 @@ const RollerNew = (() => {
             }
             case "reset": {
                 if (args.includes("all")) {
-                    state.VAMPIRE[SCRIPTNAME] = {};
+                    state.VAMPIRE[SCRIPTNAME] = {isRerollingOnImport: STATE.REF.isRerollingOnImport};
                     initialize();
                 }
             }
@@ -198,9 +211,12 @@ const RollerNew = (() => {
 
     // #region ████████ CLASS: "Roll" Class Definition ████████
     const MAXLOGGEDROLLS = {
-        PC: 5,
+        PC: 10,
         NPC: 10
     };
+    const TRAITROLLTYPES = ["trait", "secret", "project"];
+    const WPREROLLTYPES = ["trait"];
+    const DIFFMODROLLTYPES = ["project"];
     class Roll {
         // #region ▒░▒░▒░▒[INITIALIZATION] Registry Initialization from State Storage (STATIC) ▒░▒░▒░▒ ~
         static get statePCRolls() { return STATE.REF.registry.filter((rollData) => !rollData.flags.isNPC) }
@@ -232,16 +248,14 @@ const RollerNew = (() => {
                     stateData.push(rollData);
                     pcCount++;
                 }
-                if (npcCount >= MAXLOGGEDROLLS.NPC && pcCount >= MAXLOGGEDROLLS.PC)
-                    break;
+                if (npcCount >= MAXLOGGEDROLLS.NPC && pcCount >= MAXLOGGEDROLLS.PC) { break }
             }
-            D.Show(stateData);
+            // D.Show(stateData);
             STATE.REF.registry = [...stateData];
-            for (const rollData of stateData.reverse())
-                Roll.registerRoll(new Roll(rollData), false);
+            for (const rollData of stateData.reverse()) { Roll.registerRoll(new Roll(rollData), false) }
         }
         static importLegacyRollData(lRollData, rolls) {
-            if (!Roll.stateRollIDs.includes(lRollData.rollID))
+            if (!Roll.stateRollIDs.includes(lRollData.rollID)) {
                 try {
                     const rollData = {
                         rollID: lRollData.rollID,
@@ -258,25 +272,36 @@ const RollerNew = (() => {
                             isSpecialty: lRollData.posFlagLines.some((posFlag) => /^Specialty/.test(posFlag)),
                             isResonant: lRollData.posFlagLines.some((posFlag) => /^Resonance/.test(posFlag))
                         },
-                        traits: lRollData.traits,
                         modifier: lRollData.mod,
                         hunger: lRollData.hunger,
                         diffBase: lRollData.diff,
-                        diffMod: lRollData.diffMod,
                         secrecy: lRollData.isNPCRoll
                             ? {...SECRECY.stranger}
                             : {...SECRECY.none}
                     };
-                    if (VAL({array: rolls}) && rolls.length
-
-                    && (rolls.length === lRollData.dicePool && STATE.REF.registry.length > D.Int(MAXLOGGEDROLLS / 2)
-                        || !["secret", "trait"].includes(rollData.type))
-
-
-                    )
+                    if (TRAITROLLTYPES.includes(rollData.type)) {
+                        rollData.traits = lRollData.traits;
+                    }
+                    if (DIFFMODROLLTYPES.includes(rollData.type)) {
+                        rollData.diffMod = lRollData.diffMod || 0;
+                    }
+                    if (VAL({array: rolls}) && rolls.length) {
                         rollData.diceRolls = [...rolls];
-                    if (rollData.flags.isFirstOpposed && rollData.rollID in state.VAMPIRE.Roller.oppRolls)
+                        rollData.diceRolls.sort((a, b) => {
+                            const [aScore, bScore] = [a, b].map((dieVal) => {
+                                let score = 0;
+                                if (/^H1$/.test(dieVal)) { score -= -1000 }
+                                if (/[6-9]$/.test(dieVal)) { score -= 100 }
+                                if (/10$/.test(dieVal)) { score -= 1000 }
+                                if (/^H/.test(dieVal)) { score -= 5 }
+                                return score;
+                            });
+                            return aScore - bScore;
+                        });
+                    }
+                    if (rollData.flags.isFirstOpposed && rollData.rollID in state.VAMPIRE.Roller.oppRolls) {
                         Roll.importLegacyRollData(state.VAMPIRE.Roller.oppRolls[rollData.rollID].oppData);
+                    }
                     STATE.REF.registry.push({...rollData});
                 } catch (err) {
                     D.Alert([
@@ -285,6 +310,7 @@ const RollerNew = (() => {
                         err.message
                     ].join("<br>"), "ERROR: Failed to Import");
                 }
+            }
         }
         static importLegacyRegistry() {
             STATE.REF.registry = [];
@@ -295,14 +321,10 @@ const RollerNew = (() => {
         static REGISTRY = [];
         static registerRoll(rollInst, isNewRoll = true) {
             if (rollInst instanceof Roll) {
-                if (!rollInst.rollID)
-                    rollInst.rollID = D.RandomString(20);
-                else if (Roll.REGISTRY.find((roll) => roll.rollID === rollInst.rollID))
-                    return false;
+                if (!rollInst.rollID) { rollInst.rollID = D.RandomString(20) } else if (Roll.REGISTRY.find((roll) => roll.rollID === rollInst.rollID)) { return false }
                 Roll.REGISTRY.unshift(rollInst);
                 Roll.LogToState(rollInst);
-                if (rollInst.isResolved && isNewRoll)
-                    Roll.currentRollIndex = 0;
+                if (rollInst.isResolved && isNewRoll) { Roll.currentRollIndex = 0 }
                 return true;
             }
             return false;
@@ -321,10 +343,7 @@ const RollerNew = (() => {
                 case "p": STATE.REF.currentRollIndex = Math.max(0, Roll.currentRollIndex - 1); break;
                 case "n": STATE.REF.currentRollIndex = Math.min(Roll.REGISTRY.length - 1, Roll.currentRollIndex + 1); break;
                 default: {
-                    if (/^[0-9]+/.test(`${v}`))
-                        STATE.REF.currentRollIndex = Math.max(0, Math.min(Roll.REGISTRY.length - 1, D.Int(v)));
-                    else
-                        STATE.REF.currentRollIndex = 0;
+                    if (/^[0-9]+/.test(`${v}`)) { STATE.REF.currentRollIndex = Math.max(0, Math.min(Roll.REGISTRY.length - 1, D.Int(v))) } else { STATE.REF.currentRollIndex = 0 }
                     break;
                 }
             }
@@ -332,25 +351,21 @@ const RollerNew = (() => {
 
         static get Current() { return Roll.REGISTRY[Roll.currentRollIndex] }
         static set Current(rollRef = 0) {
-            if (VAL({string: rollRef}) && !VAL({int: rollRef}))
-                Roll.currentRollIndex = Roll.getRollIndex(rollRef);
-            else if (/^[0-9]+$/.test(`${rollRef}`))
-                Roll.currentRollIndex = D.Int(rollRef);
-            else
-                D.Flag(`Bad RollRef: '${rollRef}'`);
+            if (VAL({string: rollRef}) && !VAL({int: rollRef})) { Roll.currentRollIndex = Roll.getRollIndex(rollRef) } else if (/^[0-9]+$/.test(`${rollRef}`)) { Roll.currentRollIndex = D.Int(rollRef) } else { D.Flag(`Bad RollRef: '${rollRef}'`) }
 
             D.Flag(`Roll Index Set: ${Roll.currentRollIndex}`);
         }
         static LogToState(rollInst) {
             const stateIndex = STATE.REF.registry.findIndex((rollData) => rollData.rollID === rollInst.rollID);
-            if (stateIndex >= 0)
+            if (stateIndex >= 0) {
                 STATE.REF.registry[stateIndex] = D.ClassToObj(rollInst, {pick: [
-                    "rollID", "playerID", "charID", "playerCharID", "type", "flags", "traits", "modifier", "hunger", "diffBase", "diffMod", "secrecy", "diceRolls"
+                    "rollID", "playerID", "charID", "playerCharID", "type", "flags", "traits", "modifier", "hunger", "diffBase", "diffMod", "secrecy", "WPRerolls", "diceRolls"
                 ]});
-            else
+            } else {
                 STATE.REF.registry.unshift(D.ClassToObj(rollInst, {pick: [
-                    "rollID", "playerID", "charID", "playerCharID", "type", "flags", "traits", "modifier", "hunger", "diffBase", "diffMod", "secrecy", "diceRolls"
+                    "rollID", "playerID", "charID", "playerCharID", "type", "flags", "traits", "modifier", "hunger", "diffBase", "diffMod", "secrecy", "WPRerolls", "diceRolls"
                 ]}));
+            }
         }
         static Set(data = {}, rollID) {
             Object.assign(Roll.REGISTRY[
@@ -378,7 +393,7 @@ const RollerNew = (() => {
                     playerID,
                     charID,
                     playerCharID,
-                    type,
+                    type,                           (traits only needed if type in TRAITROLLTYPES)
                     flags,                          flags: {
                                                         isNPC: Boolean(rollData.isNPCRoll),
                                                         isFirstOpposed: rollData.rollFlags.isWaitingForOpposed,
@@ -388,24 +403,32 @@ const RollerNew = (() => {
                                                         isSpecialty: rollData.posFlagLines.some((posFlag) => /^Specialty/.test(posFlag)),
                                                         isResonant: rollData.posFlagLines.some((posFlag) => /^Resonance/.test(posFlag))
                                                     },
-                    traits,                         traits: [ "disc3", "charisma"] or ["repeating_ada2...", "animal_ken"] or ["Animal Ken", "Dominate"]
                     modifier,
                     hunger,
                     diffBase,
                     diffMod
                 }
             */
+            rollData = {...rollData};
             this._rollID = rollData.rollID;
             this._player = getObj("player", rollData.playerID);
             this._char = getObj("character", rollData.charID);
             this._playerChar = getObj("character", rollData.playerCharID);
             this._type = rollData.type;
+            if (TRAITROLLTYPES.includes(rollData.type)) {
+                if ("traits" in rollData) {
+                    this._traits = [...rollData.traits];
+                } else {
+                    THROW(`Missing Traits in Roll Data '${rollData.rollID}'`);
+                }
+            }
             Object.assign(this._flags = {}, rollData.flags);
-            Object.assign(this._traits = [], rollData.traits || []);
             this._modifier = D.Int(rollData.modifier);
             this._hunger = D.Int(rollData.hunger);
-            this._diffBase = VAL({int: rollData.diffBase}) ? D.Int(rollData.diffBase) : null;
-            this._diffMod = D.Int(rollData.diffMod);
+            this._diffBase = D.Int(rollData.diffBase);
+            if (DIFFMODROLLTYPES.includes(rollData.type)) {
+                this._diffMod = D.Int(rollData.diffMod);
+            }
             Object.assign(this._secrecy = {}, rollData.secrecy);
             this._dicePoolComps = {
                 traits: this.compileTraits(),
@@ -413,10 +436,15 @@ const RollerNew = (() => {
                 flags: this.compileFlags(),
                 effects: this.compileEffects()
             };
-            if (rollData.diceRolls)
-                this._diceRolls = rollData.diceRolls;
-            else
+            this._WPRerolls = rollData.WPRerolls
+                || WPREROLLTYPES.includes(rollData.type) && [{cost: 1, numDice: 3}]
+                || [];
+
+            if (STATE.REF.isRerollingOnImport && TRAITROLLTYPES.includes(rollData.type)) {
                 this.rollPool();
+            } else if (rollData.diceRolls) {
+                this._diceRolls = rollData.diceRolls;
+            }
         }
         // this._rollStage = ENUMERATOR:
         //     (nothing: how it starts)
@@ -438,6 +466,7 @@ const RollerNew = (() => {
 
         get type() { return this._type }
         get traits() { return this._traits }
+        get traitData() { return this._traitData }
         get modifier() { return this._modifier }
         get hunger() { return this._hunger }
         get diffBase() { return this._diffBase }
@@ -446,9 +475,16 @@ const RollerNew = (() => {
         get isUsingHungerDice() { return ["trait", "secret"].includes(this.type) }
         get hungerDice() { return this.isUsingHungerDice ? Math.min(this.dicePool, this.hunger) : 0 }
 
+        get WPRerolls() { return this._WPRerolls }
+        get NextWPReroll() {
+            if (this._WPRerolls.length) { return this._WPRerolls[0] }
+            return {};
+        }
+        get hasWPReroll() { return Boolean(Object.keys(this.NextWPReroll).length) }
+
         get diceRolls() { return this._diceRolls }
         get isResolved() { return Boolean(this.diceRolls && VAL({int: this.diffBase})) }
-        get difficulty() { return this.isResolved ? this.diffBase + this.diffMod : THROW("Difficulty not set.") }
+        get difficulty() { return this.isResolved ? this.diffBase + (this.diffMod || 0) : THROW("Difficulty not set.") }
 
         get flags() { return this._flags }
         get isBloodSurge() { return this.flags.isBloodSurge }
@@ -497,21 +533,34 @@ const RollerNew = (() => {
         // #region ████████ ROLL PROCESSING ████████ ~
         // #region ░░░░░░░[PARSING]░░░░ Parsing Initial Roll Request ░░░░░░░ ~
         compileTraits() {
-            let totVal = 0;
-            this._traitData = this._traits.map((trait) => {
-                const val = D.Int(D.GetStatVal(this.charID, trait) || D.GetStatVal(this.charID, trait.replace(/_/g, " ")));
-                totVal += val;
-                return {
-                    name: trait,
-                    displayName: D.IsIn(trait, undefined, true)
-                    || D.IsIn(trait.replace(/_/g, " "), undefined, true)
-                    || D.GetStatVal(this.charID, `${trait}_name`)
-                    || D.GetStatVal(this.charID, `${trait.replace(/_/gu, " ")}_name`)
-                    || trait,
-                    value: val
-                };
-            });
-            return totVal;
+            switch (this.type) {
+                case "obvrouse": case "rouse": case "check": return 1;
+                case "rouse2": return 2;
+                case "willpower": return D.Int(D.GetStatVal(this.charID, "willpower"));
+                case "humanity": return D.Int(D.GetStatVal(this.charID, "humanity"));
+                case "frenzy": return D.Int(D.GetStatVal(this.charID, "resolve")) + D.Int(D.GetStatVal(this.charID, "composure"));
+                case "remorse": return Math.ceil(D.Int(D.GetStatVal(this.charID, "humanity")) / 3);
+                default: {
+                    if (TRAITROLLTYPES.includes(this.type)) {
+                        let totVal = 0;
+                        this._traitData = this._traits.map((trait) => {
+                            const val = D.Int(D.GetStatVal(this.charID, trait) || D.GetStatVal(this.charID, trait.replace(/_/g, " ")));
+                            totVal += val;
+                            return {
+                                name: trait,
+                                displayName: D.IsIn(trait, undefined, true)
+                                || D.IsIn(trait.replace(/_/g, " "), undefined, true)
+                                || D.GetStatVal(this.charID, `${trait}_name`)
+                                || D.GetStatVal(this.charID, `${trait.replace(/_/gu, " ")}_name`)
+                                || trait,
+                                value: val
+                            };
+                        });
+                        return totVal;
+                    }
+                }
+            }
+            return THROW(`Unrecognized Type: '${this.type}' (${this.rollID})`);
         }
         compileFlags() {
             return 0;
@@ -522,20 +571,24 @@ const RollerNew = (() => {
         // #endregion ░░░░[PARSING]░░░░
         // #region ░░░░░░░[RESULTS]░░░░ Rolling Dice, Resolving Roll ░░░░░░░ ~
         rollPool() {
-            this.diceRolls = new Array(this.dicePool).fill(null).map(() => Roll.die);
-            this.diceRolls = [
-                ...this.diceRolls.slice(0, this.hungerDice).map((die) => `H${die}`),
-                ...this.diceRolls.slice(this.hungerDice).map((die) => `B${die}`)
+            const rollNums = new Array(this.dicePool).fill(null).map(() => Roll.die);
+            const diceRolls = [
+                ...rollNums.slice(0, this.hungerDice).map((die) => `H${die}`),
+                ...rollNums.slice(this.hungerDice).map((die) => `B${die}`)
             ];
-            if (this.isRegistered)
-                Roll.LogToState(this);
-            /* while (this.H < this.hungerDice && this.diceRolls.length < this.dicePool)
-                this.diceRolls.push(Roll.H);
-
-            while (this.diceRolls.length < this.dicePool)
-                this.diceRolls.push(Roll.B);
-
-            this.isResolved = true; */
+            diceRolls.sort((a, b) => {
+                const [aScore, bScore] = [a, b].map((dieVal) => {
+                    let score = 0;
+                    if (/^H1$/.test(dieVal)) { score -= -1000 }
+                    if (/[6-9]$/.test(dieVal)) { score -= 100 }
+                    if (/10$/.test(dieVal)) { score -= 1000 }
+                    if (/^H/.test(dieVal)) { score -= 5 }
+                    return score;
+                });
+                return aScore - bScore;
+            });
+            this.diceRolls = [...diceRolls];
+            if (this.isRegistered) { Roll.LogToState(this) }
         }
         // #endregion ░░░░[RESULTS]░░░░
         // #endregion ▄▄▄▄▄ ROLL PROCESSING ▄▄▄▄▄
@@ -627,15 +680,9 @@ const RollerNew = (() => {
     const resetRoller = () => {
         const setImg = (imgKey, data) => {
             const setThisImg = (key, val) => {
-                if (val === false)
-                    Media.ToggleImg(key, false, true);
-                else
-                    Media.SetImg(key, val, true);
+                if (val === false) { Media.ToggleImg(key, false, true) } else { Media.SetImg(key, val, true) }
             };
-            if (Array.isArray(data))
-                data.forEach((thisData, i) => setThisImg(`${imgKey}${i + 1}`, thisData));
-            else
-                setImg(imgKey, data);
+            if (Array.isArray(data)) { data.forEach((thisData, i) => setThisImg(`${imgKey}${i + 1}`, thisData)) } else { setImg(imgKey, data) }
         };
         // Cycle through GRAPHICROLLER object entries, set and toggle accordingly
         Object.entries(GRAPHICROLLER.frame.imgObjs).forEach(([imgKey, data]) => setImg(imgKey, data));
@@ -667,13 +714,11 @@ const RollerNew = (() => {
         Object.entries(GRAPHICROLLER.frame.images)
             .filter(([key, val]) => Array.isArray(val))
             .forEach(([imgPrefix, imgData]) => {
-                for (let i = 2; i <= imgData.length; i++)
-                    Media.RemoveImg(`${imgPrefix}${i}`);
+                for (let i = 2; i <= imgData.length; i++) { Media.RemoveImg(`${imgPrefix}${i}`) }
             });
         // Delete Dice
         Object.entries(GRAPHICROLLER.dice).forEach(([diceCat, catData]) => {
-            for (let i = 2; i <= catData.qty; i++)
-                Media.RemoveImg(`RollerDie_${diceCat}_${i}`);
+            for (let i = 2; i <= catData.qty; i++) { Media.RemoveImg(`RollerDie_${diceCat}_${i}`) }
         });
     };
     const fullDiceRollerReset = () => {

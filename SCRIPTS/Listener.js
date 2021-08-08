@@ -165,7 +165,7 @@ const Listener = (() => {
                 "!links": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!prompt": {script: Player, gmOnly: false, singleCall: false},
                 "!roll": {script: Roller, isAlertingOnCall: true, gmOnly: false, singleCall: true},
-                "!rnew": {script: RollerNew, gmOnly: true, singleCall: true},
+                // "!rnew": {script: RollerNew, gmOnly: true, singleCall: true},
                 "!sess": {script: Session, gmOnly: true, singleCall: true},
                 "!test": {script: Tester, gmOnly: true, singleCall: true},
                 "!time": {script: TimeTracker, gmOnly: true, singleCall: true, needsObjects: false}

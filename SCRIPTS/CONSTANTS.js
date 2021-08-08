@@ -16,6 +16,7 @@ const SCRIPTS = [
     "TimeTracker",
     "DragPads",
     "Roller",
+    "RollerNew",
     "Soundscape",
     "Complications",
     "Handouts",

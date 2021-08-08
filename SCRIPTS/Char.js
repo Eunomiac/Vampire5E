@@ -206,7 +206,7 @@ const Char = (() => {
                     contents: [
                         {
                             name: "All PCs",
-                            command: "!reply select@registered, title@All Player Characters"
+                            command: `!reply select@registered, title@${D.GetChars("registered").length} Player Characters`
                         } /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */,
                         {name: "Scene PCs", command: "!reply select@scene|registered, title@Player Characters In Scene"},
                         {name: "Scene NPCs", command: "!reply select@scene|npc, title@NPCs In Scene"},
@@ -300,8 +300,8 @@ const Char = (() => {
                             styles: {bgColor: C.COLORS.black, color: C.COLORS.brightred}
                         },
                         {
-                            name: "Roll As",
-                            command: "!roll ~~~charIDString~~~ set pc",
+                            name: "Set NPC",
+                            command: '!char add npc ~~~charIDString~~~ @&quot;?{NPC Name Reference}&quot; ?{Display Name (blank for none)}', // eslint-disable-line
                             styles: {bgColor: C.COLORS.purple, color: C.COLORS.white}
                         },
                         {
@@ -409,7 +409,11 @@ const Char = (() => {
                             command: "!char ~~~charIDString~~~ set token base",
                             styles: {bgColor: C.COLORS.darkgrey, color: C.COLORS.white}
                         },
-                        0,
+                        {
+                            name: "Reset NPC",
+                            command: "!char ~~~charIDString~~~ add npc base",
+                            styles: {bgColor: C.COLORS.darkgrey, color: C.COLORS.white}
+                        },
                         {
                             name: "Send Home",
                             command: "!char ~~~charIDString~~~ send home",
@@ -425,7 +429,11 @@ const Char = (() => {
                 {
                     type: "ButtonLine",
                     contents: [
-                        0,
+                        {
+                            name: "Set NPCs",
+                            command: "!char add npc ~~~charIDString~~~ ?{NPC Names (use @ and quotes)}",
+                            styles: {bgColor: C.COLORS.purple, color: C.COLORS.white}
+                        },
                         {
                             name: "Secret Roll",
                             command: "!char ~~~charIDString~~~ select trait",
@@ -522,6 +530,7 @@ const Char = (() => {
             ]
         });
 
+
         // STATE.REF.registry.BotLeft.spotlightPrompt.isAwardingXP = true;
         // STATE.REF.registry.BotRight.spotlightPrompt.isAwardingXP = true;
         // STATE.REF.registry.MidRight.spotlightPrompt.isAwardingXP = true;
@@ -559,10 +568,7 @@ const Char = (() => {
         switch (call) {
             case "launch": {
                 const [margin, resultString, rowID] = args;
-                if (rowID)
-                    launchProject(D.Int(margin), resultString, charObjs[0], `repeating_project_${rowID}_`);
-                else
-                    launchProject(D.Int(margin), resultString);
+                if (rowID) { launchProject(D.Int(margin), resultString, charObjs[0], `repeating_project_${rowID}_`) } else { launchProject(D.Int(margin), resultString) }
                 break;
             }
             case "class": {
@@ -600,8 +606,7 @@ const Char = (() => {
                                 const reportLines = [`<h3>${statName.join("  ")}${subStat !== null ? `::${subStat}` : ""}${index !== null ? `::${index + 1}` : ""}</h3>`];
                                 charInsts.forEach((x) => {
                                     const statVal = x.GetStat(statName.join(" ").trim(), subStat, index);
-                                    if (statVal !== false)
-                                        reportLines.push(`${x.name}: ${statVal}`);
+                                    if (statVal !== false) { reportLines.push(`${x.name}: ${statVal}`) }
                                 });
                                 D.Alert(reportLines.join("<br>"), "!char get stat");
                                 break;
@@ -620,8 +625,7 @@ const Char = (() => {
                                     subStat = null;
                                     index = null;
                                 }
-                                if (index && VAL({int: index}))
-                                    index = D.Int(index) - 1;
+                                if (index && VAL({int: index})) { index = D.Int(index) - 1 }
                                 charInsts.forEach((x) => x.SetStat(statName, subStat, index, value.join(" ")));
                                 break;
                             }
@@ -679,10 +683,7 @@ const Char = (() => {
                     }
                     case "char": {
                         const [shortName, initial, quadrant] = args;
-                        if (VAL({selection: [msg], string: [shortName, initial, quadrant]}, "!char reg char", true))
-                            registerChar(msg, shortName, initial, quadrant);
-                        else
-                            D.Alert("Select character tokens first!  Syntax: !char reg char <shortName> <initial> <quadrant>", "!char reg char");
+                        if (VAL({selection: [msg], string: [shortName, initial, quadrant]}, "!char reg char", true)) { registerChar(msg, shortName, initial, quadrant) } else { D.Alert("Select character tokens first!  Syntax: !char reg char <shortName> <initial> <quadrant>", "!char reg char") }
                         break;
                     }
                     case "weekly":
@@ -743,10 +744,7 @@ const Char = (() => {
                     case "weeklyresource": {
                         const [charObj] = charObjs;
                         const charData = D.GetCharData(charObj);
-                        if (VAL({charObj}))
-                            unregResource(charData.initial, D.Int(args.shift()));
-                        else
-                            D.Alert("Invalid character.<br><br>Syntax: !char unreg weekly <charRef> <rowNum>", "!char unreg weekly");
+                        if (VAL({charObj})) { unregResource(charData.initial, D.Int(args.shift())) } else { D.Alert("Invalid character.<br><br>Syntax: !char unreg weekly <charRef> <rowNum>", "!char unreg weekly") }
                         Char.RefreshDisplays();
                         break;
                     }
@@ -818,24 +816,22 @@ const Char = (() => {
                         break;
                     }
                     case "repstats": case "repsecs": case "repdata": {
-                        if (args.length && args[0] in C.REPATTRS)
+                        if (args.length && args[0] in C.REPATTRS) {
                             D.Alert([
                                 D.JS(C.REPATTRS[args.shift()], true, true),
                                 ...syntax
                             ].join("<br>"), "RepStat Data");
-                        else
+                        } else {
                             D.Alert([
                                 D.JS(C.REPATTRS, true, true),
                                 ...syntax
                             ].join("<br>"), "RepStat Data");
+                        }
                         break;
                     }
                     case "badattrs": case "badstats": {
                         const [, badAttrs, badAttrsByRegExp] = findBadAttrs(true);
-                        if (args[0] === "regexp")
-                            D.Alert(D.JS(badAttrsByRegExp.map((x) => x[0]).sort()), `${badAttrsByRegExp.length} Unique Bad Attribute Names by RegExp`);
-                        else
-                            D.Alert(D.JS(badAttrs.map((x) => x[0]).sort()), `${badAttrs.length} Unique Bad Attribute Names`);
+                        if (args[0] === "regexp") { D.Alert(D.JS(badAttrsByRegExp.map((x) => x[0]).sort()), `${badAttrsByRegExp.length} Unique Bad Attribute Names by RegExp`) } else { D.Alert(D.JS(badAttrs.map((x) => x[0]).sort()), `${badAttrs.length} Unique Bad Attribute Names`) }
                         break;
                     }
                     case "goodattrs": case "goodstats": {
@@ -850,9 +846,9 @@ const Char = (() => {
                     }
                     case "repstat": {
                         const [charObj] = charObjs;
-                        if (VAL({charObj}, "!char get repstat"))
-                            // !test repstats "Johannes Napier" advantage null "Haven (Harbord Village)"
-                            // !char set stat <name>   OR   !char set stat <lookupStat:lookupVal>
+                        if (VAL({charObj}, "!char get repstat")) {
+                        // !test repstats "Johannes Napier" advantage null "Haven (Harbord Village)"
+                        // !char set stat <name>   OR   !char set stat <lookupStat:lookupVal>
                             if (args.length >= 1) {
                                 const [statName, getStat] = args;
                                 if (statName.includes(":")) { // This is a rep stat reference
@@ -871,6 +867,7 @@ const Char = (() => {
                                     break;
                                 }
                             }
+                        }
 
                         D.Alert([
                             "Syntax Error!",
@@ -902,14 +899,13 @@ const Char = (() => {
                     }
                     case "stat": {
                         DB({charObjs, args}, "traitSelectMenu");
-                        if (args.length)
-                            getTraitData(charObjs, args.shift(), args);
-                        else
+                        if (args.length) { getTraitData(charObjs, args.shift(), args) } else {
                             traitSelectMenu(
                                 charObjs.map((x) => x.id),
                                 "!char",
                                 "get stat"
                             );
+                        }
                         break;
                     }
                     case "projects": {
@@ -953,7 +949,7 @@ const Char = (() => {
                 switch (D.LCase((call = args.shift()))) {
                     case "scheme": {
                         const rowID = args.shift();
-                        if (VAL({id: rowID}, "!char set scheme"))
+                        if (VAL({id: rowID}, "!char set scheme")) {
                             switch (D.LCase((call = args.shift()))) {
                                 case "reviewed": {
                                     reviewObjective(rowID, args.join(" "));
@@ -961,6 +957,7 @@ const Char = (() => {
                                 }
                                 // no default
                             }
+                        }
 
                         break;
                     }
@@ -993,8 +990,7 @@ const Char = (() => {
                     }
                     case "disabled":
                     case "disable": {
-                        for (const charObj of charObjs.filter((x) => VAL({pc: x})))
-                            REGISTRY[D.GetCharData(charObj).quadrant].isActive = args[0] === "on";
+                        for (const charObj of charObjs.filter((x) => VAL({pc: x}))) { REGISTRY[D.GetCharData(charObj).quadrant].isActive = args[0] === "on" }
                         D.Alert(
                             D.JS(
                                 D.KeyMapObj(
@@ -1020,9 +1016,21 @@ const Char = (() => {
                         break;
                     }
                     case "npc": {
-                        const [charObj] = charObjs.filter((x) => VAL({pc: x}));
-                        const [npcObj] = charObjs.filter((x) => VAL({npc: x}));
-                        setCharNPC(charObj, npcObj || "base", args.join(" "));
+                        const pcCharObjs = charObjs.filter((x) => VAL({pc: x}));
+                        const npcCharObjs = charObjs.filter((x) => VAL({npc: x}));
+                        if (npcCharObjs.length === 0) {
+                            pcCharObjs.forEach((pcCharObj) => setCharNPC(pcCharObj, "base"));
+                        } else if (pcCharObjs.length === 1) {
+                            const [pcCharObj] = pcCharObjs;
+                            const [npcObj] = npcCharObjs;
+                            setCharNPC(pcCharObj, npcObj, args.join(" "));
+                        } else if (pcCharObjs.length === npcCharObjs.length) {
+                            for (let i = 0; i < pcCharObjs.length; i++) {
+                                setCharNPC(pcCharObjs[i], npcCharObjs[i]);
+                            }
+                        } else {
+                            Media.Flag(`${pcCharObjs.length} PCs != ${npcCharObjs.length} NPCs`);
+                        }
                         break;
                     }
                     case "tempstat": {
@@ -1112,11 +1120,9 @@ const Char = (() => {
                         DB(`!char xp COMMAND RECEIVED<br><br>Characters: ${D.JSL(_.map(charObjs, (v) => v.get("name")))}`, "!char set xp");
                         if (VAL({charObj: charObjs}, "!char set xp", true)) {
                             const amount = D.Int(args.shift());
-                            for (const charObj of charObjs)
-                                if (awardXP(charObj, amount, args.join(" ")))
-                                    D.Alert(`${amount} XP awarded to ${D.GetName(charObj)}`, "!char set xp");
-                                else
-                                    D.Alert(`FAILED to award ${JSON.stringify(amount)} XP to ${JSON.stringify(D.GetName(charObj))}`, "!char set xp");
+                            for (const charObj of charObjs) {
+                                if (awardXP(charObj, amount, args.join(" "))) { D.Alert(`${amount} XP awarded to ${D.GetName(charObj)}`, "!char set xp") } else { D.Alert(`FAILED to award ${JSON.stringify(amount)} XP to ${JSON.stringify(D.GetName(charObj))}`, "!char set xp") }
+                            }
                         }
                         break;
                     }
@@ -1130,12 +1136,11 @@ const Char = (() => {
                             }
                             default: {
                                 args.unshift(call);
-                                if (args.length === 2)
-                                    adjustResource(charObjs[0], D.Int(args.shift()), D.Int(args.shift()));
-                                else
+                                if (args.length === 2) { adjustResource(charObjs[0], D.Int(args.shift()), D.Int(args.shift())) } else {
                                     D.Alert(
                                         "Syntax:<br><br><b>!char reg (initial) (name) (total)<br>!char unreg/set/lock/unlock (initial) (rowNum) [amount]<br>!char set weekly reset</b>"
                                     );
+                                }
                                 break;
                             }
                         }
@@ -1143,8 +1148,7 @@ const Char = (() => {
                         break;
                     }
                     case "desire": {
-                        for (const charObj of charObjs)
-                            resolveDesire(charObj);
+                        for (const charObj of charObjs) { resolveDesire(charObj) }
                         break;
                     }
                     case "cols": {
@@ -1207,11 +1211,9 @@ const Char = (() => {
                             D.Alert("Too many matches OR match not found!", "!char set project");
                             break;
                         }
-                        if (attrOverrides)
-                            attrOverrides = D.ParseParams(attrOverrides);
+                        if (attrOverrides) { attrOverrides = D.ParseParams(attrOverrides) }
 
-                        if (attrDeltas)
-                            attrDeltas = D.ParseParams(attrDeltas);
+                        if (attrDeltas) { attrDeltas = D.ParseParams(attrDeltas) }
 
                         DB({rowIDs, attrOverrides, attrDeltas}, "modifyProject");
                         modifyProject(charObj, rowIDs.pop(), attrOverrides, attrDeltas);
@@ -1229,8 +1231,7 @@ const Char = (() => {
                         break;
                     }
                     case "npc": {
-                        for (const charObj of charObjs)
-                            setCharNPC(charObj, "base");
+                        for (const charObj of charObjs) { setCharNPC(charObj, "base") }
                         break;
                     }
                     case "flag": {
@@ -1253,17 +1254,17 @@ const Char = (() => {
                     case "ids":
                     case "charids": {
                         const msgStrings = [];
-                        for (const charObj of findObjs({_type: "character"}))
+                        for (const charObj of findObjs({_type: "character"})) {
                             msgStrings.push(
                                 `${D.GetName(charObj)}<span style="color: ${C.COLORS.brightred}; font-weight:bold;">@T</span>${charObj.id}`
                             );
+                        }
                         D.Alert(D.JS(msgStrings.join("<br>")));
                         break;
                     }
                     case "names": {
                         const msgStrings = [];
-                        for (const charObj of findObjs({_type: "character"}))
-                            msgStrings.push(charObj.get("name"));
+                        for (const charObj of findObjs({_type: "character"})) { msgStrings.push(charObj.get("name")) }
                         msgStrings.sort();
                         D.Alert(D.JS(msgStrings.join("<br>")), "Character Names");
                         break;
@@ -1317,11 +1318,9 @@ const Char = (() => {
                         }
                         // falls through
                         case "hunger": {
-                            if (args.length)
-                                for (const charObj of charObjs)
-                                    adjustHunger(charObj, D.Int(args[0]), isKilling);
-                            else
-                                promptNumber(`${fullCommand} @@AMOUNT@@`);
+                            if (args.length) {
+                                for (const charObj of charObjs) { adjustHunger(charObj, D.Int(args[0]), isKilling) }
+                            } else { promptNumber(`${fullCommand} @@AMOUNT@@`) }
                             break;
                         }
                         // no default
@@ -1339,9 +1338,9 @@ const Char = (() => {
                     const dtype = ["hum", "humanity", "stain", "stains"].includes(trait) ? null : args.shift();
                     if (args.length) {
                         const dmg = (call === "heal" ? -1 : 1) * D.Int(args.shift());
-                        for (const charObj of charObjs)
-                            if (!adjustDamage(charObj, trait, dtype, dmg))
-                                THROW(`FAILED to damage ${D.GetName(charObj)}`, "!char dmg");
+                        for (const charObj of charObjs) {
+                            if (!adjustDamage(charObj, trait, dtype, dmg)) { THROW(`FAILED to damage ${D.GetName(charObj)}`, "!char dmg") }
+                        }
                     } else {
                         promptNumber(`${fullCommand} @@AMOUNT@@`);
                     }
@@ -1384,8 +1383,7 @@ const Char = (() => {
                                 D.Int(getAttrByName(x[1], "bp_slakekill"))
                             )
                         ]);
-                        for (const hungerData of npcHungers)
-                            setAttrs(hungerData[0], {hunger: hungerData[2]});
+                        for (const hungerData of npcHungers) { setAttrs(hungerData[0], {hunger: hungerData[2]}) }
                         break;
                     }
                     case "changestat": {
@@ -1407,16 +1405,12 @@ const Char = (() => {
                         break;
                     }
                     case "toggle": {
-                        if (STATE.REF.tokenRecord.length)
-                            restoreCharsPos(charObjs.length ? charObjs : undefined);
-                        else
-                            sendCharsHome(charObjs.length ? charObjs : undefined);
+                        if (STATE.REF.tokenRecord.length) { restoreCharsPos(charObjs.length ? charObjs : undefined) } else { sendCharsHome(charObjs.length ? charObjs : undefined) }
                         break;
                     }
                     case "district": {
                         const tokenObjs = D.GetSelected(msg, "token") || _.values(REGISTRY).map((x) => Media.GetImg(x.tokenName));
-                        for (const tokenObj of tokenObjs)
-                            Media.SetArea(tokenObj, `District${D.Capitalize(args[0])}`);
+                        for (const tokenObj of tokenObjs) { Media.SetArea(tokenObj, `District${D.Capitalize(args[0])}`) }
                         break;
                     }
                     case "site": {
@@ -1443,10 +1437,7 @@ const Char = (() => {
                     case "trait": {
                         if (args.length) {
                             const thisTrait = args.shift().toLowerCase();
-                            if (STATE.REF.traitSelection.includes(thisTrait))
-                                STATE.REF.traitSelection = _.without(STATE.REF.traitSelection, thisTrait);
-                            else
-                                STATE.REF.traitSelection.push(thisTrait);
+                            if (STATE.REF.traitSelection.includes(thisTrait)) { STATE.REF.traitSelection = _.without(STATE.REF.traitSelection, thisTrait) } else { STATE.REF.traitSelection.push(thisTrait) }
                             Media.SetText(
                                 "secretRollTraits",
                                 STATE.REF.traitSelection.length === 0 ? " " : STATE.REF.traitSelection.join("\n"),
@@ -1470,13 +1461,12 @@ const Char = (() => {
                     }
                     default: {
                         // D.Alert(`Args: ${D.JS(args.join(","))}`)
-                        if (charObjs.length)
+                        if (charObjs.length) {
                             charActionMenu(
                                 charObjs.map((x) => x.id),
                                 `Selected Characters (${charObjs.length})`
                             );
-                        else
-                            charSelectMenu();
+                        } else { charSelectMenu() }
                         break;
                     }
                 }
@@ -1645,8 +1635,7 @@ const Char = (() => {
             return this._allAttrObjs;
         }
         get baseAttrObjs() {
-            if (!this._baseAttrObjs)
-                this._baseAttrObjs = this.allAttrObjs.filter((x) => !x.get("name").startsWith("repeating_"));
+            if (!this._baseAttrObjs) { this._baseAttrObjs = this.allAttrObjs.filter((x) => !x.get("name").startsWith("repeating_")) }
             return this._baseAttrObjs;
         }
 
@@ -1689,12 +1678,13 @@ const Char = (() => {
                     const thisAttrName = nameTransform(attrName);
                     obj = attrObjsLib.find((x) => nameTransform(x.get("name")) === thisAttrName);
                 }
-                if (!obj && !_.isUndefined(defaultVal))
+                if (!obj && !_.isUndefined(defaultVal)) {
                     obj = createObj("attribute", {
                         name: attrName,
                         current: defaultVal,
                         characterid: charID
                     });
+                }
                 return VAL({obj}) && obj;
             };
             DB({attrObj, category, valObjName, linkedAttrData, valObj, charID}, "findLinkedAttrObjs");
@@ -1702,12 +1692,11 @@ const Char = (() => {
                 const linkedAttrObjs = {val: valObj};
                 for (const [subStat, statData] of Object.entries(_.omit(linkedAttrData, (v) => !(VAL({list: v}) && "type" in v)))) {
                     if ((valObjName.startsWith("repeating_") && statData.isBaseOnly)
-                        || (!valObjName.startsWith("repeating_") && statData.isRepOnly))
-                        continue;
-                    if ("isInAttr" in statData)
+                        || (!valObjName.startsWith("repeating_") && statData.isRepOnly)) { continue }
+                    if ("isInAttr" in statData) {
                         if ("isMultiple" in statData && statData.isMultiple in linkedAttrObjs && VAL({obj: linkedAttrObjs[statData.isMultiple]})) {
                             const numAttrs = linkedAttrObjs[statData.isMultiple].get("current");
-                            if (VAL({int: numAttrs}))
+                            if (VAL({int: numAttrs})) {
                                 linkedAttrObjs[subStat] = _.compact(
                                     _.range(0, D.Int(numAttrs))
                                         .map((i) => findAttrObj(
@@ -1715,11 +1704,11 @@ const Char = (() => {
                                             statData.defaultVal
                                         ))
                                 );
+                            }
                         } else {
                             linkedAttrObjs[subStat] = findAttrObj(`${valObjName}${statData.isInAttr}`, statData.defaultVal) || undefined;
                         }
-                    else
-                        linkedAttrObjs[subStat] = valObj;
+                    } else { linkedAttrObjs[subStat] = valObj }
                 }
                 return linkedAttrObjs;
             }
@@ -1744,15 +1733,12 @@ const Char = (() => {
                 DB({statCat, libData}, "findStatObj");
                 // Apply to _objsLIB ***IF*** both val and name objects found.
                 if (VAL({obj: [libData.val, libData.name]}, undefined, true)
-                    && (libData.val.id === libData.name.id || libData.name.get("current")))
-                    this._objsLIB[statName] = libData;
+                    && (libData.val.id === libData.name.id || libData.name.get("current"))) { this._objsLIB[statName] = libData }
             }
             // Finally, return desired subStat object
             let returnObj;
-            if (statName in this._objsLIB && subStat in this._objsLIB[statName])
-                returnObj = this._objsLIB[statName][subStat];
-            if (VAL({int: index, array: returnObj}))
-                returnObj = returnObj[D.Int(index)];
+            if (statName in this._objsLIB && subStat in this._objsLIB[statName]) { returnObj = this._objsLIB[statName][subStat] }
+            if (VAL({int: index, array: returnObj})) { returnObj = returnObj[D.Int(index)] }
             return VAL({obj: returnObj}) && returnObj;
         }
         getStatObj(statName, subStat, index) {
@@ -1761,11 +1747,9 @@ const Char = (() => {
             let statObj = false;
             if (statName in this._objsLIB && subStat in this._objsLIB[statName]) {
                 statObj = this._objsLIB[statName][subStat];
-                if (VAL({int: index, array: statObj}))
-                    statObj = statObj[index];
+                if (VAL({int: index, array: statObj})) { statObj = statObj[index] }
             }
-            if (!VAL({obj: statObj}))
-                statObj = this.findStatObj(statName, subStat, index);
+            if (!VAL({obj: statObj})) { statObj = this.findStatObj(statName, subStat, index) }
             return VAL({obj: statObj}) && statObj;
         }
         // #endregion
@@ -1778,8 +1762,7 @@ const Char = (() => {
             const valObj = this.getStatObj(statName, ["raw", "max"].includes(subStat) ? "val" : subStat, index);
             if (VAL({obj: valObj})) {
                 let value = valObj.get(subStat === "max" ? "max" : "current");
-                if (VAL({int: value}))
-                    value = D.Int(value);
+                if (VAL({int: value})) { value = D.Int(value) }
                 if (subStat === "val") {
                     const modObj = this.getStatObj(statName, "mod") || {get: () => 0};
                     return value + D.Int(modObj.get("current"));
@@ -1791,8 +1774,7 @@ const Char = (() => {
         SetStat(statName, subStat, index, value) {
             subStat = subStat || "val";
             const valObj = this.getStatObj(statName, ["max"].includes(subStat) ? "val" : subStat, index);
-            if (VAL({obj: valObj}))
-                setAttrs(this.id, {[valObj.get("name")]: value});
+            if (VAL({obj: valObj})) { setAttrs(this.id, {[valObj.get("name")]: value}) }
         }
         // #endregion
     }
@@ -2006,7 +1988,7 @@ const Char = (() => {
         const catData = category
             ? LINKEDSTATS[category]
             : Object.values(LINKEDSTATS).reduce((obj, x) => Object.assign(obj, x), {});
-        if (catData)
+        if (catData) {
             return Object.values(
                 _.omit(
                     _.mapObject(
@@ -2014,17 +1996,17 @@ const Char = (() => {
                             catData, (statData) => VAL({list: statData}) && "isInAttr" in statData
                         ),
                         (statData) => {
-                            if ("isMultiple" in statData && statData.isMultiple in catData)
+                            if ("isMultiple" in statData && statData.isMultiple in catData) {
                                 return _.range(0, catData[statData.isMultiple].max || 0)
                                     .map((i) => `${statData.isInAttr}${i}`);
-                            else if (!("isMultiple" in statData))
-                                return statData.isInAttr;
+                            } else if (!("isMultiple" in statData)) { return statData.isInAttr }
                             return false;
                         }
                     ),
                     (v) => v === false
                 )
             );
+        }
         return false;
     };
     const getCategory = (attrObj) => _.findKey(LINKEDSTATS, (v) => VAL({list: v}) && v.isMember(attrObj));
@@ -2091,22 +2073,17 @@ const Char = (() => {
 
     // #region Register Characters & Token Image Alternates,
     const registerChar = (msg, shortName, initial, quadrant) => {
-        if (D.GetSelected(msg).length > 1)
-            return THROW("Please select only one token.", "registerChar");
+        if (D.GetSelected(msg).length > 1) { return THROW("Please select only one token.", "registerChar") }
         const charObj = D.GetChar(msg);
         const tokenObj = D.GetSelected(msg)[0];
         const charID = charObj.id;
         const charName = D.GetName(charObj);
         const playerID = D.GetPlayerID(charObj);
         const playerName = D.GetName(D.GetPlayer(playerID));
-        if (!charObj)
-            return THROW("No character found!", "registerChar");
-        if (!tokenObj)
-            return THROW("Please select a character token.", "registerChar");
-        if (!D.IsIn(quadrant, Object.keys(C.QUADRANTS), true))
-            return THROW(`Quadrant must be one of: ${Object.keys(C.QUADRANTS).join(", ")}.`, "registerChar");
-        if (!Media.RegToken(tokenObj))
-            return THROW("Token registration failed.", "registerChar");
+        if (!charObj) { return THROW("No character found!", "registerChar") }
+        if (!tokenObj) { return THROW("Please select a character token.", "registerChar") }
+        if (!D.IsIn(quadrant, Object.keys(C.QUADRANTS), true)) { return THROW(`Quadrant must be one of: ${Object.keys(C.QUADRANTS).join(", ")}.`, "registerChar") }
+        if (!Media.RegToken(tokenObj)) { return THROW("Token registration failed.", "registerChar") }
         REGISTRY[quadrant] = {
             id: charID,
             name: charName,
@@ -2124,8 +2101,7 @@ const Char = (() => {
         if (VAL({string: nameRef}, "unregisterChar")) {
             const regKey = _.findKey(REGISTRY, (v) => D.FuzzyMatch(v.name, nameRef));
             // D.Alert(`nameRef: ${nameRef}<br>regKey: ${D.JS(regKey)}`, "unregisterChar")
-            if (REGISTRY[regKey])
-                delete REGISTRY[regKey];
+            if (REGISTRY[regKey]) { delete REGISTRY[regKey] }
         }
     };
     // #endregion
@@ -2143,8 +2119,7 @@ const Char = (() => {
             Media.SetArea(token, `${quad}Token`);
             Media.Scale(token);
         }
-        for (const token of charTokens.npc || [])
-            token.set("layer", "gmlayer");
+        for (const token of charTokens.npc || []) { token.set("layer", "gmlayer") }
     };
     const restoreCharsPos = () => {
         for (const tokenData of STATE.REF.tokenRecord) {
@@ -2176,13 +2151,13 @@ const Char = (() => {
             const tokenData = Media.GetTokenData(charID);
             const tokenSrc = tokenData && tokenData.curSrc;
             DB({charID, tokenPowerData, tokenData, tokenSrc}, "processTokenPowers");
-            if (VAL({string: tokenSrc}))
-                for (const [srcName, rollEffect] of Object.entries(tokenPowerData))
-                    if (VAL({string: rollEffect}))
-                        if (D.LCase(tokenSrc).includes(D.LCase(srcName)))
-                            Roller.AddCharEffect(charID, rollEffect);
-                        else
-                            Roller.DelCharEffect(charID, rollEffect);
+            if (VAL({string: tokenSrc})) {
+                for (const [srcName, rollEffect] of Object.entries(tokenPowerData)) {
+                    if (VAL({string: rollEffect})) {
+                        if (D.LCase(tokenSrc).includes(D.LCase(srcName))) { Roller.AddCharEffect(charID, rollEffect) } else { Roller.DelCharEffect(charID, rollEffect) }
+                    }
+                }
+            }
         }
     };
     const addCharFlag = (charRef, flagName, removeWhen, flagDisplayName, isGoodFlag = false) => {
@@ -2191,7 +2166,7 @@ const Char = (() => {
         if (VAL({charObj, string: flagName})) {
             flagDisplayName = flagDisplayName || flagName;
             D.SetStat(charRef, _.uniq([...charFlags, flagName]).join("|"));
-            if (VAL({string: removeWhen}))
+            if (VAL({string: removeWhen})) {
                 TimeTracker.SetAlarm(
                     removeWhen,
                     "delcharflag",
@@ -2200,6 +2175,7 @@ const Char = (() => {
                     [charObj.id, flagName, flagDisplayName, isGoodFlag ? "whiteMarble" : "blackMarble"],
                     false
                 );
+            }
         }
     };
     const delCharFlag = (charRef, flagName) => {
@@ -2270,8 +2246,7 @@ const Char = (() => {
                 // IMPORTANT: return 'C.REPLY.KEEPOPEN' if you want to hold this function open for more commands
                 const params = D.ParseToObj(commandString, ",", "@"); // key:value pairs must be in key@pairs for this to work. Multiple commands comma-delimited.
                 const titleString = params.title;
-                if ("selectplayer" in params)
-                    playerActionMenu(params.selectplayer, titleString);
+                if ("selectplayer" in params) { playerActionMenu(params.selectplayer, titleString) }
             }
         );
     };
@@ -2347,10 +2322,7 @@ const Char = (() => {
                     const thisParam = subParams.shift();
                     const theseCharIDs = D.GetChars(thisParam).map((x) => x.id);
                     dbObj.subParams[thisParam] = theseCharIDs;
-                    if (!charIDs.length)
-                        charIDs.push(...theseCharIDs);
-                    else
-                        charIDs = _.intersection(charIDs, theseCharIDs);
+                    if (!charIDs.length) { charIDs.push(...theseCharIDs) } else { charIDs = _.intersection(charIDs, theseCharIDs) }
                     dbObj.charIDs.push([...charIDs]);
                     if (!charIDs.length) {
                         dbObj.charIDs.push("<b>BREAKING</b>");
@@ -2358,10 +2330,7 @@ const Char = (() => {
                     }
                 }
                 DB(dbObj, "charSelectMenu");
-                if (charIDs.length)
-                    charActionMenu(charIDs, titleString);
-                else
-                    D.Alert("No such characters!", "Character Selection Menu");
+                if (charIDs.length) { charActionMenu(charIDs, titleString) } else { D.Alert("No such characters!", "Character Selection Menu") }
             }
             if ("selectchar" in params) {
                 charIDs.push(params.selectchar);
@@ -2379,7 +2348,7 @@ const Char = (() => {
         D.CommandMenu(menuCode);
     };
     const promptNumber = (fullCommand) => {
-        if (VAL({string: fullCommand}, "promptNumber") && fullCommand.includes("@@AMOUNT@@"))
+        if (VAL({string: fullCommand}, "promptNumber") && fullCommand.includes("@@AMOUNT@@")) {
             D.CommandMenu({
                 title: "Choose Amount",
                 rows: [
@@ -2442,6 +2411,7 @@ const Char = (() => {
                     }
                 ]
             });
+        }
     };
     const traitSelectMenu = (charIDs, call, argString) => {
         DB({charIDs, call, argString}, "traitSelectMenu");
@@ -2574,20 +2544,22 @@ const Char = (() => {
         for (const charName of allCharNames) {
             const boonsOwed = Object.values(D.GetRepStats(charName, "boonsowed", null, null, "rowID"));
             const boonsOwing = Object.values(D.GetRepStats(charName, "boonsowing", null, null, "rowID"));
-            for (const owedBoon of boonsOwed)
+            for (const owedBoon of boonsOwed) {
                 prestationData.boonsOwed.push({
                     from: charName,
                     to: (owedBoon.find((x) => x.attrName === "boonowed_to") || {val: false}).val,
                     type: (owedBoon.find((x) => x.attrName === "boonowed_type") || {val: false}).val,
                     details: (owedBoon.find((x) => x.attrName === "boonowed_details") || {val: false}).val
                 });
-            for (const owingBoon of boonsOwing)
+            }
+            for (const owingBoon of boonsOwing) {
                 prestationData.boonsOwing.push({
                     from: (owingBoon.find((x) => x.attrName === "boonowing_from") || {val: false}).val,
                     to: charName,
                     type: (owingBoon.find((x) => x.attrName === "boonowing_type") || {val: false}).val,
                     details: (owingBoon.find((x) => x.attrName === "boonowing_details") || {val: false}).val
                 });
+            }
         }
         const checkData = D.Clone(prestationData);
         for (let i = 0; i < checkData.boonsOwed.length; i++) {
@@ -2595,8 +2567,7 @@ const Char = (() => {
             const recipBoon = D.PullOut(checkData.boonsOwing, (x) => x.to === boonOwed.to
                 && x.to === boonOwed.to
                 && x.type === boonOwed.type);
-            if (recipBoon)
-                checkData.boonsOwed[i] = null;
+            if (recipBoon) { checkData.boonsOwed[i] = null }
         }
         checkData.boonsOwed = _.compact(checkData.boonsOwed);
         D.Alert([
@@ -2650,15 +2621,13 @@ const Char = (() => {
                 STATE.REF.objectiveRegistry[newObjData.rowID] = newObjData;
             }
             ["init", "rowID", "prefix"].forEach((key) => {
-                if (!(key in STATE.REF.objectiveRegistry[newObjData.rowID]))
-                    STATE.REF.objectiveRegistry[newObjData.rowID][key] = newObjData[key];
+                if (!(key in STATE.REF.objectiveRegistry[newObjData.rowID])) { STATE.REF.objectiveRegistry[newObjData.rowID][key] = newObjData[key] }
             });
         });
         // DB({reportLines}, "getObjectives");
 
         // Step Three: If excluding reviewed, filter out objectives with "wasReviewed" flag set.
-        if (isExcludingReviewed)
-            return objectiveData.filter((data) => !STATE.REF.objectiveRegistry[data.rowID].wasReviewed);
+        if (isExcludingReviewed) { return objectiveData.filter((data) => !STATE.REF.objectiveRegistry[data.rowID].wasReviewed) }
 
         return objectiveData;
     };
@@ -2666,6 +2635,7 @@ const Char = (() => {
 
     // #region Character-As-NPC Control
     const setCharNPC = (charRef, npcRef, nameString) => {
+        npcRef = npcRef || "base";
         const charObj = D.GetChar(charRef);
         const npcObj = (npcRef === "base" && "base") || D.GetChar(npcRef);
         const npcName = (npcRef === "base" && "base") || D.GetName(npcObj, true);
@@ -2676,19 +2646,24 @@ const Char = (() => {
                 delete REGISTRY[quad].isNPC;
                 Media.ToggleImg(`Tombstone${quad}`, false);
                 Media.ToggleImg(`TombstoneToken${quad}`, false);
+                Media.ToggleImg(`Hunger${quad}`, true);
+                Media.ToggleText(`${REGISTRY[quad].shortName}Desire`, true);
                 Media.ToggleText(`TombstoneName${quad}`, false);
+                Media.ToggleToken(pcTokenObj, true);
                 Media.SetArea(pcTokenObj, `${quad}Token`);
             } else if (VAL({npc: npcObj}, "!char set npc")) {
                 nameString = nameString || D.GetName(npcObj);
-                if (Media.GetTextWidth(`TombstoneName${quad}`, nameString) > 200)
-                    nameString = npcName;
+                if (Media.GetTextWidth(`TombstoneName${quad}`, nameString) > 200) { nameString = npcName }
                 REGISTRY[quad].isNPC = npcObj.id;
                 Media.SetImg(`TombstoneToken${quad}`, npcObj);
                 DB({charRef, npcRef, quad, npcName, nameString}, "setCharNPC");
                 Media.SetText(`TombstoneName${quad}`, nameString, true);
                 Media.ToggleImg(`Tombstone${quad}`, true);
                 Media.ToggleImg(`TombstoneToken${quad}`, true);
+                Media.ToggleImg(`Hunger${quad}`, false);
+                Media.ToggleText(`${REGISTRY[quad].shortName}Desire`, false);
                 Media.ToggleText(`TombstoneName${quad}`, true);
+                Media.ToggleToken(pcTokenObj, false);
             }
         }
     };
@@ -2746,8 +2721,7 @@ const Char = (() => {
             if (VAL({textObj: desireObj})) {
                 let desireVal = (D.GetRepStat(charData.id, "desire", "top", "desire") || {val: false}).val;
                 DB({desireVal, for: charData.name, length: desireVal.length, addAttrData}, "displayDesires");
-                if (D.LCase(desireVal).length < 3 && VAL({list: addAttrData}))
-                    desireVal = "charID" in addAttrData && addAttrData.charID === charData.id && VAL({string: addAttrData.val}) && addAttrData.val;
+                if (D.LCase(desireVal).length < 3 && VAL({list: addAttrData})) { desireVal = "charID" in addAttrData && addAttrData.charID === charData.id && VAL({string: addAttrData.val}) && addAttrData.val }
                 DB({desireVal, length: desireVal.length}, "displayDesires");
                 if (D.LCase(desireVal).length < 3) {
                     desireVal = "(none)";
@@ -2761,9 +2735,7 @@ const Char = (() => {
     };
     const resolveDesire = (charRef) => {
         let desireObj;
-        if (D.Int(D.GetStat(charRef, "willpower_bashing")[0]) === 0)
-            D.Alert("Character has no damaged willpower to restore.", "Pop Desire");
-        else
+        if (D.Int(D.GetStat(charRef, "willpower_bashing")[0]) === 0) { D.Alert("Character has no damaged willpower to restore.", "Pop Desire") } else {
             try {
                 desireObj = (D.GetRepStat(charRef, "desire", "top", "desire") || {obj: null}).obj;
                 if (desireObj) {
@@ -2788,6 +2760,7 @@ const Char = (() => {
             } catch (errObj) {
                 D.Alert(`No Desire found for ${D.GetName(charRef)}`, "resolveDesire");
             }
+        }
     };
     const regResource = (charRef, name, amount) => {
         const initial = D.UCase((D.GetCharData(charRef) || {initial: false}).initial);
@@ -2799,14 +2772,14 @@ const Char = (() => {
     };
     const unregResource = (charRef, rowNum) => {
         const initial = D.UCase((D.GetCharData(charRef) || {initial: false}).initial);
-        if (initial !== "")
-            if (STATE.REF.weeklyResources[initial].length <= 1 && rowNum === 1)
-                delete STATE.REF.weeklyResources[initial];
-            else
+        if (initial !== "") {
+            if (STATE.REF.weeklyResources[initial].length <= 1 && rowNum === 1) { delete STATE.REF.weeklyResources[initial] } else {
                 STATE.REF.weeklyResources[initial] = [
                     ..._.first(STATE.REF.weeklyResources[initial], rowNum - 1),
                     ..._.rest(STATE.REF.weeklyResources[initial], rowNum)
                 ];
+            }
+        }
         displayResources();
     };
     const adjustDisplayCols = (colNum, shift) => [`Weekly_Char_Col${colNum}`, `Stakes_Coterie_Col${colNum}`, `Stakes_Char_Col${colNum}`].map(
@@ -2817,8 +2790,7 @@ const Char = (() => {
         if (initial !== "") {
             D.Alert(`Adjusting: ${initial}, ${rowNum}, ${amount}`);
             const entry = STATE.REF.weeklyResources[initial] && STATE.REF.weeklyResources[initial][rowNum - 1];
-            if (entry)
-                entry[1] = Math.max(0, Math.min(entry[2], entry[1] + amount));
+            if (entry) { entry[1] = Math.max(0, Math.min(entry[2], entry[1] + amount)) }
             D.Chat(
                 D.GetChar(initial),
                 C.HTML.Block(
@@ -2906,13 +2878,12 @@ const Char = (() => {
             const {initial, charObj} = charData;
             DB({"===== STARTING CHARACTER =====": D.JS(charObj)}, "updateAssetsDoc");
             const projectStakes = [];
-            for (const attrName of ["projectstake1", "projectstake2", "projectstake3"])
-                projectStakes.push(...D.GetRepStats(charObj, "project", {projectstakes_toggle: "1"}, attrName));
+            for (const attrName of ["projectstake1", "projectstake2", "projectstake3"]) { projectStakes.push(...D.GetRepStats(charObj, "project", {projectstakes_toggle: "1"}, attrName)) }
             DB({charObj, projectStakes}, "updateAssetsDoc");
             for (const stake of projectStakes) {
                 const advMax = (D.GetRepStat(charObj, "advantage", null, stake.name) || {val: null}).val;
                 const endDate = (D.GetRepStat(charObj, "project", stake.rowID, "projectenddate") || {val: null}).val;
-                if (advMax && D.Int(stake.val) > 0 && TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime())
+                if (advMax && D.Int(stake.val) > 0 && TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime()) {
                     if (stake.name in coterieAdvs) {
                         coterieStakes[stake.name] = {
                             name: stake.name,
@@ -2928,11 +2899,11 @@ const Char = (() => {
                         stakeData.push([initial, stake.name, Math.min(D.Int(stake.val), advMax), D.Int(advMax), endDate, []]);
                         DB({initial, name: stake.name, val: Math.min(D.Int(stake.val), advMax), max: D.Int(advMax), endDate, TYPE: "PERSONAL STAKE"}, "updateAssetsDoc");
                     }
+                }
             }
             for (const stake of STATE.REF.customStakes.personal[initial]) {
                 const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])];
-                if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime())
-                    stakeData.push([initial, name, val, max, TimeTracker.FormatDate(dateStamp), []]);
+                if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime()) { stakeData.push([initial, name, val, max, TimeTracker.FormatDate(dateStamp), []]) }
                 DB({initial, name, val, max, endDate: TimeTracker.FormatDate(dateStamp), TYPE: "CUSTOM STAKE"}, "updateAssetsDoc");
             }
             DB({"===== ENDING CHARACTER =====": D.JS(charObj)}, "updateAssetsDoc");
@@ -2941,20 +2912,14 @@ const Char = (() => {
 
         // Sorting Coterie Stakes
         stakeData.sort((a, b) => {
-            if (a[0] !== b[0])
-                return (a[0] < b[0] && -10000000) || 10000000;
-            else
-                return TimeTracker.GetDate(a[4]).getTime() - TimeTracker.GetDate(b[4]).getTime();
+            if (a[0] !== b[0]) { return (a[0] < b[0] && -10000000) || 10000000 } else { return TimeTracker.GetDate(a[4]).getTime() - TimeTracker.GetDate(b[4]).getTime() }
         });
 
         // Next, look for duplicated entries. If found, delete the LATER one, but change the dot symbols in the initial entry to show they're still held up.
         const filteredStakes = [];
         for (const stake of stakeData) {
             const filteredIndex = filteredStakes.findIndex((x) => x[0] === stake[0] && x[1] === stake[1]);
-            if (filteredIndex > -1)
-                filteredStakes[filteredIndex][5].push(stake[2]);
-            else
-                filteredStakes.push([...stake]);
+            if (filteredIndex > -1) { filteredStakes[filteredIndex][5].push(stake[2]) } else { filteredStakes.push([...stake]) }
         }
         /* stakeData: [
                     [ "L", "Resources", 5, 5, "Feb 8, 2020" ],
@@ -2974,7 +2939,7 @@ const Char = (() => {
         // Check for combining already-entered coterie stakes.
         for (const stake of STATE.REF.customStakes.coterie) {
             const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])];
-            if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime())
+            if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime()) {
                 if (coterieStakes[name]) {
                     coterieStakes[name].total += val;
                     coterieStakes[name].dateStamp.push(dateStamp.getTime());
@@ -2987,6 +2952,7 @@ const Char = (() => {
                         max
                     };
                 }
+            }
         }
         // Now, check for repeat personal stakes
 
@@ -2994,7 +2960,7 @@ const Char = (() => {
         // DB(`Coterie Stakes: ${D.JSL(Object.keys(coterieStakes), true)}`, "updateAssetsDoc")
         // COTERIE STAKES
         const stakeLines = [];
-        for (const cotData of Object.values(coterieStakes))
+        for (const cotData of Object.values(coterieStakes)) {
             stakeLines.push(
                 C.HANDOUTHTML.EyesOnlyDoc.Line(
                     [
@@ -3019,6 +2985,7 @@ const Char = (() => {
                     {bgColor: "rgba(100,0,0,0.1)"}
                 )
             );
+        }
         let lastInitial = false;
         for (const persData of filteredStakes) {
             stakeLines.push(
@@ -3060,18 +3027,18 @@ const Char = (() => {
     const updateProjectsDoc = () => {
         const projectData = [];
         const projectDetails = [];
-        for (const charObj of D.GetChars("registered"))
-            projectData.push(...D.GetRepStats(charObj, "project", {projectlaunchroll_toggle: "2"}));
-        for (const [rowID, projectAttrs] of Object.entries(_.groupBy(projectData, "rowID")))
+        for (const charObj of D.GetChars("registered")) { projectData.push(...D.GetRepStats(charObj, "project", {projectlaunchroll_toggle: "2"})) }
+        for (const [rowID, projectAttrs] of Object.entries(_.groupBy(projectData, "rowID"))) {
             projectDetails.push({
                 rowID,
                 name: D.GetCharData(projectAttrs[0].charID).docName,
                 goal: projectAttrs.find((x) => x.attrName === "projectscope_name").val,
                 endDate: TimeTracker.GetDate(projectAttrs.find((x) => x.attrName === "projectenddate").val)
             });
+        }
         projectDetails.sort((a, b) => a.endDate - b.endDate);
         const projectLines = [];
-        for (const projDetails of projectDetails)
+        for (const projDetails of projectDetails) {
             projectLines.push(
                 C.HANDOUTHTML.EyesOnlyDoc.Line(
                     [
@@ -3085,6 +3052,7 @@ const Char = (() => {
                     {bgColor: projectLines.length % 2 === 1 ? "rgba(0,0,0,0.1)" : "transparent"}
                 )
             );
+        }
         Handouts.Set(
             "MEMO: Active Projects",
             undefined,
@@ -3116,11 +3084,9 @@ const Char = (() => {
                 while (deltaAggToGo && newAgg < max) {
                     deltaAggToGo--;
                     newAgg++;
-                    if (newAgg + newBash > max)
-                        newBash--;
+                    if (newAgg + newBash > max) { newBash-- }
                 }
-                if (deltaAggToGo)
-                    return [newBash, newAgg, true];
+                if (deltaAggToGo) { return [newBash, newAgg, true] }
                 while (deltaBashToGo && newAgg < max) {
                     deltaBashToGo--;
                     newBash++;
@@ -3189,34 +3155,33 @@ const Char = (() => {
             switch (trait.toLowerCase()) {
                 case "hunger": {
                     chatStyles.header = {margin: "0px"};
-                    if (amount > 0)
+                    if (amount > 0) {
                         bannerString = `Your hunger increases from ${D.NumToText(initTraitVal).toLowerCase()} to ${D.NumToText(
                             finalTraitVal
                         ).toLowerCase()}.`;
-                    else if (amount < 0)
-                        bannerString = `You slake your hunger by ${D.NumToText(Math.abs(amount)).toLowerCase()}.`;
+                    } else if (amount < 0) { bannerString = `You slake your hunger by ${D.NumToText(Math.abs(amount)).toLowerCase()}.` }
                     break;
                 }
                 case "hum":
                 case "humanity": {
-                    if (amount > 0)
+                    if (amount > 0) {
                         bannerString = `Your Humanity increases by ${D.NumToText(amount).toLowerCase()} to ${D.NumToText(
                             finalTraitVal
                         ).toLowerCase()}.`;
-                    else if (amount < 0)
+                    } else if (amount < 0) {
                         bannerString = `Your Humanity falls by ${D.NumToText(Math.abs(amount)).toLowerCase()} to ${D.NumToText(
                             finalTraitVal
                         ).toLowerCase()}.`;
+                    }
                     break;
                 }
                 case "stain":
                 case "stains": {
-                    if (amount > 0)
-                        bannerString = `You suffer ${D.NumToText(amount).toLowerCase()} stain${amount > 1 ? "s" : ""} to your Humanity.`;
-                    else if (amount < 0)
+                    if (amount > 0) { bannerString = `You suffer ${D.NumToText(amount).toLowerCase()} stain${amount > 1 ? "s" : ""} to your Humanity.` } else if (amount < 0) {
                         bannerString = `${D.NumToText(Math.abs(finalTraitVal - initTraitVal))} stain${
                             Math.abs(amount) > 1 ? "s" : ""
                         } cleared from your Humanity.`;
+                    }
                     break;
                 }
                 case "willpower_sdmg":
@@ -3318,8 +3283,7 @@ const Char = (() => {
                         } else if (newBashing + newAggravated === maxHealth) {
                             bodyString = "Further harm will cause AGGRAVATED damage!";
                             alertString = "WOUNDED: -2 to Physical rolls.";
-                            if (curBashing + curAggravated + amount > maxHealth)
-                                applyCripplingInjury(charObj.id, newAggravated);
+                            if (curBashing + curAggravated + amount > maxHealth) { applyCripplingInjury(charObj.id, newAggravated) }
                         }
                         trackerString = C.HTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {
                             margin: alertString ? undefined : "-8px 0px 0px 0px"
@@ -3351,8 +3315,7 @@ const Char = (() => {
                         } else if (newBashing + newAggravated === maxHealth) {
                             bodyString = "Further harm will cause AGGRAVATED damage!";
                             alertString = "WOUNDED: -2 to Physical rolls.";
-                            if (curBashing + curAggravated + amount > maxHealth)
-                                applyCripplingInjury(charObj.id, newAggravated);
+                            if (curBashing + curAggravated + amount > maxHealth) { applyCripplingInjury(charObj.id, newAggravated) }
                         }
                         trackerString = C.HTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {
                             margin: alertString ? undefined : "-8px 0px 0px 0px"
@@ -3366,7 +3329,7 @@ const Char = (() => {
                 }
                 // no default
             }
-            if (bannerString && isChatting)
+            if (bannerString && isChatting) {
                 D.Chat(
                     charObj,
                     C.HTML.Block(
@@ -3381,7 +3344,7 @@ const Char = (() => {
                         chatStyles.block
                     )
                 );
-            else if (messageOverride)
+            } else if (messageOverride) {
                 D.Chat(
                     charObj,
                     C.HTML.Block(
@@ -3392,9 +3355,9 @@ const Char = (() => {
                         chatStyles.block
                     )
                 );
+            }
             setAttrs(D.GetChar(charObj).id, {[trait.toLowerCase()]: finalTraitVal});
-            if (trait.toLowerCase() === "hunger")
-                updateHunger();
+            if (trait.toLowerCase() === "hunger") { updateHunger() }
             return true;
         }
         return false;
@@ -3606,7 +3569,7 @@ const Char = (() => {
         return false;
     };
     const adjustHunger = (charRef, amount, isKilling = false, isChatting = true) => {
-        if (VAL({char: [charRef], number: [amount], trait: ["bp_slakekill"]}, "AdjustHunger", true))
+        if (VAL({char: [charRef], number: [amount], trait: ["bp_slakekill"]}, "AdjustHunger", true)) {
             return adjustTrait(
                 charRef,
                 "hunger",
@@ -3617,6 +3580,7 @@ const Char = (() => {
                 null,
                 isChatting
             );
+        }
         return false;
     };
     const setTempStat = (charRef, statName, delta, repSection) => {
@@ -3721,27 +3685,18 @@ const Char = (() => {
         const currentStake = D.Int((D.GetRepStat(charObj, "project", rowID, "projectstake1") || {val: 0}).val)
             + D.Int((D.GetRepStat(charObj, "project", rowID, "projectstake2") || {val: 0}).val)
             + D.Int((D.GetRepStat(charObj, "project", rowID, "projectstake3") || {val: 0}).val);
-        if (attrOverrides)
+        if (attrOverrides) {
             for (let [attr, val] of Object.entries(attrOverrides)) {
-                if (attr === "projectmargin")
-                    margin = D.Int(val);
-                if (attr === "projectlaunchresults")
-                    if (/SUCCESS/u.test(D.UCase(val)))
-                        val = "SUCCESS!";
-                    else if (/CRIT/u.test(D.UCase(val)))
-                        val = "CRITICAL WIN!";
-                    else if (/TOTAL/u.test(D.UCase(val)))
-                        val = "TOTAL FAIL";
-                    else if (/COMPLI/u.test(D.UCase(val)))
-                        val = "COMPLICATION";
-                    else
-                        continue;
+                if (attr === "projectmargin") { margin = D.Int(val) }
+                if (attr === "projectlaunchresults") {
+                    if (/SUCCESS/u.test(D.UCase(val))) { val = "SUCCESS!" } else if (/CRIT/u.test(D.UCase(val))) { val = "CRITICAL WIN!" } else if (/TOTAL/u.test(D.UCase(val))) { val = "TOTAL FAIL" } else if (/COMPLI/u.test(D.UCase(val))) { val = "COMPLICATION" } else { continue }
+                }
                 attrList[attr] = val;
             }
-        if (attrDeltas)
+        }
+        if (attrDeltas) {
             for (const [attr, delta] of Object.entries(attrDeltas)) {
-                if (!["projecttotalstake", "projectincnum", "projectincunit", "projectscope", "projectmargin"].includes(attr))
-                    continue;
+                if (!["projecttotalstake", "projectincnum", "projectincunit", "projectscope", "projectmargin"].includes(attr)) { continue }
                 const [oper, int] = ((i, o) => [
                     o ? {"-": "+", x: "*"}[o] || o : "+",
                     (o === "-" ? -1 : 1) * parseInt(i)
@@ -3758,17 +3713,16 @@ const Char = (() => {
                     }
                     case "projectincunit": {
                         const curIndex = ["hours", "days", "weeks", "months", "years"].findIndex((v) => curAttrVal === v) + int;
-                        if (curIndex >= 0 && curIndex < 5)
-                            attrList[attr] = ["hours", "days", "weeks", "months", "years"][curIndex];
+                        if (curIndex >= 0 && curIndex < 5) { attrList[attr] = ["hours", "days", "weeks", "months", "years"][curIndex] }
                         break;
                     }
                     // no default
                 }
             }
+        }
         const pendingAttrs = {...currentAttrs, ...attrList};
         attrList.projectlaunchresultsummary = `${pendingAttrs.projectlaunchtrait1_name} (${pendingAttrs.projectlaunchtrait1}) + ${pendingAttrs.projectlaunchtrait2_name} (${pendingAttrs.projectlaunchtrait2}) vs. ${pendingAttrs.projectlaunchdiff}: ${pendingAttrs.projectlaunchdiff + margin} SUCCESSES`;
-        if (!("projecttotalstake" in attrList))
-            attrList.projecttotalstake = D.Int(pendingAttrs.projectscope) + 1 - margin;
+        if (!("projecttotalstake" in attrList)) { attrList.projecttotalstake = D.Int(pendingAttrs.projectscope) + 1 - margin }
 
         attrList.projectlaunchresultsmargin = `${D.Int(attrList.projecttotalstake || currentAttrs.projecttotalstake)} Stake Required, (${D.Int(attrList.projecttotalstake || currentAttrs.projecttotalstake) - currentStake} to Go)`;
         attrList.projectmargindisplay = `(${margin >= 0 ? "+" : ""}${margin})`;
@@ -3815,8 +3769,7 @@ const Char = (() => {
 
             D.Alert(returnLines.join("<br>"), "Add Margin to Projects");
 
-            if (isWritingSheet)
-                setAttrs(charObj.id, attrList);
+            if (isWritingSheet) { setAttrs(charObj.id, attrList) }
         }
     };
     const setCompulsion = (charRef, compulsionTitle, compulsionText) => {
@@ -3832,11 +3785,12 @@ const Char = (() => {
                 dyscrasias_toggle: (dyscrasiasTitle && 1) || 0,
                 dyscrasias: (dyscrasiasTitle && `${D.UCase(dyscrasiasTitle)} — ${D.Capitalize(dyscrasiasText)}`) || ""
             });
-            if (dyscrasiasTitle)
+            if (dyscrasiasTitle) {
                 addCharAlarm(charObj.id, "hunger", ["onMax", "slake"], {
                     funcName: "remdyscrasia",
                     funcParams: [charObj.id]
                 });
+            }
         }
     };
     const addCharAlarm = (charRef, traitName, triggerFlags, alarm) => {
@@ -3855,7 +3809,7 @@ const Char = (() => {
         const charObj = D.GetChar(charRef);
         const traitVal = D.GetStatVal(charObj.id, traitName);
         DB({charObj, traitName, traitVal, prevVal}, "checkCharAlarms");
-        if (VAL({charObj}))
+        if (VAL({charObj})) {
             if (charObj.id in STATE.REF.charAlarms) {
                 const traitCharAlarms = STATE.REF.charAlarms[charObj.id]
                     .map((x, i) => [i, x])
@@ -3867,14 +3821,8 @@ const Char = (() => {
                         case "hunger": {
                             const curVal = D.Int(traitVal);
                             prevVal = D.Int(prevVal);
-                            if (curVal < 5 && prevVal === 5)
-                                firingCharAlarms.push(...traitCharAlarms.filter((x) => x[1].triggerFlags.includes("offMax")));
-                            else if (curVal === 5 && prevVal < 5)
-                                firingCharAlarms.push(...traitCharAlarms.filter((x) => x[1].triggerFlags.includes("onMax")));
-                            if (prevVal > curVal)
-                                firingCharAlarms.push(...traitCharAlarms.filter((x) => x[1].triggerFlags.includes("slake")));
-                            else if (prevVal < curVal)
-                                firingCharAlarms.push(...traitCharAlarms.filter((x) => x[1].triggerFlags.includes("rouse")));
+                            if (curVal < 5 && prevVal === 5) { firingCharAlarms.push(...traitCharAlarms.filter((x) => x[1].triggerFlags.includes("offMax"))) } else if (curVal === 5 && prevVal < 5) { firingCharAlarms.push(...traitCharAlarms.filter((x) => x[1].triggerFlags.includes("onMax"))) }
+                            if (prevVal > curVal) { firingCharAlarms.push(...traitCharAlarms.filter((x) => x[1].triggerFlags.includes("slake"))) } else if (prevVal < curVal) { firingCharAlarms.push(...traitCharAlarms.filter((x) => x[1].triggerFlags.includes("rouse"))) }
                             break;
                         }
                         case "health_impair_toggle":
@@ -3900,6 +3848,7 @@ const Char = (() => {
                     STATE.REF.charAlarms[charObj.id] = _.compact(STATE.REF.charAlarms[charObj.id]);
                 }
             }
+        }
     };
     // #endregion
 
@@ -3947,8 +3896,7 @@ const Char = (() => {
         if (isUniqueOnly) {
             const uniqueAttrNames = [];
             for (const attrData of allAttrNames) {
-                if (uniqueAttrNames.find((x) => x[0] === attrData[0]))
-                    continue;
+                if (uniqueAttrNames.find((x) => x[0] === attrData[0])) { continue }
                 uniqueAttrNames.push(attrData);
             }
             return uniqueAttrNames;
@@ -4051,37 +3999,40 @@ const Char = (() => {
             let isBadAttr = false;
             if (attrData[0].startsWith("®")) {
                 const [, section, ...name] = attrData[0].split("_");
-                if (section in badRepAttrsState && _.any(badRepAttrsState[section], (x) => x.name === name.join("_")))
-                    isBadAttr = true;
+                if (section in badRepAttrsState && _.any(badRepAttrsState[section], (x) => x.name === name.join("_"))) { isBadAttr = true }
             } else {
-                if (badAttrNamesState.includes(attrData[0]))
-                    isBadAttr = true;
+                if (badAttrNamesState.includes(attrData[0])) { isBadAttr = true }
             }
-            if (!isBadAttr)
-                for (const badAttrString of badAttrStrings)
+            if (!isBadAttr) {
+                for (const badAttrString of badAttrStrings) {
                     if (attrData[0].includes(badAttrString) || attrData[0].toLowerCase() !== attrData[0]) {
                         isBadAttr = true;
                         break;
                     }
-            if (!isBadAttr)
-                for (const regExp of badAttrRegExp)
+                }
+            }
+            if (!isBadAttr) {
+                for (const regExp of badAttrRegExp) {
                     if (regExp.test(attrData[0])) {
                         isBadAttr = true;
                         badAttrsByRegExp.push(attrData);
                         break;
                     }
+                }
+            }
             if (isBadAttr) {
                 if (attrData[0].startsWith("®")) {
                     const [, section, ...name] = attrData[0].split("_");
                     if (!(
                         isUniqueOnly
                         && badRepAttrsList.find((x) => x.section === section && x.name === name.join("_"))
-                    ))
+                    )) {
                         badRepAttrsList.push({
                             section,
                             name: name.join("_"),
                             attrObj: attrData[1]
                         });
+                    }
                 }
                 badAttrsList.push(attrData);
             } else {
@@ -4101,7 +4052,7 @@ const Char = (() => {
     };
     const validateCharAttributes = (charRefs, isChangingSheet = false) => {
         const [reportLines, nameChanges] = [[], []];
-        for (const charObj of D.GetChars(charRefs))
+        for (const charObj of D.GetChars(charRefs)) {
             try {
                 if (VAL({charObj})) {
                     const allAttrObjs = findObjs({
@@ -4124,13 +4075,13 @@ const Char = (() => {
                             x[1].splice(1, 1);
                             return [x[0], x[1][0], x[1].slice(1).join("_")];
                         }); // [object, section, attrName]
-                    for (const attrPair of nonRepAttrValPairs)
+                    for (const attrPair of nonRepAttrValPairs) {
                         if (attrPair[1].length > 1 && attrPair[1] !== D.LCase(attrPair[1])) {
                             nameChanges.push(`${attrPair[1]} !== ${D.LCase(attrPair[1])}, setting name to <b>${D.LCase(attrPair[1])}</b>.`);
                             attrPair[1] = D.LCase(attrPair[1]);
-                            if (isChangingSheet)
-                                attrPair[0].set("name", D.LCase(attrPair[1]));
+                            if (isChangingSheet) { attrPair[0].set("name", D.LCase(attrPair[1])) }
                         }
+                    }
                     for (const repAttrTrip of repAttrValTrips) {
                         const [, section, id, ...splitName] = repAttrTrip[0].get("name").split("_");
                         const name = splitName.join("_");
@@ -4146,8 +4097,7 @@ const Char = (() => {
                         if (deltaRepAttr.section || deltaRepAttr.name) {
                             const newName = `repeating_${deltaRepAttr.section || section}_${id}_${deltaRepAttr.name || name}`;
                             nameChanges.push(`${repAttrTrip[0].get("name")} !== <b>${newName}</b>, setting repAttr.'`);
-                            if (isChangingSheet)
-                                repAttrTrip[0].set("name", newName);
+                            if (isChangingSheet) { repAttrTrip[0].set("name", newName) }
                         }
                     }
 
@@ -4170,25 +4120,22 @@ const Char = (() => {
                     const dupeRepAttrValTrips = [];
                     repAttrValTrips.forEach((x) => {
                         const fullName = x[0].get("name");
-                        if (dupeNameRecord.includes(fullName))
-                            dupeRepAttrValTrips.push(x);
-                        else
-                            dupeNameRecord.push(fullName);
+                        if (dupeNameRecord.includes(fullName)) { dupeRepAttrValTrips.push(x) } else { dupeNameRecord.push(fullName) }
                     });
 
                     // missingDefaultAttrTrips.marquee_toggle = 1;
 
                     if (isChangingSheet) {
                         setAttrs(charObj.id, missingDefaultAttrTrips);
-                        for (const [attrObj] of obsoleteAttrValPairs)
-                            if (VAL({object: attrObj}))
-                                attrObj.remove();
-                        for (const [attrObj] of obsoleteRepAttrValTrips)
-                            if (VAL({object: attrObj}))
-                                attrObj.remove();
-                        for (const [attrObj] of dupeRepAttrValTrips)
-                            if (VAL({object: attrObj}))
-                                attrObj.remove();
+                        for (const [attrObj] of obsoleteAttrValPairs) {
+                            if (VAL({object: attrObj})) { attrObj.remove() }
+                        }
+                        for (const [attrObj] of obsoleteRepAttrValTrips) {
+                            if (VAL({object: attrObj})) { attrObj.remove() }
+                        }
+                        for (const [attrObj] of dupeRepAttrValTrips) {
+                            if (VAL({object: attrObj})) { attrObj.remove() }
+                        }
                     }
                     reportLines.push(
                         ...[
@@ -4231,6 +4178,7 @@ const Char = (() => {
             } catch (errObj) {
                 D.Alert(`ERROR: ${D.JS(errObj)}`, "validateCharAttributes");
             }
+        }
         D.Alert(reportLines.join("<br>"), "Character Attribute Validation");
     };
     const populateDefaults = (charRef) => {
@@ -4294,16 +4242,17 @@ const Char = (() => {
         // const allChars = D.GetChars("registered");
         for (const char of allChars) {
             const deltaAttrs = {};
-            for (const oldAttrObj of _.uniq(_.compact(D.GetRepStats(char, section, null, oldName, null, "obj"))))
+            for (const oldAttrObj of _.uniq(_.compact(D.GetRepStats(char, section, null, oldName, null, "obj")))) {
                 try {
                     const newNameFull = oldAttrObj.get("name").replace(new RegExp(`${oldName}$`), newName);
                     deltaAttrs[newNameFull] = oldAttrObj.get("current");
                     deltaAttrs[`${newNameFull}_max`] = oldAttrObj.get("max");
                 } catch (errObj) {
-                    // DB({char: char.get("name"), oldAttrObj, [`ERROR (${section}, ${oldName})`]: D.GetRepStats(char, section, null, oldName, null, "obj")}, "changeRepAttrName");
+                // DB({char: char.get("name"), oldAttrObj, [`ERROR (${section}, ${oldName})`]: D.GetRepStats(char, section, null, oldName, null, "obj")}, "changeRepAttrName");
                     THROW("Error Report", "changeRepAttrName", errObj);
                     continue;
                 }
+            }
 
             // DB({char: char.get("name"), deltaAttrs}, "changeRepAttrName");
             setAttrs(char.id, deltaAttrs);
@@ -4314,57 +4263,47 @@ const Char = (() => {
         const charNames = [];
         const npcStats = JSON.parse(NPCSTATS);
         let errorLog = "";
-        if (charRef)
-            charNames.push(D.GetChar(charRef).get("name"));
-        else
-            charNames.push(...Object.keys(npcStats));
+        if (charRef) { charNames.push(D.GetChar(charRef).get("name")) } else { charNames.push(...Object.keys(npcStats)) }
 
         for (const charName of charNames) {
             const charObj = D.GetChar(charName);
             const charID = (charObj || {id: false}).id;
             const attrList = {};
             const charData = npcStats[charName];
-            if (charData.base)
+            if (charData.base) {
                 for (const attr of Object.keys(charData.base)) {
-                    if (attr === "blood_potency")
-                        attrList.hunger = C.BLOODPOTENCY[charData.base[attr]].bp_minhunger;
+                    if (attr === "blood_potency") { attrList.hunger = C.BLOODPOTENCY[charData.base[attr]].bp_minhunger }
                     attrList[attr] = charData.base[attr];
                 }
+            }
             if (charData.attributes) {
-                for (const attribute of _.flatten(_.values(C.ATTRIBUTES)))
-                    attrList[attribute.toLowerCase()] = 1;
-                for (const attribute of Object.keys(charData.attributes))
-                    attrList[attribute] = charData.attributes[attribute];
+                for (const attribute of _.flatten(_.values(C.ATTRIBUTES))) { attrList[attribute.toLowerCase()] = 1 }
+                for (const attribute of Object.keys(charData.attributes)) { attrList[attribute] = charData.attributes[attribute] }
             }
             if (charData.skills) {
                 const skillDupeCheck = _.compact(_.flatten(_.map(_.values(charData.skills), (v) => v.split(/\s+/gu))));
-                if (_.uniq(skillDupeCheck).length !== skillDupeCheck.length)
-                    errorLog += `<br>Duplicate Skill(s) on ${D.GetName(charID)}: ${_.sortBy(skillDupeCheck, (v) => v).join(" ")}`;
-                else
-                    for (const skillAbv of Object.keys(C.SKILLABBVS))
-                        attrList[C.SKILLABBVS[skillAbv]] = D.Int(_.findKey(charData.skills, (v) => v.includes(skillAbv)));
+                if (_.uniq(skillDupeCheck).length !== skillDupeCheck.length) { errorLog += `<br>Duplicate Skill(s) on ${D.GetName(charID)}: ${_.sortBy(skillDupeCheck, (v) => v).join(" ")}` } else {
+                    for (const skillAbv of Object.keys(C.SKILLABBVS)) { attrList[C.SKILLABBVS[skillAbv]] = D.Int(_.findKey(charData.skills, (v) => v.includes(skillAbv))) }
+                }
             }
-            if (charData.clandiscs)
+            if (charData.clandiscs) {
                 _.each(["disc1", "disc2", "disc3"], (discnum) => {
-                    if (charData.clandiscs[discnum].length)
-                        [attrList[`${discnum}_name`], attrList[discnum]] = charData.clandiscs[discnum];
-                    else
-                        [attrList[`${discnum}_name`], attrList[discnum]] = ["", 0];
+                    if (charData.clandiscs[discnum].length) { [attrList[`${discnum}_name`], attrList[discnum]] = charData.clandiscs[discnum] } else { [attrList[`${discnum}_name`], attrList[discnum]] = ["", 0] }
                 });
+            }
             const [repDiscs, rowCount] = [{}, {}];
             _.each(["discleft", "discmid", "discright"], (section) => {
                 const sectionData = D.GetRepStats(charID, section, null, null, "rowID");
                 rowCount[section] = Object.keys(sectionData).length;
                 _.each(sectionData, (rowData, rowID) => {
                     const discData = _.find(rowData, (stat) => Object.keys(C.DISCIPLINES).includes(stat.name));
-                    if (discData)
+                    if (discData) {
                         repDiscs[discData.name] = {
                             sec: section,
                             rowID,
                             val: D.Int(discData.val)
                         };
-                    else
-                        D.DeleteRow(charID, section, rowID);
+                    } else { D.DeleteRow(charID, section, rowID) }
                 });
             });
             if (charData.otherdiscs) {
@@ -4378,17 +4317,16 @@ const Char = (() => {
                 } else {
                     for (const discAbv of Object.keys(C.DISCABBVS)) {
                         const discName = C.DISCABBVS[discAbv];
-                        if (Object.keys(repDiscs).includes(discName))
-                            if (_.findKey(charData.otherdiscs, (v) => v.includes(discAbv)))
+                        if (Object.keys(repDiscs).includes(discName)) {
+                            if (_.findKey(charData.otherdiscs, (v) => v.includes(discAbv))) {
                                 attrList[`repeating_${repDiscs[discName].sec}_${repDiscs[discName].rowID}_disc`] = D.Int(
                                     _.findKey(charData.otherdiscs, (v) => v.includes(discAbv))
                                 );
-                            else {
+                            } else {
                                 D.DeleteRow(charID, repDiscs[discName].sec, repDiscs[discName].rowID);
                                 rowCount[repDiscs[discName].sec]--;
                             }
-                        else if (_.findKey(charData.otherdiscs, (v) => v.includes(discAbv)))
-                            otherDiscs.push([discName, D.Int(_.findKey(charData.otherdiscs, (v) => v.includes(discAbv)))]);
+                        } else if (_.findKey(charData.otherdiscs, (v) => v.includes(discAbv))) { otherDiscs.push([discName, D.Int(_.findKey(charData.otherdiscs, (v) => v.includes(discAbv)))]) }
                     }
                     while (otherDiscs.length) {
                         const thisDisc = otherDiscs.pop();
